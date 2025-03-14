@@ -25,15 +25,15 @@
 	const stages = [
 		{
 			name: 'Этап 1',
-			words: 1
+			words: 5
 		},
 		{
 			name: 'Этап 2',
-			words: 1
+			words: 10
 		},
 		{
 			name: 'Этап 3',
-			words: 1
+			words: 10
 		}
 	];
 
