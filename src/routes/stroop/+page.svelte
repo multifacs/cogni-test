@@ -2,9 +2,9 @@
 	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import type { PageData } from './$types';
-    export let data: PageData;
+	export let data: PageData;
 
-	let currentWord = 'Этап 1';
+	let currentWord: string = 'Этап 1';
 	let currentColor = '';
 	let score = 0;
 	let timeLeft = 3;
@@ -13,31 +13,29 @@
 	let timer;
 	let isTestRunning = false;
 
-	const words = ['Красный', 'Синий', 'Зеленый', 'Желтый', 'Фиолетовый', 'Черный'];
-	const colors = ['red', 'blue', 'green', 'yellow', 'violet', 'black'];
-	const pairs = {
-		'Красный': 'red',
-		'Синий': 'blue',
-		'Зеленый': 'green',
-		'Желтый': 'yellow',
-		'Фиолетовый': 'violet',
-		'Черный': 'black',
-	}
+	const colors = {
+		Красный: 'red',
+		Синий: 'blue',
+		Зеленый: 'green',
+		Желтый: 'yellow',
+		Фиолетовый: 'violet',
+		Черный: 'black'
+	};
 
 	const stages = [
 		{
 			name: 'Этап 1',
-			words: 5
+			words: 1
 		},
 		{
 			name: 'Этап 2',
-			words: 10
+			words: 1
 		},
 		{
 			name: 'Этап 3',
-			words: 10
-		},
-	]
+			words: 1
+		}
+	];
 
 	async function startTest() {
 		isTestRunning = true;
@@ -57,17 +55,26 @@
 			stage += 1;
 			wordsLeft = stages[stage].words;
 			currentWord = stages[stage].name;
-			await new Promise(r => setTimeout(r, 2000));
-		};
+			await new Promise((r) => setTimeout(r, 2000));
+		}
 		if (!wordsLeft && stage == stages.length - 1) {
 			currentColor = 'white';
-			currentWord = "Конец";
+			currentWord = 'Конец';
+			isTestRunning = false;
 			return;
-		};
-		console.log(stage)
+		}
+		console.log(stage);
 
-		currentWord = words[Math.floor(Math.random() * words.length)];
-		currentColor = colors[Math.floor(Math.random() * colors.length)];
+		// Object.keys(colors);
+		// Object.values(colors);
+		currentWord = Object.keys(colors)[Math.floor(Math.random() * Object.keys(colors).length)];
+		if (stage == 0) {
+			currentColor = colors[currentWord];
+		}
+		if (stage != 0) {
+			currentColor =
+				Object.values(colors)[Math.floor(Math.random() * Object.values(colors).length)];
+		}
 		timeLeft = 3;
 		wordsLeft -= 1;
 
@@ -81,29 +88,54 @@
 	}
 
 	function handleColorClick(color) {
-		const current = pairs[currentWord];
-		console.log(color, current)
-		if (color === current) {
-			score += 1;
+		const current = colors[currentWord];
+		console.log(color, current);
+		if (stage < 2) {
+			if (color === current) {
+				score += 1;
+			}
+		}
+		if (stage == 2) {
+			if (color === currentColor) {
+				score += 1;
+			}
 		}
 		clearInterval(timer);
 		nextWord();
 	}
 
 	onMount(() => {
-		console.log(data)
-	})
+		console.log(data);
+	});
 </script>
 
 <div class="container">
 	<h1>Тест Струпа</h1>
 	{#if !isTestRunning}
+		<p class="text">
+			На экране появляются слова, обозначающие цвет. Ниже отображаются все возможные цветовые
+			образцы. Нужно нажимать на цветовой образец в соответствии с заданием.
+		</p>
+		<p class="text">
+			На первом этапе слово написано цветом, соответствующим смыслу слова. Нужно нажать на цветовой
+			образец, <b>соответствующий и цвету, и смыслу слова</b>.
+		</p>
+		<p class="text">
+			На втором этапе цвет и смысл слова разные. Нужно нажать на цветовой образец, <b
+				>соответствующий смыслу слова</b
+			>.
+		</p>
+		<p class="text">
+			На третьем этапе также цвет и смысл разные. Нужно нажать на цветовой образец, <b
+				>соответствующий цвету букв</b
+			>.
+		</p>
 		<button on:click={startTest}>Начать тест</button>
 	{:else}
 		<div class="subcontainer" transition:slide={{ duration: 500 }}>
 			<div class="color-text" style="color: {currentColor};">{currentWord}</div>
 			<div class="color-grid">
-				{#each colors as color}
+				{#each Object.values(colors) as color}
 					<button
 						class="color-button"
 						style="background-color: {color};"
@@ -125,6 +157,10 @@
 <style>
 	h1 {
 		color: #f8faff;
+	}
+	.text {
+		text-align: justify;
+		margin: 10px 20px;
 	}
 	.color-button {
 		padding: 10px 20px;
