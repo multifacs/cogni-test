@@ -1,112 +1,103 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
-	import type { PageData } from './$types';
-	export let data: PageData;
+	import { StroopTestGame } from './stroopTestGame'; // Adjust the import path as needed
 
+	// Game state
 	let currentWord: string = 'Этап 1';
 	let currentColor = '';
 	let score = 0;
 	let timeLeft = 3;
-	let wordsLeft = -1;
-	let stage = 0;
-	let timer;
 	let isTestRunning = false;
+	let timer: number | null = null;
 
+	// Game logic
+	let game: StroopTestGame;
+
+	// Colors and stages
 	const colors = {
 		Красный: 'red',
-		Синий: 'blue',
-		Зеленый: 'green',
-		Желтый: 'yellow',
-		Фиолетовый: 'violet',
-		Черный: 'black'
+		Бирюзовый: 'cyan',
+		Синий: 'green',
+		Пурпурный: 'magenta',
+		Зеленый: 'blue',
+		Желтый: 'yellow'
 	};
 
-	const stages = [
-		{
-			name: 'Этап 1',
-			words: 5
-		},
-		{
-			name: 'Этап 2',
-			words: 10
-		},
-		{
-			name: 'Этап 3',
-			words: 10
-		}
-	];
+	// Initialize the game
+	onMount(() => {
+		game = new StroopTestGame();
+	});
 
+	// Start the test
 	async function startTest() {
 		isTestRunning = true;
-		const delay = setTimeout(() => {
-			nextWord();
-			console.log('Начинаем');
-		}, 1000);
+		score = 0;
+		nextWord();
 	}
 
+	// Move to the next word
 	async function nextWord() {
 		if (!isTestRunning) return;
-		if (wordsLeft == -1) {
-			wordsLeft = stages[stage].words;
-		}
-		if (!wordsLeft && stage != stages.length - 1) {
-			currentColor = 'white';
-			stage += 1;
-			wordsLeft = stages[stage].words;
-			currentWord = stages[stage].name;
-			await new Promise((r) => setTimeout(r, 2000));
-		}
-		if (!wordsLeft && stage == stages.length - 1) {
-			currentColor = 'white';
-			currentWord = 'Конец';
-			isTestRunning = false;
+
+		// Check if the game is over
+		if (game.isGameOver()) {
+			endTest();
 			return;
 		}
-		console.log(stage);
 
-		// Object.keys(colors);
-		// Object.values(colors);
-		currentWord = Object.keys(colors)[Math.floor(Math.random() * Object.keys(colors).length)];
-		if (stage == 0) {
-			currentColor = colors[currentWord];
-		}
-		if (stage != 0) {
-			currentColor =
-				Object.values(colors)[Math.floor(Math.random() * Object.values(colors).length)];
-		}
+		// Start the next word in the game logic
+		game.startNextWord();
+		const currentTask = game.getCurrentWord();
+		console.log(currentTask)
+
+		// Update UI state
+		currentWord = currentTask.word;
+		currentColor = currentTask.color;
 		timeLeft = 3;
-		wordsLeft -= 1;
 
+		// Start the 3-second timer
+		if (timer) clearInterval(timer);
 		timer = setInterval(() => {
 			timeLeft -= 1;
 			if (timeLeft <= 0) {
 				clearInterval(timer);
-				nextWord();
+				game.handleColorSelection(null); // Handle timeout (incorrect answer)
+				nextWord(); // Move to the next word
 			}
 		}, 1000);
 	}
 
-	function handleColorClick(color) {
-		const current = colors[currentWord];
-		console.log(color, current);
-		if (stage < 2) {
-			if (color === current) {
-				score += 1;
-			}
-		}
-		if (stage == 2) {
-			if (color === currentColor) {
-				score += 1;
-			}
-		}
-		clearInterval(timer);
+	// Handle color selection
+	function handleColorClick(color: string) {
+		if (!isTestRunning) return;
+		if (currentColor == 'white') return;
+		// Stop the timer
+		if (timer) clearInterval(timer);
+
+		// Handle the player's selection in the game logic
+		game.handleColorSelection(color as Color);
+
+		// Update the score
+		const results = game.getResults();
+		score = results.correctAnswers.filter((correct) => correct).length;
+
+		// Move to the next word
 		nextWord();
 	}
 
-	onMount(() => {
-		console.log(data);
-	});
+	// End the test
+	function endTest() {
+		isTestRunning = false;
+		currentWord = 'Конец';
+		currentColor = 'white';
+		if (timer) clearInterval(timer);
+
+		// Log the results
+		const results = game.getResults();
+		console.log('Reaction Times:', results.reactionTimes);
+		console.log('Correct Answers:', results.correctAnswers);
+	}
 </script>
 
 <div class="container">
