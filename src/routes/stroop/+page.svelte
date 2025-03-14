@@ -1,18 +1,45 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
+	import type { PageData } from './$types';
+    export let data: PageData;
 
-	let currentWord = 'Начинаем';
+	let currentWord = 'Этап 1';
 	let currentColor = '';
 	let score = 0;
 	let timeLeft = 3;
+	let wordsLeft = -1;
+	let stage = 0;
 	let timer;
 	let isTestRunning = false;
 
 	const words = ['Красный', 'Синий', 'Зеленый', 'Желтый', 'Фиолетовый', 'Черный'];
 	const colors = ['red', 'blue', 'green', 'yellow', 'violet', 'black'];
+	const pairs = {
+		'Красный': 'red',
+		'Синий': 'blue',
+		'Зеленый': 'green',
+		'Желтый': 'yellow',
+		'Фиолетовый': 'violet',
+		'Черный': 'black',
+	}
 
-	function startTest() {
+	const stages = [
+		{
+			name: 'Этап 1',
+			words: 5
+		},
+		{
+			name: 'Этап 2',
+			words: 10
+		},
+		{
+			name: 'Этап 3',
+			words: 10
+		},
+	]
+
+	async function startTest() {
 		isTestRunning = true;
 		const delay = setTimeout(() => {
 			nextWord();
@@ -20,12 +47,29 @@
 		}, 1000);
 	}
 
-	function nextWord() {
+	async function nextWord() {
 		if (!isTestRunning) return;
+		if (wordsLeft == -1) {
+			wordsLeft = stages[stage].words;
+		}
+		if (!wordsLeft && stage != stages.length - 1) {
+			currentColor = 'white';
+			stage += 1;
+			wordsLeft = stages[stage].words;
+			currentWord = stages[stage].name;
+			await new Promise(r => setTimeout(r, 2000));
+		};
+		if (!wordsLeft && stage == stages.length - 1) {
+			currentColor = 'white';
+			currentWord = "Конец";
+			return;
+		};
+		console.log(stage)
 
 		currentWord = words[Math.floor(Math.random() * words.length)];
 		currentColor = colors[Math.floor(Math.random() * colors.length)];
 		timeLeft = 3;
+		wordsLeft -= 1;
 
 		timer = setInterval(() => {
 			timeLeft -= 1;
@@ -37,12 +81,18 @@
 	}
 
 	function handleColorClick(color) {
-		if (color === currentColor) {
+		const current = pairs[currentWord];
+		console.log(color, current)
+		if (color === current) {
 			score += 1;
 		}
 		clearInterval(timer);
 		nextWord();
 	}
+
+	onMount(() => {
+		console.log(data)
+	})
 </script>
 
 <div class="container">
@@ -88,7 +138,7 @@
 		font-weight: bold;
 		font-size: 2em;
 		margin-bottom: 20px;
-        -webkit-text-stroke-color: #5c70a3;
+		-webkit-text-stroke-color: #5c70a3;
 		-webkit-text-stroke: 1px;
 	}
 
@@ -115,6 +165,7 @@
 	.color-grid {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
+		gap: 10px;
 	}
 
 	@media (max-width: 600px) {
