@@ -11,4 +11,4 @@
 
 <h1>Тесты</h1>
 
-<a href="/stroop">Тест Струпа</a>
+<a href="/tests/stroop">Тест Струпа</a>
