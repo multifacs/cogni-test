@@ -1,0 +1,16 @@
+:root {
+    --main-bg-color: #292a2d;
+    --main-text-color: #f8faff;
+}
+
+html,
+body {
+    margin: 0;
+    /* Убираем отступы по умолчанию */
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--main-bg-color);
+    color: var(--main-text-color);
+}
