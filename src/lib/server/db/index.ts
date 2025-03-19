@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import type { StroopRecord, User } from './types';
 import { v4 as uuidv4 } from 'uuid';
 import { MODE, DB_PATH as DB_PATH_ENV } from '$env/static/private';
+import { formDataToUser } from '$lib/index';
 
 let DB_PATH
 if (MODE == 'DEV') {
@@ -28,10 +29,10 @@ export namespace Users {
     const id = uuidv4();
     const sql = `
     insert into users (id, name, surname, birth, sex)
-    values (?, ?, ?, ?, ?) 
+    values ($id, $name, $surname, $birth, $sex) 
     `;
-    const birth = [data.get('day').padStart(2, '0'), data.get('month').padStart(2, '0'), data.get('year')].join('.');
-    const stmnt = db.prepare(sql).run(id, data.get('name'), data.get('surname'), birth, data.get('sex'));
+    const user = formDataToUser(id, data);
+    const stmnt = db.prepare(sql).run(user);
     return id;
   };
   export function getUserById(id: string): User {
@@ -49,7 +50,7 @@ export namespace Users {
     select * from users where name = $name and surname = $surname and birth = $birth and sex = $sex`;
     const stmt = db.prepare(sql);
     const userData = stmt.get(user) as User;
-    
+
     if (userData) {
       return userData.id
     }

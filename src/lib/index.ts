@@ -1,1 +1,34 @@
+import { error } from "@sveltejs/kit";
+import type { User } from "./server/db/types";
+
 // place files you want to import through the `$lib` alias in this folder.
+export function checkFormData(data: FormData): boolean {
+    if (!data.get('name')) return false;
+    if (!data.get('surname')) return false;
+    if ((data.get('surname') as string).length != 2) return false;
+    if (!data.get('day')) return false;
+    if (!data.get('month')) return false;
+    if (!data.get('year')) return false;
+    if (!data.get('sex')) return false;
+
+    return true;
+}
+
+export function formDataToUser(id: string | null = null, data: FormData): User {
+    if (!checkFormData(data)) error(422, 'wrong data format');
+
+    const day = (data.get('day') as string).padStart(2, '0');
+    const month = (data.get('month') as string).padStart(2, '0') as string;
+    const year = data.get('year') as string;
+    const birth = [day, month, year].join('.')
+
+    const user = {
+        id,
+        name: (data.get('name') as string).toUpperCase(),
+        surname: (data.get('surname') as string).toUpperCase(),
+        birth,
+        sex: data.get('sex')
+    } as User;
+
+    return user;
+}
