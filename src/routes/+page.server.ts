@@ -13,9 +13,28 @@ export function load({ cookies }) {
 	};
 }
 
+function checkFormData(data: FormData): boolean {
+	if (!data.get('name')) return false;
+	if (!data.get('surname')) return false;
+	if ((data.get('surname') as string).length != 2) return false; 
+	if (!data.get('day')) return false;
+	if (!data.get('month')) return false;
+	if (!data.get('year')) return false;
+	if (!data.get('sex')) return false;
+
+	return true;
+}
+
 export const actions = {
 	login: async ({ cookies, request }) => {
 		const data = await request.formData();
+
+		if (!checkFormData(data)) {
+			return fail(422, {
+				error: 'incorrect data'
+			})
+		}
+
 		console.log(data)
 
 		let id;

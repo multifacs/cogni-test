@@ -1,5 +1,5 @@
-<script>
-	import { enhance } from "$app/forms";
+<script lang="ts">
+	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
 	import { userStore } from '$lib/stores';
 
@@ -12,15 +12,49 @@
 	let year = $state('');
 	let sex = $state('');
 
+	let intervalId;
+	let timeoutId;
+
+	function startIncrement(stepFunction) {
+		stepFunction(); // Выполняем сразу один шаг
+
+		timeoutId = setTimeout(() => {
+			intervalId = setInterval(stepFunction, 50); // Начинаем интервал через 500 мс
+		}, 300); // Задержка перед началом интервала
+	}
+
+	function stopIncrement() {
+		clearTimeout(timeoutId); // Очищаем таймер задержки
+		clearInterval(intervalId); // Останавливаем интервал
+	}
+
+	function getDaysInMonth(month: number, year: number) {
+		if (isNaN(month) || isNaN(year)) {
+			return 31; // Если месяц не выбран, возвращаем максимальное количество дней
+		}
+		// Учитываем високосные годы для февраля
+		if (month === 2) {
+			return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0 ? 29 : 28;
+		}
+		// Месяцы с 30 днями
+		if ([4, 6, 9, 11].includes(month)) {
+			return 30;
+		}
+		// Остальные месяцы имеют 31 день
+		return 31;
+	}
+
 	function incrementDay() {
 		let value = parseInt(day) || 0;
-		value = value < 31 ? value + 1 : 1;
+		const maxDays = getDaysInMonth(parseInt(month), parseInt(year));
+		value = value < maxDays ? value + 1 : 1;
 		day = value.toString().padStart(2, '0');
 	}
 
 	function decrementDay() {
 		let value = parseInt(day) || 0;
-		value = value > 1 ? value - 1 : 31;
+		const maxDays = getDaysInMonth(parseInt(month), parseInt(year));
+		value = value > 1 ? value - 1 : maxDays;
 		day = value.toString().padStart(2, '0');
 	}
 
@@ -38,7 +72,7 @@
 
 	function incrementYear() {
 		let value = parseInt(year) || 0;
-		value = value + 1;
+		value = value < 1900 ? 2000 : value + 1;
 		year = value.toString().padStart(4, '0');
 	}
 
@@ -49,8 +83,8 @@
 	}
 
 	onMount(() => {
-		userStore.set(data.user || "");
-    });
+		userStore.set(data.user || '');
+	});
 </script>
 
 <form class="login-container" method="POST" action="?/login" use:enhance>
@@ -59,31 +93,105 @@
 
 	<div class="input-group">
 		<label for="name">Имя:</label>
-		<input type="text" id="name" name="name" bind:value={name} required />
+		<input type="text" id="name" name="name" placeholder="ИМЯ" bind:value={name} required />
 	</div>
 
 	<div class="input-group">
 		<label for="surname">Первые две буквы фамилии:</label>
-		<input type="text" id="surname" name="surname" bind:value={surname} maxlength="2" required />
+		<input
+			type="text"
+			id="surname"
+			name="surname"
+			placeholder="ФА"
+			bind:value={surname}
+			maxlength="2"
+			required
+		/>
 	</div>
 
 	<div class="input-group">
 		<label for="birthdate">Дата рождения:</label>
 		<div class="date-inputs">
 			<div class="date-controls">
-				<button type="button" tabindex="-1" onclick={incrementDay} class="up-btn">+</button>
-				<input type="text" id="day" name="day" bind:value={day} maxlength="2" placeholder="ДД" required />
-				<button type="button" tabindex="-1" onclick={decrementDay} class="down-btn">+</button>
+				<button
+					type="button"
+					tabindex="-1"
+					onpointerdown={() => startIncrement(incrementDay)}
+					onpointerup={stopIncrement}
+					onpointerleave={stopIncrement}
+					class="up-btn">+</button
+				>
+				<input
+					type="text"
+					id="day"
+					name="day"
+					bind:value={day}
+					maxlength="2"
+					placeholder="ДД"
+					required
+				/>
+				<button
+					type="button"
+					tabindex="-1"
+					onpointerdown={() => startIncrement(decrementDay)}
+					onpointerup={stopIncrement}
+					onpointerleave={stopIncrement}
+					class="down-btn">+</button
+				>
 			</div>
 			<div class="date-controls">
-				<button type="button" tabindex="-1" onclick={incrementMonth} class="up-btn">+</button>
-				<input type="text" id="month" name="month" bind:value={month} maxlength="2" placeholder="ММ" required />
-				<button type="button" tabindex="-1" onclick={decrementMonth} class="down-btn">+</button>
+				<button
+					type="button"
+					tabindex="-1"
+					onpointerdown={() => startIncrement(incrementMonth)}
+					onpointerup={stopIncrement}
+					onpointerleave={stopIncrement}
+					class="up-btn">+</button
+				>
+				<input
+					type="text"
+					id="month"
+					name="month"
+					bind:value={month}
+					maxlength="2"
+					placeholder="ММ"
+					required
+				/>
+				<button
+					type="button"
+					tabindex="-1"
+					onpointerdown={() => startIncrement(decrementMonth)}
+					onpointerup={stopIncrement}
+					onpointerleave={stopIncrement}
+					class="down-btn">+</button
+				>
 			</div>
 			<div class="date-controls">
-				<button type="button" tabindex="-1" onclick={incrementYear} class="up-btn">+</button>
-				<input type="text" id="year" name="year" bind:value={year} maxlength="4" placeholder="ГГГГ" required />
-				<button type="button" tabindex="-1" onclick={decrementYear} class="down-btn">+</button>
+				<button
+					type="button"
+					tabindex="-1"
+					onpointerdown={() => startIncrement(incrementYear)}
+					onpointerup={stopIncrement}
+					onpointerleave={stopIncrement}
+					class="up-btn">+</button
+				>
+				<input
+					type="text"
+					id="year"
+					name="year"
+					bind:value={year}
+					maxlength="4"
+					placeholder="ГГГГ"
+					required
+				/>
+				<button
+					type="button"
+					tabindex="-1"
+					onpointerdown={() => startIncrement(decrementYear)}
+					onpointerup={stopIncrement}
+					onpointerleave={stopIncrement}
+					class="down-btn">+</button
+				>
 			</div>
 		</div>
 	</div>
