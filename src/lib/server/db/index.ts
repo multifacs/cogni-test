@@ -1,8 +1,15 @@
 import Database from 'better-sqlite3';
 import type { StroopRecord, User } from './types';
 import { v4 as uuidv4 } from 'uuid';
+import { MODE, DB_PATH as DB_PATH_ENV } from '$env/static/private';
 
-const DB_PATH = "./data/cogni.db"
+let DB_PATH
+if (MODE == 'DEV') {
+  DB_PATH = ":memory:"
+} else {
+  DB_PATH = DB_PATH_ENV
+}
+
 const db = new Database(DB_PATH, { verbose: console.log });
 
 export namespace Users {
