@@ -107,7 +107,7 @@
 			new Chart(chart, {
 				type: 'line',
 				data: {
-					labels: Array.from({ length: results.correctAnswers.lenght }, (_, i) => i + 1),
+					labels: Array.from({ length: results.correctAnswers.length }, (_, i) => i + 1),
 					datasets: [
 						{
 							label: 'Скорость ответа (мс)',
