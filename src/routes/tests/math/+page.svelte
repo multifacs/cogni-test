@@ -4,6 +4,7 @@
 	import { MathTestGame } from './mathTestGame'; // Adjust the import path as needed
 
 	import Chart from 'chart.js/auto';
+	Chart.defaults.color = 'red';
 
 	// Game state
 	let currentLeft: string = 'Начало';
@@ -97,7 +98,7 @@
 			new Chart(chart, {
 				type: 'line',
 				data: {
-					labels: Array.from({length: 10}, (_, i) => i + 1),
+					labels: Array.from({ length: 10 }, (_, i) => i + 1),
 					datasets: [
 						{
 							label: 'Скорость ответа (мс)',
@@ -117,10 +118,10 @@
 				options: {
 					responsive: true,
 					plugins: {
-    					colors: {
+						colors: {
 							enabled: true
-    					}
-  					},
+						}
+					}
 				}
 			});
 		})();
@@ -137,8 +138,10 @@
 	<p class="text">
 		Всего 10 числовых равенств, на определение правильности каждого дается 3 секунды.
 	</p>
-	<button onclick={startTest}>Начать тест</button>
-	<a href="/tests">Назад</a>
+	<div class="button-container">
+		<button class="start-button" onclick={startTest}>Начать тест</button>
+		<a class="back-button" href="/tests">Назад</a>
+	</div>
 {:else}
 	<div class="subcontainer" transition:slide={{ duration: 500 }}>
 		<div class="inequality">
@@ -215,6 +218,43 @@
 		justify-content: center;
 		gap: 20px;
 		font-size: large;
+	}
+
+	.button-container {
+		display: flex;
+		gap: 10px; /* Расстояние между кнопками */
+		justify-content: center; /* Выравнивание по центру */
+		align-items: center; /* Выравнивание по вертикали */
+	}
+
+	.start-button {
+		background-color: green; /* Зеленый цвет */
+		color: white; /* Белый текст */
+		border: none;
+		padding: 10px 20px;
+		border-radius: 5px;
+		cursor: pointer;
+		font-size: 16px;
+		transition: background-color 0.3s ease;
+	}
+
+	.start-button:hover {
+		background-color: darkgreen; /* Темно-зеленый при наведении */
+	}
+
+	.back-button {
+		background-color: #bf3023; /* Красный цвет */
+		color: white; /* Белый текст */
+		text-decoration: none; /* Убираем подчеркивание */
+		padding: 10px 20px;
+		border-radius: 5px;
+		cursor: pointer;
+		font-size: 16px;
+		transition: background-color 0.3s ease;
+	}
+
+	.back-button:hover {
+		background-color: darkred; /* Темно-красный при наведении */
 	}
 
 	@media (max-width: 600px) {
