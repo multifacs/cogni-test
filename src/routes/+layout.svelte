@@ -28,9 +28,8 @@
 		flex-direction: column;
 		justify-content: center; /* Центрирование по горизонтали */
 		align-items: center; /* Центрирование по вертикали */
-
-		height: 500px;
 		transition: height 0.5s ease; /* Анимация изменения высоты */
+		gap: 10px;
 	}
 
 	.logout-form {
