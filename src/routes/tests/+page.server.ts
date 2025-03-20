@@ -9,13 +9,18 @@ export function load({ cookies }) {
             img: '/stroop.jpg'
         },
         {
-            name: 'Тест 2',
-            path: '/tests/stroop',
+            name: 'Арифметический тест',
+            path: '/tests/math',
             img: '/default.svg'
         },
         {
-            name: 'Тест 3',
-            path: '/tests/stroop',
+            name: 'Тест на память',
+            path: '/tests/memory',
+            img: '/default.svg'
+        },
+        {
+            name: 'Тест Мюнстерберга',
+            path: '/tests/munsterberg',
             img: '/default.svg'
         }
     ];
