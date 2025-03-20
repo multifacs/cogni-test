@@ -164,7 +164,6 @@
 			>
 		</div>
 		<div>Осталось времени: {timeLeft} сек</div>
-		<div>Счет: {score}</div>
 	</div>
 {/if}
 
