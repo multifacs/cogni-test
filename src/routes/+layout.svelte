@@ -4,20 +4,20 @@
 	import '@fontsource/roboto';
 	import { userStore } from '$lib/stores';
 	import { onMount } from 'svelte';
-
-	let { data } = $props();
+	let { data, children } = $props();
 
 	onMount(() => {
-		userStore.set(data.user || "");
-    });
+		userStore.set(data.user || '');
+	});
 </script>
 
 <form class="logout-form" method="POST" action="/?/logout" use:enhance>
-	{$userStore} <button type="submit" class="logout-button" disabled={ $userStore == '' }>Выйти</button>
+	{$userStore}
+	<button type="submit" class="logout-button" disabled={$userStore == ''}>Выйти</button>
 </form>
 
 <div class="container">
-	<slot />
+	{@render children()}
 </div>
 
 <style>

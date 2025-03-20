@@ -120,7 +120,9 @@
 			>соответствующий цвету букв</b
 		>.
 	</p>
-	<button on:click={startTest}>Начать тест</button>
+	<button onclick={startTest}>Начать тест</button>
+	<a href="/tests">Назад</a>
+	
 {:else}
 	<div class="subcontainer" transition:slide={{ duration: 500 }}>
 		<div class="color-text" style="color: {currentColor};">{currentWord}</div>
@@ -130,7 +132,7 @@
 					class="color-button"
 					style="background-color: {color};"
 					aria-label={color}
-					on:click={() => handleColorClick(color)}
+					onclick={() => handleColorClick(color)}
 				></button>
 			{/each}
 		</div>
