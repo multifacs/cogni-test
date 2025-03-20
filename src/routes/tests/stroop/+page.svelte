@@ -280,6 +280,10 @@
 		bottom: -1.5em;
 		left: 0;
 	}
+	
+	summary {
+		margin-left: 20px;
+	}
 
 	summary::before {
 		content: '...Больше';
