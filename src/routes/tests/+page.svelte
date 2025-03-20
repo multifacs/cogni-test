@@ -12,8 +12,11 @@
 
 <h1>Тесты</h1>
 <div class="test-container">
-	{#each Object.entries(data.tests) as [test, link]}
-		<a href={link}>{test}</a>
+	{#each data.tests as {name, path, img}}
+		<a href={path} class="test-button">
+			<span>{name}</span>
+			<img src={img} alt={name} class="test-icon" />
+		</a>
 	{/each}
 </div>
 
@@ -30,12 +33,42 @@
 		gap: 15px;
 	}
 
-	.test-container a {
-		background-color: #dcdcdc;
-		display: block;
+	.test-button {
+		background-color: #393939;
+		border: 3px solid var(--main-text-color);
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
 		box-sizing: border-box;
-		padding: 20px 10px;
+		padding: 10px 10px;
 		border-radius: 10px;
 		text-decoration: none;
+		color: #333;
+		font-size: 16px;
+		transition: background-color 0.3s ease;
+	}
+
+	.test-button span {
+		color: var(--main-text-color);
+		transition: 0.3s ease;
+	}
+
+	.test-button img {
+		background-color: var(--main-text-color);
+	}
+
+	.test-button:hover {
+		background-color: var(--main-text-color);
+	}
+
+	.test-button:hover span {
+		color: #3b3b3b;
+	}
+
+	.test-icon {
+		width: 100px;
+		height: 50px;
+		border-radius: 10%;
+		object-fit: cover;
 	}
 </style>

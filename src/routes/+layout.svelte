@@ -12,7 +12,7 @@
 </script>
 
 <form class="logout-form" method="POST" action="/?/logout" use:enhance>
-	{$userStore}
+	<span>User ID: {$userStore}</span>
 	<button type="submit" class="logout-button" disabled={$userStore == ''}>Выйти</button>
 </form>
 
@@ -36,7 +36,11 @@
 	.logout-form {
 		position: absolute;
 		top: 10px;
-		right: 10px;
+		width: 100%;
+		display: flex;
+		justify-content: space-around;
+		align-items: center;
+		font-size: small;
 	}
 
 	.logout-button {
