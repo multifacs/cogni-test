@@ -13,11 +13,11 @@ export function load({ cookies }) {
             path: '/tests/math',
             img: '/math.svg'
         },
-        {
-            name: 'Тест на память',
-            path: '/tests/memory',
-            img: '/memory.svg'
-        },
+        // {
+        //     name: 'Тест на память',
+        //     path: '/tests/memory',
+        //     img: '/memory.svg'
+        // },
         {
             name: 'Тест Мюнстерберга',
             path: '/tests/munsterberg',
