@@ -168,10 +168,6 @@
 	</div>
 {/if}
 
-{#if !isTestRunning && score > 0}
-	<div>Тест завершен! Ваш счет: {score}</div>
-{/if}
-
 <canvas bind:this={chart}></canvas>
 
 <style>
