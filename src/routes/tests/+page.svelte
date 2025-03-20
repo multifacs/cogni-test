@@ -66,8 +66,8 @@
 	}
 
 	.test-icon {
-		width: 100px;
-		height: 50px;
+		width: 70px;
+		height: 70px;
 		border-radius: 10%;
 		object-fit: cover;
 		background-size: 50%;
