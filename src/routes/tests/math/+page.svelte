@@ -4,8 +4,9 @@
 	import { MathTestGame } from './mathTestGame'; // Adjust the import path as needed
 
 	// Game state
-	let currentWord: string = 'Этап 1';
-	let currentColor = '';
+	let currentLeft: string = 'Начало';
+	let currentRight: string = '';
+	let currentSign: string = '';
 	let score = 0;
 	let timeLeft = 3;
 	let isTestRunning = false;
@@ -14,19 +15,9 @@
 	// Game logic
 	let game: MathTestGame;
 
-	// Colors and stages
-	const colors = {
-		Красный: 'red',
-		Бирюзовый: 'cyan',
-		Синий: 'green',
-		Пурпурный: 'magenta',
-		Зеленый: 'blue',
-		Желтый: 'yellow'
-	};
-
 	// Initialize the game
 	onMount(() => {
-		game = new StroopTestGame();
+		game = new MathTestGame();
 	});
 
 	// Start the test
@@ -47,13 +38,14 @@
 		}
 
 		// Start the next word in the game logic
-		game.startNextWord();
-		const currentTask = game.getCurrentWord();
+		game.startNextTask();
+		const currentTask = game.getCurrentTask();
 		console.log(currentTask);
 
 		// Update UI state
-		currentWord = currentTask.word;
-		currentColor = currentTask.color;
+		currentLeft = currentTask.left;
+		currentRight = currentTask.right;
+		currentSign = currentTask.sign;
 		timeLeft = 3;
 
 		// Start the 3-second timer
@@ -62,21 +54,21 @@
 			timeLeft -= 1;
 			if (timeLeft <= 0) {
 				clearInterval(timer);
-				game.handleColorSelection(null); // Handle timeout (incorrect answer)
+				game.handleSelection(null); // Handle timeout (incorrect answer)
 				nextWord(); // Move to the next word
 			}
 		}, 1000);
 	}
 
 	// Handle color selection
-	function handleColorClick(color: string) {
+	function handleColorClick(answer: boolean) {
 		if (!isTestRunning) return;
-		if (currentColor == 'white') return;
+		if (currentLeft == 'stage') return;
 		// Stop the timer
 		if (timer) clearInterval(timer);
 
 		// Handle the player's selection in the game logic
-		game.handleColorSelection(color as Color);
+		game.handleSelection(answer);
 
 		// Update the score
 		const results = game.getResults();
@@ -89,8 +81,8 @@
 	// End the test
 	function endTest() {
 		isTestRunning = false;
-		currentWord = 'Конец';
-		currentColor = 'white';
+		currentLeft = 'Конец';
+		currentRight = 'теста';
 		if (timer) clearInterval(timer);
 
 		// Log the results
@@ -114,16 +106,24 @@
 	<a href="/tests">Назад</a>
 {:else}
 	<div class="subcontainer" transition:slide={{ duration: 500 }}>
-		<div class="color-text" style="color: {currentColor};">{currentWord}</div>
+		<div class="inequality">
+			<div class="left">
+				<span>{currentLeft}</span>
+			</div>
+			<div class="sign">
+				<span>{currentSign}</span>
+			</div>
+			<div class="right">
+				<span>{currentRight}</span>
+			</div>
+		</div>
 		<div class="color-grid">
-			{#each Object.values(colors) as color}
-				<button
-					class="color-button"
-					style="background-color: {color};"
-					aria-label={color}
-					onclick={() => handleColorClick(color)}
-				></button>
-			{/each}
+			<button class="color-button yes" aria-label="yes" onclick={() => handleColorClick(true)}
+				>ДА</button
+			>
+			<button class="color-button no" aria-label="no" onclick={() => handleColorClick(false)}
+				>НЕТ</button
+			>
 		</div>
 		<div>Осталось времени: {timeLeft} сек</div>
 		<div>Счет: {score}</div>
@@ -150,6 +150,15 @@
 		border: none;
 		cursor: pointer;
 	}
+
+	.yes {
+		background-color: green;
+	}
+
+	.no {
+		background-color: red;
+	}
+
 	.color-text {
 		font-weight: bold;
 		font-size: 2em;
@@ -170,6 +179,13 @@
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		gap: 10px;
+	}
+
+	.inequality {
+		display: flex;
+		justify-content: center;
+		gap: 20px;
+		font-size: large;
 	}
 
 	@media (max-width: 600px) {

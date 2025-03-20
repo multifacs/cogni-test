@@ -11,17 +11,17 @@ export function load({ cookies }) {
         {
             name: 'Арифметический тест',
             path: '/tests/math',
-            img: '/default.svg'
+            img: '/math.svg'
         },
         {
             name: 'Тест на память',
             path: '/tests/memory',
-            img: '/default.svg'
+            img: '/memory.svg'
         },
         {
             name: 'Тест Мюнстерберга',
             path: '/tests/munsterberg',
-            img: '/default.svg'
+            img: '/munsterberg.svg'
         }
     ];
 

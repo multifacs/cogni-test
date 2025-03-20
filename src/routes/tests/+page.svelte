@@ -70,5 +70,6 @@
 		height: 50px;
 		border-radius: 10%;
 		object-fit: cover;
+		background-size: 50%;
 	}
 </style>

@@ -6,33 +6,33 @@ export type Inequality = {
 }
 
 export class MathTestGame {
-    private readonly stageInequalityCounts: number[] = [10]; // Words per stage
+    private readonly stageTaskCounts: number[] = [10]; // Words per stage
     private currentStage: number = 0;
-    private currentInequalityIndex: number = 0;
+    private currentTaskIndex: number = 0;
     private reactionTimes: number[] = [];
     private correctAnswers: boolean[] = [];
     private startTime: number = 0;
-    private inequalities: Inequality[] = [];
+    private tasks: Inequality[] = [];
     constructor() {
-        this.generateInequalities();
+        this.generateTasks();
     }
 
     /**
      * Generates words for all stages.
      */
-    private generateInequalities(): void {
-        this.inequalities.push({ left: "stage", right: 1, sign: null, answer: null });
-        for (let i = 0; i < this.stageInequalityCounts[0]; i++) {
-            const color = this.getRandomColor();
-            this.inequalities.push({ word: color, color: color, task: 'meaning' });
+    private generateTasks(): void {
+        this.tasks.push({ left: "stage", right: 1, sign: null, answer: null });
+        for (let i = 0; i < this.stageTaskCounts[0]; i++) {
+            const task = this.getRandomTask();
+            this.tasks.push(task);
         }
     }
 
     /**
      * Starts the game or advances to the next word.
      */
-    public startNextWord(): void {
-        if (this.currentInequalityIndex >= this.inequalities.length) {
+    public startNextTask(): void {
+        if (this.currentTaskIndex >= this.tasks.length) {
             console.log('Game over!');
             return;
         }
@@ -43,37 +43,58 @@ export class MathTestGame {
      * Handles the player's color selection.
      * @param selectedColor The color selected by the player.
      */
-    public handleColorSelection(selectedColor: Color | null): void {
-        const currentWord = this.inequalities[this.currentInequalityIndex];
-        if (currentWord.task != 'stage') {
+    public handleSelection(selectedAnswer: boolean | null): void {
+        const currentTask = this.getCurrentTask();
+        if (currentTask.left != 'stage') {
             const endTime = performance.now();
             const reactionTime = endTime - this.startTime;
             this.reactionTimes.push(reactionTime);
 
-            const isCorrect =
-                currentWord.task === 'meaning'
-                    ? selectedColor === currentWord.word
-                    : selectedColor === currentWord.color;
+            const isCorrect = currentTask.answer == selectedAnswer;
             this.correctAnswers.push(isCorrect);
         }
 
-        this.currentInequalityIndex++;
+        this.currentTaskIndex++;
     }
 
     /**
      * Gets a random color from the available colors.
      * @returns A random color.
      */
-    private getRandomInequality(): Color {
-        return this.colors[Math.floor(Math.random() * this.colors.length)];
+    private getRandomTask(): Inequality {
+        const signs = ['>', '<', '>=', '<=', '='];
+
+        const left = Math.floor(Math.random() * 20 - 5);
+        const right = Math.floor(Math.random() * 20 - 5);
+        const sign = Math.round(Math.random() * 4);
+        let answer = false;
+        switch (sign) {
+            case 0:
+                answer = left > right;
+                break;
+            case 1:
+                answer = left < right;
+                break;
+            case 2:
+                answer = left >= right;
+                break;
+            case 3:
+                answer = left <= right;
+                break;
+            case 4:
+                answer = left == right;
+                break;
+            default: answer = false;
+        }
+        return { left, right, sign: signs[sign], answer } as Inequality;
     }
 
     /**
      * Gets the current word and its color.
      * @returns The current word and its color.
      */
-    public getCurrentWord(): { word: string; color: Color | 'white'; task: 'meaning' | 'color' | 'stage' } {
-        return this.inequalities[this.currentInequalityIndex];
+    public getCurrentTask(): Inequality {
+        return this.tasks[this.currentTaskIndex];
     }
 
     /**
@@ -92,6 +113,6 @@ export class MathTestGame {
      * @returns True if the game is over, false otherwise.
      */
     public isGameOver(): boolean {
-        return this.currentInequalityIndex >= this.inequalities.length;
+        return this.currentTaskIndex >= this.tasks.length;
     }
 }
