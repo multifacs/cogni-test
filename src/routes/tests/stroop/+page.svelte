@@ -3,6 +3,9 @@
 	import { slide } from 'svelte/transition';
 	import { StroopTestGame } from './stroopTestGame'; // Adjust the import path as needed
 
+	import Chart from 'chart.js/auto';
+	Chart.defaults.color = 'red';
+
 	// Game state
 	let currentWord: string = 'Этап 1';
 	let currentColor = '';
@@ -23,6 +26,8 @@
 		Зеленый: 'blue',
 		Желтый: 'yellow'
 	};
+
+	let chart: HTMLElement | null;
 
 	// Initialize the game
 	onMount(() => {
@@ -97,32 +102,71 @@
 		const results = game.getResults();
 		console.log('Reaction Times:', results.reactionTimes);
 		console.log('Correct Answers:', results.correctAnswers);
+
+		(async function () {
+			new Chart(chart, {
+				type: 'line',
+				data: {
+					labels: Array.from({ length: results.correctAnswers.lenght }, (_, i) => i + 1),
+					datasets: [
+						{
+							label: 'Скорость ответа (мс)',
+							data: results.reactionTimes,
+							borderColor: 'rgb(100, 100, 100)',
+							borderWidth: 2,
+							pointBackgroundColor: (context) => {
+								// Цвет точек также зависит от correct
+								const index = context.dataIndex;
+								return results.correctAnswers[index] ? 'rgb(95, 212, 107)' : 'rgb(204, 66, 51)';
+							},
+							pointRadius: 5, // Размер точек
+							tension: 0.4 // Сглаживание линии
+						}
+					]
+				},
+				options: {
+					responsive: true,
+					plugins: {
+						colors: {
+							enabled: true
+						}
+					}
+				}
+			});
+		})();
 	}
 </script>
 
 <h1>Тест Струпа</h1>
 {#if !isTestRunning}
-	<p class="text">
-		На экране появляются слова, обозначающие цвет. Ниже отображаются все возможные цветовые образцы.
-		Нужно нажимать на цветовой образец в соответствии с заданием.
-	</p>
-	<p class="text">
-		На первом этапе слово написано цветом, соответствующим смыслу слова. Нужно нажать на цветовой
-		образец, <b>соответствующий и цвету, и смыслу слова</b>.
-	</p>
-	<p class="text">
-		На втором этапе цвет и смысл слова разные. Нужно нажать на цветовой образец, <b
-			>соответствующий смыслу слова</b
-		>.
-	</p>
-	<p class="text">
-		На третьем этапе также цвет и смысл разные. Нужно нажать на цветовой образец, <b
-			>соответствующий цвету букв</b
-		>.
-	</p>
-	<button onclick={startTest}>Начать тест</button>
-	<a href="/tests">Назад</a>
-	
+	<div class="more-text">
+		<p class="text">
+			На экране появляются слова, обозначающие цвет. Ниже отображаются все возможные цветовые
+			образцы. Нужно нажимать на цветовой образец в соответствии с заданием.
+		</p>
+		<details>
+			<summary></summary>
+			<p class="text">
+				На первом этапе слово написано цветом, соответствующим смыслу слова. Нужно нажать на
+				цветовой образец,
+				<b>соответствующий и цвету, и смыслу слова</b>.
+			</p>
+			<p class="text">
+				На втором этапе цвет и смысл слова разные. Нужно нажать на цветовой образец, <b
+					>соответствующий смыслу слова</b
+				>.
+			</p>
+			<p class="text">
+				На третьем этапе также цвет и смысл разные. Нужно нажать на цветовой образец, <b
+					>соответствующий цвету букв</b
+				>.
+			</p>
+		</details>
+	</div>
+	<div class="button-container">
+		<button class="start-button" onclick={startTest}>Начать тест</button>
+		<a class="back-button" href="/tests">Назад</a>
+	</div>
 {:else}
 	<div class="subcontainer" transition:slide={{ duration: 500 }}>
 		<div class="color-text" style="color: {currentColor};">{currentWord}</div>
@@ -144,6 +188,8 @@
 {#if !isTestRunning && score > 0}
 	<div>Тест завершен! Ваш счет: {score}</div>
 {/if}
+
+<canvas bind:this={chart}></canvas>
 
 <style>
 	h1 {
@@ -183,6 +229,43 @@
 		gap: 10px;
 	}
 
+	.button-container {
+		display: flex;
+		gap: 10px; /* Расстояние между кнопками */
+		justify-content: center; /* Выравнивание по центру */
+		align-items: center; /* Выравнивание по вертикали */
+	}
+
+	.start-button {
+		background-color: green; /* Зеленый цвет */
+		color: white; /* Белый текст */
+		border: none;
+		padding: 10px 20px;
+		border-radius: 5px;
+		cursor: pointer;
+		font-size: 16px;
+		transition: background-color 0.3s ease;
+	}
+
+	.start-button:hover {
+		background-color: darkgreen; /* Темно-зеленый при наведении */
+	}
+
+	.back-button {
+		background-color: #bf3023; /* Красный цвет */
+		color: white; /* Белый текст */
+		text-decoration: none; /* Убираем подчеркивание */
+		padding: 10px 20px;
+		border-radius: 5px;
+		cursor: pointer;
+		font-size: 16px;
+		transition: background-color 0.3s ease;
+	}
+
+	.back-button:hover {
+		background-color: darkred; /* Темно-красный при наведении */
+	}
+
 	@media (max-width: 600px) {
 		.color-text {
 			font-size: 1.5em;
@@ -190,5 +273,28 @@
 		.color-button {
 			padding: 8px 16px;
 		}
+	}
+
+	[open] summary {
+		position: absolute;
+		bottom: -1.5em;
+		left: 0;
+	}
+
+	summary::before {
+		content: '...Больше';
+	}
+
+	[open] summary::before {
+		content: 'Скрыть';
+	}
+
+	details {
+		display: inline;
+	}
+
+	.more-text {
+		position: relative;
+		margin-bottom: 2em;
 	}
 </style>
