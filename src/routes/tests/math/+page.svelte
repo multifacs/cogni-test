@@ -3,6 +3,8 @@
 	import { slide } from 'svelte/transition';
 	import { MathTestGame } from './mathTestGame'; // Adjust the import path as needed
 
+	import Chart from 'chart.js/auto';
+
 	// Game state
 	let currentLeft: string = 'Начало';
 	let currentRight: string = '';
@@ -15,6 +17,7 @@
 	// Game logic
 	let game: MathTestGame;
 
+	let chart: HTMLElement | null;
 	// Initialize the game
 	onMount(() => {
 		game = new MathTestGame();
@@ -89,6 +92,38 @@
 		const results = game.getResults();
 		console.log('Reaction Times:', results.reactionTimes);
 		console.log('Correct Answers:', results.correctAnswers);
+
+		(async function () {
+			new Chart(chart, {
+				type: 'line',
+				data: {
+					labels: Array.from({length: 10}, (_, i) => i + 1),
+					datasets: [
+						{
+							label: 'Скорость ответа (мс)',
+							data: results.reactionTimes,
+							borderColor: 'rgb(100, 100, 100)',
+							borderWidth: 2,
+							pointBackgroundColor: (context) => {
+								// Цвет точек также зависит от correct
+								const index = context.dataIndex;
+								return results.correctAnswers[index] ? 'rgb(95, 212, 107)' : 'rgb(204, 66, 51)';
+							},
+							pointRadius: 5, // Размер точек
+							tension: 0.4 // Сглаживание линии
+						}
+					]
+				},
+				options: {
+					responsive: true,
+					plugins: {
+    					colors: {
+							enabled: true
+    					}
+  					},
+				}
+			});
+		})();
 	}
 </script>
 
@@ -134,6 +169,8 @@
 	<div>Тест завершен! Ваш счет: {score}</div>
 {/if}
 
+<canvas bind:this={chart}></canvas>
+
 <style>
 	h1 {
 		color: #f8faff;
@@ -159,14 +196,6 @@
 		background-color: red;
 	}
 
-	.color-text {
-		font-weight: bold;
-		font-size: 2em;
-		margin-bottom: 20px;
-		-webkit-text-stroke-color: #5c70a3;
-		-webkit-text-stroke: 1px;
-	}
-
 	.subcontainer {
 		display: flex;
 		flex-direction: column;
@@ -189,9 +218,6 @@
 	}
 
 	@media (max-width: 600px) {
-		.color-text {
-			font-size: 1.5em;
-		}
 		.color-button {
 			padding: 8px 16px;
 		}
