@@ -1,172 +1,214 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
-	import { StroopTestGame } from './munsterbergTestGame'; // Adjust the import path as needed
+	let { data } = $props();
 
 	// Game state
-	let currentWord: string = 'Этап 1';
-	let currentColor = '';
-	let score = 0;
-	let timeLeft = 3;
-	let isTestRunning = false;
-	let timer: number | null = null;
+	let isTestRunning = $state(false);
+	let grid: { letter: string; isSelected: boolean; isCorrect: boolean; isIncorrect: boolean }[][] =
+		$state([]);
+	let selectedCells: { row: number; col: number }[] = [];
+	let isDragging = false;
+	let words: string[] = []; // Массив для хранения слов
 
-	// Game logic
-	let game: StroopTestGame;
-
-	// Colors and stages
-	const colors = {
-		Красный: 'red',
-		Бирюзовый: 'cyan',
-		Синий: 'green',
-		Пурпурный: 'magenta',
-		Зеленый: 'blue',
-		Желтый: 'yellow'
-	};
-
-	// Initialize the game
-	onMount(() => {
-		game = new StroopTestGame();
+	// Загрузка слов из файла
+	onMount(async () => {
+		words = data.words;
 	});
 
-	// Start the test
+	// Инициализация сетки
+	function initializeGrid() {
+		grid = Array.from({ length: 8 }, () =>
+			Array.from({ length: 7 }, () => ({
+				letter: getRandomLetter(),
+				isSelected: false,
+				isCorrect: false,
+				isIncorrect: false
+			}))
+		);
+
+		// Замена некоторых букв на слова из списка
+		let row = 0;
+		let col = 0;
+		while (row < 8) {
+			if (Math.random() < 0.2 && col + 4 < 7) {
+				// 20% шанс замены
+				const word = words[Math.floor(Math.random() * words.length)];
+				for (let i = 0; i < 5; i++) {
+					grid[row][col + i].letter = word[i];
+				}
+				col += 5;
+			} else {
+				col++;
+			}
+			if (col >= 7) {
+				row++;
+				col = 0;
+			}
+		}
+	}
+
+	// Генерация случайной буквы
+	function getRandomLetter(): string {
+		return String.fromCharCode(65 + Math.floor(Math.random() * 26));
+	}
+
+	// Обработка начала выделения
+	function handlePointerDown(event: PointerEvent) {
+		isDragging = true;
+		highlightCell(event);
+	}
+
+	// Обработка перемещения указателя
+	function handlePointerMove(event: PointerEvent) {
+		if (isDragging) {
+			highlightCell(event);
+		}
+	}
+
+	// Обработка окончания выделения
+	function handlePointerUp() {
+		isDragging = false;
+		const selectedWord = grid.flatMap((row, rowIndex) =>
+			row
+				.map((cell, colIndex) => (cell.isSelected ? cell.letter : ''))
+				.join('')
+				.replace(/\s+/g, '')
+		); // Убираем пробелы
+
+		console.log(selectedWord)
+		if (words.includes(selectedWord)) {
+			grid.forEach((row) => {
+				row.forEach((cell) => {
+					if (cell.isSelected) {
+						cell.isCorrect = true;
+					}
+				});
+			});
+		} else {
+			grid.forEach((row) => {
+				row.forEach((cell) => {
+					if (cell.isSelected) {
+						cell.isIncorrect = true;
+					}
+				});
+			});
+			setTimeout(() => {
+				grid.forEach((row) => {
+					row.forEach((cell) => {
+						cell.isIncorrect = false;
+						cell.isSelected = false;
+					});
+				});
+			}, 1000);
+		}
+	}
+
+	// Подсветка ячейки по координатам указателя
+	function highlightCell(event: PointerEvent) {
+		const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+		const x = event.clientX - rect.left;
+		const y = event.clientY - rect.top;
+
+		const cellSize = 50; // Размер ячейки
+		const col = Math.floor(x / cellSize);
+		const row = Math.floor(y / cellSize);
+
+		if (row >= 0 && row < 8 && col >= 0 && col < 7) {
+			grid[row][col].isSelected = true;
+		}
+	}
+
+	// Запуск теста
 	async function startTest() {
 		isTestRunning = true;
-		score = 0;
-		nextWord();
+		initializeGrid();
 	}
 
-	// Move to the next word
-	async function nextWord() {
-		if (!isTestRunning) return;
-
-		// Check if the game is over
-		if (game.isGameOver()) {
-			endTest();
-			return;
-		}
-
-		// Start the next word in the game logic
-		game.startNextWord();
-		const currentTask = game.getCurrentWord();
-		console.log(currentTask);
-
-		// Update UI state
-		currentWord = currentTask.word;
-		currentColor = currentTask.color;
-		timeLeft = 3;
-
-		// Start the 3-second timer
-		if (timer) clearInterval(timer);
-		timer = setInterval(() => {
-			timeLeft -= 1;
-			if (timeLeft <= 0) {
-				clearInterval(timer);
-				game.handleColorSelection(null); // Handle timeout (incorrect answer)
-				nextWord(); // Move to the next word
-			}
-		}, 1000);
-	}
-
-	// Handle color selection
-	function handleColorClick(color: string) {
-		if (!isTestRunning) return;
-		if (currentColor == 'white') return;
-		// Stop the timer
-		if (timer) clearInterval(timer);
-
-		// Handle the player's selection in the game logic
-		game.handleColorSelection(color as Color);
-
-		// Update the score
-		const results = game.getResults();
-		score = results.correctAnswers.filter((correct) => correct).length;
-
-		// Move to the next word
-		nextWord();
-	}
-
-	// End the test
-	function endTest() {
-		isTestRunning = false;
-		currentWord = 'Конец';
-		currentColor = 'white';
-		if (timer) clearInterval(timer);
-
-		// Log the results
-		const results = game.getResults();
-		console.log('Reaction Times:', results.reactionTimes);
-		console.log('Correct Answers:', results.correctAnswers);
-	}
+	let isMouseDown = $state(false);
 </script>
 
-<h1>Тест Струпа</h1>
+<h1>Тест Мюнстерберга</h1>
 {#if !isTestRunning}
 	<p class="text">
-		На экране появляются слова, обозначающие цвет. Ниже отображаются все возможные цветовые образцы.
-		Нужно нажимать на цветовой образец в соответствии с заданием.
+		На большом экране в течение 1 минуты отображается матрица из букв. В ней необходимо по
+		горизонтали справа налево находить слова. На экране телефона каждое найденное слово нужно
+		выделить.
 	</p>
-	<p class="text">
-		На первом этапе слово написано цветом, соответствующим смыслу слова. Нужно нажать на цветовой
-		образец, <b>соответствующий и цвету, и смыслу слова</b>.
-	</p>
-	<p class="text">
-		На втором этапе цвет и смысл слова разные. Нужно нажать на цветовой образец, <b
-			>соответствующий смыслу слова</b
-		>.
-	</p>
-	<p class="text">
-		На третьем этапе также цвет и смысл разные. Нужно нажать на цветовой образец, <b
-			>соответствующий цвету букв</b
-		>.
-	</p>
-	<button onclick={startTest}>Начать тест</button>
-	<a href="/tests">Назад</a>
-	
+	<div class="button-container">
+		<button class="start-button" onclick={startTest}>Начать тест</button>
+		<a class="back-button" href="/tests">Назад</a>
+	</div>
 {:else}
 	<div class="subcontainer" transition:slide={{ duration: 500 }}>
-		<div class="color-text" style="color: {currentColor};">{currentWord}</div>
-		<div class="color-grid">
-			{#each Object.values(colors) as color}
-				<button
-					class="color-button"
-					style="background-color: {color};"
-					aria-label={color}
-					onclick={() => handleColorClick(color)}
-				></button>
-			{/each}
+		<div class="grid-container">
+			<div
+				class="overlay"
+				onpointerdown={handlePointerDown}
+				onpointermove={handlePointerMove}
+				onpointerup={handlePointerUp}
+			></div>
+			<div class="grid">
+				{#each grid as row, rowIndex}
+					{#each row as cell, colIndex}
+						<div
+							class="cell {cell.isSelected ? 'selected' : ''} {cell.isCorrect
+								? 'correct'
+								: ''} {cell.isIncorrect ? 'incorrect' : ''}"
+						>
+							{cell.letter}
+						</div>
+					{/each}
+				{/each}
+			</div>
 		</div>
-		<div>Осталось времени: {timeLeft} сек</div>
-		<div>Счет: {score}</div>
 	</div>
 {/if}
 
-{#if !isTestRunning && score > 0}
-	<div>Тест завершен! Ваш счет: {score}</div>
-{/if}
-
 <style>
-	h1 {
-		color: #f8faff;
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(7, 50px);
+		grid-template-rows: repeat(8, 50px);
+		gap: 5px;
+	}
+	.overlay {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		background: transparent;
+		cursor: pointer;
+	}
+	.cell {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid #000;
+		cursor: pointer;
+	}
+	.selected {
+		background-color: yellow;
+	}
+	.correct {
+		background-color: green;
+	}
+	.incorrect {
+		background-color: red;
+	}
+	.button-container {
+		display: flex;
+		gap: 10px;
+		margin-top: 20px;
+	}
+	.start-button,
+	.back-button {
+		padding: 10px 20px;
+		font-size: 16px;
+		cursor: pointer;
 	}
 	.text {
 		text-align: justify;
 		margin: 10px 20px;
-	}
-	.color-button {
-		padding: 10px 20px;
-		margin: 5px;
-		width: 80px;
-		height: 60px;
-		border: none;
-		cursor: pointer;
-	}
-	.color-text {
-		font-weight: bold;
-		font-size: 2em;
-		margin-bottom: 20px;
-		-webkit-text-stroke-color: #5c70a3;
-		-webkit-text-stroke: 1px;
 	}
 
 	.subcontainer {
@@ -177,18 +219,40 @@
 		gap: 20px;
 	}
 
-	.color-grid {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 10px;
+	.button-container {
+		display: flex;
+		gap: 10px; /* Расстояние между кнопками */
+		justify-content: center; /* Выравнивание по центру */
+		align-items: center; /* Выравнивание по вертикали */
 	}
 
-	@media (max-width: 600px) {
-		.color-text {
-			font-size: 1.5em;
-		}
-		.color-button {
-			padding: 8px 16px;
-		}
+	.start-button {
+		background-color: green; /* Зеленый цвет */
+		color: white; /* Белый текст */
+		border: none;
+		padding: 10px 20px;
+		border-radius: 5px;
+		cursor: pointer;
+		font-size: 16px;
+		transition: background-color 0.3s ease;
+	}
+
+	.start-button:hover {
+		background-color: darkgreen; /* Темно-зеленый при наведении */
+	}
+
+	.back-button {
+		background-color: #bf3023; /* Красный цвет */
+		color: white; /* Белый текст */
+		text-decoration: none; /* Убираем подчеркивание */
+		padding: 10px 20px;
+		border-radius: 5px;
+		cursor: pointer;
+		font-size: 16px;
+		transition: background-color 0.3s ease;
+	}
+
+	.back-button:hover {
+		background-color: darkred; /* Темно-красный при наведении */
 	}
 </style>
