@@ -19,7 +19,7 @@
 
 	let overlay: HTMLElement = $state(Object());
 
-	const generatedWords: string[] = [];
+	const generatedWords: { word: string; i: number; j: number }[] = [];
 
 	// Загрузка слов из файла
 	onMount(async () => {
@@ -54,7 +54,7 @@
 				const word = words[Math.floor(Math.random() * words.length)];
 				let col = Math.round(Math.random() * (GRID_COLS - 1 - word.length));
 				console.log(word, row, col);
-				generatedWords.push(word);
+				generatedWords.push({ word, i: row, j: col });
 				for (let i = 0; i < word.length; i++) {
 					grid[row][col + i].letter = word[i].toUpperCase();
 				}
@@ -72,77 +72,139 @@
 	}
 
 	let lastI = $state(0);
+	let lastJ1 = $state(0);
+	let lastJ2 = $state(0);
+	let correctCounter = $state(0);
+	let selectedWord = $state('');
 
-	function getTouchIJ(e: TouchEvent) {	
-		const j = Math.floor((e.touches[0].clientX - overlay.offsetLeft) / CELL_W);
-		const i = Math.floor((e.touches[0].clientY - overlay.offsetTop) / CELL_H);
+	function clamp(n: number, min: number, max: number) {
+		return Math.min(Math.max(n, min), max);
+	}
+
+	function getTouchIJ(e: TouchEvent) {
+		const j = clamp(
+			Math.floor((e.touches[0].clientX - overlay.offsetLeft) / CELL_W),
+			0,
+			GRID_COLS - 1
+		);
+		const i = clamp(
+			Math.floor((e.touches[0].clientY - overlay.offsetTop) / CELL_H),
+			0,
+			GRID_ROWS - 1
+		);
 		return { j, i };
 	}
 
 	function selectCell(i: number, j: number) {
-		if (!grid[i][j].isSelected) grid[i][j].isSelected = true;
+		if (!grid[i][j].isSelected) {
+			grid[i][j].isSelected = true;
+			selectedWord += grid[i][j].letter.toLowerCase();
+		}
 	}
 
-	function resetCells() {
+	const delay = (delayInms: number) => {
+		return new Promise((resolve) => setTimeout(resolve, delayInms));
+	};
+
+	async function resetCells() {
+		checkWord();
+		let selectedI = 0;
 		for (let i = 0; i < GRID_ROWS; i++) {
 			for (let j = 0; j < GRID_COLS; j++) {
+				if (grid[i][j].isSelected && !grid[i][j].isCorrect) {
+					grid[i][j].isIncorrect = true;
+					selectedI = i;
+				}
 				grid[i][j].isSelected = false;
+			}
+		}
+		await delay(200);
+		for (let j = 0; j < GRID_COLS; j++) {
+			grid[selectedI][j].isIncorrect = false;
+		}
+	}
+
+	function checkWord() {
+		if (lastJ1 > lastJ2) {
+			selectedWord = [...selectedWord].reverse().join('');
+			const temp = lastJ1;
+			lastJ1 = lastJ2;
+			lastJ2 = temp;
+		}
+		const idx = generatedWords.map((x) => x.word).indexOf(selectedWord);
+		if (idx != -1) {
+			const word = generatedWords[idx];
+			for (let i = 0; i < word.word.length; i++) {
+				grid[word.i][word.j + i].isCorrect = true;
 			}
 		}
 	}
 
-	function touchHandler(e: TouchEvent) {
+	async function touchHandler(e: TouchEvent) {
 		switch (e.type) {
 			case 'touchstart': {
 				isDragging = true;
+				selectedWord = '';
 				const { j, i } = getTouchIJ(e);
 				lastI = i;
+				lastJ1 = j;
 				selectCell(i, j);
 				break;
 			}
 			case 'touchmove': {
 				const { j, i } = getTouchIJ(e);
-				if (i == lastI) selectCell(i, j);
+				if (i == lastI) {
+					selectCell(i, j);
+					lastJ2 = j;
+				}
 				break;
 			}
 			case 'touchend': {
 				isDragging = false;
-				resetCells();
+				await resetCells();
 				break;
 			}
 		}
 	}
 
 	function getPointerIJ(e: PointerEvent) {
-		const j = Math.floor((e.clientX - overlay.offsetLeft) / CELL_W);
-		const i = Math.floor((e.clientY - overlay.offsetTop) / CELL_H);
+		const j = clamp(Math.floor((e.clientX - overlay.offsetLeft) / CELL_W), 0, GRID_COLS - 1);
+		const i = clamp(Math.floor((e.clientY - overlay.offsetTop) / CELL_H), 0, GRID_ROWS - 1);
 		return { j, i };
 	}
 
-	function pointerHandler(e: PointerEvent) {
+	async function pointerHandler(e: PointerEvent) {
+		if (e.pointerType == 'touch') return;
 		switch (e.type) {
 			case 'pointerdown': {
 				isDragging = true;
+				selectedWord = '';
 				const { j, i } = getPointerIJ(e);
 				lastI = i;
+				lastJ1 = j;
 				selectCell(i, j);
 				break;
 			}
 			case 'pointermove': {
 				if (isDragging) {
 					const { j, i } = getPointerIJ(e);
-					if (i == lastI) selectCell(i, j);
+					if (i == lastI) {
+						selectCell(i, j);
+						lastJ2 = j;
+					}
 				}
 				break;
 			}
 			case 'pointerup': {
 				isDragging = false;
-				resetCells();
+				await resetCells();
 				break;
 			}
 			case 'pointerout': {
-				isDragging = false;
-				resetCells();
+				if (isDragging) {
+					isDragging = false;
+					await resetCells();
+				}
 				break;
 			}
 		}
@@ -226,7 +288,8 @@
 		background-color: rgb(249, 193, 98);
 	}
 	.correct {
-		background-color: rgb(158, 245, 77);
+		background-color: rgb(152, 222, 86);
+		color: var(--main-bg-color);
 	}
 	.incorrect {
 		background-color: rgb(251, 88, 69);
