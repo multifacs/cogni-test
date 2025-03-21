@@ -189,6 +189,7 @@
 		border: 1px solid rgb(0, 0, 0);
 		cursor: pointer;
 		box-sizing: border-box;
+		touch-action: none;
 	}
 	.cell {
 		display: flex;
