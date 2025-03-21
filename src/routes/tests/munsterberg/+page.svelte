@@ -71,29 +71,9 @@
 		initializeGrid();
 	}
 
-	// let lastX = Math.round(e.offsetX / GRID_COLS);
-	// let lastY = Math.round(e.offsetY / GRID_ROWS);
-	let lastX = -1;
-	let lastY = -1;
+	let lastI = $state(0);
 
-	function moveHandler(e: PointerEvent) {
-		if (e.pointerType == 'touch') return;
-		// console.log(e.offsetX)
-		let x = Math.floor(e.offsetX / (380 / GRID_COLS));
-		let y = Math.floor(e.offsetY / (435 / GRID_ROWS));
-		if (x != lastX) {
-			lastX = x;
-			console.log('x: ', x);
-			grid[y][x].isSelected = true;
-		}
-		if (y != lastY) {
-			lastY = y;
-			console.log('y: ', y);
-			grid[y][x].isSelected = true;
-		}
-	}
-
-	function getTouchIJ(e: TouchEvent) {
+	function getTouchIJ(e: TouchEvent) {	
 		const j = Math.floor((e.touches[0].clientX - overlay.offsetLeft) / CELL_W);
 		const i = Math.floor((e.touches[0].clientY - overlay.offsetTop) / CELL_H);
 		return { j, i };
@@ -116,15 +96,51 @@
 			case 'touchstart': {
 				isDragging = true;
 				const { j, i } = getTouchIJ(e);
+				lastI = i;
 				selectCell(i, j);
 				break;
 			}
 			case 'touchmove': {
 				const { j, i } = getTouchIJ(e);
-				selectCell(i, j);
+				if (i == lastI) selectCell(i, j);
 				break;
 			}
 			case 'touchend': {
+				isDragging = false;
+				resetCells();
+				break;
+			}
+		}
+	}
+
+	function getPointerIJ(e: PointerEvent) {
+		const j = Math.floor((e.clientX - overlay.offsetLeft) / CELL_W);
+		const i = Math.floor((e.clientY - overlay.offsetTop) / CELL_H);
+		return { j, i };
+	}
+
+	function pointerHandler(e: PointerEvent) {
+		switch (e.type) {
+			case 'pointerdown': {
+				isDragging = true;
+				const { j, i } = getPointerIJ(e);
+				lastI = i;
+				selectCell(i, j);
+				break;
+			}
+			case 'pointermove': {
+				if (isDragging) {
+					const { j, i } = getPointerIJ(e);
+					if (i == lastI) selectCell(i, j);
+				}
+				break;
+			}
+			case 'pointerup': {
+				isDragging = false;
+				resetCells();
+				break;
+			}
+			case 'pointerout': {
 				isDragging = false;
 				resetCells();
 				break;
@@ -153,6 +169,10 @@
 				ontouchstart={touchHandler}
 				ontouchmove={touchHandler}
 				ontouchend={touchHandler}
+				onpointerdown={pointerHandler}
+				onpointermove={pointerHandler}
+				onpointerup={pointerHandler}
+				onpointerout={pointerHandler}
 			>
 				<div
 					class="grid"
@@ -200,6 +220,7 @@
 		box-sizing: border-box;
 		z-index: -1;
 		user-select: none;
+		transition: 0.5s ease;
 	}
 	.selected {
 		background-color: rgb(249, 193, 98);
