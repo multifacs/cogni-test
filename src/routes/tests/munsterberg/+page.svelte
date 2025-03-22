@@ -84,7 +84,7 @@
 
 		let timerInterval = setInterval(() => {
 			timer -= 1;
-			if (!timer) {
+			if (!timer || guessedCount == generatedWords.length) {
 				clearInterval(timerInterval);
 				// isTestRunning = false;
 			}
@@ -149,7 +149,6 @@
 		for (let j = lastJ1; j <= lastJ2 && j != -1; j++) {
 			selectedWord += grid[lastI][j].letter;
 		}
-		console.log(selectedWord);
 		const generated = generatedWords.filter(
 			(x) => x.guessed == false && x.row == lastI && x.value == selectedWord.toLowerCase()
 		);
@@ -159,8 +158,6 @@
 				grid[lastI][j].isCorrect = true;
 			}
 		}
-		console.log(generatedWords);
-		if (guessedCount == generatedWords.length) timer == 0;
 	}
 
 	async function touchHandler(e: TouchEvent) {
