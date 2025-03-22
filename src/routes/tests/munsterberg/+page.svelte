@@ -29,9 +29,10 @@
 	function getRandomLetter() {
 		// Generate a random number between 65 (A) and 90 (Z)
 		// Russian 410-159
-		const randomCharCode = Math.floor(Math.random() * 32) + 1040;
+		const randomCharIdx = Math.round(Math.random() * 32);
+		const abc = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ';
 		// Convert the ASCII code to a character
-		return String.fromCharCode(randomCharCode);
+		return abc.charAt(randomCharIdx);
 	}
 
 	// Инициализация сетки
@@ -211,7 +212,12 @@
 	}
 </script>
 
-<h1>Тест Мюнстерберга</h1>
+{#if words.length <= 19}
+	<h1>Тест Хуюнстерберга</h1>
+{:else}
+	<h1>Тест Мюнстерберга</h1>
+{/if}
+
 {#if !isTestRunning}
 	<p class="text">
 		На большом экране в течение 1 минуты отображается матрица из букв. В ней необходимо по
