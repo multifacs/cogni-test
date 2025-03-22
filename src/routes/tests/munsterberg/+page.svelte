@@ -4,6 +4,19 @@
 	import { slide } from 'svelte/transition';
 	let { data } = $props();
 
+	type Cell = {
+		letter: string;
+		isCorrect: boolean;
+		isIncorrect: boolean;
+	};
+
+	type Word = {
+		value: string;
+		row: number;
+		col: number;
+		guessed: boolean;
+	};
+
 	const GRID_COLS = 9;
 	const GRID_ROWS = 11;
 	const CELL_W = 42;
@@ -11,15 +24,16 @@
 
 	// Game state
 	let isTestRunning = $state(false);
-	let grid: { letter: string; isSelected: boolean; isCorrect: boolean; isIncorrect: boolean }[][] =
-		$state([]);
-	let selectedCells: { row: number; col: number }[] = [];
+	let grid: Cell[][] = $state([]);
 	let isDragging = false;
-	let words: string[] = []; // Массив для хранения слов
+	let words: string[] = $state([]); // Массив для хранения слов
 
 	let overlay: HTMLElement = $state(Object());
 
-	const generatedWords: { word: string; i: number; j: number }[] = [];
+	const generatedWords: Word[] = $state([]);
+	let guessedCount = $derived(generatedWords.filter((x) => x.guessed == true).length);
+	const selectedCells: { cell: Cell; i: number; j: number }[] = [];
+	let timer = $state(60);
 
 	// Загрузка слов из файла
 	onMount(async () => {
@@ -27,20 +41,18 @@
 	});
 
 	function getRandomLetter() {
-		// Generate a random number between 65 (A) and 90 (Z)
-		// Russian 410-159
-		const randomCharIdx = Math.round(Math.random() * 32);
 		const abc = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ';
-		// Convert the ASCII code to a character
+		const randomCharIdx = Math.round(Math.random() * 32);
 		return abc.charAt(randomCharIdx);
 	}
 
 	// Инициализация сетки
 	function initializeGrid() {
+		generatedWords.length = 0;
+
 		grid = Array.from({ length: GRID_ROWS }, () =>
 			Array.from({ length: GRID_COLS }, () => ({
 				letter: getRandomLetter(),
-				isSelected: false,
 				isCorrect: false,
 				isIncorrect: false
 			}))
@@ -48,14 +60,13 @@
 
 		// Замена некоторых букв на слова из списка
 		let row = 0;
-		let col = 0;
 		while (row < GRID_ROWS) {
 			if (Math.random() < 0.5) {
 				// 20% шанс замены
 				const word = words[Math.floor(Math.random() * words.length)];
 				let col = Math.round(Math.random() * (GRID_COLS - 1 - word.length));
 				console.log(word, row, col);
-				generatedWords.push({ word, i: row, j: col });
+				generatedWords.push({ value: word, row, col, guessed: false });
 				for (let i = 0; i < word.length; i++) {
 					grid[row][col + i].letter = word[i].toUpperCase();
 				}
@@ -69,14 +80,22 @@
 	// Запуск теста
 	async function startTest() {
 		isTestRunning = true;
+		timer = 60;
+
+		let timerInterval = setInterval(() => {
+			timer -= 1;
+			if (!timer) {
+				clearInterval(timerInterval);
+				// isTestRunning = false;
+			}
+		}, 1000);
+
 		initializeGrid();
 	}
 
-	let lastI = $state(0);
-	let lastJ1 = $state(0);
-	let lastJ2 = $state(0);
-	let correctCounter = $state(0);
-	let selectedWord = $state('');
+	let lastI = $state(-1);
+	let lastJ1 = $state(-1);
+	let lastJ2 = $state(-1);
 
 	function clamp(n: number, min: number, max: number) {
 		return Math.min(Math.max(n, min), max);
@@ -96,66 +115,66 @@
 		return { j, i };
 	}
 
-	function selectCell(i: number, j: number) {
-		if (!grid[i][j].isSelected) {
-			grid[i][j].isSelected = true;
-			selectedWord += grid[i][j].letter.toLowerCase();
-		}
-	}
-
 	const delay = (delayInms: number) => {
 		return new Promise((resolve) => setTimeout(resolve, delayInms));
 	};
 
 	async function resetCells() {
+		if (lastJ1 == -1 || lastJ2 == -1) return;
 		checkWord();
-		let selectedI = 0;
-		for (let i = 0; i < GRID_ROWS; i++) {
-			for (let j = 0; j < GRID_COLS; j++) {
-				if (grid[i][j].isSelected && !grid[i][j].isCorrect) {
-					grid[i][j].isIncorrect = true;
-					selectedI = i;
-				}
-				grid[i][j].isSelected = false;
+		for (let j = lastJ1; j <= lastJ2; j++) {
+			if (!grid[lastI][j].isCorrect) {
+				grid[lastI][j].isIncorrect = true;
 			}
 		}
 		await delay(200);
 		for (let j = 0; j < GRID_COLS; j++) {
-			grid[selectedI][j].isIncorrect = false;
+			grid[lastI][j].isIncorrect = false;
 		}
+		selectedCells.length = 0;
+		lastI = -1;
+		lastJ1 = -1;
+		lastJ2 = -1;
 	}
 
 	function checkWord() {
+		if (lastJ1 == -1 || lastJ2 == -1) return;
+
 		if (lastJ1 > lastJ2) {
-			selectedWord = [...selectedWord].reverse().join('');
 			const temp = lastJ1;
 			lastJ1 = lastJ2;
 			lastJ2 = temp;
 		}
-		const idx = generatedWords.map((x) => x.word).indexOf(selectedWord);
-		if (idx != -1) {
-			const word = generatedWords[idx];
-			for (let i = 0; i < word.word.length; i++) {
-				grid[word.i][word.j + i].isCorrect = true;
+		let selectedWord = '';
+		for (let j = lastJ1; j <= lastJ2 && j != -1; j++) {
+			selectedWord += grid[lastI][j].letter;
+		}
+		console.log(selectedWord);
+		const generated = generatedWords.filter(
+			(x) => x.guessed == false && x.row == lastI && x.value == selectedWord.toLowerCase()
+		);
+		if (generated.length != 0) {
+			generated[0].guessed = true;
+			for (let j = lastJ1; j <= lastJ2; j++) {
+				grid[lastI][j].isCorrect = true;
 			}
 		}
+		console.log(generatedWords);
+		if (guessedCount == generatedWords.length) timer == 0;
 	}
 
 	async function touchHandler(e: TouchEvent) {
 		switch (e.type) {
 			case 'touchstart': {
 				isDragging = true;
-				selectedWord = '';
 				const { j, i } = getTouchIJ(e);
 				lastI = i;
 				lastJ1 = j;
-				selectCell(i, j);
 				break;
 			}
 			case 'touchmove': {
 				const { j, i } = getTouchIJ(e);
 				if (i == lastI) {
-					selectCell(i, j);
 					lastJ2 = j;
 				}
 				break;
@@ -179,18 +198,15 @@
 		switch (e.type) {
 			case 'pointerdown': {
 				isDragging = true;
-				selectedWord = '';
 				const { j, i } = getPointerIJ(e);
 				lastI = i;
 				lastJ1 = j;
-				selectCell(i, j);
 				break;
 			}
 			case 'pointermove': {
 				if (isDragging) {
 					const { j, i } = getPointerIJ(e);
 					if (i == lastI) {
-						selectCell(i, j);
 						lastJ2 = j;
 					}
 				}
@@ -252,9 +268,15 @@
 					{#each grid as row, rowIndex}
 						{#each row as cell, colIndex}
 							<div
-								class="cell {cell.isSelected ? 'selected' : ''} {cell.isCorrect
-									? 'correct'
-									: ''} {cell.isIncorrect ? 'incorrect' : ''}"
+								class="cell
+								{rowIndex == lastI &&
+								((colIndex >= lastJ1 && colIndex <= lastJ2) ||
+									(colIndex >= lastJ2 && colIndex <= lastJ1))
+									? 'selected'
+									: ''}
+								{cell.isCorrect ? 'correct' : ''}
+								{cell.isIncorrect ? 'incorrect' : ''}
+								"
 							>
 								{cell.letter}
 							</div>
@@ -263,6 +285,15 @@
 				</div>
 			</div>
 		</div>
+		<h3 style="margin: 0">
+			Загадано {generatedWords.length} слов{generatedWords.length < 5
+				? generatedWords.length == 1
+					? 'о'
+					: 'а'
+				: ''}
+		</h3>
+		<h3>Вы отгадали {guessedCount}/{generatedWords.length}</h3>
+		<h1>{`0${timer == 60 ? 1 : 0}:${timer % 60 < 10 ? '0' : ''}${timer % 60}`}</h1>
 	</div>
 {/if}
 
