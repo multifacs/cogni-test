@@ -6,6 +6,7 @@ export function load({ cookies }) {
     let user = cookies.get('user');
     if (MODE == 'DEV') {
         user = Users.getDevUser() as string;
+        console.log(user);
         cookies.set('user', user, { path: '/' });
     }
     return {

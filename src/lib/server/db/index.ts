@@ -51,6 +51,7 @@ export namespace Users {
   export function addUser(data: FormData): string | null {
     if (!checkFormData(data)) {
       fail(500);
+      console.log("formdata check failed");
       return null;
     }
     const user = formDataToUser(null, data);
@@ -71,9 +72,11 @@ export namespace Users {
   };
   export function getDevUser(): string | null {
     const devFormData = new FormData();
-    devFormData.append("name", "debug");
-    devFormData.append("surname", "user");
-    devFormData.append("birth", "01-01-2001");
+    devFormData.append("name", "debugus");
+    devFormData.append("surname", "er");
+    devFormData.append("day", "1");
+    devFormData.append("month", "1");
+    devFormData.append("year", "2001");
     devFormData.append("sex", "male");
     return addUser(devFormData);
   }
