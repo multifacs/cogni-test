@@ -34,7 +34,7 @@
 	const generatedWords: Word[] = $state([]);
 	let guessedCount = $derived(generatedWords.filter((x) => x.guessed == true).length);
 	const selectedCells: { cell: Cell; i: number; j: number }[] = [];
-	let timer = $state(10);
+	let timer = $state(60);
 	let timerInterval = $state(Object());
 
 	// Загрузка слов из файла
@@ -47,7 +47,7 @@
 		if (typeof timerInterval != 'object') clearInterval(timerInterval);
 		isTestRunning = true;
 		isHome = false;
-		timer = 10;
+		timer = 60;
 		initializeGrid();
 
 		timerInterval = setInterval(() => {
