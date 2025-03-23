@@ -69,6 +69,14 @@ export namespace Users {
     db.prepare(sql).run(user);
     return id;
   };
+  export function getDevUser(): string | null {
+    const devFormData = new FormData();
+    devFormData.append("name", "debug");
+    devFormData.append("surname", "user");
+    devFormData.append("birth", "01-01-2001");
+    devFormData.append("sex", "male");
+    return addUser(devFormData);
+  }
 }
 
 namespace Stroop {

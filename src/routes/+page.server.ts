@@ -2,10 +2,17 @@ import { fail, redirect } from '@sveltejs/kit';
 import { Users } from '$lib/server/db';
 import type { User } from '$lib/server/db/types';
 import { checkFormData, formDataToUser } from '$lib/index'
+import { MODE } from '$env/static/private';
 
 export function load({ cookies }) {
-	const user = cookies.get('user');
+	let user = cookies.get('user');
 	console.log("start page loading");
+
+	if (MODE == 'DEV') {
+		user = Users.getDevUser() as string;
+		cookies.set('user', user, { path: '/' });
+	}
+
 	if (user) {
 		redirect(307, "/tests");
 	}
