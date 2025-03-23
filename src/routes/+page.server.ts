@@ -24,13 +24,10 @@ export const actions = {
 			})
 		}
 
-		console.log(data)
-
 		let id;
 
 		try {
-			const user = formDataToUser(null, data);
-			id = Users.getUserId(user);
+			id = Users.addUser(data);
 		} catch (error) {
 			console.log(error);
 			return fail(422, {
@@ -39,21 +36,9 @@ export const actions = {
 		}
 
 		if (id) {
-			console.log("user found", id);
+			console.log("user set", id);
 			cookies.set('user', id, { path: '/' });
 			redirect(307, "/tests");
-			return;
-		}
-
-		try {
-			id = Users.addUser(data);
-			console.log("user not found, new id", id);
-			cookies.set('user', id, { path: '/' });
-		} catch (error) {
-			console.log(error);
-			return fail(422, {
-				error: 'failed to add user'
-			});
 		}
 	},
 
