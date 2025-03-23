@@ -87,6 +87,8 @@
 			if (!timer || guessedCount == generatedWords.length) {
 				clearInterval(timerInterval);
 				// isTestRunning = false;
+
+				highlightUnguessed();
 			}
 		}, 1000);
 
@@ -158,6 +160,16 @@
 				grid[lastI][j].isCorrect = true;
 			}
 		}
+	}
+
+	function highlightUnguessed() {
+		generatedWords.forEach((word) => {
+			if (!word.guessed) {
+				for (let j = word.col; j <= word.col + word.value.length - 1; j++) {
+					grid[word.row][j].isIncorrect = true;
+				}
+			}
+		});
 	}
 
 	async function touchHandler(e: TouchEvent) {
