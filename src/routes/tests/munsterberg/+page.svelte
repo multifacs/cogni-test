@@ -24,6 +24,7 @@
 
 	// Game state
 	let isTestRunning = $state(false);
+	let isHome = $state(true);
 	let grid: Cell[][] = $state([]);
 	let isDragging = false;
 	let words: string[] = $state([]); // Массив для хранения слов
@@ -33,12 +34,31 @@
 	const generatedWords: Word[] = $state([]);
 	let guessedCount = $derived(generatedWords.filter((x) => x.guessed == true).length);
 	const selectedCells: { cell: Cell; i: number; j: number }[] = [];
-	let timer = $state(60);
+	let timer = $state(10);
+	let timerInterval = $state(Object());
 
 	// Загрузка слов из файла
 	onMount(async () => {
 		words = data.words;
 	});
+
+	// Запуск теста
+	async function startTest() {
+		if (typeof timerInterval != 'object') clearInterval(timerInterval);
+		isTestRunning = true;
+		isHome = false;
+		timer = 10;
+		initializeGrid();
+
+		timerInterval = setInterval(() => {
+			timer -= 1;
+			if (!timer || guessedCount == generatedWords.length) {
+				clearInterval(timerInterval);
+				isTestRunning = false;
+				highlightUnguessed();
+			}
+		}, 1000);
+	}
 
 	function getRandomLetter() {
 		const abc = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ';
@@ -75,24 +95,6 @@
 				row++;
 			}
 		}
-	}
-
-	// Запуск теста
-	async function startTest() {
-		isTestRunning = true;
-		timer = 60;
-
-		let timerInterval = setInterval(() => {
-			timer -= 1;
-			if (!timer || guessedCount == generatedWords.length) {
-				clearInterval(timerInterval);
-				// isTestRunning = false;
-
-				highlightUnguessed();
-			}
-		}, 1000);
-
-		initializeGrid();
 	}
 
 	let lastI = $state(-1);
@@ -173,6 +175,7 @@
 	}
 
 	async function touchHandler(e: TouchEvent) {
+		if (!isTestRunning) return;
 		switch (e.type) {
 			case 'touchstart': {
 				isDragging = true;
@@ -203,6 +206,7 @@
 	}
 
 	async function pointerHandler(e: PointerEvent) {
+		if (!isTestRunning) return;
 		if (e.pointerType == 'touch') return;
 		switch (e.type) {
 			case 'pointerdown': {
@@ -243,16 +247,12 @@
 	<h1>Тест Мюнстерберга</h1>
 {/if}
 
-{#if !isTestRunning}
+{#if isHome}
 	<p class="text">
 		На большом экране в течение 1 минуты отображается матрица из букв. В ней необходимо по
 		горизонтали справа налево находить слова. На экране телефона каждое найденное слово нужно
 		выделить.
 	</p>
-	<div class="button-container">
-		<button class="start-button" onclick={startTest}>Начать тест</button>
-		<a class="back-button" href="/tests">Назад</a>
-	</div>
 {:else}
 	<div class="subcontainer" transition:slide={{ duration: 500 }}>
 		<div class="grid-container">
@@ -305,8 +305,27 @@
 		<h1>{`0${timer == 60 ? 1 : 0}:${timer % 60 < 10 ? '0' : ''}${timer % 60}`}</h1>
 	</div>
 {/if}
+<div class="button-container">
+	<button class="start-button" onclick={startTest}
+		>{isTestRunning ? 'Перезапустить тест' : 'Начать тест'}</button
+	>
+	{#if isTestRunning}
+		<button
+			class="start-button back-button"
+			onclick={() => {
+				isTestRunning = false;
+				isHome = true;
+			}}>Стоп</button
+		>
+	{:else}
+		<a class="back-button" href="/tests">Назад</a>
+	{/if}
+</div>
 
 <style>
+	h1 {
+		margin: 0;
+	}
 	.grid {
 		display: grid;
 	}
