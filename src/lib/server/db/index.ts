@@ -2,7 +2,8 @@ import Database from 'better-sqlite3';
 import type { StroopRecord, User } from './types';
 import { v4 as uuidv4 } from 'uuid';
 import { MODE, DB_PATH as DB_PATH_ENV } from '$env/static/private';
-import { formDataToUser } from '$lib/index';
+import { checkFormData, formDataToUser } from '$lib/index';
+import { fail } from '@sveltejs/kit';
 
 let DB_PATH
 if (MODE == 'DEV') {
@@ -25,16 +26,6 @@ export namespace Users {
   `;
   const stmnt = db.prepare(sql).run();
 
-  export function addUser(data: FormData): string {
-    const id = uuidv4();
-    const sql = `
-    insert into users (id, name, surname, birth, sex)
-    values ($id, $name, $surname, $birth, $sex) 
-    `;
-    const user = formDataToUser(id, data);
-    const stmnt = db.prepare(sql).run(user);
-    return id;
-  };
   export function getUserById(id: string): User {
     const user = {} as User;
     const sql = `
@@ -57,6 +48,38 @@ export namespace Users {
 
     return null;
   };
+  export function addUser(data: FormData): string | null {
+    if (!checkFormData(data)) {
+      fail(500);
+      console.log("formdata check failed");
+      return null;
+    }
+    const user = formDataToUser(null, data);
+    let id = Users.getUserId(user);
+
+    if (id) {
+      return id;
+    }
+
+    id = uuidv4();
+    const sql = `
+    insert into users (id, name, surname, birth, sex)
+    values ($id, $name, $surname, $birth, $sex) 
+    `;
+    user.id = id;
+    db.prepare(sql).run(user);
+    return id;
+  };
+  export function getDevUser(): string | null {
+    const devFormData = new FormData();
+    devFormData.append("name", "debugus");
+    devFormData.append("surname", "er");
+    devFormData.append("day", "1");
+    devFormData.append("month", "1");
+    devFormData.append("year", "2001");
+    devFormData.append("sex", "male");
+    return addUser(devFormData);
+  }
 }
 
 namespace Stroop {
