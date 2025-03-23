@@ -1,197 +1,147 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
-	import { MathTestGame } from './mathTestGame'; // Adjust the import path as needed
+	let { data } = $props();
 
-	import Chart from 'chart.js/auto';
-	Chart.defaults.color = 'red';
+	let isTestRunning = $state(false);
+	let isHome = $state(true);
+	let image = $state(Object());
 
-	// Game state
-	let currentLeft: string = 'Начало';
-	let currentRight: string = '';
-	let currentSign: string = '';
-	let score = 0;
-	let timeLeft = 3;
-	let isTestRunning = false;
-	let timer: number | null = null;
+	onMount(async () => {});
 
-	// Game logic
-	let game: MathTestGame;
+	class labColor {
+		l: number = $state(0);
+		a: number = $state(0);
+		b: number = $state(0);
 
-	let chart: HTMLElement | null;
-	// Initialize the game
-	onMount(() => {
-		game = new MathTestGame();
-	});
-
-	// Start the test
-	async function startTest() {
-		isTestRunning = true;
-		score = 0;
-		nextWord();
-	}
-
-	// Move to the next word
-	async function nextWord() {
-		if (!isTestRunning) return;
-
-		// Check if the game is over
-		if (game.isGameOver()) {
-			endTest();
-			return;
+		setValues(other: labColor) {
+			if (!other) return;
+			this.l = other.l;
+			this.a = other.a;
+			this.b = other.b;
 		}
 
-		// Start the next word in the game logic
-		game.startNextTask();
-		const currentTask = game.getCurrentTask();
-		console.log(currentTask);
+		shuffle() {
+			this.l = Math.random() * 15 + 80; // L between 80 and 95
+			this.a = Math.random() * 60 - 30; // a between -30 and 30
+			this.b = Math.random() * 60 - 30; // b between -30 and 30
+		}
 
-		// Update UI state
-		currentLeft = currentTask.left;
-		currentRight = currentTask.right;
-		currentSign = currentTask.sign;
-		timeLeft = 3;
+		incA() {
+			this.a += 1;
+		}
+		decA() {
+			this.a -= 1;
+		}
 
-		// Start the 3-second timer
-		if (timer) clearInterval(timer);
-		timer = setInterval(() => {
-			timeLeft -= 1;
-			if (timeLeft <= 0) {
-				clearInterval(timer);
-				game.handleSelection(null); // Handle timeout (incorrect answer)
-				nextWord(); // Move to the next word
-			}
-		}, 1000);
+		toString(): string {
+			return `lab(${this.l}% ${this.a} ${this.b})`;
+		}
 	}
 
-	// Handle color selection
-	function handleColorClick(answer: boolean) {
-		if (!isTestRunning) return;
-		if (currentLeft == 'stage') return;
-		// Stop the timer
-		if (timer) clearInterval(timer);
+	let bgColor = new labColor();
+	let figureColor = new labColor();
 
-		// Handle the player's selection in the game logic
-		game.handleSelection(answer);
-
-		// Update the score
-		const results = game.getResults();
-		score = results.correctAnswers.filter((correct) => correct).length;
-
-		// Move to the next word
-		nextWord();
+	async function startTest() {
+		isTestRunning = true;
+		isHome = false;
+		bgColor.shuffle();
+		figureColor.setValues(bgColor);
 	}
 
-	// End the test
-	function endTest() {
-		isTestRunning = false;
-		currentLeft = 'Конец';
-		currentRight = 'теста';
-		if (timer) clearInterval(timer);
-
-		// Log the results
-		const results = game.getResults();
-		console.log('Reaction Times:', results.reactionTimes);
-		console.log('Correct Answers:', results.correctAnswers);
-
-		(async function () {
-			new Chart(chart, {
-				type: 'line',
-				data: {
-					labels: Array.from({ length: results.correctAnswers.length }, (_, i) => i + 1),
-					datasets: [
-						{
-							label: 'Скорость ответа (мс)',
-							data: results.reactionTimes,
-							borderColor: 'rgb(100, 100, 100)',
-							borderWidth: 2,
-							pointBackgroundColor: (context) => {
-								// Цвет точек также зависит от correct
-								const index = context.dataIndex;
-								return results.correctAnswers[index] ? 'rgb(95, 212, 107)' : 'rgb(204, 66, 51)';
-							},
-							pointRadius: 5, // Размер точек
-							tension: 0.4 // Сглаживание линии
-						}
-					]
-				},
-				options: {
-					responsive: true,
-					plugins: {
-						colors: {
-							enabled: true
-						}
-					}
-				}
-			});
-		})();
+	function clamp(n: number, min: number, max: number) {
+		return Math.min(Math.max(n, min), max);
 	}
+
+	const delay = (delayInms: number) => {
+		return new Promise((resolve) => setTimeout(resolve, delayInms));
+	};
 </script>
 
-<h1>Арифметический тест</h1>
-{#if !isTestRunning}
+<h1>Компьютерная кампиметрия</h1>
+
+{#if isHome}
 	<p class="text">
-		Экран разделен пополам на 2 части: слева находится красное поле (НЕТ), справа – зеленое (ДА). По
-		середине показывается числовое равенство. Необходимо нажать на красное поле, если числовое
-		равенство неверное или на зеленое, если верно.
+		<b>Первый этап.</b> На экране отображен фон и чей-то силуэт одного и того же цвета. Необходимо нажимать
+		на кнопку «Добавить оттенок», чтобы прибавлять оттенок силуэту. Когда фигурка становится распознаваемой,
+		нужно нажать на верный силуэт из предложенных.
 	</p>
 	<p class="text">
-		Всего 10 числовых равенств, на определение правильности каждого дается 3 секунды.
+		<b>Второй этап.</b> На экране все тот же фон и тот же силуэт, но уже отклонение от цвета фона определено
+		не нажатиями на кнопку «Добавить оттенок», а от программно заданного числа шагов.
 	</p>
-	<div class="button-container">
-		<button class="start-button" onclick={startTest}>Начать тест</button>
-		<a class="back-button" href="/tests">Назад</a>
-	</div>
 {:else}
 	<div class="subcontainer" transition:slide={{ duration: 500 }}>
-		<div class="inequality">
-			<div class="left">
-				<span>{currentLeft}</span>
-			</div>
-			<div class="sign">
-				<span>{currentSign}</span>
-			</div>
-			<div class="right">
-				<span>{currentRight}</span>
-			</div>
+		<div class="background" style={`background-color: ${bgColor.toString()}`}>
+			<div
+				style={`
+				background-color: ${figureColor.toString()};
+				mask-image: url(${'../campimetry/swallow.svg'});
+				-webkit-mask-image: url(${'../campimetry/swallow.svg'});
+				`}
+			></div>
 		</div>
-		<div class="color-grid">
-			<button class="color-button yes" aria-label="yes" onclick={() => handleColorClick(true)}
-				>ДА</button
-			>
-			<button class="color-button no" aria-label="no" onclick={() => handleColorClick(false)}
-				>НЕТ</button
-			>
-		</div>
-		<div>Осталось времени: {timeLeft} сек</div>
+		<button
+			onclick={() => {
+				figureColor.incA();
+			}}>+</button
+		>
 	</div>
 {/if}
-
-<canvas bind:this={chart}></canvas>
+<div class="button-container">
+	<button class="start-button" onclick={startTest}
+		>{isTestRunning ? 'Перезапустить тест' : 'Начать тест'}</button
+	>
+	{#if isTestRunning}
+		<button
+			class="start-button back-button"
+			onclick={() => {
+				isTestRunning = false;
+				isHome = true;
+			}}>Стоп</button
+		>
+	{:else}
+		<a class="back-button" href="/tests">Назад</a>
+	{/if}
+</div>
 
 <style>
 	h1 {
-		color: #f8faff;
+		margin: 0;
+	}
+	@media (max-width: 440px) {
+		h1 {
+			font-size: larger;
+		}
+	}
+
+	.background {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 300px;
+		height: 300px;
+		/* background-color: #553131; */
+	}
+
+	.background div {
+		width: 100px;
+		height: 100px;
+	}
+	.button-container {
+		display: flex;
+		gap: 10px;
+		margin-top: 20px;
+	}
+	.start-button,
+	.back-button {
+		padding: 10px 20px;
+		font-size: 16px;
+		cursor: pointer;
 	}
 	.text {
 		text-align: justify;
 		margin: 10px 20px;
-	}
-	.color-button {
-		padding: 10px 20px;
-		margin: 5px;
-		width: 80px;
-		height: 60px;
-		border: none;
-		cursor: pointer;
-	}
-
-	.yes {
-		background-color: green;
-	}
-
-	.no {
-		background-color: red;
 	}
 
 	.subcontainer {
@@ -200,19 +150,6 @@
 		justify-content: center; /* Центрирование по горизонтали */
 		align-items: center; /* Центрирование по вертикали */
 		gap: 20px;
-	}
-
-	.color-grid {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 10px;
-	}
-
-	.inequality {
-		display: flex;
-		justify-content: center;
-		gap: 20px;
-		font-size: large;
 	}
 
 	.button-container {
@@ -250,11 +187,5 @@
 
 	.back-button:hover {
 		background-color: darkred; /* Темно-красный при наведении */
-	}
-
-	@media (max-width: 600px) {
-		.color-button {
-			padding: 8px 16px;
-		}
 	}
 </style>
