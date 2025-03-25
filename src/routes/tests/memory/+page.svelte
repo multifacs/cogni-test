@@ -1,32 +1,25 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
-	import { StroopTestGame } from './memoryTestGame'; // Adjust the import path as needed
+	import { MemoryTestGame } from './memoryTestGame'; // Adjust the import path as needed
+
+	import Chart from 'chart.js/auto';
+	Chart.defaults.color = 'red';
 
 	// Game state
-	let currentWord: string = 'Этап 1';
-	let currentColor = '';
+	let currentValue: string = 'Начало';
 	let score = 0;
-	let timeLeft = 3;
+	let timeLeft = 15;
 	let isTestRunning = false;
 	let timer: number | null = null;
 
 	// Game logic
-	let game: StroopTestGame;
+	let game: MemoryTestGame;
 
-	// Colors and stages
-	const colors = {
-		Красный: 'red',
-		Бирюзовый: 'cyan',
-		Синий: 'green',
-		Пурпурный: 'magenta',
-		Зеленый: 'blue',
-		Желтый: 'yellow'
-	};
-
+	let chart: HTMLElement | null;
 	// Initialize the game
 	onMount(() => {
-		game = new StroopTestGame();
+		game = new MemoryTestGame();
 	});
 
 	// Start the test
@@ -47,13 +40,14 @@
 		}
 
 		// Start the next word in the game logic
-		game.startNextWord();
-		const currentTask = game.getCurrentWord();
+		game.startNextTask();
+		const currentTask = game.getCurrentTask();
 		console.log(currentTask);
 
 		// Update UI state
-		currentWord = currentTask.word;
-		currentColor = currentTask.color;
+		currentLeft = currentTask.left;
+		currentRight = currentTask.right;
+		currentSign = currentTask.sign;
 		timeLeft = 3;
 
 		// Start the 3-second timer
@@ -62,21 +56,21 @@
 			timeLeft -= 1;
 			if (timeLeft <= 0) {
 				clearInterval(timer);
-				game.handleColorSelection(null); // Handle timeout (incorrect answer)
+				game.handleSelection(null); // Handle timeout (incorrect answer)
 				nextWord(); // Move to the next word
 			}
 		}, 1000);
 	}
 
 	// Handle color selection
-	function handleColorClick(color: string) {
+	function handleColorClick(answer: boolean) {
 		if (!isTestRunning) return;
-		if (currentColor == 'white') return;
+		if (currentLeft == 'stage') return;
 		// Stop the timer
 		if (timer) clearInterval(timer);
 
 		// Handle the player's selection in the game logic
-		game.handleColorSelection(color as Color);
+		game.handleSelection(answer);
 
 		// Update the score
 		const results = game.getResults();
@@ -89,61 +83,89 @@
 	// End the test
 	function endTest() {
 		isTestRunning = false;
-		currentWord = 'Конец';
-		currentColor = 'white';
+		currentLeft = 'Конец';
+		currentRight = 'теста';
 		if (timer) clearInterval(timer);
 
 		// Log the results
 		const results = game.getResults();
 		console.log('Reaction Times:', results.reactionTimes);
 		console.log('Correct Answers:', results.correctAnswers);
+
+		(async function () {
+			new Chart(chart, {
+				type: 'line',
+				data: {
+					labels: Array.from({ length: results.correctAnswers.length }, (_, i) => i + 1),
+					datasets: [
+						{
+							label: 'Скорость ответа (мс)',
+							data: results.reactionTimes,
+							borderColor: 'rgb(100, 100, 100)',
+							borderWidth: 2,
+							pointBackgroundColor: (context) => {
+								// Цвет точек также зависит от correct
+								const index = context.dataIndex;
+								return results.correctAnswers[index] ? 'rgb(95, 212, 107)' : 'rgb(204, 66, 51)';
+							},
+							pointRadius: 5, // Размер точек
+							tension: 0.4 // Сглаживание линии
+						}
+					]
+				},
+				options: {
+					responsive: true,
+					plugins: {
+						colors: {
+							enabled: true
+						}
+					}
+				}
+			});
+		})();
 	}
 </script>
 
-<h1>Тест Струпа</h1>
+<h1>Арифметический тест</h1>
 {#if !isTestRunning}
 	<p class="text">
-		На экране появляются слова, обозначающие цвет. Ниже отображаются все возможные цветовые образцы.
-		Нужно нажимать на цветовой образец в соответствии с заданием.
+		Экран разделен пополам на 2 части: слева находится красное поле (НЕТ), справа – зеленое (ДА). По
+		середине показывается числовое равенство. Необходимо нажать на красное поле, если числовое
+		равенство неверное или на зеленое, если верно.
 	</p>
 	<p class="text">
-		На первом этапе слово написано цветом, соответствующим смыслу слова. Нужно нажать на цветовой
-		образец, <b>соответствующий и цвету, и смыслу слова</b>.
+		Всего 10 числовых равенств, на определение правильности каждого дается 3 секунды.
 	</p>
-	<p class="text">
-		На втором этапе цвет и смысл слова разные. Нужно нажать на цветовой образец, <b
-			>соответствующий смыслу слова</b
-		>.
-	</p>
-	<p class="text">
-		На третьем этапе также цвет и смысл разные. Нужно нажать на цветовой образец, <b
-			>соответствующий цвету букв</b
-		>.
-	</p>
-	<button onclick={startTest}>Начать тест</button>
-	<a href="/tests">Назад</a>
-	
+	<div class="button-container">
+		<button class="start-button" onclick={startTest}>Начать тест</button>
+		<a class="back-button" href="/tests">Назад</a>
+	</div>
 {:else}
 	<div class="subcontainer" transition:slide={{ duration: 500 }}>
-		<div class="color-text" style="color: {currentColor};">{currentWord}</div>
+		<div class="inequality">
+			<div class="left">
+				<span>{currentLeft}</span>
+			</div>
+			<div class="sign">
+				<span>{currentSign}</span>
+			</div>
+			<div class="right">
+				<span>{currentRight}</span>
+			</div>
+		</div>
 		<div class="color-grid">
-			{#each Object.values(colors) as color}
-				<button
-					class="color-button"
-					style="background-color: {color};"
-					aria-label={color}
-					onclick={() => handleColorClick(color)}
-				></button>
-			{/each}
+			<button class="color-button yes" aria-label="yes" onclick={() => handleColorClick(true)}
+				>ДА</button
+			>
+			<button class="color-button no" aria-label="no" onclick={() => handleColorClick(false)}
+				>НЕТ</button
+			>
 		</div>
 		<div>Осталось времени: {timeLeft} сек</div>
-		<div>Счет: {score}</div>
 	</div>
 {/if}
 
-{#if !isTestRunning && score > 0}
-	<div>Тест завершен! Ваш счет: {score}</div>
-{/if}
+<canvas bind:this={chart}></canvas>
 
 <style>
 	h1 {
@@ -161,12 +183,13 @@
 		border: none;
 		cursor: pointer;
 	}
-	.color-text {
-		font-weight: bold;
-		font-size: 2em;
-		margin-bottom: 20px;
-		-webkit-text-stroke-color: #5c70a3;
-		-webkit-text-stroke: 1px;
+
+	.yes {
+		background-color: green;
+	}
+
+	.no {
+		background-color: red;
 	}
 
 	.subcontainer {
@@ -183,10 +206,51 @@
 		gap: 10px;
 	}
 
+	.inequality {
+		display: flex;
+		justify-content: center;
+		gap: 20px;
+		font-size: large;
+	}
+
+	.button-container {
+		display: flex;
+		gap: 10px; /* Расстояние между кнопками */
+		justify-content: center; /* Выравнивание по центру */
+		align-items: center; /* Выравнивание по вертикали */
+	}
+
+	.start-button {
+		background-color: green; /* Зеленый цвет */
+		color: white; /* Белый текст */
+		border: none;
+		padding: 10px 20px;
+		border-radius: 5px;
+		cursor: pointer;
+		font-size: 16px;
+		transition: background-color 0.3s ease;
+	}
+
+	.start-button:hover {
+		background-color: darkgreen; /* Темно-зеленый при наведении */
+	}
+
+	.back-button {
+		background-color: #bf3023; /* Красный цвет */
+		color: white; /* Белый текст */
+		text-decoration: none; /* Убираем подчеркивание */
+		padding: 10px 20px;
+		border-radius: 5px;
+		cursor: pointer;
+		font-size: 16px;
+		transition: background-color 0.3s ease;
+	}
+
+	.back-button:hover {
+		background-color: darkred; /* Темно-красный при наведении */
+	}
+
 	@media (max-width: 600px) {
-		.color-text {
-			font-size: 1.5em;
-		}
 		.color-button {
 			padding: 8px 16px;
 		}

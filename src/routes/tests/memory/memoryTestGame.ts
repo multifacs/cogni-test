@@ -1,58 +1,39 @@
-export type Color = 'red' | 'blue' | 'green' | 'cyan' | 'magenta' | 'yellow';
+export type Word = {
+    value: string;
+    isCorrect: boolean;
 
-export class StroopTestGame {
-    private readonly colors: Color[] = ['red', 'blue', 'green', 'cyan', 'magenta', 'yellow'];
-    private readonly stageWordCounts: number[] = [5, 10, 10]; // Words per stage
+    // типа генерить слова которые есть в списке или нет в списке
+}
+
+export class MemoryTestGame {
+    private readonly stageTaskCounts: number[] = [10]; // Words per stage
     private currentStage: number = 0;
-    private currentWordIndex: number = 0;
+    private currentTaskIndex: number = 0;
     private reactionTimes: number[] = [];
     private correctAnswers: boolean[] = [];
     private startTime: number = 0;
-    private words: { word: string; color: Color | 'white'; task: 'meaning' | 'color' | 'stage' }[] = [];
-
+    private tasks: Word[] = [];
     constructor() {
-        this.generateWords();
+        this.generateTasks();
     }
 
     /**
      * Generates words for all stages.
      */
-    private generateWords(): void {
-        // Stage 1: Word color matches meaning
-        this.words.push({ word: "stage 1", color: 'white', task: 'stage' });
-        for (let i = 0; i < this.stageWordCounts[0]; i++) {
-            const color = this.getRandomColor();
-            this.words.push({ word: color, color: color, task: 'meaning' });
-        }
-
-        this.words.push({ word: "stage 2", color: 'white', task: 'stage' });
-        // Stage 2: Word color differs from meaning, task is to match meaning
-        for (let i = 0; i < this.stageWordCounts[1]; i++) {
-            const word = this.getRandomColor();
-            let color = this.getRandomColor();
-            while (color === word) {
-                color = this.getRandomColor(); // Ensure color and word are different
-            }
-            this.words.push({ word, color, task: 'meaning' });
-        }
-
-        this.words.push({ word: "stage 3", color: 'white', task: 'stage' });
-        // Stage 3: Word color differs from meaning, task is to match color
-        for (let i = 0; i < this.stageWordCounts[2]; i++) {
-            const word = this.getRandomColor();
-            let color = this.getRandomColor();
-            while (color === word) {
-                color = this.getRandomColor(); // Ensure color and word are different
-            }
-            this.words.push({ word, color, task: 'color' });
+    private generateTasks(): void {
+        // список слов нужно сгенерить
+        this.tasks.push({ value: "здесь список слов", isCorrect: false });
+        for (let i = 0; i < this.stageTaskCounts[0]; i++) {
+            const task = this.getRandomTask();
+            this.tasks.push(task);
         }
     }
 
     /**
      * Starts the game or advances to the next word.
      */
-    public startNextWord(): void {
-        if (this.currentWordIndex >= this.words.length) {
+    public startNextTask(): void {
+        if (this.currentTaskIndex >= this.tasks.length) {
             console.log('Game over!');
             return;
         }
@@ -63,37 +44,34 @@ export class StroopTestGame {
      * Handles the player's color selection.
      * @param selectedColor The color selected by the player.
      */
-    public handleColorSelection(selectedColor: Color | null): void {
-        const currentWord = this.words[this.currentWordIndex];
-        if (currentWord.task != 'stage') {
+    public handleSelection(selectedAnswer: boolean | null): void {
+        const currentTask = this.getCurrentTask();
+        if (currentTask.value != 'спислк слов') {
             const endTime = performance.now();
             const reactionTime = endTime - this.startTime;
             this.reactionTimes.push(reactionTime);
 
-            const isCorrect =
-                currentWord.task === 'meaning'
-                    ? selectedColor === currentWord.word
-                    : selectedColor === currentWord.color;
+            const isCorrect = currentTask.isCorrect == selectedAnswer;
             this.correctAnswers.push(isCorrect);
         }
 
-        this.currentWordIndex++;
+        this.currentTaskIndex++;
     }
 
     /**
      * Gets a random color from the available colors.
      * @returns A random color.
      */
-    private getRandomColor(): Color {
-        return this.colors[Math.floor(Math.random() * this.colors.length)];
+    private getRandomTask(): Word {
+        return { value: '', isCorrect: false };
     }
 
     /**
      * Gets the current word and its color.
      * @returns The current word and its color.
      */
-    public getCurrentWord(): { word: string; color: Color | 'white'; task: 'meaning' | 'color' | 'stage' } {
-        return this.words[this.currentWordIndex];
+    public getCurrentTask(): Word {
+        return this.tasks[this.currentTaskIndex];
     }
 
     /**
@@ -112,6 +90,6 @@ export class StroopTestGame {
      * @returns True if the game is over, false otherwise.
      */
     public isGameOver(): boolean {
-        return this.currentWordIndex >= this.words.length;
+        return this.currentTaskIndex >= this.tasks.length;
     }
 }
