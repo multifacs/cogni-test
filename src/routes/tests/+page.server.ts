@@ -23,6 +23,11 @@ export function load({ cookies }) {
             path: '/tests/campimetry',
             img: '/campimetry.svg'
         },
+        {
+            name: 'Тест на память',
+            path: '/tests/memory',
+            img: '/campimetry.svg'
+        },
     ];
 
     return {

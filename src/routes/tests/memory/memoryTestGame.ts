@@ -1,95 +1,84 @@
 export type Word = {
     value: string;
     isCorrect: boolean;
-
-    // типа генерить слова которые есть в списке или нет в списке
-}
+};
 
 export class MemoryTestGame {
-    private readonly stageTaskCounts: number[] = [10]; // Words per stage
-    private currentStage: number = 0;
+    private readonly memorizationCount: number = 6;
+    private readonly totalTasks: number = 10;
+
+    private memorizedWords: string[] = [];
+    private allWords: string[] = [];
+    private tasks: Word[] = [];
+
     private currentTaskIndex: number = 0;
     private reactionTimes: number[] = [];
     private correctAnswers: boolean[] = [];
     private startTime: number = 0;
-    private tasks: Word[] = [];
-    constructor() {
+
+    constructor(wordPool: string[]) {
+        this.allWords = wordPool;
         this.generateTasks();
     }
 
-    /**
-     * Generates words for all stages.
-     */
-    private generateTasks(): void {
-        // список слов нужно сгенерить
-        this.tasks.push({ value: "здесь список слов", isCorrect: false });
-        for (let i = 0; i < this.stageTaskCounts[0]; i++) {
-            const task = this.getRandomTask();
-            this.tasks.push(task);
-        }
+    private shuffle<T>(arr: T[]): T[] {
+        return arr.map(value => ({ value, sort: Math.random() }))
+                  .sort((a, b) => a.sort - b.sort)
+                  .map(({ value }) => value);
     }
 
-    /**
-     * Starts the game or advances to the next word.
-     */
+    private generateTasks() {
+        const shuffled = this.shuffle(this.allWords);
+        this.memorizedWords = shuffled.slice(0, this.memorizationCount);
+
+        const remaining = shuffled.slice(this.memorizationCount);
+        const falseWords = remaining.slice(0, this.totalTasks / 2);
+
+        const trueTasks: Word[] = this.memorizedWords.slice(0, this.totalTasks / 2).map(word => ({
+            value: word,
+            isCorrect: true
+        }));
+
+        const falseTasks: Word[] = falseWords.map(word => ({
+            value: word,
+            isCorrect: false
+        }));
+
+        this.tasks = this.shuffle([...trueTasks, ...falseTasks]);
+    }
+
+    public getMemorizationWords(): string[] {
+        return this.memorizedWords;
+    }
+
     public startNextTask(): void {
-        if (this.currentTaskIndex >= this.tasks.length) {
-            console.log('Game over!');
-            return;
-        }
         this.startTime = performance.now();
     }
 
-    /**
-     * Handles the player's color selection.
-     * @param selectedColor The color selected by the player.
-     */
     public handleSelection(selectedAnswer: boolean | null): void {
         const currentTask = this.getCurrentTask();
-        if (currentTask.value != 'спислк слов') {
-            const endTime = performance.now();
-            const reactionTime = endTime - this.startTime;
-            this.reactionTimes.push(reactionTime);
+        const endTime = performance.now();
+        const reactionTime = endTime - this.startTime;
+        this.reactionTimes.push(reactionTime);
 
-            const isCorrect = currentTask.isCorrect == selectedAnswer;
-            this.correctAnswers.push(isCorrect);
-        }
+        const isCorrect = currentTask.isCorrect === selectedAnswer;
+        this.correctAnswers.push(isCorrect);
 
         this.currentTaskIndex++;
     }
 
-    /**
-     * Gets a random color from the available colors.
-     * @returns A random color.
-     */
-    private getRandomTask(): Word {
-        return { value: '', isCorrect: false };
-    }
-
-    /**
-     * Gets the current word and its color.
-     * @returns The current word and its color.
-     */
     public getCurrentTask(): Word {
         return this.tasks[this.currentTaskIndex];
     }
 
-    /**
-     * Gets the results of the game.
-     * @returns The reaction times and correctness of answers.
-     */
-    public getResults(): { reactionTimes: number[]; correctAnswers: boolean[] } {
-        return {
-            reactionTimes: this.reactionTimes,
-            correctAnswers: this.correctAnswers,
-        };
-    }
-
-    /**
-     * Checks if the game is over.
-     * @returns True if the game is over, false otherwise.
-     */
     public isGameOver(): boolean {
         return this.currentTaskIndex >= this.tasks.length;
+    }
+
+    public getResults() {
+        return {
+            reactionTimes: this.reactionTimes,
+            correctAnswers: this.correctAnswers
+        };
     }
 }

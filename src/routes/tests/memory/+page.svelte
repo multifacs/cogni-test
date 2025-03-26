@@ -1,258 +1,263 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { slide } from 'svelte/transition';
-	import { MemoryTestGame } from './memoryTestGame'; // Adjust the import path as needed
-
+	import { onMount, tick } from 'svelte';
+	import { MemoryTestGame } from './memoryTestGame';
 	import Chart from 'chart.js/auto';
-	Chart.defaults.color = 'red';
+	export let data: { words: string[] };
+	
+	let chart: HTMLCanvasElement | null = null;
 
-	// Game state
-	let currentValue: string = 'Начало';
-	let score = 0;
-	let timeLeft = 15;
-	let isTestRunning = false;
+	let words: string[] = [];
+	let game: MemoryTestGame;
+	let memorizationWords: string[] = [];
+	let allTasks: string[] = [];
+	let currentWord = '';
+	let timeLeft = 0;
 	let timer: number | null = null;
 
-	// Game logic
-	let game: MemoryTestGame;
+	let score = 0;
+	let isHome = true;
+	let isTestRunning = false;
+	let phase: 'waiting' | 'memorize' | 'task' | 'result' = 'waiting';
 
-	let chart: HTMLElement | null;
-	// Initialize the game
-	onMount(() => {
-		game = new MemoryTestGame();
+	// Загрузка слов из файла
+	onMount(async () => {
+		words = data.words;
 	});
 
-	// Start the test
+	function toIntro() {
+		isHome = true;
+		isTestRunning = false;
+		phase = 'waiting';
+	}
+
 	async function startTest() {
+		game = new MemoryTestGame(words);
+		memorizationWords = game.getMemorizationWords();
+		allTasks = Array.from({ length: 10 }, (_, i) => game['tasks'][i].value);
+
+		console.log('Загаданные слова:', memorizationWords);
+		console.log('Задания:', allTasks);
+
+		isHome = false;
 		isTestRunning = true;
 		score = 0;
+		startWaitingPhase();
+	}
+
+	function startWaitingPhase() {
+		phase = 'waiting';
+		timeLeft = 3;
+		const countdown = setInterval(() => {
+			timeLeft--;
+			if (timeLeft <= 0) {
+				clearInterval(countdown);
+				startMemorization();
+			}
+		}, 1000);
+	}
+
+	function startMemorization() {
+		phase = 'memorize';
+		timeLeft = 15;
+
+		const memTimer = setInterval(() => {
+			timeLeft--;
+			if (timeLeft <= 0) {
+				clearInterval(memTimer);
+				startTasks();
+			}
+		}, 1000);
+	}
+
+	function startTasks() {
+		phase = 'task';
 		nextWord();
 	}
 
-	// Move to the next word
-	async function nextWord() {
-		if (!isTestRunning) return;
-
-		// Check if the game is over
+	function nextWord() {
 		if (game.isGameOver()) {
 			endTest();
 			return;
 		}
 
-		// Start the next word in the game logic
 		game.startNextTask();
-		const currentTask = game.getCurrentTask();
-		console.log(currentTask);
-
-		// Update UI state
-		currentLeft = currentTask.left;
-		currentRight = currentTask.right;
-		currentSign = currentTask.sign;
+		currentWord = game.getCurrentTask().value;
 		timeLeft = 3;
 
-		// Start the 3-second timer
 		if (timer) clearInterval(timer);
 		timer = setInterval(() => {
-			timeLeft -= 1;
+			timeLeft--;
 			if (timeLeft <= 0) {
 				clearInterval(timer);
-				game.handleSelection(null); // Handle timeout (incorrect answer)
-				nextWord(); // Move to the next word
+				game.handleSelection(null);
+				nextWord();
 			}
 		}, 1000);
 	}
 
-	// Handle color selection
-	function handleColorClick(answer: boolean) {
-		if (!isTestRunning) return;
-		if (currentLeft == 'stage') return;
-		// Stop the timer
+	function handleAnswer(answer: boolean) {
 		if (timer) clearInterval(timer);
-
-		// Handle the player's selection in the game logic
 		game.handleSelection(answer);
 
-		// Update the score
 		const results = game.getResults();
-		score = results.correctAnswers.filter((correct) => correct).length;
+		score = results.correctAnswers.filter(Boolean).length;
 
-		// Move to the next word
 		nextWord();
 	}
 
-	// End the test
-	function endTest() {
+	async function endTest() {
+		phase = 'result';
 		isTestRunning = false;
-		currentLeft = 'Конец';
-		currentRight = 'теста';
-		if (timer) clearInterval(timer);
+		await tick(); // Ждём появления canvas
 
-		// Log the results
 		const results = game.getResults();
-		console.log('Reaction Times:', results.reactionTimes);
-		console.log('Correct Answers:', results.correctAnswers);
 
-		(async function () {
-			new Chart(chart, {
-				type: 'line',
-				data: {
-					labels: Array.from({ length: results.correctAnswers.length }, (_, i) => i + 1),
-					datasets: [
-						{
-							label: 'Скорость ответа (мс)',
-							data: results.reactionTimes,
-							borderColor: 'rgb(100, 100, 100)',
-							borderWidth: 2,
-							pointBackgroundColor: (context) => {
-								// Цвет точек также зависит от correct
-								const index = context.dataIndex;
-								return results.correctAnswers[index] ? 'rgb(95, 212, 107)' : 'rgb(204, 66, 51)';
-							},
-							pointRadius: 5, // Размер точек
-							tension: 0.4 // Сглаживание линии
-						}
-					]
-				},
-				options: {
-					responsive: true,
-					plugins: {
-						colors: {
-							enabled: true
-						}
+		new Chart(chart!, {
+			type: 'line',
+			data: {
+				labels: Array.from({ length: results.correctAnswers.length }, (_, i) => i + 1),
+				datasets: [
+					{
+						label: 'Скорость ответа (мс)',
+						data: results.reactionTimes,
+						borderColor: 'gray',
+						borderWidth: 2,
+						pointBackgroundColor: (ctx) => {
+							const i = ctx.dataIndex;
+							return results.correctAnswers[i] ? 'green' : 'red';
+						},
+						pointRadius: 5,
+						tension: 0.4
 					}
-				}
-			});
-		})();
+				]
+			},
+			options: { responsive: true }
+		});
 	}
 </script>
 
-<h1>Арифметический тест</h1>
-{#if !isTestRunning}
-	<p class="text">
-		Экран разделен пополам на 2 части: слева находится красное поле (НЕТ), справа – зеленое (ДА). По
-		середине показывается числовое равенство. Необходимо нажать на красное поле, если числовое
-		равенство неверное или на зеленое, если верно.
-	</p>
-	<p class="text">
-		Всего 10 числовых равенств, на определение правильности каждого дается 3 секунды.
-	</p>
+{#if isHome}
+	<h1>Тест на память</h1>
+	<p>Вам будет показан список из 6 слов для запоминания, а затем вы должны определить — 
+		какие слова из поочередно показывающегося ряда были в первоначальном списке.  Всего 10 слов на проверку.</p>
 	<div class="button-container">
-		<button class="start-button" onclick={startTest}>Начать тест</button>
+		<button class="primary-button" on:click={startTest}>Начать тест</button>
 		<a class="back-button" href="/tests">Назад</a>
 	</div>
-{:else}
-	<div class="subcontainer" transition:slide={{ duration: 500 }}>
-		<div class="inequality">
-			<div class="left">
-				<span>{currentLeft}</span>
-			</div>
-			<div class="sign">
-				<span>{currentSign}</span>
-			</div>
-			<div class="right">
-				<span>{currentRight}</span>
-			</div>
-		</div>
-		<div class="color-grid">
-			<button class="color-button yes" aria-label="yes" onclick={() => handleColorClick(true)}
-				>ДА</button
-			>
-			<button class="color-button no" aria-label="no" onclick={() => handleColorClick(false)}
-				>НЕТ</button
-			>
-		</div>
-		<div>Осталось времени: {timeLeft} сек</div>
+
+{:else if phase === 'waiting'}
+	<p>Слова появятся через {timeLeft} секунд...</p>
+
+{:else if phase === 'memorize'}
+	<h2>Запомните слова:</h2>
+	<div class="mem-grid">
+		{#each memorizationWords.slice(0, 3) as word}
+			<div class="mem-word">{word}</div>
+		{/each}
+	</div>
+	<div class="mem-grid">
+		{#each memorizationWords.slice(3, 6) as word}
+			<div class="mem-word">{word}</div>
+		{/each}
+	</div>
+	<p>Осталось времени: {timeLeft} сек</p>
+
+{:else if phase === 'task'}
+	<h2>Было ли это слово?</h2>
+	<h1>{currentWord}</h1>
+	<div class="color-grid">
+		<button class="yes" on:click={() => handleAnswer(true)}>ДА</button>
+		<button class="no" on:click={() => handleAnswer(false)}>НЕТ</button>
+	</div>
+	<div>Осталось времени: {timeLeft} сек</div>
+
+{:else if phase === 'result'}
+	<h2>Результаты</h2>
+	<p>Правильных ответов: {score}/10</p>
+	<canvas bind:this={chart}></canvas>
+	<div class="button-container">
+		<button class="primary-button" on:click={toIntro}>Пройти ещё раз</button>
+		<a class="back-button" href="/tests">Назад в меню</a>
 	</div>
 {/if}
 
-<canvas bind:this={chart}></canvas>
-
 <style>
-	h1 {
-		color: #f8faff;
-	}
-	.text {
-		text-align: justify;
-		margin: 10px 20px;
-	}
-	.color-button {
-		padding: 10px 20px;
-		margin: 5px;
-		width: 80px;
-		height: 60px;
-		border: none;
-		cursor: pointer;
+	.color-grid {
+		display: flex;
+		gap: 1rem;
+		justify-content: center;
+		margin: 1rem 0;
 	}
 
 	.yes {
-		background-color: green;
+		background-color: rgb(5, 154, 2);
+		color: white;
+		text-decoration: none;
+		padding: 0.75rem 1.25rem;
+		border-radius: 5px;
+		font-size: 1rem;
+		transition: background-color 0.3s ease;
 	}
 
 	.no {
-		background-color: red;
+		background-color: #bf3023;
+		color: white;
+		text-decoration: none;
+		padding: 0.75rem 1.25rem;
+		border-radius: 5px;
+		font-size: 1rem;
+		transition: background-color 0.3s ease;
 	}
 
-	.subcontainer {
-		display: flex;
-		flex-direction: column;
-		justify-content: center; /* Центрирование по горизонтали */
-		align-items: center; /* Центрирование по вертикали */
-		gap: 20px;
-	}
-
-	.color-grid {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 10px;
-	}
-
-	.inequality {
+	.mem-grid {
 		display: flex;
 		justify-content: center;
-		gap: 20px;
-		font-size: large;
+		gap: 1.5rem;
+		margin-bottom: 0.5rem;
+	}
+
+	.mem-word {
+		font-size: 1.5rem;
+		font-weight: bold;
+		background-color: rgb(2, 125, 27);
+		padding: 0.5rem 1rem;
+		border-radius: 6px;
 	}
 
 	.button-container {
 		display: flex;
-		gap: 10px; /* Расстояние между кнопками */
-		justify-content: center; /* Выравнивание по центру */
-		align-items: center; /* Выравнивание по вертикали */
+		justify-content: center;
+		gap: 1rem;
+		margin-top: 1rem;
 	}
 
-	.start-button {
-		background-color: green; /* Зеленый цвет */
-		color: white; /* Белый текст */
-		border: none;
-		padding: 10px 20px;
+	.primary-button {
+		background-color: #007acc;
+		color: white;
+		padding: 0.75rem 1.25rem;
 		border-radius: 5px;
+		font-size: 1rem;
 		cursor: pointer;
-		font-size: 16px;
+		border: none;
 		transition: background-color 0.3s ease;
+		text-decoration: none;
 	}
 
-	.start-button:hover {
-		background-color: darkgreen; /* Темно-зеленый при наведении */
+	.primary-button:hover {
+		background-color: #005a99;
 	}
 
 	.back-button {
-		background-color: #bf3023; /* Красный цвет */
-		color: white; /* Белый текст */
-		text-decoration: none; /* Убираем подчеркивание */
-		padding: 10px 20px;
+		background-color: #bf3023;
+		color: white;
+		text-decoration: none;
+		padding: 0.75rem 1.25rem;
 		border-radius: 5px;
-		cursor: pointer;
-		font-size: 16px;
+		font-size: 1rem;
 		transition: background-color 0.3s ease;
 	}
 
 	.back-button:hover {
-		background-color: darkred; /* Темно-красный при наведении */
-	}
-
-	@media (max-width: 600px) {
-		.color-button {
-			padding: 8px 16px;
-		}
+		background-color: darkred;
 	}
 </style>
