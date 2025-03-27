@@ -9,36 +9,6 @@
 
 	onMount(async () => {});
 
-	class labColor {
-		l: number = $state(0);
-		a: number = $state(0);
-		b: number = $state(0);
-
-		setValues(other: labColor) {
-			if (!other) return;
-			this.l = other.l;
-			this.a = other.a;
-			this.b = other.b;
-		}
-
-		shuffle() {
-			this.l = Math.random() * 15 + 80; // L between 80 and 95
-			this.a = Math.random() * 60 - 30; // a between -30 and 30
-			this.b = Math.random() * 60 - 30; // b between -30 and 30
-		}
-
-		incA() {
-			this.a += 1;
-		}
-		decA() {
-			this.a -= 1;
-		}
-
-		toString(): string {
-			return `lab(${this.l}% ${this.a} ${this.b})`;
-		}
-	}
-
 	let bgColor = new labColor();
 	let figureColor = new labColor();
 
@@ -82,9 +52,10 @@
 			></div>
 		</div>
 		<button
+			class="inc-button"
 			onclick={() => {
 				figureColor.incA();
-			}}>+</button
+			}}>Прибавить оттенок</button
 		>
 	</div>
 {/if}
@@ -157,6 +128,17 @@
 		gap: 10px; /* Расстояние между кнопками */
 		justify-content: center; /* Выравнивание по центру */
 		align-items: center; /* Выравнивание по вертикали */
+	}
+
+	.inc-button {
+		background-color: rgb(39, 203, 211); /* Зеленый цвет */
+		color: white; /* Белый текст */
+		border: none;
+		padding: 10px 20px;
+		border-radius: 5px;
+		cursor: pointer;
+		font-size: 16px;
+		transition: background-color 0.3s ease;
 	}
 
 	.start-button {
