@@ -1,4 +1,4 @@
-import { LabColor } from "./lab-color";
+import { LabColor } from "./lab-color.svelte";
 
 export type Silhouette = {
     answer: string;
@@ -6,7 +6,6 @@ export type Silhouette = {
     silhouetteColor?: LabColor;
     channel?: 'a' | 'b';
     op?: '+' | '-';
-    reverse?: boolean;
 }
 
 export class CampimetryGame {
@@ -20,8 +19,8 @@ export class CampimetryGame {
     private silhouettes: string[] = [];
 
     constructor(silhouettes: string[]) {
-        this.generateTasks();
         this.silhouettes = silhouettes.slice();
+        this.generateTasks();
     }
 
     /**
@@ -30,12 +29,12 @@ export class CampimetryGame {
     private generateTasks(): void {
         this.tasks.push({ answer: "stage 1" });
         for (let i = 0; i < this.stageTaskCounts[0]; i++) {
-            const task = this.getRandomTask(false);
+            const task = this.getRandomTask('+');
             this.tasks.push(task);
         }
         this.tasks.push({ answer: "stage 2" });
         for (let i = 0; i < this.stageTaskCounts[1]; i++) {
-            const task = this.getRandomTask(true);
+            const task = this.getRandomTask('-');
             this.tasks.push(task);
         }
     }
@@ -55,7 +54,7 @@ export class CampimetryGame {
      * Handles the player's color selection.
      * @param selectedColor The color selected by the player.
      */
-    public handleSelection(numTries?: number): void {
+    public handleAnswer(numTries?: number): void {
         const currentTask = this.getCurrentTask();
         if (currentTask.answer != 'stage' && numTries) {
             this.numTries.push(numTries);
@@ -67,26 +66,23 @@ export class CampimetryGame {
      * Gets a random color from the available colors.
      * @returns A random color.
      */
-    private getRandomTask(reverse: boolean): Silhouette {
+    private getRandomTask(op: '+' | '-'): Silhouette {
         const answer = this.silhouettes[Math.floor(Math.random() * this.silhouettes.length)];
         const backgroundColor = new LabColor();
         // const reverse = Math.round(Math.random()) == 1;
 
         let silhouetteColor = new LabColor(backgroundColor);
-        if (reverse) {
-            silhouetteColor = new LabColor();
-        }
-
         const channel = (Math.round(Math.random()) == 1) ? 'a' : 'b';
-        const op = (Math.round(Math.random()) == 1) ? '+' : '-';
+        if (op == '-') {
+            channel == 'a' ? silhouetteColor.setRandomA() : silhouetteColor.setRandomB()
+        }
 
         return {
             answer,
             backgroundColor,
             silhouetteColor,
             channel,
-            op,
-            reverse
+            op
         }
     }
 

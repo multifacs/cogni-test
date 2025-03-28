@@ -3,11 +3,7 @@ export class LabColor {
     private a: number = $state(0);
     private b: number = $state(0);
 
-    private setRandomColor() {
-        this.l = Math.round(Math.random() * 15) + 80; // L between 80 and 95
-        this.a = Math.round(Math.random() * 60) - 30; // a between -30 and 30
-        this.b = Math.round(Math.random() * 60) - 30; // b between -30 and 30
-    }
+    private DELTA = 20;
 
     constructor(other?: LabColor) {
         if (!other) {
@@ -18,6 +14,20 @@ export class LabColor {
         this.l = other.l;
         this.a = other.a;
         this.b = other.b;
+    }
+
+    public setRandomColor() {
+        this.l = Math.round(Math.random() * 15) + 80; // L between 80 and 95
+        this.a = Math.round(Math.random() * 60) - 30; // a between -30 and 30
+        this.b = Math.round(Math.random() * 60) - 30; // b between -30 and 30
+    }
+
+    public setRandomA() {
+        this.a = this.a + Math.round(Math.random() * this.DELTA) - Math.round(this.DELTA / 2);
+    }
+
+    public setRandomB() {
+        this.b = this.b + Math.round(Math.random() * this.DELTA) - Math.round(this.DELTA / 2);
     }
 
     public incL() {
