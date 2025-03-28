@@ -26,7 +26,7 @@ export function load({ cookies }) {
         {
             name: 'Тест на память',
             path: '/tests/memory',
-            img: '/campimetry.svg'
+            img: '/memory.svg'
         },
     ];
 
