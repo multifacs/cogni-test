@@ -13,7 +13,7 @@ export class CampimetryGame {
     private currentStage: number = 0;
     private currentTaskIndex: number = 0;
 
-    private numTries: number[] = [];
+    private delta: number[] = [];
 
     private tasks: Silhouette[] = [];
     private silhouettes: string[] = [];
@@ -54,10 +54,10 @@ export class CampimetryGame {
      * Handles the player's color selection.
      * @param selectedColor The color selected by the player.
      */
-    public handleAnswer(numTries?: number): void {
+    public handleAnswer(delta?: number): void {
         const currentTask = this.getCurrentTask();
-        if (currentTask.answer != 'stage' && numTries) {
-            this.numTries.push(numTries);
+        if (currentTask.answer != 'stage' && delta) {
+            this.delta.push(delta);
         }
         this.currentTaskIndex++;
     }
@@ -98,9 +98,9 @@ export class CampimetryGame {
      * Gets the results of the game.
      * @returns The reaction times and correctness of answers.
      */
-    public getResults(): { numTries: number[] } {
+    public getResults(): { delta: number[] } {
         return {
-            numTries: this.numTries
+            delta: this.delta
         };
     }
 

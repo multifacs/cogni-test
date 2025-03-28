@@ -16,6 +16,13 @@ export class LabColor {
         this.b = other.b;
     }
 
+    public getDelta(other: LabColor): number {
+        const dA = this.a - other.a;
+        const dB = this.b - other.b;
+        if (dA != 0) return dA;
+        return dB;
+    }
+
     public setRandomColor() {
         this.l = Math.round(Math.random() * 15) + 80; // L between 80 and 95
         this.a = Math.round(Math.random() * 60) - 30; // a between -30 and 30
@@ -23,11 +30,11 @@ export class LabColor {
     }
 
     public setRandomA() {
-        this.a = this.a + Math.round(Math.random() * this.DELTA) - Math.round(this.DELTA / 2);
+        this.a = this.a + Math.round(Math.random() * this.DELTA) + 3;
     }
 
     public setRandomB() {
-        this.b = this.b + Math.round(Math.random() * this.DELTA) - Math.round(this.DELTA / 2);
+        this.b = this.b + Math.round(Math.random() * this.DELTA) + 3;
     }
 
     public incL() {

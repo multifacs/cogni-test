@@ -16,13 +16,12 @@
 
 	let timeLeft = $state(3);
 	let timer: any = $state(null);
-	let numTries: number = $state(0);
 
 	let game: CampimetryGame = $state(Object());
 	let silhouettes: string[] = $state([]);
 	let currentAnswer = $state('');
-	let currentBackgroundColor = $state(Object());
-	let currentSilhouetteColor = $state(Object());
+	let currentBackgroundColor: LabColor = $state(Object());
+	let currentSilhouetteColor: LabColor = $state(Object());
 	let currentChannel = $state('');
 	let currentOp = $state('');
 
@@ -53,7 +52,6 @@
 	// Move to the next word
 	async function nextTask() {
 		if (!isTestRunning) return;
-		numTries = 0;
 
 		// Check if the game is over
 		if (game.isGameOver()) {
@@ -96,11 +94,11 @@
 	}
 
 	// Handle color selection
-	function handleAnswer(numTries: number) {
+	function handleAnswer(delta: number) {
 		if (!isTestRunning) return;
 		if (game.getCurrentTask().answer.includes('stage')) return;
 		// Handle the player's selection in the game logic
-		game.handleAnswer(numTries);
+		game.handleAnswer(delta);
 		// Update the score
 		const results = game.getResults();
 		// Move to the next word
@@ -114,17 +112,16 @@
 
 		// Log the results
 		const results = game.getResults();
-		console.log('Num tries:', results.numTries);
 
 		(async function () {
 			new Chart(chart, {
 				type: 'line',
 				data: {
-					labels: Array.from({ length: results.numTries.length }, (_, i) => i + 1),
+					labels: Array.from({ length: results.delta.length }, (_, i) => i + 1),
 					datasets: [
 						{
-							label: 'Количество изменений оттенка',
-							data: results.numTries,
+							label: 'Отклонение оттенка (ед.)',
+							data: results.delta,
 							borderColor: 'red',
 							borderWidth: 2,
 							pointRadius: 5, // Размер точек
@@ -178,7 +175,6 @@
 					} else {
 						currentChannel == 'a' ? currentSilhouetteColor.decA() : currentSilhouetteColor.decB();
 					}
-					numTries++;
 				}}>{currentOp == '+' ? 'Прибавить' : 'Убавить'} оттенок</button
 			>
 			{#if currentOp == '+'}
@@ -194,8 +190,8 @@
 							`}
 							onclick={() => {
 								if (s == currentAnswer) {
-									console.log('numtires:', numTries);
-									handleAnswer(numTries);
+									const delta = currentSilhouetteColor.getDelta(currentBackgroundColor);
+									handleAnswer(delta);
 								}
 							}}
 						></button>
@@ -205,8 +201,8 @@
 				<button
 					class="inc-button"
 					onclick={() => {
-						console.log('numtires:', numTries);
-						handleAnswer(numTries);
+						const delta = currentSilhouetteColor.getDelta(currentBackgroundColor);
+						handleAnswer(delta);
 					}}
 				>
 					Больше не видно
