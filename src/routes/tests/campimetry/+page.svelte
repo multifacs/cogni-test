@@ -155,7 +155,7 @@
 		не нажатиями на кнопку «Добавить оттенок», а от программно заданного числа шагов.
 	</p>
 {:else}
-	<div class="subcontainer" transition:slide={{ duration: 500 }}>
+	<div class="subcontainer">
 		{#if !currentAnswer.includes('stage')}
 			<div class="background" style={`background-color: ${currentBackgroundColor.toString()}`}>
 				<div
@@ -234,9 +234,6 @@
 <canvas bind:this={chart}></canvas>
 
 <style>
-	h1 {
-		margin: 0;
-	}
 	@media (max-width: 440px) {
 		h1 {
 			font-size: larger;
@@ -271,10 +268,6 @@
 		padding: 10px 20px;
 		font-size: 16px;
 		cursor: pointer;
-	}
-	.text {
-		text-align: justify;
-		margin: 10px 20px;
 	}
 
 	.subcontainer {

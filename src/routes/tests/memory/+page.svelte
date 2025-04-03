@@ -171,9 +171,6 @@
 {/if}
 
 <style>
-	p {
-		text-align: justify;
-	}
 	.color-grid {
 		display: flex;
 		gap: 1rem;
@@ -188,7 +185,7 @@
 	}
 
 	.mem-word {
-		font-size: 1.5rem;
+		font-size: 16px;
 		font-weight: bold;
 		background-color: rgb(2, 125, 27);
 		padding: 0.5rem 1rem;

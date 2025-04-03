@@ -9,15 +9,25 @@
 
 html,
 body,
-p {
+p,
+h1,
+h2,
+h3 {
     margin: 0;
+    padding: 0;
     /* Убираем отступы по умолчанию */
 }
 
-html, body {
+p {
+    text-align: justify;
+}
+
+html,
+body {
     height: 100%;
     width: 100%;
-    overflow: hidden; /* Prevents scrolling */
+    overflow: hidden;
+    /* Prevents scrolling */
 }
 
 body {
@@ -27,6 +37,8 @@ body {
 
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Centers vertically */
-    align-items: center; /* Centers horizontally */
+    justify-content: center;
+    /* Centers vertically */
+    align-items: center;
+    /* Centers horizontally */
 }
