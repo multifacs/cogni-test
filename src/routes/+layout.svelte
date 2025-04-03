@@ -4,6 +4,7 @@
 	import '@fontsource/roboto';
 	import { userStore } from '$lib/stores';
 	import { onMount } from 'svelte';
+	import Button from '$lib/components/button.svelte';
 	let { data, children } = $props();
 
 	onMount(() => {
@@ -24,6 +25,7 @@
 	.container {
 		max-width: 600px;
 		margin: 10vh auto;
+		padding: 10px 10px;
 		display: flex;
 		flex-direction: column;
 		justify-content: center; /* Центрирование по горизонтали */
