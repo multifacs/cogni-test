@@ -1,139 +1,108 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { slide } from 'svelte/transition';
-	import { StroopTestGame } from './stroopTestGame'; // Adjust the import path as needed
+	import { goto } from '$app/navigation';
+
+	import Button from '$lib/components/button.svelte';
+
+	import { StroopTestGame } from './stroop-game';
+	import type { Color } from './stroop-game';
+	import ResultsChart from './results-chart.svelte';
+	import { translate } from './utils';
 
 	import Chart from 'chart.js/auto';
-	Chart.defaults.color = 'red';
+
+	Chart.defaults.color = 'white';
 
 	// Game state
-	let currentWord: string = 'Этап 1';
-	let currentColor = '';
+	let currentWord = $state('stage 1');
+	let currentColor = $state('');
 	let score = 0;
-	let timeLeft = 3;
-	let isTestRunning = false;
+	const DURATION = 3;
+	let timeLeft = $state(DURATION);
+
+	let isTestRunning = $state(false);
 	let timer: number | null = null;
+	let game: StroopTestGame = $state(Object());
 
-	// Game logic
-	let game: StroopTestGame;
-
-	// Colors and stages
 	const colors = {
 		Красный: 'red',
 		Бирюзовый: 'cyan',
-		Синий: 'green',
+		Синий: 'blue',
 		Пурпурный: 'magenta',
-		Зеленый: 'blue',
+		Зеленый: 'green',
 		Желтый: 'yellow'
 	};
 
-	let chart: HTMLElement | null;
+	onMount(() => {});
 
-	// Initialize the game
-	onMount(() => {
+	function resetGameState() {
+		showResults = false;
 		game = new StroopTestGame();
-	});
-
-	// Start the test
-	async function startTest() {
-		isTestRunning = true;
 		score = 0;
+		isTestRunning = true;
 		nextWord();
 	}
 
-	// Move to the next word
-	async function nextWord() {
-		if (!isTestRunning) return;
+	function startTest() {
+		resetGameState();
+	}
 
-		// Check if the game is over
-		if (game.isGameOver()) {
-			endTest();
-			return;
-		}
+	function stopTest() {
+		isTestRunning = false;
+		updateWordState('stage 1', '');
+		clearTimer();
+	}
 
-		// Start the next word in the game logic
+	function nextWord() {
+		if (!isTestRunning || game.isGameOver()) return endTest();
+
 		game.startNextWord();
-		const currentTask = game.getCurrentWord();
-		console.log(currentTask);
+		const { word, color } = game.getCurrentTask();
+		updateWordState(word, color);
+		startTimer();
+	}
 
-		// Update UI state
-		currentWord = currentTask.word;
-		currentColor = currentTask.color;
-		timeLeft = 3;
+	function updateWordState(word: string, color: string) {
+		currentWord = word;
+		currentColor = color;
+		timeLeft = DURATION;
+	}
 
-		// Start the 3-second timer
-		if (timer) clearInterval(timer);
+	function startTimer() {
+		clearTimer();
 		timer = setInterval(() => {
 			timeLeft -= 1;
 			if (timeLeft <= 0) {
-				clearInterval(timer);
-				game.handleColorSelection(null); // Handle timeout (incorrect answer)
-				nextWord(); // Move to the next word
+				clearTimer();
+				game.handleColorSelection(null);
+				nextWord();
 			}
 		}, 1000);
 	}
 
-	// Handle color selection
+	function clearTimer() {
+		if (timer) {
+			clearInterval(timer);
+			timer = null;
+		}
+	}
+
 	function handleColorClick(color: string) {
-		if (!isTestRunning) return;
-		if (currentColor == 'white') return;
-		// Stop the timer
-		if (timer) clearInterval(timer);
+		if (!isTestRunning || currentColor === 'white') return;
+		clearTimer();
 
-		// Handle the player's selection in the game logic
 		game.handleColorSelection(color as Color);
-
-		// Update the score
-		const results = game.getResults();
-		score = results.correctAnswers.filter((correct) => correct).length;
-
-		// Move to the next word
+		score = game.getResults().filter((x) => x.answer).length;
 		nextWord();
 	}
 
-	// End the test
+	let showResults = $state(false);
+
 	function endTest() {
 		isTestRunning = false;
-		currentWord = 'Конец';
-		currentColor = 'white';
-		if (timer) clearInterval(timer);
-
-		// Log the results
-		const results = game.getResults();
-		console.log('Reaction Times:', results.reactionTimes);
-		console.log('Correct Answers:', results.correctAnswers);
-
-		(async function () {
-			new Chart(chart, {
-				type: 'line',
-				data: {
-					labels: Array.from({ length: results.correctAnswers.length }, (_, i) => i + 1),
-					datasets: [
-						{
-							label: 'Скорость ответа (мс)',
-							data: results.reactionTimes,
-							borderColor: 'rgb(100, 100, 100)',
-							borderWidth: 2,
-							pointBackgroundColor: (context) => {
-								// Цвет точек также зависит от correct
-								const index = context.dataIndex;
-								return results.correctAnswers[index] ? 'rgb(95, 212, 107)' : 'rgb(204, 66, 51)';
-							},
-							pointRadius: 5, // Размер точек
-							tension: 0.4 // Сглаживание линии
-						}
-					]
-				},
-				options: {
-					responsive: true,
-					plugins: {
-						colors: {
-							enabled: true
-						}
-					}
-				}
-			});
-		})();
+		updateWordState('Конец', 'white');
+		clearTimer();
+		showResults = true;
 	}
 </script>
 
@@ -164,12 +133,17 @@
 		</details>
 	</div>
 	<div class="button-container">
-		<button class="start-button" onclick={startTest}>Начать тест</button>
-		<a class="back-button" href="/tests">Назад</a>
+		<Button color="green" onclick={startTest}>Начать тест</Button>
+		<Button
+			color="red"
+			onclick={() => {
+				goto('/tests');
+			}}>Назад</Button
+		>
 	</div>
 {:else}
-	<div class="subcontainer" transition:slide={{ duration: 500 }}>
-		<div class="color-text" style="color: {currentColor};">{currentWord}</div>
+	<div class="subcontainer">
+		<div class="color-text" style="color: {currentColor};">{translate(currentWord)}</div>
 		<div class="color-grid">
 			{#each Object.values(colors) as color}
 				<button
@@ -181,10 +155,13 @@
 			{/each}
 		</div>
 		<div>Осталось времени: {timeLeft} сек</div>
+		<Button color="red" onclick={stopTest}>Стоп</Button>
 	</div>
 {/if}
 
-<canvas bind:this={chart}></canvas>
+{#if showResults}
+	<ResultsChart results={game.getResults()}></ResultsChart>
+{/if}
 
 <style>
 	h1 {
@@ -192,7 +169,6 @@
 	}
 	.text {
 		text-align: justify;
-		margin: 10px 20px;
 	}
 	.color-button {
 		padding: 10px 20px;
@@ -203,7 +179,7 @@
 		cursor: pointer;
 	}
 	.color-text {
-		font-weight: bold;
+		font-family: "Comic Sans MS", "Comic Sans", cursive;
 		font-size: 2em;
 		margin-bottom: 20px;
 		-webkit-text-stroke-color: #5c70a3;
@@ -231,36 +207,6 @@
 		align-items: center; /* Выравнивание по вертикали */
 	}
 
-	.start-button {
-		background-color: green; /* Зеленый цвет */
-		color: white; /* Белый текст */
-		border: none;
-		padding: 10px 20px;
-		border-radius: 5px;
-		cursor: pointer;
-		font-size: 16px;
-		transition: background-color 0.3s ease;
-	}
-
-	.start-button:hover {
-		background-color: darkgreen; /* Темно-зеленый при наведении */
-	}
-
-	.back-button {
-		background-color: #bf3023; /* Красный цвет */
-		color: white; /* Белый текст */
-		text-decoration: none; /* Убираем подчеркивание */
-		padding: 10px 20px;
-		border-radius: 5px;
-		cursor: pointer;
-		font-size: 16px;
-		transition: background-color 0.3s ease;
-	}
-
-	.back-button:hover {
-		background-color: darkred; /* Темно-красный при наведении */
-	}
-
 	@media (max-width: 600px) {
 		.color-text {
 			font-size: 1.5em;
@@ -275,7 +221,7 @@
 		bottom: -1.5em;
 		left: 0;
 	}
-	
+
 	summary {
 		margin-left: 20px;
 	}

@@ -1,14 +1,23 @@
 export type Color = 'red' | 'blue' | 'green' | 'cyan' | 'magenta' | 'yellow';
+export type Result = {
+    x: number;
+    stage: number;
+    time: number;
+    answer: boolean;
+};
+export type Task = { stage: number; word: string; color: Color | 'white'; task: 'meaning' | 'color' | 'stage' };
+import { clamp } from "$lib";
 
 export class StroopTestGame {
     private readonly colors: Color[] = ['red', 'blue', 'green', 'cyan', 'magenta', 'yellow'];
     private readonly stageWordCounts: number[] = [5, 10, 10]; // Words per stage
-    private currentStage: number = 0;
+    // private readonly stageWordCounts: number[] = [2, 2, 2]; // Words per stage
+    // private currentStage: number = 0;
+    private currentTaskIndex: number = 0;
     private currentWordIndex: number = 0;
-    private reactionTimes: number[] = [];
-    private correctAnswers: boolean[] = [];
+    private results: Result[] = [];
     private startTime: number = 0;
-    private words: { word: string; color: Color | 'white'; task: 'meaning' | 'color' | 'stage' }[] = [];
+    private tasks: Task[] = [];
 
     constructor() {
         this.generateWords();
@@ -18,33 +27,40 @@ export class StroopTestGame {
      * Generates words for all stages.
      */
     private generateWords(): void {
+        let lastColor = '';
         // Stage 1: Word color matches meaning
-        this.words.push({ word: "stage 1", color: 'white', task: 'stage' });
+        this.tasks.push({ stage: 0, word: "stage 1", color: 'white', task: 'stage' } as Task);
         for (let i = 0; i < this.stageWordCounts[0]; i++) {
-            const color = this.getRandomColor();
-            this.words.push({ word: color, color: color, task: 'meaning' });
+
+            let color = this.getRandomColor();
+            while (color == lastColor) color = this.getRandomColor();
+            lastColor = color;
+
+            this.tasks.push({ stage: 1, word: color, color: color, task: 'meaning' } as Task);
         }
 
-        this.words.push({ word: "stage 2", color: 'white', task: 'stage' });
+        this.tasks.push({ stage: 0, word: "stage 2", color: 'white', task: 'stage' } as Task);
         // Stage 2: Word color differs from meaning, task is to match meaning
         for (let i = 0; i < this.stageWordCounts[1]; i++) {
             const word = this.getRandomColor();
             let color = this.getRandomColor();
-            while (color === word) {
+            while (color === word || color == lastColor) {
                 color = this.getRandomColor(); // Ensure color and word are different
             }
-            this.words.push({ word, color, task: 'meaning' });
+            lastColor = color;
+            this.tasks.push({ stage: 2, word, color, task: 'meaning' } as Task);
         }
 
-        this.words.push({ word: "stage 3", color: 'white', task: 'stage' });
+        this.tasks.push({ stage: 0, word: "stage 3", color: 'white', task: 'stage' } as Task);
         // Stage 3: Word color differs from meaning, task is to match color
         for (let i = 0; i < this.stageWordCounts[2]; i++) {
             const word = this.getRandomColor();
             let color = this.getRandomColor();
-            while (color === word) {
+            while (color === word || color == lastColor) {
                 color = this.getRandomColor(); // Ensure color and word are different
             }
-            this.words.push({ word, color, task: 'color' });
+            lastColor = color;
+            this.tasks.push({ stage: 3, word, color, task: 'color' } as Task);
         }
     }
 
@@ -52,7 +68,7 @@ export class StroopTestGame {
      * Starts the game or advances to the next word.
      */
     public startNextWord(): void {
-        if (this.currentWordIndex >= this.words.length) {
+        if (this.currentTaskIndex >= this.tasks.length) {
             console.log('Game over!');
             return;
         }
@@ -64,20 +80,26 @@ export class StroopTestGame {
      * @param selectedColor The color selected by the player.
      */
     public handleColorSelection(selectedColor: Color | null): void {
-        const currentWord = this.words[this.currentWordIndex];
-        if (currentWord.task != 'stage') {
-            const endTime = performance.now();
-            const reactionTime = endTime - this.startTime;
-            this.reactionTimes.push(reactionTime);
+        const currentTask = this.getCurrentTask();
 
+        if (currentTask.task != 'stage') {
+            this.currentWordIndex++;
+
+            const endTime = performance.now();
+            const reactionTime = clamp(endTime - this.startTime, 0, 3000);
             const isCorrect =
-                currentWord.task === 'meaning'
-                    ? selectedColor === currentWord.word
-                    : selectedColor === currentWord.color;
-            this.correctAnswers.push(isCorrect);
+                currentTask.task === 'meaning'
+                    ? selectedColor === currentTask.word
+                    : selectedColor === currentTask.color;
+            this.results.push({
+                x: this.results.length + 1,
+                stage: currentTask.stage,
+                time: reactionTime,
+                answer: isCorrect
+            } as Result);
         }
 
-        this.currentWordIndex++;
+        this.currentTaskIndex++;
     }
 
     /**
@@ -92,19 +114,16 @@ export class StroopTestGame {
      * Gets the current word and its color.
      * @returns The current word and its color.
      */
-    public getCurrentWord(): { word: string; color: Color | 'white'; task: 'meaning' | 'color' | 'stage' } {
-        return this.words[this.currentWordIndex];
+    public getCurrentTask(): Task {
+        return this.tasks[this.currentTaskIndex];
     }
 
     /**
      * Gets the results of the game.
      * @returns The reaction times and correctness of answers.
      */
-    public getResults(): { reactionTimes: number[]; correctAnswers: boolean[] } {
-        return {
-            reactionTimes: this.reactionTimes,
-            correctAnswers: this.correctAnswers,
-        };
+    public getResults(): Result[] {
+        return this.results;
     }
 
     /**
@@ -112,6 +131,6 @@ export class StroopTestGame {
      * @returns True if the game is over, false otherwise.
      */
     public isGameOver(): boolean {
-        return this.currentWordIndex >= this.words.length;
+        return this.currentTaskIndex >= this.tasks.length;
     }
 }

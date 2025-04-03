@@ -1,16 +1,31 @@
 :root {
     --main-bg-color: #292a2d;
     --main-text-color: #f8faff;
+
+    --button-green: rgb(15, 132, 15);
+    --button-red: #bf3023;
 }
 
 html,
-body {
+body,
+p {
     margin: 0;
     /* Убираем отступы по умолчанию */
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden; /* Prevents scrolling */
 }
 
 body {
     font-family: 'Roboto', sans-serif;
     background-color: var(--main-bg-color);
     color: var(--main-text-color);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centers vertically */
+    align-items: center; /* Centers horizontally */
 }
