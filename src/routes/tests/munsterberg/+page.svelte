@@ -80,9 +80,10 @@
 
 		// Замена некоторых букв на слова из списка
 		let row = 0;
+		let count = 0;
 		while (row < GRID_ROWS) {
-			if (Math.random() < 0.5) {
-				// 20% шанс замены
+			if (Math.random() < 0.7) {
+				count++;
 				const word = words[Math.floor(Math.random() * words.length)];
 				let col = Math.round(Math.random() * (GRID_COLS - word.length));
 				console.log(word, row, col);
@@ -95,6 +96,7 @@
 				row++;
 			}
 		}
+		console.log('count:', count);
 	}
 
 	let lastI = $state(-1);
@@ -308,8 +310,11 @@
 					: 'а'
 				: ''}
 		</h3> -->
-		<!-- <h3>Вы отгадали {guessedCount}/{generatedWords.length}</h3> -->
-		<h1>{`0${timer == 60 ? 1 : 0}:${timer % 60 < 10 ? '0' : ''}${timer % 60}`}</h1>
+		{#if isTestRunning}
+			<h3>{`0${timer == 60 ? 1 : 0}:${timer % 60 < 10 ? '0' : ''}${timer % 60}`}</h3>
+		{:else}
+			<h3>Вы отгадали {guessedCount}/{generatedWords.length}</h3>
+		{/if}
 	</div>
 {/if}
 <div class="button-container">
