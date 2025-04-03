@@ -1,18 +1,20 @@
 export type Inequality = {
-    left: number | "stage" | null,
+    left: number | "stage",
     right: number | null,
     sign: '>' | '<' | '>=' | '<=' | '=' | null,
     answer: boolean | null
 }
+import type { Result } from "$lib/components/result";
 
-export class MathTestGame {
-    private readonly stageTaskCounts: number[] = [10]; // Words per stage
-    private currentStage: number = 0;
+export class MathGame {
+    private readonly stageTaskCounts: number[] = [10];
     private currentTaskIndex: number = 0;
-    private reactionTimes: number[] = [];
-    private correctAnswers: boolean[] = [];
+    private currentX: number = 0;
+
     private startTime: number = 0;
     private tasks: Inequality[] = [];
+    private results: Result[] = [];
+
     constructor() {
         this.generateTasks();
     }
@@ -43,15 +45,21 @@ export class MathTestGame {
      * Handles the player's color selection.
      * @param selectedColor The color selected by the player.
      */
-    public handleSelection(selectedAnswer: boolean | null): void {
+    public handleAnswer(selectedAnswer: boolean | null): void {
         const currentTask = this.getCurrentTask();
         if (currentTask.left != 'stage') {
+            this.currentX++;
+
             const endTime = performance.now();
             const reactionTime = endTime - this.startTime;
-            this.reactionTimes.push(reactionTime);
-
             const isCorrect = currentTask.answer == selectedAnswer;
-            this.correctAnswers.push(isCorrect);
+
+            this.results.push({
+                x: this.currentX,
+                y: reactionTime,
+                stage: 1,
+                isCorrect
+            } as Result);
         }
 
         this.currentTaskIndex++;
@@ -101,11 +109,8 @@ export class MathTestGame {
      * Gets the results of the game.
      * @returns The reaction times and correctness of answers.
      */
-    public getResults(): { reactionTimes: number[]; correctAnswers: boolean[] } {
-        return {
-            reactionTimes: this.reactionTimes,
-            correctAnswers: this.correctAnswers,
-        };
+    public getResults(): Result[] {
+        return this.results;
     }
 
     /**

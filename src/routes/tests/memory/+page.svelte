@@ -1,13 +1,17 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
-	import { MemoryTestGame } from './memoryTestGame';
-	import Chart from 'chart.js/auto';
+	import { MemoryGame } from './memory-game';
+
 	export let data: { words: string[] };
-	
+
+	import Button from '$lib/components/button.svelte';
+	import { goto } from '$app/navigation';
+	import ResultsChart from '$lib/components/results-chart.svelte';
+
 	let chart: HTMLCanvasElement | null = null;
 
 	let words: string[] = [];
-	let game: MemoryTestGame;
+	let game: MemoryGame;
 	let memorizationWords: string[] = [];
 	let allTasks: string[] = [];
 	let currentWord = '';
@@ -31,7 +35,7 @@
 	}
 
 	async function startTest() {
-		game = new MemoryTestGame(words);
+		game = new MemoryGame(words);
 		memorizationWords = game.getMemorizationWords();
 		allTasks = Array.from({ length: 10 }, (_, i) => game['tasks'][i].value);
 
@@ -100,7 +104,7 @@
 		game.handleSelection(answer);
 
 		const results = game.getResults();
-		score = results.correctAnswers.filter(Boolean).length;
+		score = results.filter((x) => x.isCorrect).length;
 
 		nextWord();
 	}
@@ -109,45 +113,26 @@
 		phase = 'result';
 		isTestRunning = false;
 		await tick(); // Ждём появления canvas
-
-		const results = game.getResults();
-
-		new Chart(chart!, {
-			type: 'line',
-			data: {
-				labels: Array.from({ length: results.correctAnswers.length }, (_, i) => i + 1),
-				datasets: [
-					{
-						label: 'Скорость ответа (мс)',
-						data: results.reactionTimes,
-						borderColor: 'gray',
-						borderWidth: 2,
-						pointBackgroundColor: (ctx) => {
-							const i = ctx.dataIndex;
-							return results.correctAnswers[i] ? 'green' : 'red';
-						},
-						pointRadius: 5,
-						tension: 0.4
-					}
-				]
-			},
-			options: { responsive: true }
-		});
 	}
 </script>
 
 {#if isHome}
 	<h1>Тест на память</h1>
-	<p>Вам будет показан список из 6 слов для запоминания, а затем вы должны определить — 
-		какие слова из поочередно показывающегося ряда были в первоначальном списке.  Всего 10 слов на проверку.</p>
+	<p>
+		Вам будет показан список из 6 слов для запоминания, а затем вы должны определить — какие слова
+		из поочередно показывающегося ряда были в первоначальном списке. Всего 10 слов на проверку.
+	</p>
 	<div class="button-container">
-		<button class="primary-button" on:click={startTest}>Начать тест</button>
-		<a class="back-button" href="/tests">Назад</a>
+		<Button color="green" onclick={startTest}>Начать тест</Button>
+		<Button
+			color="red"
+			onclick={() => {
+				goto('/tests');
+			}}>Назад</Button
+		>
 	</div>
-
 {:else if phase === 'waiting'}
 	<p>Слова появятся через {timeLeft} секунд...</p>
-
 {:else if phase === 'memorize'}
 	<h2>Запомните слова:</h2>
 	<div class="mem-grid">
@@ -161,54 +146,40 @@
 		{/each}
 	</div>
 	<p>Осталось времени: {timeLeft} сек</p>
-
 {:else if phase === 'task'}
 	<h2>Было ли это слово?</h2>
 	<h1>{currentWord}</h1>
 	<div class="color-grid">
-		<button class="yes" on:click={() => handleAnswer(true)}>ДА</button>
-		<button class="no" on:click={() => handleAnswer(false)}>НЕТ</button>
+		<Button kind="big" color="green" onclick={() => handleAnswer(true)}>ДА</Button>
+		<Button kind="big" color="red" onclick={() => handleAnswer(false)}>НЕТ</Button>
 	</div>
 	<div>Осталось времени: {timeLeft} сек</div>
-
 {:else if phase === 'result'}
 	<h2>Результаты</h2>
 	<p>Правильных ответов: {score}/10</p>
-	<canvas bind:this={chart}></canvas>
+	<ResultsChart stages={1} results={game.getResults()} xtitle="Нажатие" ytitle="Время реакции (мс)"
+	></ResultsChart>
 	<div class="button-container">
-		<button class="primary-button" on:click={toIntro}>Пройти ещё раз</button>
-		<a class="back-button" href="/tests">Назад в меню</a>
+		<Button color="blue" onclick={toIntro}>Пройти ещё раз</Button>
+		<Button
+			color="red"
+			onclick={() => {
+				goto('/tests');
+			}}>Назад в меню</Button
+		>
 	</div>
 {/if}
 
 <style>
+	p {
+		text-align: justify;
+	}
 	.color-grid {
 		display: flex;
 		gap: 1rem;
 		justify-content: center;
 		margin: 1rem 0;
 	}
-
-	.yes {
-		background-color: rgb(5, 154, 2);
-		color: white;
-		text-decoration: none;
-		padding: 0.75rem 1.25rem;
-		border-radius: 5px;
-		font-size: 1rem;
-		transition: background-color 0.3s ease;
-	}
-
-	.no {
-		background-color: #bf3023;
-		color: white;
-		text-decoration: none;
-		padding: 0.75rem 1.25rem;
-		border-radius: 5px;
-		font-size: 1rem;
-		transition: background-color 0.3s ease;
-	}
-
 	.mem-grid {
 		display: flex;
 		justify-content: center;
@@ -229,35 +200,5 @@
 		justify-content: center;
 		gap: 1rem;
 		margin-top: 1rem;
-	}
-
-	.primary-button {
-		background-color: #007acc;
-		color: white;
-		padding: 0.75rem 1.25rem;
-		border-radius: 5px;
-		font-size: 1rem;
-		cursor: pointer;
-		border: none;
-		transition: background-color 0.3s ease;
-		text-decoration: none;
-	}
-
-	.primary-button:hover {
-		background-color: #005a99;
-	}
-
-	.back-button {
-		background-color: #bf3023;
-		color: white;
-		text-decoration: none;
-		padding: 0.75rem 1.25rem;
-		border-radius: 5px;
-		font-size: 1rem;
-		transition: background-color 0.3s ease;
-	}
-
-	.back-button:hover {
-		background-color: darkred;
 	}
 </style>

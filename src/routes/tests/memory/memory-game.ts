@@ -2,8 +2,9 @@ export type Word = {
     value: string;
     isCorrect: boolean;
 };
+import type { Result } from "$lib/components/result";
 
-export class MemoryTestGame {
+export class MemoryGame {
     private readonly memorizationCount: number = 6;
     private readonly totalTasks: number = 10;
 
@@ -12,9 +13,9 @@ export class MemoryTestGame {
     private tasks: Word[] = [];
 
     private currentTaskIndex: number = 0;
-    private reactionTimes: number[] = [];
-    private correctAnswers: boolean[] = [];
+    private results: Result[] = [];
     private startTime: number = 0;
+    private currentX: number = 0;
 
     constructor(wordPool: string[]) {
         this.allWords = wordPool;
@@ -56,13 +57,17 @@ export class MemoryTestGame {
     }
 
     public handleSelection(selectedAnswer: boolean | null): void {
+        this.currentX++;
         const currentTask = this.getCurrentTask();
         const endTime = performance.now();
         const reactionTime = endTime - this.startTime;
-        this.reactionTimes.push(reactionTime);
-
         const isCorrect = currentTask.isCorrect === selectedAnswer;
-        this.correctAnswers.push(isCorrect);
+        this.results.push({
+            x: this.currentX,
+            y: reactionTime,
+            stage: 1,
+            isCorrect
+        } as Result);
 
         this.currentTaskIndex++;
     }
@@ -76,9 +81,6 @@ export class MemoryTestGame {
     }
 
     public getResults() {
-        return {
-            reactionTimes: this.reactionTimes,
-            correctAnswers: this.correctAnswers
-        };
+        return this.results;
     }
 }

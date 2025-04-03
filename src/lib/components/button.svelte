@@ -1,29 +1,48 @@
 <script lang="ts">
-    let { color = 'green', children, onclick, disabled, type } = $props();
-  </script>
-  
-  <button class="button" style="background-color: var(--button-{color});" onclick={onclick} disabled={disabled} type={type}>
-    {@render children()}
-  </button>
-  
-  <style>
-    .button {
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background-color 0.3s ease;
-    }
-  
-    .button:hover {
-      filter: brightness(85%);
-    }
+	let { kind = 'normal', color = 'green', children, onclick, disabled = null, type = null } = $props();
+</script>
 
-    .button:disabled {
-      filter: brightness(85%);
-      filter: contrast(85%);
-    }
-  </style>
-  
+<button class={`button ${kind}`} style="background-color: var(--button-{color});" {onclick} {disabled} {type}>
+	{@render children()}
+</button>
+
+<style>
+	.button {
+		color: white;
+		border: none;
+		border-radius: 5px;
+		cursor: pointer;
+		transition: background-color 0.3s ease;
+	}
+
+	.normal {
+		font-size: 16px;
+		padding: 10px 20px;
+	}
+
+	.big {
+		padding: 10px 20px;
+		margin: 5px;
+		width: 80px;
+		height: 60px;
+	}
+
+	.small {
+		width: 80px;
+		padding: 5px;
+		color: #fff;
+		border: none;
+		border-radius: 5px;
+		font-size: 16px;
+		cursor: pointer;
+	}
+
+	.button:hover {
+		filter: brightness(85%);
+	}
+
+	.button:disabled {
+		filter: brightness(85%);
+		filter: contrast(85%);
+	}
+</style>
