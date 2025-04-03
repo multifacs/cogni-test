@@ -84,7 +84,7 @@
 			if (Math.random() < 0.5) {
 				// 20% шанс замены
 				const word = words[Math.floor(Math.random() * words.length)];
-				let col = Math.round(Math.random() * (GRID_COLS - 1 - word.length));
+				let col = Math.round(Math.random() * (GRID_COLS - word.length));
 				console.log(word, row, col);
 				generatedWords.push({ value: word, row, col, guessed: false });
 				for (let i = 0; i < word.length; i++) {
@@ -124,7 +124,13 @@
 	};
 
 	async function resetCells() {
-		if (lastJ1 == -1 || lastJ2 == -1) return;
+		if (lastJ1 == -1 && lastJ2 != -1) {
+			lastJ1 = lastJ2;
+		}
+		if (lastJ2 == -1 && lastJ1 != -1) {
+			lastJ2 = lastJ1;
+		}
+
 		checkWord();
 		for (let j = lastJ1; j <= lastJ2; j++) {
 			if (!grid[lastI][j].isCorrect) {
@@ -239,6 +245,11 @@
 			}
 		}
 	}
+
+	function checkSelected(i: number, j: number): boolean {
+		if (lastJ1 == -1 || lastJ2 == -1) return false;
+		return i == lastI && ((j >= lastJ1 && j <= lastJ2) || (j >= lastJ2 && j <= lastJ1));
+	}
 </script>
 
 {#if words.length <= 19}
@@ -254,7 +265,7 @@
 		выделить.
 	</p>
 {:else}
-	<div class="subcontainer" transition:slide={{ duration: 500 }}>
+	<div class="subcontainer">
 		<div class="grid-container">
 			<div
 				class="overlay"
@@ -278,11 +289,7 @@
 						{#each row as cell, colIndex}
 							<div
 								class="cell
-								{rowIndex == lastI &&
-								((colIndex >= lastJ1 && colIndex <= lastJ2) ||
-									(colIndex >= lastJ2 && colIndex <= lastJ1))
-									? 'selected'
-									: ''}
+								{checkSelected(rowIndex, colIndex) ? 'selected' : ''}
 								{cell.isCorrect ? 'correct' : ''}
 								{cell.isIncorrect ? 'incorrect' : ''}
 								"
@@ -294,14 +301,14 @@
 				</div>
 			</div>
 		</div>
-		<h3 style="margin: 0">
+		<!-- <h3 style="margin: 0">
 			Загадано {generatedWords.length} слов{generatedWords.length < 5
 				? generatedWords.length == 1
 					? 'о'
 					: 'а'
 				: ''}
-		</h3>
-		<h3>Вы отгадали {guessedCount}/{generatedWords.length}</h3>
+		</h3> -->
+		<!-- <h3>Вы отгадали {guessedCount}/{generatedWords.length}</h3> -->
 		<h1>{`0${timer == 60 ? 1 : 0}:${timer % 60 < 10 ? '0' : ''}${timer % 60}`}</h1>
 	</div>
 {/if}
@@ -328,6 +335,8 @@
 	}
 	.grid {
 		display: grid;
+		touch-action: none;
+		user-select: none;
 	}
 	.overlay {
 		width: 100%;
@@ -337,6 +346,7 @@
 		cursor: pointer;
 		box-sizing: border-box;
 		touch-action: none;
+		user-select: none;
 	}
 	.cell {
 		display: flex;
