@@ -74,7 +74,7 @@ export class StroopGame {
      * Handles the player's color selection.
      * @param selectedColor The color selected by the player.
      */
-    public handleSelection(selectedColor: Color | null): void {
+    public handleAnswer(selectedColor: Color | null): void {
         const currentTask = this.getCurrentTask();
 
         if (currentTask.task != 'stage') {

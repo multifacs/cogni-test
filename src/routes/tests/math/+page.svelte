@@ -4,14 +4,13 @@
 	import { MathGame } from './math-game'; // Adjust the import path as needed
 	import Sign from './sign.svelte';
 
-	import Chart from 'chart.js/auto';
 	import Button from '$lib/components/button.svelte';
+	import ResultsChart from '$lib/components/results-chart.svelte';
+
 	import { goto } from '$app/navigation';
 	import { translate } from '$lib/components/translate';
-	Chart.defaults.color = 'red';
 
 	import type { Inequality } from './math-game';
-	import ResultsChart from '$lib/components/results-chart.svelte';
 
 	// Game state
 	let currentLeft: string | number = $state('stage');
@@ -63,7 +62,7 @@
 			timeLeft -= 1;
 			if (timeLeft <= 0) {
 				clearTimer();
-				game.handleSelection(null);
+				game.handleAnswer(null);
 				nextTask();
 			}
 		}, 1000);
@@ -85,11 +84,11 @@
 		startTimer();
 	}
 
-	function handleSelection(answer: boolean) {
+	function handleAnswer(answer: boolean) {
 		if (!isTestRunning || currentLeft === 'stage') return;
 		clearTimer();
 
-		game.handleSelection(answer);
+		game.handleAnswer(answer);
 		score = game.getResults().filter((x) => x.isCorrect).length;
 		nextTask();
 	}
@@ -141,8 +140,8 @@
 			{/if}
 		</div>
 		<div class="color-grid">
-			<Button kind="big" color="green" onclick={() => handleSelection(true)}>ДА</Button>
-			<Button kind="big" color="red" onclick={() => handleSelection(false)}>НЕТ</Button>
+			<Button kind="big" color="green" onclick={() => handleAnswer(true)}>ДА</Button>
+			<Button kind="big" color="red" onclick={() => handleAnswer(false)}>НЕТ</Button>
 		</div>
 		<div>Осталось времени: {timeLeft} сек</div>
 		<Button color="red" onclick={stopTest}>Стоп</Button>

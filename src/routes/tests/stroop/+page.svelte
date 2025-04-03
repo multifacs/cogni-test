@@ -74,7 +74,7 @@
 			timeLeft -= 1;
 			if (timeLeft <= 0) {
 				clearTimer();
-				game.handleSelection(null);
+				game.handleAnswer(null);
 				nextTask();
 			}
 		}, 1000);
@@ -87,11 +87,11 @@
 		}
 	}
 
-	function handleSelection(color: string) {
+	function handleAnswer(color: string) {
 		if (!isTestRunning || currentColor === 'white') return;
 		clearTimer();
 
-		game.handleSelection(color as Color);
+		game.handleAnswer(color as Color);
 		score = game.getResults().filter((x) => x.isCorrect).length;
 		nextTask();
 	}
@@ -150,7 +150,7 @@
 					class="color-button"
 					style="background-color: {color};"
 					aria-label={color}
-					onclick={() => handleSelection(color)}
+					onclick={() => handleAnswer(color)}
 				></button>
 			{/each}
 		</div>

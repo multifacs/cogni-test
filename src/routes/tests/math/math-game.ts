@@ -45,7 +45,7 @@ export class MathGame {
      * Handles the player's color selection.
      * @param selectedColor The color selected by the player.
      */
-    public handleSelection(selectedAnswer: boolean | null): void {
+    public handleAnswer(selectedAnswer: boolean | null): void {
         const currentTask = this.getCurrentTask();
         if (currentTask.left != 'stage') {
             this.currentX++;
