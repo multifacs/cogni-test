@@ -4,10 +4,10 @@
 
 	import Button from '$lib/components/button.svelte';
 
-	import { StroopTestGame } from './stroop-game';
+	import { StroopGame } from './stroop-game';
 	import type { Color } from './stroop-game';
-	import ResultsChart from './results-chart.svelte';
-	import { translate } from './utils';
+	import ResultsChart from '$lib/components/results-chart.svelte';
+	import { translate } from '$lib/components/translate';
 
 	import Chart from 'chart.js/auto';
 
@@ -22,7 +22,7 @@
 
 	let isTestRunning = $state(false);
 	let timer: number | null = null;
-	let game: StroopTestGame = $state(Object());
+	let game: StroopGame = $state(Object());
 
 	const colors = {
 		Красный: 'red',
@@ -37,10 +37,10 @@
 
 	function resetGameState() {
 		showResults = false;
-		game = new StroopTestGame();
+		game = new StroopGame();
 		score = 0;
 		isTestRunning = true;
-		nextWord();
+		nextTask();
 	}
 
 	function startTest() {
@@ -49,20 +49,20 @@
 
 	function stopTest() {
 		isTestRunning = false;
-		updateWordState('stage 1', '');
+		updateState('stage 1', '');
 		clearTimer();
 	}
 
-	function nextWord() {
+	function nextTask() {
 		if (!isTestRunning || game.isGameOver()) return endTest();
 
-		game.startNextWord();
+		game.startNextTask();
 		const { word, color } = game.getCurrentTask();
-		updateWordState(word, color);
+		updateState(word, color);
 		startTimer();
 	}
 
-	function updateWordState(word: string, color: string) {
+	function updateState(word: string, color: string) {
 		currentWord = word;
 		currentColor = color;
 		timeLeft = DURATION;
@@ -74,8 +74,8 @@
 			timeLeft -= 1;
 			if (timeLeft <= 0) {
 				clearTimer();
-				game.handleColorSelection(null);
-				nextWord();
+				game.handleSelection(null);
+				nextTask();
 			}
 		}, 1000);
 	}
@@ -87,20 +87,20 @@
 		}
 	}
 
-	function handleColorClick(color: string) {
+	function handleSelection(color: string) {
 		if (!isTestRunning || currentColor === 'white') return;
 		clearTimer();
 
-		game.handleColorSelection(color as Color);
-		score = game.getResults().filter((x) => x.answer).length;
-		nextWord();
+		game.handleSelection(color as Color);
+		score = game.getResults().filter((x) => x.isCorrect).length;
+		nextTask();
 	}
 
 	let showResults = $state(false);
 
 	function endTest() {
 		isTestRunning = false;
-		updateWordState('Конец', 'white');
+		updateState('Конец', 'white');
 		clearTimer();
 		showResults = true;
 	}
@@ -150,7 +150,7 @@
 					class="color-button"
 					style="background-color: {color};"
 					aria-label={color}
-					onclick={() => handleColorClick(color)}
+					onclick={() => handleSelection(color)}
 				></button>
 			{/each}
 		</div>
@@ -160,7 +160,8 @@
 {/if}
 
 {#if showResults}
-	<ResultsChart results={game.getResults()}></ResultsChart>
+	<ResultsChart stages={3} results={game.getResults()} xtitle="Нажатие" ytitle="Время реакции (мс)"
+	></ResultsChart>
 {/if}
 
 <style>
@@ -179,7 +180,7 @@
 		cursor: pointer;
 	}
 	.color-text {
-		font-family: "Comic Sans MS", "Comic Sans", cursive;
+		/* font-family: 'Comic Neue'; */
 		font-size: 2em;
 		margin-bottom: 20px;
 		-webkit-text-stroke-color: #5c70a3;

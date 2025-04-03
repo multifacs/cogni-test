@@ -1,137 +1,111 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
-	import { MathTestGame } from './mathTestGame'; // Adjust the import path as needed
+	import { MathGame } from './math-game'; // Adjust the import path as needed
+	import Sign from './sign.svelte';
 
 	import Chart from 'chart.js/auto';
+	import Button from '$lib/components/button.svelte';
+	import { goto } from '$app/navigation';
+	import { translate } from '$lib/components/translate';
 	Chart.defaults.color = 'red';
 
+	import type { Inequality } from './math-game';
+	import ResultsChart from '$lib/components/results-chart.svelte';
+
 	// Game state
-	let currentLeft: string = 'Начало';
-	let currentRight: string = '';
-	let currentSign: string = '';
+	let currentLeft: string | number = $state('stage');
+	let currentSign: string | null = $state('');
+	let currentRight: number | null = $state(0);
+
 	let score = 0;
-	let timeLeft = 3;
-	let isTestRunning = false;
+	const DURATION = 3;
+	let timeLeft = $state(DURATION);
+	let isTestRunning = $state(false);
+	let showResults = $state(false);
 	let timer: number | null = null;
 
 	// Game logic
-	let game: MathTestGame;
+	let game: MathGame = $state(Object());
 
-	let chart: HTMLElement | null;
 	// Initialize the game
-	onMount(() => {
-		game = new MathTestGame();
-	});
+	onMount(() => {});
+
+	function resetGameState() {
+		showResults = false;
+		game = new MathGame();
+		score = 0;
+		isTestRunning = true;
+		nextTask();
+	}
 
 	// Start the test
 	async function startTest() {
-		isTestRunning = true;
-		score = 0;
-		nextWord();
+		resetGameState();
 	}
 
-	// Move to the next word
-	async function nextWord() {
-		if (!isTestRunning) return;
+	function updateState(left: string | number, sign: string | null, right: number | null) {
+		currentLeft = left;
+		currentSign = sign;
+		currentRight = right;
+		timeLeft = DURATION;
+	}
 
-		// Check if the game is over
-		if (game.isGameOver()) {
-			endTest();
-			return;
-		}
+	function stopTest() {
+		isTestRunning = false;
+		updateState('stage', '', 0);
+		clearTimer();
+	}
 
-		// Start the next word in the game logic
-		game.startNextTask();
-		const currentTask = game.getCurrentTask();
-		console.log(currentTask);
-
-		// Update UI state
-		currentLeft = currentTask.left;
-		currentRight = currentTask.right;
-		currentSign = currentTask.sign;
-		timeLeft = 3;
-
-		// Start the 3-second timer
-		if (timer) clearInterval(timer);
+	function startTimer() {
+		clearTimer();
 		timer = setInterval(() => {
 			timeLeft -= 1;
 			if (timeLeft <= 0) {
-				clearInterval(timer);
-				game.handleSelection(null); // Handle timeout (incorrect answer)
-				nextWord(); // Move to the next word
+				clearTimer();
+				game.handleSelection(null);
+				nextTask();
 			}
 		}, 1000);
 	}
 
-	// Handle color selection
-	function handleColorClick(answer: boolean) {
-		if (!isTestRunning) return;
-		if (currentLeft == 'stage') return;
-		// Stop the timer
-		if (timer) clearInterval(timer);
-
-		// Handle the player's selection in the game logic
-		game.handleSelection(answer);
-
-		// Update the score
-		const results = game.getResults();
-		score = results.correctAnswers.filter((correct) => correct).length;
-
-		// Move to the next word
-		nextWord();
+	function clearTimer() {
+		if (timer) {
+			clearInterval(timer);
+			timer = null;
+		}
 	}
 
-	// End the test
+	function nextTask() {
+		if (!isTestRunning || game.isGameOver()) return endTest();
+
+		game.startNextTask();
+		const { left, sign, right } = game.getCurrentTask();
+		updateState(left, sign, right);
+		startTimer();
+	}
+
+	function handleSelection(answer: boolean) {
+		if (!isTestRunning || currentLeft === 'stage') return;
+		clearTimer();
+
+		game.handleSelection(answer);
+		score = game.getResults().filter((x) => x.isCorrect).length;
+		nextTask();
+	}
+
 	function endTest() {
 		isTestRunning = false;
-		currentLeft = 'Конец';
-		currentRight = 'теста';
-		if (timer) clearInterval(timer);
-
-		// Log the results
-		const results = game.getResults();
-		console.log('Reaction Times:', results.reactionTimes);
-		console.log('Correct Answers:', results.correctAnswers);
-
-		(async function () {
-			new Chart(chart, {
-				type: 'line',
-				data: {
-					labels: Array.from({ length: results.correctAnswers.length }, (_, i) => i + 1),
-					datasets: [
-						{
-							label: 'Скорость ответа (мс)',
-							data: results.reactionTimes,
-							borderColor: 'rgb(100, 100, 100)',
-							borderWidth: 2,
-							pointBackgroundColor: (context) => {
-								// Цвет точек также зависит от correct
-								const index = context.dataIndex;
-								return results.correctAnswers[index] ? 'rgb(95, 212, 107)' : 'rgb(204, 66, 51)';
-							},
-							pointRadius: 5, // Размер точек
-							tension: 0.4 // Сглаживание линии
-						}
-					]
-				},
-				options: {
-					responsive: true,
-					plugins: {
-						colors: {
-							enabled: true
-						}
-					}
-				}
-			});
-		})();
+		updateState('stage', '', 0);
+		clearTimer();
+		showResults = true;
 	}
 </script>
 
 <h1>Арифметический тест</h1>
 {#if !isTestRunning}
 	<p class="text">
-		Экран разделен пополам на 2 части: слева находится красное поле (НЕТ), справа – зеленое (ДА). По
+		Экран разделен пополам на 2 части: слева находится зеленое поле (ДА), справа – красное (НЕТ). По
 		середине показывается числовое равенство. Необходимо нажать на красное поле, если числовое
 		равенство неверное или на зеленое, если верно.
 	</p>
@@ -139,35 +113,46 @@
 		Всего 10 числовых равенств, на определение правильности каждого дается 3 секунды.
 	</p>
 	<div class="button-container">
-		<button class="start-button" onclick={startTest}>Начать тест</button>
-		<a class="back-button" href="/tests">Назад</a>
+		<Button color="green" onclick={startTest}>Начать тест</Button>
+		<Button
+			color="red"
+			onclick={() => {
+				goto('/tests');
+			}}>Назад</Button
+		>
 	</div>
 {:else}
-	<div class="subcontainer" transition:slide={{ duration: 500 }}>
+	<div class="subcontainer">
 		<div class="inequality">
-			<div class="left">
-				<span>{currentLeft}</span>
-			</div>
-			<div class="sign">
-				<span>{currentSign}</span>
-			</div>
-			<div class="right">
-				<span>{currentRight}</span>
-			</div>
+			{#if currentLeft == 'stage'}
+				<span></span>
+				<span>{`${translate(currentLeft)} ${currentRight}`}</span>
+				<span></span>
+			{:else}
+				<div class="left">
+					<span>{currentLeft}</span>
+				</div>
+				<div class="sign">
+					<Sign sign={currentSign}></Sign>
+				</div>
+				<div class="right">
+					<span>{currentRight}</span>
+				</div>
+			{/if}
 		</div>
 		<div class="color-grid">
-			<button class="color-button yes" aria-label="yes" onclick={() => handleColorClick(true)}
-				>ДА</button
-			>
-			<button class="color-button no" aria-label="no" onclick={() => handleColorClick(false)}
-				>НЕТ</button
-			>
+			<Button kind="big" color="green" onclick={() => handleSelection(true)}>ДА</Button>
+			<Button kind="big" color="red" onclick={() => handleSelection(false)}>НЕТ</Button>
 		</div>
 		<div>Осталось времени: {timeLeft} сек</div>
+		<Button color="red" onclick={stopTest}>Стоп</Button>
 	</div>
 {/if}
 
-<canvas bind:this={chart}></canvas>
+{#if showResults}
+	<ResultsChart stages={1} results={game.getResults()} xtitle="Нажатие" ytitle="Время реакции (мс)"
+	></ResultsChart>
+{/if}
 
 <style>
 	h1 {
@@ -176,22 +161,6 @@
 	.text {
 		text-align: justify;
 		margin: 10px 20px;
-	}
-	.color-button {
-		padding: 10px 20px;
-		margin: 5px;
-		width: 80px;
-		height: 60px;
-		border: none;
-		cursor: pointer;
-	}
-
-	.yes {
-		background-color: green;
-	}
-
-	.no {
-		background-color: red;
 	}
 
 	.subcontainer {
@@ -209,10 +178,24 @@
 	}
 
 	.inequality {
-		display: flex;
-		justify-content: center;
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		align-items: center;
 		gap: 20px;
-		font-size: large;
+		font-size: 30pt;
+		font-weight: bolder;
+	}
+
+	.sign {
+		grid-column: 2;
+	}
+
+	.left {
+		justify-self: end;
+	}
+
+	.right {
+		justify-self: start;
 	}
 
 	.button-container {
@@ -220,41 +203,5 @@
 		gap: 10px; /* Расстояние между кнопками */
 		justify-content: center; /* Выравнивание по центру */
 		align-items: center; /* Выравнивание по вертикали */
-	}
-
-	.start-button {
-		background-color: green; /* Зеленый цвет */
-		color: white; /* Белый текст */
-		border: none;
-		padding: 10px 20px;
-		border-radius: 5px;
-		cursor: pointer;
-		font-size: 16px;
-		transition: background-color 0.3s ease;
-	}
-
-	.start-button:hover {
-		background-color: darkgreen; /* Темно-зеленый при наведении */
-	}
-
-	.back-button {
-		background-color: #bf3023; /* Красный цвет */
-		color: white; /* Белый текст */
-		text-decoration: none; /* Убираем подчеркивание */
-		padding: 10px 20px;
-		border-radius: 5px;
-		cursor: pointer;
-		font-size: 16px;
-		transition: background-color 0.3s ease;
-	}
-
-	.back-button:hover {
-		background-color: darkred; /* Темно-красный при наведении */
-	}
-
-	@media (max-width: 600px) {
-		.color-button {
-			padding: 8px 16px;
-		}
 	}
 </style>
