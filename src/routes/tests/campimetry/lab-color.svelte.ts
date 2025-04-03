@@ -1,13 +1,76 @@
+export const colors = {
+    'black': {
+        l: 6,
+        a: 0,
+        b: 0
+    },
+    'white': {
+        l: 94,
+        a: 0,
+        b: 0
+    },
+    'dark-magenta': {
+        l: 24,
+        a: 39,
+        b: -27
+    },
+    'light-magenta': {
+        l: 69,
+        a: 38,
+        b: -26
+    },
+    'dark-blue': {
+        l: 10,
+        a: 17,
+        b: -40
+    },
+    'light-blue': {
+        l: 49,
+        a: 16,
+        b: -44
+    },
+    'dark-green': {
+        l: 29,
+        a: -24,
+        b: 5
+    },
+    'light-green': {
+        l: 78,
+        a: -35,
+        b: -2
+    },
+    'dark-red': {
+        l: 28,
+        a: 40,
+        b: 31
+    },
+    'light-red': {
+        l: 71,
+        a: 36,
+        b: 22
+    },
+}
+
 export class LabColor {
     private l: number = $state(0);
     private a: number = $state(0);
     private b: number = $state(0);
 
-    private DELTA = 20;
+    public setColor(color: string) {
+        console.log(Object.keys(colors).indexOf(color), color)
+        if (Object.keys(colors).indexOf(color) != -1) {
+            let { l, a, b } = colors[color];
+            this.l = l;
+            this.a = a;
+            this.b = b;
+            return;
+        } else {
+            throw "no such color";
+        }
+    }
 
     constructor(other?: LabColor) {
         if (!other) {
-            this.setRandomColor();
             return;
         };
 
@@ -21,20 +84,6 @@ export class LabColor {
         const dB = this.b - other.b;
         if (dA != 0) return dA;
         return dB;
-    }
-
-    public setRandomColor() {
-        this.l = Math.round(Math.random() * 15) + 80; // L between 80 and 95
-        this.a = Math.round(Math.random() * 60) - 30; // a between -30 and 30
-        this.b = Math.round(Math.random() * 60) - 30; // b between -30 and 30
-    }
-
-    public setRandomA() {
-        this.a = this.a + Math.round(Math.random() * this.DELTA) + 3;
-    }
-
-    public setRandomB() {
-        this.b = this.b + Math.round(Math.random() * this.DELTA) + 3;
     }
 
     public incL() {

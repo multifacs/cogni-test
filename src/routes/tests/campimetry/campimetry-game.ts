@@ -1,22 +1,27 @@
 import { LabColor } from "./lab-color.svelte";
+import { colors } from "./lab-color.svelte";
+import { shuffle } from "$lib";
 
 export type Silhouette = {
     answer: string;
-    backgroundColor?: LabColor;
-    silhouetteColor?: LabColor;
-    channel?: 'a' | 'b';
-    op?: '+' | '-';
+    color: LabColor;
+    channel: 'a' | 'b';
+    op: '+' | '-';
 }
 
-export class CampimetryGame {
-    private readonly stageTaskCounts: number[] = [5, 5]; // Words per stage
-    private currentStage: number = 0;
-    private currentTaskIndex: number = 0;
+import type { Result } from "$lib/components/result";
 
-    private delta: number[] = [];
+export class CampimetryGame {
+    // private readonly stageTaskCounts: number[] = [5]; // Words per stage
+    private currentTaskIndex: number = 0;
+    private currentStage: number = 1;
+
+    private results: Result[] = [];
 
     private tasks: Silhouette[] = [];
     private silhouettes: string[] = [];
+
+    private allColors = Object.keys(colors);
 
     constructor(silhouettes: string[]) {
         this.silhouettes = silhouettes.slice();
@@ -27,60 +32,59 @@ export class CampimetryGame {
      * Generates tasks for all stages.
      */
     private generateTasks(): void {
-        this.tasks.push({ answer: "stage 1" });
-        for (let i = 0; i < this.stageTaskCounts[0]; i++) {
-            const task = this.getRandomTask('+');
-            this.tasks.push(task);
-        }
-        this.tasks.push({ answer: "stage 2" });
-        for (let i = 0; i < this.stageTaskCounts[1]; i++) {
-            const task = this.getRandomTask('-');
-            this.tasks.push(task);
-        }
-    }
+        shuffle(this.allColors);
 
-    /**
-     * Starts the game or advances to the next task.
-     */
-    public startNextTask(): void {
-        if (this.currentTaskIndex >= this.tasks.length) {
-            console.log('Game over!');
-            return;
-        }
-        // this.startTime = performance.now();
+        this.allColors.forEach(color => {
+            this.tasks.push(this.getRandomTask(color));
+        })
     }
 
     /**
      * Handles the player's color selection.
      * @param selectedColor The color selected by the player.
      */
-    public handleAnswer(delta?: number): void {
-        const currentTask = this.getCurrentTask();
-        if (currentTask.answer != 'stage' && delta) {
-            this.delta.push(delta);
+    public handleAnswer(delta: number): void {
+        console.log("logic stage:", this.currentStage);
+        let x = this.currentTaskIndex + 1;
+        if (this.currentStage == 2) {
+            x += this.allColors.length - 1;
         }
-        this.currentTaskIndex++;
+        const y = delta;
+        const isCorrect = true;
+        const stage = this.currentStage;
+
+        this.results.push({
+            x,
+            y,
+            isCorrect,
+            stage
+        });
+        console.log(x,
+            y,
+            isCorrect,
+            stage,
+            this.currentTaskIndex,
+            this.currentStage
+        )
+        if (this.currentStage == 1) this.currentTaskIndex++;
+        this.currentStage = (this.currentStage + 2) % 2 + 1
     }
 
     /**
      * Gets a random color from the available colors.
      * @returns A random color.
      */
-    private getRandomTask(op: '+' | '-'): Silhouette {
-        const answer = this.silhouettes[Math.floor(Math.random() * this.silhouettes.length)];
-        const backgroundColor = new LabColor();
-        // const reverse = Math.round(Math.random()) == 1;
-
-        let silhouetteColor = new LabColor(backgroundColor);
+    private getRandomTask(colorString: string): Silhouette {
+        const op = (Math.round(Math.random()) == 1) ? '+' : '-';
         const channel = (Math.round(Math.random()) == 1) ? 'a' : 'b';
-        if (op == '-') {
-            channel == 'a' ? silhouetteColor.setRandomA() : silhouetteColor.setRandomB()
-        }
+
+        const answer = this.silhouettes[Math.floor(Math.random() * this.silhouettes.length)];
+        const color = new LabColor();
+        color.setColor(colorString);
 
         return {
             answer,
-            backgroundColor,
-            silhouetteColor,
+            color,
             channel,
             op
         }
@@ -98,10 +102,8 @@ export class CampimetryGame {
      * Gets the results of the game.
      * @returns The reaction times and correctness of answers.
      */
-    public getResults(): { delta: number[] } {
-        return {
-            delta: this.delta
-        };
+    public getResults(): Result[] {
+        return this.results;
     }
 
     /**

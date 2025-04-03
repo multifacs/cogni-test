@@ -27,11 +27,15 @@
 	const stageNums: number[] = [];
 	for (let i = 1; i <= stages; i++) stageNums.push(i);
 
+	function compareNumbers(a: number, b: number) {
+		return a - b;
+	}
+
 	onMount(() => {
 		chart = new Chart(canvas, {
 			type: 'line',
 			data: {
-				labels: results.map((el) => el.x),
+				labels: results.map((el) => el.x).sort(compareNumbers),
 				datasets: stageNums.map((stage) => {
 					return {
 						label: translate(`stage ${stage}`),

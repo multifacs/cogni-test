@@ -8,34 +8,65 @@
 	import { shuffle } from '$lib';
 
 	import Chart from 'chart.js/auto';
+	import Button from '$lib/components/button.svelte';
+	import { goto } from '$app/navigation';
+	import ResultsChart from '$lib/components/results-chart.svelte';
 	let { data } = $props();
 
 	let isTestRunning = $state(false);
-	let isHome = $state(true);
-	let image = $state(Object());
-
-	let timeLeft = $state(3);
-	let timer: any = $state(null);
+	let showResults = $state(true);
 
 	let game: CampimetryGame = $state(Object());
 	let silhouettes: string[] = $state([]);
+
 	let currentAnswer = $state('');
 	let currentBackgroundColor: LabColor = $state(Object());
 	let currentSilhouetteColor: LabColor = $state(Object());
 	let currentChannel = $state('');
 	let currentOp = $state('');
 
+	let currentStage = $state(1);
+	let delta = $state(0);
+
 	onMount(async () => {
 		console.log(Object.keys(data.silhouettes));
-		game = new CampimetryGame(Object.keys(data.silhouettes));
 	});
 
-	let chart: HTMLElement = $state(Object());
-
 	async function startTest() {
+		resetGameState();
+	}
+
+	function resetGameState() {
+		showResults = false;
+		currentStage = 1;
+		delta = 0;
+		game = new CampimetryGame(Object.keys(data.silhouettes));
 		isTestRunning = true;
-		isHome = false;
 		nextTask();
+	}
+
+	function updateState(
+		s: string[],
+		answer: string,
+		color: LabColor,
+		channel: 'a' | 'b',
+		op: '+' | '-'
+	) {
+		silhouettes = s; // getSilhouetteChoices(2, currentAnswer)
+		currentAnswer = answer;
+		currentBackgroundColor = new LabColor(color);
+		currentSilhouetteColor = new LabColor(color);
+		currentChannel = channel;
+		currentOp = op;
+	}
+
+	function stopTest() {
+		isTestRunning = false;
+	}
+
+	function endTest() {
+		isTestRunning = false;
+		showResults = true;
 	}
 
 	function getSilhouetteChoices(num: number, correct: string): string[] {
@@ -49,102 +80,47 @@
 		return choices;
 	}
 
-	// Move to the next word
-	async function nextTask() {
-		if (!isTestRunning) return;
+	function nextTask() {
+		if (!isTestRunning || game.isGameOver()) return endTest();
+		if (currentStage == 2) return;
 
-		// Check if the game is over
-		if (game.isGameOver()) {
-			endTest();
-			return;
-		}
-
-		// Start the next word in the game logic
-		game.startNextTask();
 		const currentTask = game.getCurrentTask();
-		currentAnswer = currentTask.answer;
-		console.log(currentTask);
+		updateState(
+			getSilhouetteChoices(2, currentTask.answer),
+			currentTask.answer,
+			currentTask.color,
+			currentTask.channel,
+			currentTask.op
+		);
+	}
 
-		// Update UI state
+	function handleAnswer() {
+		if (!isTestRunning) return;
+		console.log("ui stage:", currentStage);
 
-		if (currentAnswer.includes('stage')) {
-			timeLeft = 3;
-			// Start the 3-second timer
-			if (timer) clearInterval(timer);
-			timer = setInterval(() => {
-				timeLeft -= 1;
-				if (timeLeft <= 0) {
-					clearInterval(timer);
-					game.handleAnswer(); // Handle timeout (incorrect answer)
-					nextTask(); // Move to the next word
-				}
-			}, 1000);
-		} else if (
-			currentTask.backgroundColor &&
-			currentTask.silhouetteColor &&
-			currentTask.op &&
-			currentTask.channel
-		) {
-			silhouettes = getSilhouetteChoices(2, currentAnswer);
-			currentBackgroundColor = currentTask.backgroundColor;
-			currentSilhouetteColor = currentTask.silhouetteColor;
-			currentChannel = currentTask.channel;
-			currentOp = currentTask.op;
+		game.handleAnswer(delta);
+		currentStage = ((currentStage + 2) % 2) + 1;
+		delta = 0;
+
+		if (currentStage == 1) {
+			nextTask();
+		}
+		if (currentStage == 2) {
+			currentOp = currentOp == '+' ? '-' : '+';
 		}
 	}
-
-	// Handle color selection
-	function handleAnswer(delta: number) {
-		if (!isTestRunning) return;
-		if (game.getCurrentTask().answer.includes('stage')) return;
-		// Handle the player's selection in the game logic
-		game.handleAnswer(delta);
-		// Update the score
-		const results = game.getResults();
-		// Move to the next word
-		nextTask();
-	}
-
-	// End the test
-	function endTest() {
-		isTestRunning = false;
-		if (timer) clearInterval(timer);
-
-		// Log the results
-		const results = game.getResults();
-
-		(async function () {
-			new Chart(chart, {
-				type: 'line',
-				data: {
-					labels: Array.from({ length: results.delta.length }, (_, i) => i + 1),
-					datasets: [
-						{
-							label: 'Отклонение оттенка (ед.)',
-							data: results.delta,
-							borderColor: 'red',
-							borderWidth: 2,
-							pointRadius: 5, // Размер точек
-							tension: 0.4 // Сглаживание линии
-						}
-					]
-				},
-				options: {
-					responsive: true,
-					plugins: {
-						colors: {
-							enabled: true
-						}
-					}
-				}
-			});
-		})();
+	function changeColor() {
+		if (currentChannel == 'a')
+			currentOp == '+' ? currentSilhouetteColor.incA() : currentSilhouetteColor.decA();
+		if (currentChannel == 'b')
+			currentOp == '+' ? currentSilhouetteColor.incB() : currentSilhouetteColor.decB();
+		delta++;
 	}
 </script>
 
 <h1>Компьютерная кампиметрия</h1>
 
-{#if isHome}
+{#if !isTestRunning}
 	<p class="text">
 		<b>Первый этап.</b> На экране отображен фон и чей-то силуэт одного и того же цвета. Необходимо нажимать
 		на кнопку «Добавить оттенок», чтобы прибавлять оттенок силуэту. Когда фигурка становится распознаваемой,
@@ -154,92 +130,64 @@
 		<b>Второй этап.</b> На экране все тот же фон и тот же силуэт, но уже отклонение от цвета фона определено
 		не нажатиями на кнопку «Добавить оттенок», а от программно заданного числа шагов.
 	</p>
+	<div class="button-container">
+		<Button color="green" onclick={startTest}>Начать тест</Button>
+		<Button
+			color="red"
+			onclick={() => {
+				goto('/tests');
+			}}>Назад</Button
+		>
+	</div>
 {:else}
 	<div class="subcontainer">
-		{#if !currentAnswer.includes('stage')}
-			<div class="background" style={`background-color: ${currentBackgroundColor.toString()}`}>
-				<div
-					class="silhouette"
-					style={`
+		<div class="background" style={`background-color: ${currentBackgroundColor.toString()}`}>
+			<div
+				class="silhouette"
+				style={`
 				background-color: ${currentSilhouetteColor.toString()};
 				mask-image: url(${data.silhouettes[currentAnswer]});
 				-webkit-mask-image: url(${data.silhouettes[currentAnswer]});
 				`}
-				></div>
-			</div>
-			<button
-				class="inc-button"
-				onclick={() => {
-					if (currentOp == '+') {
-						currentChannel == 'a' ? currentSilhouetteColor.incA() : currentSilhouetteColor.incB();
-					} else {
-						currentChannel == 'a' ? currentSilhouetteColor.decA() : currentSilhouetteColor.decB();
-					}
-				}}>{currentOp == '+' ? 'Прибавить' : 'Убавить'} оттенок</button
-			>
-			{#if currentOp == '+'}
-				<div class="row">
-					{#each silhouettes as s}
-						<button
-							aria-label={`${s} button`}
-							class="silhouette"
-							style={`
+			></div>
+		</div>
+		<Button color="blue" onclick={changeColor}>Изменить оттенок</Button>
+		{#if currentStage == 1}
+			<div class="row">
+				{#each silhouettes as s}
+					<button
+						aria-label={`${s} button`}
+						class="silhouette"
+						style={`
 							background-color: white;
 							mask-image: url(${data.silhouettes[s]});
 							-webkit-mask-image: url(${data.silhouettes[s]});
 							`}
-							onclick={() => {
-								if (s == currentAnswer) {
-									const delta = currentSilhouetteColor.getDelta(currentBackgroundColor);
-									handleAnswer(delta);
-								}
-							}}
-						></button>
-					{/each}
-				</div>
-			{:else}
-				<button
-					class="inc-button"
-					onclick={() => {
-						const delta = currentSilhouetteColor.getDelta(currentBackgroundColor);
-						handleAnswer(delta);
-					}}
-				>
-					Больше не видно
-				</button>
-			{/if}
+						onclick={() => {
+							if (s == currentAnswer) {
+								handleAnswer();
+							}
+						}}
+					></button>
+				{/each}
+			</div>
 		{:else}
-			<h1>{game.getCurrentTask().answer}</h1>
+			<Button color="blue" onclick={handleAnswer}>Больше не видно</Button>
 		{/if}
-		{#if !isTestRunning}{/if}
+
+		<div class="button-container">
+			<Button color="green" onclick={startTest}>Перезапустить тест</Button>
+			<Button color="red" onclick={stopTest}>Стоп</Button>
+		</div>
 	</div>
 {/if}
-<div class="button-container">
-	<button class="start-button" onclick={startTest}
-		>{isTestRunning ? 'Перезапустить тест' : 'Начать тест'}</button
-	>
-	{#if isTestRunning}
-		<button
-			class="start-button back-button"
-			onclick={() => {
-				isTestRunning = false;
-				isHome = true;
-			}}>Стоп</button
-		>
-	{:else}
-		<a class="back-button" href="/tests">Назад</a>
-	{/if}
-</div>
 
-<canvas bind:this={chart}></canvas>
+{#if showResults}
+	<ResultsChart stages={2} results={game.getResults()} xtitle="Оттенок" ytitle="Отклонение"
+	></ResultsChart>
+{/if}
 
 <style>
-	@media (max-width: 440px) {
-		h1 {
-			font-size: larger;
-		}
-	}
-
 	.background {
 		display: flex;
 		justify-content: center;
@@ -252,6 +200,9 @@
 	.silhouette {
 		width: 100px;
 		height: 100px;
+		touch-action: manipulation;
+		user-select: none;
+		cursor: pointer;
 	}
 
 	.row {
@@ -262,12 +213,6 @@
 		display: flex;
 		gap: 10px;
 		margin-top: 20px;
-	}
-	.start-button,
-	.back-button {
-		padding: 10px 20px;
-		font-size: 16px;
-		cursor: pointer;
 	}
 
 	.subcontainer {
@@ -283,47 +228,5 @@
 		gap: 10px; /* Расстояние между кнопками */
 		justify-content: center; /* Выравнивание по центру */
 		align-items: center; /* Выравнивание по вертикали */
-	}
-
-	.inc-button {
-		background-color: rgb(39, 203, 211); /* Зеленый цвет */
-		color: white; /* Белый текст */
-		border: none;
-		padding: 10px 20px;
-		border-radius: 5px;
-		cursor: pointer;
-		font-size: 16px;
-		transition: background-color 0.3s ease;
-		touch-action: manipulation;
-	}
-
-	.start-button {
-		background-color: green; /* Зеленый цвет */
-		color: white; /* Белый текст */
-		border: none;
-		padding: 10px 20px;
-		border-radius: 5px;
-		cursor: pointer;
-		font-size: 16px;
-		transition: background-color 0.3s ease;
-	}
-
-	.start-button:hover {
-		background-color: darkgreen; /* Темно-зеленый при наведении */
-	}
-
-	.back-button {
-		background-color: #bf3023; /* Красный цвет */
-		color: white; /* Белый текст */
-		text-decoration: none; /* Убираем подчеркивание */
-		padding: 10px 20px;
-		border-radius: 5px;
-		cursor: pointer;
-		font-size: 16px;
-		transition: background-color 0.3s ease;
-	}
-
-	.back-button:hover {
-		background-color: darkred; /* Темно-красный при наведении */
 	}
 </style>

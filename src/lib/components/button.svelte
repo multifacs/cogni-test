@@ -13,6 +13,8 @@
 		border-radius: 5px;
 		cursor: pointer;
 		transition: background-color 0.2s ease;
+		touch-action: manipulation;
+		user-select: none;
 	}
 
 	.normal {
