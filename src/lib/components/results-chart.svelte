@@ -42,7 +42,11 @@
 						data: results.filter((el) => el.stage == stage),
 						borderWidth: 1,
 						pointBackgroundColor: (ctx) =>
-							ctx.raw.isCorrect ? 'rgb(95, 212, 107)' : 'rgb(204, 66, 51)',
+							ctx.raw.y == 0
+								? 'rgb(95, 212, 107)'
+								: ctx.raw.y > 0
+									? 'rgb(255, 99, 132)'
+									: 'rgb(55, 162, 235)',
 						pointRadius: 5,
 						tension: 0.4
 					};

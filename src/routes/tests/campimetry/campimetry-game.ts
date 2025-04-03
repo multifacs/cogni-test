@@ -59,13 +59,6 @@ export class CampimetryGame {
             isCorrect,
             stage
         });
-        console.log(x,
-            y,
-            isCorrect,
-            stage,
-            this.currentTaskIndex,
-            this.currentStage
-        )
         if (this.currentStage == 1) this.currentTaskIndex++;
         this.currentStage = (this.currentStage + 2) % 2 + 1
     }

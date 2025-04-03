@@ -14,7 +14,7 @@
 	let { data } = $props();
 
 	let isTestRunning = $state(false);
-	let showResults = $state(true);
+	let showResults = $state(false);
 
 	let game: CampimetryGame = $state(Object());
 	let silhouettes: string[] = $state([]);
@@ -100,9 +100,9 @@
 
 		game.handleAnswer(delta);
 		currentStage = ((currentStage + 2) % 2) + 1;
-		delta = 0;
-
+		
 		if (currentStage == 1) {
+			delta = 0;
 			nextTask();
 		}
 		if (currentStage == 2) {
@@ -114,7 +114,8 @@
 			currentOp == '+' ? currentSilhouetteColor.incA() : currentSilhouetteColor.decA();
 		if (currentChannel == 'b')
 			currentOp == '+' ? currentSilhouetteColor.incB() : currentSilhouetteColor.decB();
-		delta++;
+		if (currentStage == 1) delta++;
+		if (currentStage == 2) delta--;
 	}
 </script>
 
