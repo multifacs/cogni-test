@@ -104,6 +104,12 @@
 		clearTimer();
 		showResults = true;
 	}
+
+	const stageInstructions = {
+		'stage 1': 'Нужно соответствовать и цвету, и смыслу.',
+		'stage 2': 'Нужно соответствовать смыслу.',
+		'stage 3': 'Нужно соответствовать и цвету.'
+	};
 </script>
 
 <h1>Тест Струпа</h1>
@@ -143,7 +149,12 @@
 	</div>
 {:else}
 	<div class="subcontainer">
-		<div class="color-text" style="color: {currentColor};">{translate(currentWord)}</div>
+		<div class="color-text">
+			<h1 style="color: {currentColor};">{translate(currentWord)}</h1>
+			{#if currentWord.includes('stage')}
+				<p>{stageInstructions[currentWord]}</p>
+			{/if}
+		</div>
 		<div class="color-grid">
 			{#each Object.values(colors) as color}
 				<button
@@ -181,10 +192,18 @@
 	}
 	.color-text {
 		/* font-family: 'Comic Neue'; */
-		font-size: 2em;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	.color-text h1 {
+		font-size: 24pt;
 		margin-bottom: 20px;
 		-webkit-text-stroke-color: #5c70a3;
 		-webkit-text-stroke: 1px;
+	}
+	.color-text p {
+		font-size: 12pt;
 	}
 
 	.subcontainer {
