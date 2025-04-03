@@ -171,6 +171,9 @@
 {/if}
 
 <style>
+	p {
+		text-align: justify;
+	}
 	.color-grid {
 		display: flex;
 		gap: 1rem;
