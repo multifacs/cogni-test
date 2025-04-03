@@ -261,7 +261,7 @@
 {/if}
 
 {#if isHome}
-	<p class="text">
+	<p>
 		На большом экране в течение 1 минуты отображается матрица из букв. В ней необходимо по
 		горизонтали справа налево находить слова. На экране телефона каждое найденное слово нужно
 		выделить.
@@ -335,9 +335,6 @@
 </div>
 
 <style>
-	h1 {
-		margin: 0;
-	}
 	.grid {
 		display: grid;
 		touch-action: none;
@@ -384,10 +381,6 @@
 		padding: 10px 20px;
 		font-size: 16px;
 		cursor: pointer;
-	}
-	.text {
-		text-align: justify;
-		margin: 10px 20px;
 	}
 
 	.subcontainer {

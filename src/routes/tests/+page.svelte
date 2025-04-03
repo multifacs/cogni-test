@@ -45,12 +45,12 @@
 		text-decoration: none;
 		color: #333;
 		font-size: 16px;
-		transition: background-color 0.3s ease;
+		transition: background-color 0.2s ease;
 	}
 
 	.test-button span {
 		color: var(--main-text-color);
-		transition: 0.3s ease;
+		transition: 0.2s ease;
 	}
 
 	.test-button img {

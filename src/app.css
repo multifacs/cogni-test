@@ -5,19 +5,47 @@
     --button-green: rgb(15, 132, 15);
     --button-red: #bf3023;
     --button-blue: #007acc;
+
+    /* campimetry */
+    --camp-black: #141414;
+    --camp-white: #eeeeee;
+    --camp-magenta-dark: lab(6 0 0)#611963;
+    --camp-magenta-light: lab(6 0 0)#da8ed9;
+    --camp-blue-dark: lab(6 0 0)#0c1452;
+    --camp-blue-light: lab(6 0 0)#6c6dbf;
+    --camp-green-dark: lab(6 0 0)#0a4d3b;
+    --camp-green-light: lab(6 0 0)#6ad3c2;
+    --camp-red-dark: lab(6 0 0)#7b1f14;
+    --camp-red-light: lab(6 0 0)#f09286;
 }
 
 html,
 body,
-p {
+p,
+h1,
+h2,
+h3 {
     margin: 0;
+    padding: 0;
     /* Убираем отступы по умолчанию */
 }
 
-html, body {
+@media (max-width: 440px) {
+    h1 {
+        font-size: larger;
+    }
+}
+
+p {
+    text-align: justify;
+}
+
+html,
+body {
     height: 100%;
     width: 100%;
-    overflow: hidden; /* Prevents scrolling */
+    overflow: hidden;
+    /* Prevents scrolling */
 }
 
 body {
@@ -27,6 +55,8 @@ body {
 
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Centers vertically */
-    align-items: center; /* Centers horizontally */
+    justify-content: center;
+    /* Centers vertically */
+    align-items: center;
+    /* Centers horizontally */
 }
