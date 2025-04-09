@@ -12,53 +12,32 @@
 	});
 </script>
 
-<form class="logout-form" method="POST" action="/?/logout" use:enhance>
-	<span>User ID: {$userStore}</span>
-	<button type="submit" class="logout-button" disabled={$userStore == ''}>Выйти</button>
+<form
+	class="absolute top-[10px] mr-[20px] flex w-full items-center justify-end text-sm sm:m-0 sm:justify-around"
+	method="POST"
+	action="/?/logout"
+	use:enhance
+>
+	<span class="hidden sm:block">User ID: {$userStore}</span>
+	<Button type="submit" kind="small" color="red" disabled={$userStore == ''}>Выйти</Button>
 </form>
 
-<div class="container">
+<div
+	class="container flex max-w-2xl flex-col items-center justify-center gap-2.5 p-2.5
+"
+>
 	{@render children()}
 </div>
 
 <style>
 	.container {
-		max-width: 600px;
+		/* max-width: 600px; */
 		margin: 10vh auto;
-		padding: 10px 10px;
-		display: flex;
-		flex-direction: column;
-		justify-content: center; /* Центрирование по горизонтали */
-		align-items: center; /* Центрирование по вертикали */
-		transition: height 0.5s ease; /* Анимация изменения высоты */
-		gap: 10px;
-	}
-
-	.logout-form {
-		position: absolute;
-		top: 10px;
-		width: 100%;
-		display: flex;
-		justify-content: space-around;
-		align-items: center;
-		font-size: small;
-	}
-
-	.logout-button {
-		width: 80px;
-		padding: 5px;
-		background-color: #bf3023;
-		color: #fff;
-		border: none;
-		border-radius: 5px;
-		font-size: 16px;
-		cursor: pointer;
-	}
-
-	button:disabled,
-	button[disabled] {
-		border: 1px solid #999999;
-		background-color: #888888;
-		color: #666666;
+		/* padding: 10px 10px; */
+		/* display: flex; */
+		/* flex-direction: column; */
+		/* justify-content: center; Центрирование по горизонтали */
+		/* align-items: center; Центрирование по вертикали */
+		/* gap: 10px; */
 	}
 </style>

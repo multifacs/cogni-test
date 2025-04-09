@@ -6,48 +6,57 @@
 
 	onMount(() => {
 		userStore.set(data.user || '');
-		console.log(Object.entries(data.tests))
+		console.log(Object.entries(data.tests));
 	});
 </script>
 
-<h1>Тесты</h1>
-<div class="test-container">
-	{#each data.tests as {name, path, img}}
-		<a href={path} class="test-button">
+<h1 class="text-3xl font-bold">Тесты</h1>
+<div
+	class="test-container
+	flex
+	max-h-[80vh]
+	max-w-[350px]
+	min-w-[300px]
+	shrink-1
+	flex-col
+	gap-4
+	overflow-y-scroll
+	rounded-4xl
+	bg-gray-700
+	p-5
+	shadow-md
+	sm:overflow-hidden"
+>
+	{#each data.tests as { name, path, img }}
+		<a
+			href={path}
+			class="test-button
+			box-border
+			flex items-center
+			justify-between
+			gap-2
+			rounded-3xl
+			bg-gray-600
+			p-2.5
+			transition
+			hover:bg-gray-50
+			"
+		>
 			<span>{name}</span>
-			<img src={img} alt={name} class="test-icon" />
+			<img
+				src={img}
+				alt={name}
+				class="test-icon
+				h-16
+				w-16
+				rounded-2xl
+				"
+			/>
 		</a>
 	{/each}
 </div>
 
 <style>
-	.test-container {
-		background-color: #4c4c4c;
-		padding: 20px;
-		border-radius: 10px;
-		box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-		width: 300px;
-		margin: 0 auto;
-		display: flex;
-		flex-direction: column;
-		gap: 15px;
-	}
-
-	.test-button {
-		background-color: #393939;
-		border: 3px solid var(--main-text-color);
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		box-sizing: border-box;
-		padding: 10px 10px;
-		border-radius: 10px;
-		text-decoration: none;
-		color: #333;
-		font-size: 16px;
-		transition: background-color 0.2s ease;
-	}
-
 	.test-button span {
 		color: var(--main-text-color);
 		transition: 0.2s ease;
@@ -63,13 +72,5 @@
 
 	.test-button:hover span {
 		color: #3b3b3b;
-	}
-
-	.test-icon {
-		width: 70px;
-		height: 70px;
-		border-radius: 10%;
-		object-fit: cover;
-		background-size: 50%;
 	}
 </style>

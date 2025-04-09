@@ -32,33 +32,31 @@ h3 {
 	/* Убираем отступы по умолчанию */
 }
 
-@media (max-width: 440px) {
-	h1 {
-		font-size: larger;
-	}
-}
-
 p {
 	text-align: justify;
 }
 
 html,
 body {
-	height: 100%;
 	width: 100%;
+	height: 100%;
 	overflow: hidden;
-	/* Prevents scrolling */
+	margin: 0;
 }
 
 body {
 	font-family: 'Roboto', sans-serif;
-	background-color: var(--main-bg-color);
-	color: var(--main-text-color);
+	background-color: var(--color-gray-800);
+	color: var(--color-gray-50);
 
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	/* Centers vertically */
 	align-items: center;
-	/* Centers horizontally */
+}
+
+/* Minimum height */
+@media (min-height: 720px) {
+	body {
+	}
 }
