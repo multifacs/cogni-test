@@ -1,18 +1,17 @@
+
 import { LabColor } from "./lab-color.svelte";
 import { colors } from "./lab-color.svelte";
 import { shuffle } from "$lib";
+import type { Result } from "$lib/components/result";
 
 export type Silhouette = {
     answer: string;
     color: LabColor;
     channel: 'a' | 'b';
     op: '+' | '-';
-}
-
-import type { Result } from "$lib/components/result";
+};
 
 export class CampimetryGame {
-    // private readonly stageTaskCounts: number[] = [5]; // Words per stage
     private currentTaskIndex: number = 0;
     private currentStage: number = 1;
 
@@ -23,26 +22,45 @@ export class CampimetryGame {
 
     private allColors = Object.keys(colors);
 
+    // New fields
+    private decreasingSteps: number[] = [];
+    private currentDecreaseStep: number = 0;
+    private maxDecreaseSteps: number = 0;
+
     constructor(silhouettes: string[]) {
         this.silhouettes = silhouettes.slice();
         this.generateTasks();
     }
 
-    /**
-     * Generates tasks for all stages.
-     */
+    private getRandomTask(colorName: string): Silhouette {
+        const color = colors[colorName];
+        const channel: 'a' | 'b' = Math.random() < 0.5 ? 'a' : 'b';
+        const op: '+' | '-' = Math.random() < 0.5 ? '+' : '-';
+        const answer = this.silhouettes[Math.floor(Math.random() * this.silhouettes.length)];
+    
+        return {
+            answer,
+            color,
+            channel,
+            op
+        };
+    }
+    
+
     private generateTasks(): void {
         shuffle(this.allColors);
-
         this.allColors.forEach(color => {
             this.tasks.push(this.getRandomTask(color));
-        })
+        });
+
+        // Generate decreasing steps once for all tasks (can be moved to per-task logic)
+        const initialOffset = this.randomInt(10, 17);
+        let stepsCount = this.randomInt(6, 12);
+        this.decreasingSteps = this.generateDecreasingSteps(initialOffset, stepsCount);
+        this.maxDecreaseSteps = this.decreasingSteps.length;
+        this.currentDecreaseStep = 0;
     }
 
-    /**
-     * Handles the player's color selection.
-     * @param selectedColor The color selected by the player.
-     */
     public handleAnswer(delta: number): void {
         console.log("logic stage:", this.currentStage);
         let x = this.currentTaskIndex + 1;
@@ -59,51 +77,39 @@ export class CampimetryGame {
             isCorrect,
             stage
         });
-        if (this.currentStage == 1) this.currentTaskIndex++;
-        this.currentStage = (this.currentStage + 2) % 2 + 1
-    }
 
-    /**
-     * Gets a random color from the available colors.
-     * @returns A random color.
-     */
-    private getRandomTask(colorString: string): Silhouette {
-        const op = (Math.round(Math.random()) == 1) ? '+' : '-';
-        const channel = (Math.round(Math.random()) == 1) ? 'a' : 'b';
-
-        const answer = this.silhouettes[Math.floor(Math.random() * this.silhouettes.length)];
-        const color = new LabColor();
-        color.setColor(colorString);
-
-        return {
-            answer,
-            color,
-            channel,
-            op
+        if (this.currentStage == 1) {
+            this.currentTaskIndex++;
         }
+        this.currentStage = (this.currentStage + 2) % 2 + 1;
     }
 
-    /**
-     * Gets the current word and its color.
-     * @returns The current word and its color.
-     */
     public getCurrentTask(): Silhouette {
         return this.tasks[this.currentTaskIndex];
     }
 
-    /**
-     * Gets the results of the game.
-     * @returns The reaction times and correctness of answers.
-     */
     public getResults(): Result[] {
         return this.results;
     }
 
-    /**
-     * Checks if the game is over.
-     * @returns True if the game is over, false otherwise.
-     */
-    public isGameOver(): boolean {
-        return this.currentTaskIndex >= this.tasks.length;
+    // New logic for smooth decrease
+    private generateDecreasingSteps(total: number, steps: number): number[] {
+        const base = Math.floor(total / steps);
+        const remainder = total % steps;
+        const result = Array(steps).fill(base);
+        for (let i = 0; i < remainder; i++) {
+            result[i]++;
+        }
+        return result;
+    }
+
+    // Called externally when user clicks 'decrease'
+    public getNextDecreaseStep(): number | null {
+        if (this.currentDecreaseStep >= this.maxDecreaseSteps) return null;
+        return this.decreasingSteps[this.currentDecreaseStep++];
+    }
+
+    private randomInt(min: number, max: number): number {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 }

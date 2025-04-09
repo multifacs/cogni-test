@@ -28,6 +28,11 @@ export function load({ cookies }) {
             path: '/tests/memory',
             img: '/memory.svg'
         },
+        {
+            name: 'Тест «Ласточка»',
+            path: '/tests/bird',
+            img: '/bird.svg'
+        }
     ];
 
     return {
