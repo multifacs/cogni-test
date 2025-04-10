@@ -10,7 +10,7 @@
 	import Chart from 'chart.js/auto';
 	import Button from '$lib/components/button.svelte';
 	import { goto } from '$app/navigation';
-	import ResultsChart from '$lib/components/results-chart.svelte';
+	import ResultsChart from '$lib/components/results-chart/results-chart.svelte';
 	let { data } = $props();
 
 	let isTestRunning = $state(false);
@@ -159,6 +159,7 @@
 					<button
 						aria-label={`${s} button`}
 						class="silhouette"
+						disabled={!delta}
 						style={`
 							background-color: white;
 							mask-image: url(${data.silhouettes[s]});
@@ -172,7 +173,9 @@
 					></button>
 				{/each}
 			</div>
+			<p>Изменяйте оттенок, пока силуэт не станет различимым.</p>
 		{:else}
+			<p>Изменяйте оттенок, пока силуэт не перестанет быть виден.</p>
 			<Button color="blue" onclick={handleAnswer}>Больше не видно</Button>
 		{/if}
 
@@ -184,7 +187,7 @@
 {/if}
 
 {#if showResults}
-	<ResultsChart stages={2} results={game.getResults()} xtitle="Оттенок" ytitle="Отклонение"
+	<ResultsChart evaltype='value' stages={2} results={game.getResults()} xtitle="Оттенок" ytitle="Отклонение"
 	></ResultsChart>
 {/if}
 

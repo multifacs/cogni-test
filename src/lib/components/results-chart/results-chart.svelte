@@ -1,24 +1,47 @@
 <script lang="ts">
 	import Chart from 'chart.js/auto';
 
-	import { Colors } from 'chart.js';
+	import { Colors, type ScriptableContext } from 'chart.js';
 	Chart.register(Colors);
 
 	import type { Result } from './result';
-	import { translate } from './translate';
+	import { translate } from '../translate';
 	import { onDestroy, onMount } from 'svelte';
+	import { getCSSVar } from '$lib';
 
 	let {
 		stages = 1,
 		results,
 		xtitle,
-		ytitle
+		ytitle,
+		evaltype = 'correctness'
 	}: {
 		stages: number;
 		results: Result[];
 		xtitle: string;
 		ytitle: string;
+		evaltype?: EvalType;
 	} = $props();
+
+	type EvalType = 'correctness' | 'value';
+	type EvalFunction = (ctx: ScriptableContext<'line'>) => string;
+	type EvalObject = {
+		[key in EvalType]: EvalFunction;
+	};
+	const evalFuncs: EvalObject = {
+		correctness: (ctx: ScriptableContext<'line'>) => {
+			const result = ctx.raw as Result;
+			return result.isCorrect ? getCSSVar('--color-green-500') : getCSSVar('--color-red-400');
+		},
+		value: (ctx: ScriptableContext<'line'>) => {
+			const result = ctx.raw as Result;
+			return result.y == 0
+				? getCSSVar('--color-green-500')
+				: result.y > 0
+					? getCSSVar('--color-red-400')
+					: getCSSVar('--color-sky-400');
+		}
+	};
 
 	Chart.defaults.color = 'white';
 
@@ -41,12 +64,7 @@
 						label: translate(`stage ${stage}`),
 						data: results.filter((el) => el.stage == stage),
 						borderWidth: 1,
-						pointBackgroundColor: (ctx) =>
-							ctx.raw.y == 0
-								? 'rgb(95, 212, 107)'
-								: ctx.raw.y > 0
-									? 'rgb(255, 99, 132)'
-									: 'rgb(55, 162, 235)',
+						pointBackgroundColor: evalFuncs[evaltype],
 						pointRadius: 5,
 						tension: 0.4
 					};

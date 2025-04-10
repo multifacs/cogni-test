@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { slide } from 'svelte/transition';
 	import { MathGame } from './math-game'; // Adjust the import path as needed
 	import Sign from './sign.svelte';
 
 	import Button from '$lib/components/button.svelte';
-	import ResultsChart from '$lib/components/results-chart.svelte';
+	import ResultsChart from '$lib/components/results-chart/results-chart.svelte';
 
 	import { goto } from '$app/navigation';
 	import { translate } from '$lib/components/translate';
@@ -22,7 +21,7 @@
 	let timeLeft = $state(DURATION);
 	let isTestRunning = $state(false);
 	let showResults = $state(false);
-	let timer: number | null = null;
+	let timer: ReturnType<typeof setInterval> | null = null;
 
 	// Game logic
 	let game: MathGame = $state(Object());
@@ -108,9 +107,7 @@
 		середине показывается числовое равенство. Необходимо нажать на красное поле, если числовое
 		равенство неверное или на зеленое, если верно.
 	</p>
-	<p>
-		Всего 10 числовых равенств, на определение правильности каждого дается 3 секунды.
-	</p>
+	<p>Всего 10 числовых равенств, на определение правильности каждого дается 3 секунды.</p>
 	<div class="button-container">
 		<Button color="green" onclick={startTest}>Начать тест</Button>
 		<Button

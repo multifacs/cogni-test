@@ -1,6 +1,5 @@
-
 export function load({ cookies }) {
-    const user = cookies.get('user');
+	const user = cookies.get('user');
 
     const tests = [
         {
@@ -35,8 +34,8 @@ export function load({ cookies }) {
         }
     ];
 
-    return {
-        tests,
-        user
-    };
+	return {
+		tests,
+		user
+	};
 }

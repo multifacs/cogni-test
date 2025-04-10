@@ -6,7 +6,7 @@
 
 	import { StroopGame } from './stroop-game';
 	import type { Color } from './stroop-game';
-	import ResultsChart from '$lib/components/results-chart.svelte';
+	import ResultsChart from '$lib/components/results-chart/results-chart.svelte';
 	import { translate } from '$lib/components/translate';
 
 	import Chart from 'chart.js/auto';
@@ -21,7 +21,7 @@
 	let timeLeft = $state(DURATION);
 
 	let isTestRunning = $state(false);
-	let timer: number | null = null;
+	let timer: ReturnType<typeof setInterval> | null = null;
 	let game: StroopGame = $state(Object());
 
 	const colors = {
@@ -105,7 +105,11 @@
 		showResults = true;
 	}
 
-	const stageInstructions = {
+	type stages = 'stage 1' | 'stage 2' | 'stage 3';
+	type instructionsObject = {
+		[key in stages]: string;
+	};
+	const stageInstructions: instructionsObject = {
 		'stage 1': 'Нужно соответствовать и цвету, и смыслу.',
 		'stage 2': 'Нужно соответствовать смыслу.',
 		'stage 3': 'Нужно соответствовать и цвету.'
@@ -149,7 +153,7 @@
 	</div>
 {:else}
 	<div class="subcontainer">
-		<div class="color-text">
+		<div class="color-text flex h-20 flex-col items-center justify-center">
 			<h1 style="color: {currentColor};">{translate(currentWord)}</h1>
 			{#if currentWord.includes('stage')}
 				<p>{stageInstructions[currentWord]}</p>
@@ -176,9 +180,6 @@
 {/if}
 
 <style>
-	h1 {
-		color: #f8faff;
-	}
 	.text {
 		text-align: justify;
 	}
@@ -198,7 +199,6 @@
 	}
 	.color-text h1 {
 		font-size: 24pt;
-		margin-bottom: 20px;
 		-webkit-text-stroke-color: #5c70a3;
 		-webkit-text-stroke: 1px;
 	}

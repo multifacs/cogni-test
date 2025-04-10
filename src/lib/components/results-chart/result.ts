@@ -3,4 +3,5 @@ export type Result = {
     y: number;
     stage: number;
     isCorrect: boolean;
+    pointColor?: string;
 };

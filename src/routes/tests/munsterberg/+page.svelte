@@ -1,8 +1,11 @@
 <script lang="ts">
-	import { json } from '@sveltejs/kit';
+	import { goto } from '$app/navigation';
+	import Button from '$lib/components/button.svelte';
 	import { onMount } from 'svelte';
-	import { slide } from 'svelte/transition';
 	let { data } = $props();
+
+	let innerWidth: number;
+	let innerHeight: number;
 
 	type Cell = {
 		letter: string;
@@ -19,8 +22,8 @@
 
 	const GRID_COLS = 9;
 	const GRID_ROWS = 11;
-	const CELL_W = 42;
-	const CELL_H = 42;
+	let CELL_W = 42;
+	let CELL_H = 42;
 
 	// Game state
 	let isTestRunning = $state(false);
@@ -40,6 +43,11 @@
 	// Загрузка слов из файла
 	onMount(async () => {
 		words = data.words;
+		console.log(innerWidth, innerHeight);
+		if (innerWidth < 400) {
+			CELL_W = 30;
+			CELL_H = 30;
+		}
 	});
 
 	// Запуск теста
@@ -318,21 +326,28 @@
 	</div>
 {/if}
 <div class="button-container">
-	<button class="start-button" onclick={startTest}
-		>{isTestRunning ? 'Перезапустить тест' : 'Начать тест'}</button
+	<Button color="green" onclick={startTest}
+		>{isTestRunning ? 'Перезапустить тест' : 'Начать тест'}</Button
 	>
 	{#if isTestRunning}
-		<button
-			class="start-button back-button"
+		<Button
+			color="red"
 			onclick={() => {
 				isTestRunning = false;
 				isHome = true;
-			}}>Стоп</button
+			}}>Стоп</Button
 		>
 	{:else}
-		<a class="back-button" href="/tests">Назад</a>
+		<Button
+			color="red"
+			onclick={() => {
+				goto('/tests');
+			}}>Назад</Button
+		>
 	{/if}
 </div>
+
+<svelte:window bind:innerWidth bind:innerHeight />
 
 <style>
 	.grid {
@@ -344,7 +359,7 @@
 		width: 100%;
 		height: 100%;
 		background-color: transparent;
-		border: 1px solid rgb(0, 0, 0);
+		border: 1px solid var(--color-gray-700);
 		cursor: pointer;
 		box-sizing: border-box;
 		touch-action: none;
@@ -354,7 +369,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		border: 1px solid #000;
+		border: 1px solid var(--color-gray-700);
 		cursor: pointer;
 		box-sizing: border-box;
 		z-index: -1;
@@ -376,12 +391,6 @@
 		gap: 10px;
 		margin-top: 20px;
 	}
-	.start-button,
-	.back-button {
-		padding: 10px 20px;
-		font-size: 16px;
-		cursor: pointer;
-	}
 
 	.subcontainer {
 		display: flex;
@@ -396,35 +405,5 @@
 		gap: 10px; /* Расстояние между кнопками */
 		justify-content: center; /* Выравнивание по центру */
 		align-items: center; /* Выравнивание по вертикали */
-	}
-
-	.start-button {
-		background-color: green; /* Зеленый цвет */
-		color: white; /* Белый текст */
-		border: none;
-		padding: 10px 20px;
-		border-radius: 5px;
-		cursor: pointer;
-		font-size: 16px;
-		transition: background-color 0.3s ease;
-	}
-
-	.start-button:hover {
-		background-color: darkgreen; /* Темно-зеленый при наведении */
-	}
-
-	.back-button {
-		background-color: #bf3023; /* Красный цвет */
-		color: white; /* Белый текст */
-		text-decoration: none; /* Убираем подчеркивание */
-		padding: 10px 20px;
-		border-radius: 5px;
-		cursor: pointer;
-		font-size: 16px;
-		transition: background-color 0.3s ease;
-	}
-
-	.back-button:hover {
-		background-color: darkred; /* Темно-красный при наведении */
 	}
 </style>

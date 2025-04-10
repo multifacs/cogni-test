@@ -6,9 +6,7 @@
 
 	import Button from '$lib/components/button.svelte';
 	import { goto } from '$app/navigation';
-	import ResultsChart from '$lib/components/results-chart.svelte';
-
-	let chart: HTMLCanvasElement | null = null;
+	import ResultsChart from '$lib/components/results-chart/results-chart.svelte';
 
 	let words: string[] = [];
 	let game: MemoryGame;
@@ -16,7 +14,7 @@
 	let allTasks: string[] = [];
 	let currentWord = '';
 	let timeLeft = 0;
-	let timer: number | null = null;
+	let timer: ReturnType<typeof setInterval>;
 
 	let score = 0;
 	let isHome = true;

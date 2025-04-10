@@ -5,6 +5,7 @@
 	import { userStore } from '$lib/stores';
 	import { onMount } from 'svelte';
 	import Button from '$lib/components/button.svelte';
+	import IdBadge from '$lib/components/id-badge.svelte';
 	let { data, children } = $props();
 
 	onMount(() => {
@@ -13,12 +14,23 @@
 </script>
 
 <form
-	class="absolute top-[10px] mr-[20px] flex w-full items-center justify-end text-sm sm:m-0 sm:justify-around"
+	class="absolute
+	top-[10px]
+	flex
+	w-full
+	max-w-[350px]
+	min-w-[300px]
+	shrink-1
+	items-center
+	justify-between
+	px-2
+	text-sm
+	sm:max-w-2xl"
 	method="POST"
 	action="/?/logout"
 	use:enhance
 >
-	<span class="hidden sm:block">User ID: {$userStore}</span>
+	<IdBadge userId={$userStore}></IdBadge>
 	<Button type="submit" kind="small" color="red" disabled={$userStore == ''}>Выйти</Button>
 </form>
 
@@ -32,7 +44,7 @@
 <style>
 	.container {
 		/* max-width: 600px; */
-		margin: 10vh auto;
+		/* margin: 10vh auto; */
 		/* padding: 10px 10px; */
 		/* display: flex; */
 		/* flex-direction: column; */

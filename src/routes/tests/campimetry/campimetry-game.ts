@@ -9,7 +9,7 @@ export type Silhouette = {
     op: '+' | '-';
 }
 
-import type { Result } from "$lib/components/result";
+import type { Result } from "$lib/components/results-chart/result";
 
 export class CampimetryGame {
     // private readonly stageTaskCounts: number[] = [5]; // Words per stage
