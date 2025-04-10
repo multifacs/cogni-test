@@ -2,7 +2,7 @@ export type Word = {
     value: string;
     isCorrect: boolean;
 };
-import type { Result } from "$lib/components/results-chart/result";
+import type { Result } from "$lib/components/charts/types";
 
 export class MemoryGame {
     private readonly memorizationCount: number = 6;

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { userStore } from '$lib/stores';
+	import { userStore } from '$lib/stores/user.js';
 	import { onMount } from 'svelte';
 
 	let { data } = $props();

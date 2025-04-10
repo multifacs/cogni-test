@@ -1,7 +1,7 @@
 export type Color = 'red' | 'blue' | 'green' | 'cyan' | 'magenta' | 'yellow';
 export type Task = { stage: number; word: string; color: Color | 'white'; task: 'meaning' | 'color' | 'stage' };
-import type { Result } from "$lib/components/results-chart/result";
-import { clamp } from "$lib";
+import type { Result } from "$lib/components/charts/types";
+import { clamp } from "$lib/utils";
 
 export class StroopGame {
     private readonly colors: Color[] = ['red', 'blue', 'green', 'cyan', 'magenta', 'yellow'];

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import Button from '$lib/components/button.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import { onMount } from 'svelte';
 	let { data } = $props();
 

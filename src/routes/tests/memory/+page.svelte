@@ -4,9 +4,9 @@
 
 	export let data: { words: string[] };
 
-	import Button from '$lib/components/button.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import { goto } from '$app/navigation';
-	import ResultsChart from '$lib/components/results-chart/results-chart.svelte';
+	import ResultsChart from '$lib/components/charts/ResultsChart.svelte';
 
 	let words: string[] = [];
 	let game: MemoryGame;

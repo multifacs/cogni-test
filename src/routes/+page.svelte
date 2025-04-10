@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
-	import { userStore } from '$lib/stores';
+	import { userStore } from '$lib/stores/user.js';
 
 	let { data } = $props();
 
@@ -12,10 +12,11 @@
 	let year = $state('');
 	let sex = $state('');
 
-	let intervalId;
-	let timeoutId;
+	let intervalId: ReturnType<typeof setInterval>;
+	let timeoutId: ReturnType<typeof setTimeout>;
 
-	function startIncrement(stepFunction) {
+	type StepFunction = () => void;
+	function startIncrement(stepFunction: StepFunction) {
 		stepFunction(); // Выполняем сразу один шаг
 
 		timeoutId = setTimeout(() => {

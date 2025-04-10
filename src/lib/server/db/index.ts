@@ -2,7 +2,7 @@ import Database from 'better-sqlite3';
 import type { StroopRecord, User } from './types';
 import { v4 as uuidv4 } from 'uuid';
 import { MODE, DB_PATH as DB_PATH_ENV } from '$env/static/private';
-import { checkFormData, formDataToUser } from '$lib/index';
+import { checkFormData, formDataToUser } from '$lib/utils';
 import { fail } from '@sveltejs/kit';
 
 let DB_PATH

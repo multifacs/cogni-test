@@ -5,12 +5,12 @@
 	import type { Silhouette } from './campimetry-game';
 	import { LabColor } from './lab-color.svelte';
 	import { error } from '@sveltejs/kit';
-	import { shuffle } from '$lib';
+	import { shuffle } from '$lib/utils';
 
 	import Chart from 'chart.js/auto';
-	import Button from '$lib/components/button.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import { goto } from '$app/navigation';
-	import ResultsChart from '$lib/components/results-chart/results-chart.svelte';
+	import ResultsChart from '$lib/components/charts/ResultsChart.svelte';
 	let { data } = $props();
 
 	let isTestRunning = $state(false);

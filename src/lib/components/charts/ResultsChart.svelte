@@ -4,10 +4,10 @@
 	import { Colors, type ScriptableContext } from 'chart.js';
 	Chart.register(Colors);
 
-	import type { Result } from './result';
-	import { translate } from '../translate';
+	import type { Result } from './types';
+	import { translate } from '../../utils/common';
 	import { onDestroy, onMount } from 'svelte';
-	import { getCSSVar } from '$lib';
+	import { getCSSVar } from '$lib/utils';
 
 	let {
 		stages = 1,

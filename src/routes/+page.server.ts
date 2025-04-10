@@ -1,7 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { Users } from '$lib/server/db';
 // import type { User } from '$lib/server/db/types';
-import { checkFormData, formDataToUser } from '$lib/index'
+import { checkFormData } from '$lib/utils'
 
 export function load({ cookies }) {
 	const user = cookies.get('user');

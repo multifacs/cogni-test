@@ -2,10 +2,10 @@
 	import { enhance } from '$app/forms';
 	import '../app.css';
 	import '@fontsource/roboto';
-	import { userStore } from '$lib/stores';
+	import { userStore } from '$lib/stores/user';
 	import { onMount } from 'svelte';
-	import Button from '$lib/components/button.svelte';
-	import IdBadge from '$lib/components/id-badge.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import IdBadge from '$lib/components/ui/IdBadge.svelte';
 	let { data, children } = $props();
 
 	onMount(() => {

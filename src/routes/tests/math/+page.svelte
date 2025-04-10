@@ -3,11 +3,11 @@
 	import { MathGame } from './math-game'; // Adjust the import path as needed
 	import Sign from './sign.svelte';
 
-	import Button from '$lib/components/button.svelte';
-	import ResultsChart from '$lib/components/results-chart/results-chart.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import ResultsChart from '$lib/components/charts/ResultsChart.svelte';
 
 	import { goto } from '$app/navigation';
-	import { translate } from '$lib/components/translate';
+	import { translate } from '$lib/utils/common';
 
 	import type { Inequality } from './math-game';
 

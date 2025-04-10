@@ -2,12 +2,12 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 
-	import Button from '$lib/components/button.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 
 	import { StroopGame } from './stroop-game';
 	import type { Color } from './stroop-game';
-	import ResultsChart from '$lib/components/results-chart/results-chart.svelte';
-	import { translate } from '$lib/components/translate';
+	import ResultsChart from '$lib/components/charts/ResultsChart.svelte';
+	import { translate } from '$lib/utils/common';
 
 	import Chart from 'chart.js/auto';
 

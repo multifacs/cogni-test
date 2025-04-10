@@ -4,7 +4,7 @@ export type Inequality = {
 	sign: '>' | '<' | '>=' | '<=' | '=' | null;
 	answer: boolean | null;
 };
-import type { Result } from '$lib/components/results-chart/result';
+import type { Result } from '$lib/components/charts/types';
 
 export class MathGame {
 	private readonly stageTaskCounts: number[] = [10];

@@ -1,6 +1,6 @@
 import { LabColor } from "./lab-color.svelte";
 import { colors } from "./lab-color.svelte";
-import { shuffle } from "$lib";
+import { shuffle } from "$lib/utils";
 
 export type Silhouette = {
     answer: string;
@@ -9,7 +9,7 @@ export type Silhouette = {
     op: '+' | '-';
 }
 
-import type { Result } from "$lib/components/results-chart/result";
+import type { Result } from "$lib/components/charts/types";
 
 export class CampimetryGame {
     // private readonly stageTaskCounts: number[] = [5]; // Words per stage
