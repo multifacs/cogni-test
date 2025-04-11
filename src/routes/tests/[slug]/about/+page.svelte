@@ -15,7 +15,10 @@
 </script>
 
 {#if Component}
-	<Component></Component>
+	<div class="scroll-container group relative max-h-[60vh] overflow-y-auto px-2">
+		<Component></Component>
+		<div class="scroll-fade"></div>
+	</div>
 	<div class="controls flex items-center justify-center gap-2.5">
 		<Button color="green" goto={`/tests/${slug}/playground`}>К тесту</Button>
 		<Button color="red" goto="/">Назад</Button>
@@ -27,4 +30,30 @@
 {/if}
 
 <style>
+	.scroll-fade {
+		position: sticky;
+		bottom: 0;
+		height: 4rem;
+		background: linear-gradient(to top, var(--color-gray-800), transparent);
+		pointer-events: none;
+		z-index: 10;
+	}
+
+	.scroll-container {
+		overflow: auto; /* or hidden */
+		scrollbar-width: none;
+	}
+	.scroll-container .scroll-fade {
+		animation: scrolling forwards;
+		animation-timeline: scroll(); /* it will consider the ancestor having overflow: auto/hidden  */
+	}
+	@keyframes scrolling {
+		from {
+			opacity: 1;
+		}
+		to {
+			opacity: 0;
+		}
+	}
+	/* https://css-tip.com/overflow-detection/ */
 </style>
