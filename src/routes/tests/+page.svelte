@@ -28,7 +28,7 @@
 	"
 >
 	<h1 class="">Тесты</h1>
-	{#each data.tests as { name, path, img }}
+	{#each data.tests as { name, title, path, img }}
 		<a
 			href={path}
 			class="test-button
@@ -45,7 +45,7 @@
 			hover:bg-gray-50
 			"
 		>
-			<span>{name}</span>
+			<span>{title}</span>
 			<img
 				src={img}
 				alt={name}

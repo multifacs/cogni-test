@@ -1,25 +1,22 @@
 <script lang="ts">
-	import { onMount, tick } from 'svelte';
-	import { MemoryGame } from './memory-game';
-
-	export let data: { words: string[] };
-
+	import { onMount } from 'svelte';
+	import { MemoryGame } from './logic/memory-game';
 	import Button from '$lib/components/ui/Button.svelte';
-	import { goto } from '$app/navigation';
-	import ResultsChart from '$lib/components/charts/ResultsChart.svelte';
+
+	let { data, gameEnd }: { data: { words: string[] }; gameEnd: () => void } = $props();
 
 	let words: string[] = [];
-	let game: MemoryGame;
-	let memorizationWords: string[] = [];
+	let game: MemoryGame = $state(Object());
+	let memorizationWords: string[] = $state([]);
 	let allTasks: string[] = [];
-	let currentWord = '';
-	let timeLeft = 0;
+	let currentWord = $state('');
+	let timeLeft = $state(0);
 	let timer: ReturnType<typeof setInterval>;
 
-	let score = 0;
-	let isHome = true;
-	let isTestRunning = false;
-	let phase: 'waiting' | 'memorize' | 'task' | 'result' = 'waiting';
+	let score = $state(0);
+	let isHome = $state(true);
+	let isTestRunning = $state(false);
+	let phase: 'waiting' | 'memorize' | 'task' | 'result' = $state('waiting');
 
 	// Загрузка слов из файла
 	onMount(async () => {
@@ -32,7 +29,7 @@
 		phase = 'waiting';
 	}
 
-	async function startTest() {
+	export function resetGame() {
 		game = new MemoryGame(words);
 		memorizationWords = game.getMemorizationWords();
 		allTasks = Array.from({ length: 10 }, (_, i) => game['tasks'][i].value);
@@ -78,7 +75,7 @@
 
 	function nextWord() {
 		if (game.isGameOver()) {
-			endTest();
+			stopGame();
 			return;
 		}
 
@@ -107,29 +104,14 @@
 		nextWord();
 	}
 
-	async function endTest() {
-		phase = 'result';
+	export function stopGame() {
+		phase = 'waiting';
 		isTestRunning = false;
-		await tick(); // Ждём появления canvas
+		gameEnd();
 	}
 </script>
 
-{#if isHome}
-	<h1>Тест на память</h1>
-	<p>
-		Вам будет показан список из 6 слов для запоминания, а затем вы должны определить — какие слова
-		из поочередно показывающегося ряда были в первоначальном списке. Всего 10 слов на проверку.
-	</p>
-	<div class="button-container">
-		<Button color="green" onclick={startTest}>Начать тест</Button>
-		<Button
-			color="red"
-			onclick={() => {
-				goto('/tests');
-			}}>Назад</Button
-		>
-	</div>
-{:else if phase === 'waiting'}
+{#if isHome}{:else if phase === 'waiting'}
 	<p>Слова появятся через {timeLeft} секунд...</p>
 {:else if phase === 'memorize'}
 	<h2>Запомните слова:</h2>
@@ -152,20 +134,6 @@
 		<Button kind="big" color="red" onclick={() => handleAnswer(false)}>НЕТ</Button>
 	</div>
 	<div>Осталось времени: {timeLeft} сек</div>
-{:else if phase === 'result'}
-	<h2>Результаты</h2>
-	<p>Правильных ответов: {score}/10</p>
-	<ResultsChart stages={1} results={game.getResults()} xtitle="Нажатие" ytitle="Время реакции (мс)"
-	></ResultsChart>
-	<div class="button-container">
-		<Button color="blue" onclick={toIntro}>Пройти ещё раз</Button>
-		<Button
-			color="red"
-			onclick={() => {
-				goto('/tests');
-			}}>Назад в меню</Button
-		>
-	</div>
 {/if}
 
 <style>

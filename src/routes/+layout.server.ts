@@ -1,4 +1,3 @@
-import { redirect } from '@sveltejs/kit';
 import { Users } from '$lib/server/db';
 import { MODE } from '$env/static/private';
 

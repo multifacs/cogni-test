@@ -1,11 +1,9 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import Button from '$lib/components/ui/Button.svelte';
 	import { onMount } from 'svelte';
-	let { data } = $props();
+	let { data, gameEnd } = $props();
 
-	let innerWidth: number;
-	let innerHeight: number;
+	let innerWidth: number = $state(0);
+	let innerHeight: number = $state(0);
 
 	type Cell = {
 		letter: string;
@@ -22,8 +20,8 @@
 
 	const GRID_COLS = 9;
 	const GRID_ROWS = 11;
-	let CELL_W = 42;
-	let CELL_H = 42;
+	let CELL_W = $state(42);
+	let CELL_H = $state(42);
 
 	// Game state
 	let isTestRunning = $state(false);
@@ -51,7 +49,7 @@
 	});
 
 	// Запуск теста
-	async function startTest() {
+	export function resetGame() {
 		if (typeof timerInterval != 'object') clearInterval(timerInterval);
 		isTestRunning = true;
 		isHome = false;
@@ -61,11 +59,16 @@
 		timerInterval = setInterval(() => {
 			timer -= 1;
 			if (!timer || guessedCount == generatedWords.length) {
-				clearInterval(timerInterval);
-				isTestRunning = false;
-				highlightUnguessed();
+				stopGame();
 			}
 		}, 1000);
+	}
+
+	export function stopGame() {
+		clearInterval(timerInterval);
+		isTestRunning = false;
+		highlightUnguessed();
+		gameEnd();
 	}
 
 	function getRandomLetter() {
@@ -262,88 +265,53 @@
 	}
 </script>
 
-{#if words.length <= 19}
-	<h1>Тест Хуюнстерберга</h1>
-{:else}
-	<h1>Тест Мюнстерберга</h1>
-{/if}
-
-{#if isHome}
-	<p>
-		На большом экране в течение 1 минуты отображается матрица из букв. В ней необходимо по
-		горизонтали справа налево находить слова. На экране телефона каждое найденное слово нужно
-		выделить.
-	</p>
-{:else}
-	<div class="subcontainer">
-		<div class="grid-container">
+<div class="subcontainer">
+	<div class="grid-container">
+		<div
+			class="overlay"
+			bind:this={overlay}
+			ontouchstart={touchHandler}
+			ontouchmove={touchHandler}
+			ontouchend={touchHandler}
+			onpointerdown={pointerHandler}
+			onpointermove={pointerHandler}
+			onpointerup={pointerHandler}
+			onpointerout={pointerHandler}
+		>
 			<div
-				class="overlay"
-				bind:this={overlay}
-				ontouchstart={touchHandler}
-				ontouchmove={touchHandler}
-				ontouchend={touchHandler}
-				onpointerdown={pointerHandler}
-				onpointermove={pointerHandler}
-				onpointerup={pointerHandler}
-				onpointerout={pointerHandler}
+				class="grid"
+				style="
+				grid-template-columns: repeat({GRID_COLS}, {CELL_W}px);
+				grid-template-rows: repeat({GRID_ROWS}, {CELL_H}px);
+				"
 			>
-				<div
-					class="grid"
-					style="
-					grid-template-columns: repeat({GRID_COLS}, {CELL_W}px);
-					grid-template-rows: repeat({GRID_ROWS}, {CELL_H}px);
-					"
-				>
-					{#each grid as row, rowIndex}
-						{#each row as cell, colIndex}
-							<div
-								class="cell
-								{checkSelected(rowIndex, colIndex) ? 'selected' : ''}
-								{cell.isCorrect ? 'correct' : ''}
-								{cell.isIncorrect ? 'incorrect' : ''}
-								"
-							>
-								{cell.letter}
-							</div>
-						{/each}
+				{#each grid as row, rowIndex}
+					{#each row as cell, colIndex}
+						<div
+							class="cell
+							{checkSelected(rowIndex, colIndex) ? 'selected' : ''}
+							{cell.isCorrect ? 'correct' : ''}
+							{cell.isIncorrect ? 'incorrect' : ''}
+							"
+						>
+							{cell.letter}
+						</div>
 					{/each}
-				</div>
+				{/each}
 			</div>
 		</div>
-		<!-- <h3 style="margin: 0">
-			Загадано {generatedWords.length} слов{generatedWords.length < 5
-				? generatedWords.length == 1
-					? 'о'
-					: 'а'
-				: ''}
-		</h3> -->
-		{#if isTestRunning}
-			<h3>{`0${timer == 60 ? 1 : 0}:${timer % 60 < 10 ? '0' : ''}${timer % 60}`}</h3>
-		{:else}
-			<h3>Вы отгадали {guessedCount}/{generatedWords.length}</h3>
-		{/if}
 	</div>
-{/if}
-<div class="button-container">
-	<Button color="green" onclick={startTest}
-		>{isTestRunning ? 'Перезапустить тест' : 'Начать тест'}</Button
-	>
+	<!-- <h3 style="margin: 0">
+		Загадано {generatedWords.length} слов{generatedWords.length < 5
+			? generatedWords.length == 1
+				? 'о'
+				: 'а'
+			: ''}
+	</h3> -->
 	{#if isTestRunning}
-		<Button
-			color="red"
-			onclick={() => {
-				isTestRunning = false;
-				isHome = true;
-			}}>Стоп</Button
-		>
+		<h3>{`0${timer == 60 ? 1 : 0}:${timer % 60 < 10 ? '0' : ''}${timer % 60}`}</h3>
 	{:else}
-		<Button
-			color="red"
-			onclick={() => {
-				goto('/tests');
-			}}>Назад</Button
-		>
+		<h3>Вы отгадали {guessedCount}/{generatedWords.length}</h3>
 	{/if}
 </div>
 

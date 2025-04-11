@@ -4,6 +4,7 @@
 	import { onMount, type SvelteComponent } from 'svelte';
 
 	const { data } = $props();
+	console.log("playground data ", data)
 	const slug = data.slug;
 	let Component: typeof SvelteComponent | null = $state(null);
 
@@ -34,7 +35,7 @@
 			childComponent?.stopGame();
 			isGameRunning = false;
 		} else {
-			console.log('Назад');
+			goto('/tests/');
 		}
 	}
 
@@ -46,7 +47,7 @@
 
 {#if Component}
 	<div class="playground flex flex-col items-center gap-5">
-		<Component bind:this={childComponent} gameEnd={onGameEnd}></Component>
+		<Component bind:this={childComponent} gameEnd={onGameEnd} data={data}></Component>
 	</div>
 	<div class="controls flex items-center justify-center gap-2.5">
 		<Button color="green" onclick={handleStart}>{isGameRunning ? 'Перезапустить' : 'Начать'}</Button

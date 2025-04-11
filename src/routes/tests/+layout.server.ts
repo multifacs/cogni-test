@@ -5,7 +5,4 @@ export function load({ cookies }) {
     if (!user) {
         redirect(307, "/");
     }
-    return {
-        user
-    };
 }

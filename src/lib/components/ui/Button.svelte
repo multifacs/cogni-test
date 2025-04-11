@@ -1,14 +1,45 @@
 <script lang="ts">
+	import { goto as gotoSvelte } from '$app/navigation';
+	import type { Snippet } from 'svelte';
+	import type { MouseEventHandler } from 'svelte/elements';
+
+	type ButtonColor = 'red' | 'blue' | 'green';
+	type OnclickType = MouseEventHandler<HTMLButtonElement> | null | undefined;
+	type TypeType = 'button' | 'submit' | 'reset' | null | undefined;
 	let {
 		kind = 'normal',
 		color = 'green',
 		children,
-		onclick = null,
-		disabled = null,
+		onclick = undefined,
+		goto = undefined,
+		disabled = false,
 		type = null
+	}: {
+		kind?: string;
+		color: ButtonColor;
+		children: Snippet;
+		onclick?: OnclickType;
+		goto?: string;
+		disabled?: boolean;
+		type?: TypeType;
 	} = $props();
 
-	const colorClasses = {
+	if (goto) {
+		onclick = () => {
+			gotoSvelte(goto);
+		};
+	}
+
+	type ColorClassesObject = {
+		[key in ButtonColor]: {
+			bg: string;
+			hover: string;
+			ring: string;
+			offset: string;
+		};
+	};
+
+	const colorClasses: ColorClassesObject = {
 		red: {
 			bg: 'bg-red-700',
 			hover: 'hover:bg-red-800',
@@ -59,11 +90,6 @@
 
 <style>
 	/* .button {
-		color: white;
-		border: none;
-		border-radius: 5px;
-		cursor: pointer;
-		transition: 0.2s ease;
 		touch-action: manipulation;
 		user-select: none;
 	} */
@@ -89,13 +115,4 @@
 		font-size: 16px;
 		cursor: pointer;
 	}
-
-	/* .button:hover {
-		filter: brightness(85%);
-	}
-
-	.button:disabled {
-		filter: brightness(85%);
-		filter: contrast(85%);
-	} */
 </style>

@@ -1,41 +1,8 @@
-export function load({ cookies }) {
-	const user = cookies.get('user');
+import { tests } from '$lib/tests';
 
-    const tests = [
-        {
-            name: 'Тест Струпа',
-            path: '/tests/stroop',
-            img: '/stroop.jpg'
-        },
-        {
-            name: 'Арифметический тест',
-            path: '/tests/math',
-            img: '/math.svg'
-        },
-        {
-            name: 'Тест Мюнстерберга',
-            path: '/tests/munsterberg',
-            img: '/munsterberg.svg'
-        },
-        {
-            name: 'Компьютерная кампиметрия',
-            path: '/tests/campimetry',
-            img: '/campimetry.svg'
-        },
-        {
-            name: 'Тест на память',
-            path: '/tests/memory',
-            img: '/memory.svg'
-        },
-        {
-            name: 'Тест «Ласточка»',
-            path: '/tests/bird',
-            img: '/bird.svg'
-        }
-    ];
-
+export function load() {
+	// const user = cookies.get('user');
 	return {
-		tests,
-		user
+		tests
 	};
 }
