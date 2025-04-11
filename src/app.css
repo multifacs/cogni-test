@@ -69,7 +69,7 @@ body {
 }
 
 /* Minimum height */
-@media (min-height: 600px) {
+@media (min-height: 900px) {
 	body {
 		margin: 0;
 	}
