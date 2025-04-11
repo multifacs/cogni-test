@@ -16,11 +16,9 @@
 	max-h-[80vh]
 	max-w-[350px]
 	min-w-[300px]
-	shrink-1
 	flex-col
 	items-center
 	gap-4
-	overflow-y-scroll
 	rounded-4xl
 	bg-gray-700
 	p-5
@@ -28,10 +26,22 @@
 	"
 >
 	<h1 class="">Тесты</h1>
-	{#each data.tests as { name, title, path, img }}
-		<a
-			href={path}
-			class="test-button
+
+	<div
+		class="test-container
+	flex
+	shrink-1
+	flex-col
+	items-center
+	gap-4
+	overflow-y-scroll
+	rounded-3xl
+	"
+	>
+		{#each data.tests as { name, title, path, img }}
+			<a
+				href={path}
+				class="test-button
 			box-border
 			flex w-full
 			items-center
@@ -44,19 +54,20 @@
 			transition
 			hover:bg-gray-50
 			"
-		>
-			<span>{title}</span>
-			<img
-				src={img}
-				alt={name}
-				class="test-icon
+			>
+				<span>{title}</span>
+				<img
+					src={img}
+					alt={name}
+					class="test-icon
 				h-16
 				w-16
 				rounded-2xl
 				"
-			/>
-		</a>
-	{/each}
+				/>
+			</a>
+		{/each}
+	</div>
 </div>
 
 <style>
