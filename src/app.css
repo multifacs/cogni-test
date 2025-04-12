@@ -21,6 +21,10 @@
 	--camp-red-light: #f09286;
 }
 
+* {
+	box-sizing: border-box;
+}
+
 html,
 body,
 p,
@@ -43,10 +47,6 @@ h1 {
 	text-align: center;
 }
 
-p {
-	text-align: justify;
-}
-
 html,
 body {
 	width: 100%;
@@ -65,7 +65,7 @@ body {
 	justify-content: center;
 	align-items: center;
 
-	margin-top: 20px;
+	margin-top: 0px;
 }
 
 /* Minimum height */

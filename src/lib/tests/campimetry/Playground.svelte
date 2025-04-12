@@ -119,7 +119,7 @@
 </div>
 <Button color="blue" onclick={changeColor}>Изменить оттенок</Button>
 {#if currentStage == 1}
-	<div class="row">
+	<div class="row flex">
 		{#each silhouettes as s}
 			<button
 				aria-label={`${s} button`}
@@ -138,9 +138,9 @@
 			></button>
 		{/each}
 	</div>
-	<p>Изменяйте оттенок, пока силуэт не станет различимым.</p>
+	<p class="text-center">Изменяйте оттенок, пока силуэт не станет различимым.</p>
 {:else}
-	<p>Изменяйте оттенок, пока силуэт не перестанет быть виден.</p>
+	<p class="text-center">Изменяйте оттенок, пока силуэт не перестанет быть виден.</p>
 	<Button color="blue" onclick={handleAnswer}>Больше не видно</Button>
 {/if}
 
@@ -149,21 +149,18 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		width: 300px;
-		height: 300px;
+		width: 100%;
+		flex-grow: 1;
 		/* background-color: #553131; */
+		margin: 10px 0;
 	}
 
 	.silhouette {
 		width: 100px;
 		height: 100px;
+		scale: 0.8;
 		touch-action: manipulation;
 		user-select: none;
 		cursor: pointer;
-	}
-
-	.row {
-		display: flex;
-		gap: 20px;
 	}
 </style>

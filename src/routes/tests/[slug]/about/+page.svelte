@@ -15,11 +15,17 @@
 </script>
 
 {#if Component}
-	<div class="scroll-container group relative max-h-[60vh] overflow-y-auto px-2">
+	<div
+		class="	scroll-container
+  group relative max-h-[60vh] shrink overflow-y-auto px-2"
+	>
 		<Component></Component>
 		<div class="scroll-fade"></div>
 	</div>
-	<div class="controls flex items-center justify-center gap-2.5">
+	<div
+		class="	controls
+  flex items-center justify-center gap-2.5"
+	>
 		<Button color="green" goto={`/tests/${slug}/playground`}>К тесту</Button>
 		<Button color="red" goto="/">Назад</Button>
 		<Button color="blue" goto={`/tests/${slug}/results`}>История</Button>
@@ -42,6 +48,7 @@
 	.scroll-container {
 		overflow: auto; /* or hidden */
 		scrollbar-width: none;
+		text-align: justify;
 	}
 	.scroll-container .scroll-fade {
 		animation: scrolling forwards;

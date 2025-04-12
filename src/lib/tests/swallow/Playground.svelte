@@ -59,7 +59,7 @@
 	}
 </script>
 
-<div class="top-bar">
+<div class="top-bar flex justify-center items-center">
 	<div class="lives">
 		{#each Array(lives) as _, i}
 			<span class="heart">❤️</span>
@@ -74,50 +74,36 @@
 	<h2>Откуда летит ласточка?</h2>
 {/if}
 
-<div class="bird-wrapper" style="background-color: {currentTask.background};">
+<div
+	class="
+bird-wrapper
+flex
+h-30
+w-30
+items-center
+justify-center
+rounded-full
+"
+	style="background-color: {currentTask.background};"
+>
 	<img
 		src="/tests/swallow.svg"
 		alt="bird"
-		class="bird-img"
+		class="bird-img h-24 w-24 transform"
 		style="transform: {directionToRotation[currentTask.direction]};"
 	/>
 </div>
 
-<div class="controls grid w-48 grid-cols-3 grid-rows-3 gap-2">
+<div class="controls grid w-40 grid-cols-3 grid-rows-2 gap-2">
 	<div></div>
-	<Button color="blue" onclick={() => handleAnswer('up')}>⬆</Button>
+	<Button color="blue" onclick={() => handleAnswer('up')}><b>⬆</b></Button>
 	<div></div>
-	<Button color="blue" onclick={() => handleAnswer('left')}>⬅</Button>
-	<div></div>
-	<Button color="blue" onclick={() => handleAnswer('right')}>➡</Button>
-	<div></div>
-	<Button color="blue" onclick={() => handleAnswer('down')}>⬇</Button>
-	<div></div>
+	<Button color="blue" onclick={() => handleAnswer('left')}><b>⬅</b></Button>
+	<Button color="blue" onclick={() => handleAnswer('down')}><b>⬇</b></Button>
+	<Button color="blue" onclick={() => handleAnswer('right')}><b>➡</b></Button>
 </div>
 
 <style>
-	.bird-wrapper {
-		margin: 20px auto;
-		width: 200px;
-		height: 200px;
-		border-radius: 50%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.bird-img {
-		width: 100px;
-		height: 100px;
-		transition: transform 0.3s ease;
-	}
-
-	.top-bar {
-		display: flex;
-		justify-content: space-between;
-		padding: 10px 20px;
-	}
-
 	.lives .heart {
 		font-size: 1.5rem;
 		margin-right: 5px;

@@ -3,7 +3,7 @@
 	import type { Snippet } from 'svelte';
 	import type { MouseEventHandler } from 'svelte/elements';
 
-	type ButtonColor = 'red' | 'blue' | 'green';
+	type ButtonColor = 'red' | 'blue' | 'green' | 'gray';
 	type OnclickType = MouseEventHandler<HTMLButtonElement> | null | undefined;
 	type TypeType = 'button' | 'submit' | 'reset' | null | undefined;
 	let {
@@ -57,6 +57,12 @@
 			hover: 'hover:bg-green-800',
 			ring: 'focus:ring-green-600',
 			offset: 'focus:ring-offset-green-300'
+		},
+		gray: {
+			bg: 'bg-gray-700',
+			hover: 'hover:bg-gray-800',
+			ring: 'focus:ring-gray-600',
+			offset: 'focus:ring-offset-gray-300'
 		}
 	};
 </script>
@@ -65,7 +71,8 @@
 	class={`
 	cursor-pointer
 	rounded-full
-	${colorClasses[color].bg}
+	${colorClasses[disabled ? 'gray' : color].bg}
+	touch-none
 	px-4
 	py-2
 	text-center
@@ -75,6 +82,7 @@
 	transition
 	duration-200
 	ease-in
+	select-none
 	${colorClasses[color].hover}
 	focus:ring-2
 	${colorClasses[color].ring}
@@ -89,11 +97,6 @@
 </button>
 
 <style>
-	/* .button {
-		touch-action: manipulation;
-		user-select: none;
-	} */
-
 	.normal {
 		font-size: 16px;
 		padding: 10px 20px;

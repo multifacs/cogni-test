@@ -38,7 +38,17 @@
 	{/if}
 </div>
 <div class="grid grid-cols-2 gap-2.5">
-	<Button kind="big" color="green" onclick={() => handleAnswer(true)}>ДА</Button>
-	<Button kind="big" color="red" onclick={() => handleAnswer(false)}>НЕТ</Button>
+	<Button
+		disabled={!gameState.getState().isGameRunning}
+		kind="big"
+		color="green"
+		onclick={() => handleAnswer(true)}>ДА</Button
+	>
+	<Button
+		disabled={!gameState.getState().isGameRunning}
+		kind="big"
+		color="red"
+		onclick={() => handleAnswer(false)}>НЕТ</Button
+	>
 </div>
 <div>Осталось времени: {gameState.getState().timeLeft} сек</div>

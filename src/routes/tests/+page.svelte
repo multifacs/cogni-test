@@ -11,7 +11,7 @@
 </script>
 
 <div
-	class="test-container
+	class="
 	flex
 	max-h-[80vh]
 	max-w-[350px]

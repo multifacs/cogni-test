@@ -1,2 +1,96 @@
-<?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
-<svg width="800px" height="800px" viewBox="0 0 24 24" id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg"><defs><style>.cls-1{fill:none;stroke:#020202;stroke-miterlimit:10;stroke-width:1.91px;}</style></defs><line class="cls-1" x1="0.52" y1="5.28" x2="10.09" y2="5.28"/><line class="cls-1" x1="5.3" y1="0.5" x2="5.3" y2="10.07"/><line class="cls-1" x1="1.48" y1="14.85" x2="9.13" y2="22.5"/><line class="cls-1" x1="9.13" y1="14.85" x2="1.48" y2="22.5"/><line class="cls-1" x1="13.91" y1="5.28" x2="23.48" y2="5.28"/><line class="cls-1" x1="13.91" y1="18.67" x2="23.48" y2="18.67"/><line class="cls-1" x1="17.74" y1="14.85" x2="19.65" y2="14.85"/><line class="cls-1" x1="17.74" y1="22.5" x2="19.65" y2="22.5"/></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+
+<svg
+   width="800px"
+   height="800px"
+   viewBox="0 0 24 24"
+   id="Layer_1"
+   data-name="Layer 1"
+   version="1.1"
+   sodipodi:docname="math.svg"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview8"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="1.41625"
+     inkscape:cx="399.64695"
+     inkscape:cy="400"
+     inkscape:window-width="2560"
+     inkscape:window-height="1351"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="Layer_1" />
+  <defs
+     id="defs1">
+    <style
+       id="style1">.cls-1{fill:none;stroke:#020202;stroke-miterlimit:10;stroke-width:1.91px;}</style>
+  </defs>
+  <line
+     class="cls-1"
+     x1="3.8880494"
+     y1="7.2449403"
+     x2="10.650364"
+     y2="7.2449403"
+     id="line1" />
+  <line
+     class="cls-1"
+     x1="7.2656736"
+     y1="3.867316"
+     x2="7.2656736"
+     y2="10.62963"
+     id="line2" />
+  <line
+     class="cls-1"
+     x1="4.5664005"
+     y1="14.007255"
+     x2="9.9720125"
+     y2="19.412867"
+     id="line3" />
+  <line
+     class="cls-1"
+     x1="9.9720125"
+     y1="14.007255"
+     x2="4.5664005"
+     y2="19.412867"
+     id="line4" />
+  <line
+     class="cls-1"
+     x1="13.349636"
+     y1="7.2449403"
+     x2="20.11195"
+     y2="7.2449403"
+     id="line5" />
+  <line
+     class="cls-1"
+     x1="13.349636"
+     y1="16.706528"
+     x2="20.11195"
+     y2="16.706528"
+     id="line6" />
+  <line
+     class="cls-1"
+     x1="16.055975"
+     y1="14.007255"
+     x2="17.405611"
+     y2="14.007255"
+     id="line7" />
+  <line
+     class="cls-1"
+     x1="16.055975"
+     y1="19.412867"
+     x2="17.405611"
+     y2="19.412867"
+     id="line8" />
+</svg>

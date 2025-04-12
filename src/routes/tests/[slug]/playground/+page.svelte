@@ -4,7 +4,7 @@
 	import { onMount, type SvelteComponent } from 'svelte';
 
 	const { data } = $props();
-	console.log("playground data ", data)
+	console.log('playground data ', data);
 	const slug = data.slug;
 	let Component: typeof SvelteComponent | null = $state(null);
 
@@ -46,17 +46,15 @@
 </script>
 
 {#if Component}
-	<div class="playground flex flex-col items-center gap-5">
-		<Component bind:this={childComponent} gameEnd={onGameEnd} data={data}></Component>
-	</div>
+	<Component bind:this={childComponent} gameEnd={onGameEnd} {data}></Component>
 	<div class="controls flex items-center justify-center gap-2.5">
 		<Button color="green" onclick={handleStart}>{isGameRunning ? 'Перезапустить' : 'Начать'}</Button
 		>
 		<Button color="red" onclick={handleBackOrStop}>{isGameRunning ? 'Стоп' : 'Назад'}</Button>
-		{#if isGameEnd}
-			<Button color="blue" goto={`/tests/${slug}/results`}>Результаты</Button>
-		{/if}
 	</div>
+	{#if isGameEnd}
+		<Button color="blue" goto={`/tests/${slug}/results`}>Результаты</Button>
+	{/if}
 {:else}
 	<p>Загрузка логики теста...</p>
 {/if}

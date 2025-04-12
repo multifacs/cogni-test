@@ -26,6 +26,7 @@ export class GameState {
 
 	public getState() {
 		return {
+			isGameRunning: this.isGameRunning,
 			currentLeft: this.currentLeft,
 			currentSign: this.currentSign,
 			currentRight: this.currentRight,

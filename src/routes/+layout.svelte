@@ -13,43 +13,52 @@
 	});
 </script>
 
-<form
-	class="absolute
-	top-[10px]
+<div
+	class="
+flex
+h-[100vh]
+w-full
+flex-col
+items-center
+justify-between
+"
+>
+	<form
+		class="
+	mt-2
 	flex
 	w-full
-	max-w-[350px]
-	min-w-[300px]
-	shrink-1
+	max-w-[600px]
+	shrink
 	items-center
 	justify-between
 	px-2
 	text-sm
 	sm:max-w-2xl"
-	method="POST"
-	action="/?/logout"
-	use:enhance
->
-	<IdBadge userId={$userStore}></IdBadge>
-	<Button type="submit" kind="small" color="red" disabled={$userStore == ''}>Выйти</Button>
-</form>
+		method="POST"
+		action="/?/logout"
+		use:enhance
+	>
+		<IdBadge userId={$userStore}></IdBadge>
+		<Button type="submit" kind="small" color="red" disabled={$userStore == ''}>Выйти</Button>
+	</form>
 
-<div
-	class="container flex max-w-2xl flex-col items-center justify-center gap-2.5 p-2.5
+	<div
+		class="
+	container
+	flex
+	h-[90vh]
+	max-w-2xl
+	flex-col
+	items-center
+	justify-between
+  	gap-1
+	p-2.5
 "
->
-	{@render children()}
+	>
+		{@render children()}
+	</div>
 </div>
 
 <style>
-	.container {
-		/* max-width: 600px; */
-		/* margin: 10vh auto; */
-		/* padding: 10px 10px; */
-		/* display: flex; */
-		/* flex-direction: column; */
-		/* justify-content: center; Центрирование по горизонтали */
-		/* align-items: center; Центрирование по вертикали */
-		/* gap: 10px; */
-	}
 </style>
