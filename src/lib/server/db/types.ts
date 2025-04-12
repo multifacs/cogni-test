@@ -1,12 +1,15 @@
 export type StroopRecord = {
-  id: number;
-  score: number;
+	id: number;
+	score: number;
 };
 
 export type User = {
-  id: string | null;
-  name: string;
-  surname: string;
-  birth: string;
-  sex: 'male' | 'female';
+	id: string | null;
+	firstname: string;
+	lastname: string;
+	birthdate: string;
+	sex: 'male' | 'female';
+	cataract: boolean;
+	colorist: boolean;
+	neuro: boolean;
 };

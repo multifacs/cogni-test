@@ -2,15 +2,20 @@
 	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
 	import { userStore } from '$lib/stores/user.js';
+	import Button from '$lib/components/ui/Button.svelte';
 
 	let { data } = $props();
 
-	let name = $state('');
-	let surname = $state('');
-	let day = $state('');
-	let month = $state('');
-	let year = $state('');
-	let sex = $state('');
+	let firstname = $state('NICK');
+	let lastname = $state('SH');
+	let day = $state('01');
+	let month = $state('02');
+	let year = $state('2001');
+	let sex = $state('male');
+
+	let cataract = $state('yes');
+	let colorist = $state('yes');
+	let neuro = $state('yes');
 
 	let intervalId: ReturnType<typeof setInterval>;
 	let timeoutId: ReturnType<typeof setTimeout>;
@@ -88,23 +93,45 @@
 	});
 </script>
 
-<form class="login-container" method="POST" action="?/login" use:enhance>
+<form
+	class="
+	login-container flex
+	max-h-[80vh]
+	max-w-[350px]
+	min-w-[300px]
+	touch-none
+	flex-col
+	gap-1
+	rounded-4xl
+	bg-gray-700
+	p-5
+	shadow-md
+	"
+	method="POST"
+	action="?/login"
+	use:enhance
+>
 	<h1>Вход</h1>
-	<p>Введите ваши данные</p>
-
 	<div class="input-group">
-		<label for="name">Имя:</label>
-		<input type="text" id="name" name="name" placeholder="ИМЯ" bind:value={name} required />
+		<label for="firstname">Имя:</label>
+		<input
+			type="text"
+			id="firstname"
+			name="firstname"
+			placeholder="ИМЯ"
+			bind:value={firstname}
+			required
+		/>
 	</div>
 
 	<div class="input-group">
-		<label for="surname">Первые две буквы фамилии:</label>
+		<label for="lastname">Первые две буквы фамилии:</label>
 		<input
 			type="text"
-			id="surname"
-			name="surname"
+			id="lastname"
+			name="lastname"
 			placeholder="ФА"
-			bind:value={surname}
+			bind:value={lastname}
 			maxlength="2"
 			required
 		/>
@@ -209,34 +236,46 @@
 		</div>
 	</div>
 
-	<button type="submit" class="submit-button">Войти</button>
+	<div class="input-group">
+		<label for="cataract">Есть ли у вас катаракта?</label>
+		<div class="gender-group">
+			<label>
+				<input type="radio" name="cataract" bind:group={cataract} value="yes" required /> Да
+			</label>
+			<label>
+				<input type="radio" name="cataract" bind:group={cataract} value="no" /> Нет
+			</label>
+		</div>
+	</div>
+
+	<div class="input-group">
+		<label for="colorist">Вы художник или фотограф?</label>
+		<div class="gender-group">
+			<label>
+				<input type="radio" name="colorist" bind:group={colorist} value="yes" required /> Да
+			</label>
+			<label>
+				<input type="radio" name="colorist" bind:group={colorist} value="no" /> Нет
+			</label>
+		</div>
+	</div>
+
+	<div class="input-group">
+		<label for="neuro">Есть ли у вас неврологические заболевания ?</label>
+		<div class="gender-group">
+			<label>
+				<input type="radio" name="neuro" bind:group={neuro} value="yes" required /> Да
+			</label>
+			<label>
+				<input type="radio" name="neuro" bind:group={neuro} value="no" /> Нет
+			</label>
+		</div>
+	</div>
+
+	<Button color="green" type="submit">Войти</Button>
 </form>
 
 <style>
-	.login-container {
-		background-color: #4c4c4c;
-		padding: 20px;
-		border-radius: 10px;
-		box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-		width: 300px;
-		margin: 0 auto;
-	}
-
-	h1 {
-		text-align: center;
-		margin-bottom: 20px;
-	}
-
-	.input-group {
-		margin-bottom: 15px;
-	}
-
-	.input-group label {
-		display: block;
-		margin-bottom: 5px;
-		font-weight: bold;
-	}
-
 	.input-group input[type='text'] {
 		width: 100%;
 		padding: 10px;
@@ -285,23 +324,9 @@
 		gap: 5px;
 	}
 
-	.submit-button {
-		width: 100%;
-		padding: 10px;
-		background-color: #28a745;
-		color: #fff;
-		border: none;
-		border-radius: 5px;
-		font-size: 16px;
-		cursor: pointer;
-	}
-
-	.submit-button:hover {
-		background-color: #218838;
-	}
-
 	button {
 		color: var(--main-text-color);
+		width: 20px;
 	}
 
 	.up-btn {

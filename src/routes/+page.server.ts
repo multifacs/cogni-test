@@ -1,14 +1,14 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { Users } from '$lib/server/db';
+import { addUser } from '$lib/server/db';
 // import type { User } from '$lib/server/db/types';
-import { checkFormData } from '$lib/utils'
+import { checkFormData } from '$lib/utils';
 
 export function load({ cookies }) {
 	const user = cookies.get('user');
-	console.log("start page loading");
+	console.log('start page loading');
 
 	if (user) {
-		redirect(307, "/tests");
+		redirect(307, '/tests');
 	}
 	return {
 		user
@@ -18,17 +18,19 @@ export function load({ cookies }) {
 export const actions = {
 	login: async ({ cookies, request }) => {
 		const data = await request.formData();
-
+		console.log(data, checkFormData(data));
 		if (!checkFormData(data)) {
 			return fail(422, {
 				error: 'incorrect data'
-			})
+			});
 		}
 
 		let id;
+		console.log('check')
 
 		try {
-			id = Users.addUser(data);
+			id = await addUser(data);
+			console.log(id);
 		} catch (error) {
 			console.log(error);
 			return fail(422, {
@@ -37,14 +39,14 @@ export const actions = {
 		}
 
 		if (id) {
-			console.log("user set", id);
+			console.log('user set', id);
 			cookies.set('user', id, { path: '/' });
-			redirect(307, "/tests");
+			redirect(307, '/tests');
 		}
 	},
 
-	logout: async ({ cookies, request }) => {
+	logout: async ({ cookies }) => {
 		cookies.delete('user', { path: '/' });
-		redirect(307, "/");
-	},
+		redirect(307, '/');
+	}
 };

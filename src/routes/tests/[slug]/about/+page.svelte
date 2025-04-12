@@ -33,7 +33,7 @@
 	.scroll-fade {
 		position: sticky;
 		bottom: 0;
-		height: 4rem;
+		height: 3rem;
 		background: linear-gradient(to top, var(--color-gray-800), transparent);
 		pointer-events: none;
 		z-index: 10;
