@@ -16,7 +16,7 @@
 <div
 	class="
 flex
-h-[100vh]
+h-[100dvh]
 w-full
 flex-col
 items-center
