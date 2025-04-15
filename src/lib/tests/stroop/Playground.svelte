@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { StroopGame } from './logic/stroop-game';
-	import type { Color } from './logic/stroop-game';
+	import type { Color, Word, Stage } from './types';
 	import { translate } from '$lib/utils/common';
 
+	let { gameEnd, sendResults } = $props();
+
 	// Game state
-	let currentWord = $state('stage 1');
-	let currentColor = $state('');
+	let currentWord: Word = $state('stage 1');
+	let currentColor: Color | 'white' = $state('white');
 	let score = 0;
 	const DURATION = 3;
 	let timeLeft = $state(DURATION);
@@ -15,7 +17,7 @@
 	let timer: ReturnType<typeof setInterval> | null = null;
 	let game: StroopGame = $state(Object());
 
-	const colors = {
+	const colors: Record<string, Color> = {
 		Красный: 'red',
 		Бирюзовый: 'cyan',
 		Синий: 'blue',
@@ -24,9 +26,9 @@
 		Желтый: 'yellow'
 	};
 
-	onMount(() => {});
-
-	let { gameEnd } = $props();
+	onMount(() => {
+		resetGame();
+	});
 
 	export function resetGame() {
 		game = new StroopGame();
@@ -37,9 +39,10 @@
 
 	export function stopGame() {
 		isTestRunning = false;
-		updateState('stage 1', '');
+		updateState('stage 1', 'white');
 		clearTimer();
 		gameEnd();
+		sendResults(game.getResults());
 	}
 
 	function nextTask() {
@@ -51,7 +54,7 @@
 		startTimer();
 	}
 
-	function updateState(word: string, color: string) {
+	function updateState(word: Word, color: Color | 'white') {
 		currentWord = word;
 		currentColor = color;
 		timeLeft = DURATION;
@@ -85,21 +88,32 @@
 		nextTask();
 	}
 
-	type stages = 'stage 1' | 'stage 2' | 'stage 3';
 	type instructionsObject = {
-		[key in stages]: string;
+		[key in Stage]: string;
 	};
 	const stageInstructions: instructionsObject = {
+		'stage -1': 'Ошибка',
 		'stage 1': 'Нужно соответствовать и цвету, и смыслу.',
 		'stage 2': 'Нужно соответствовать смыслу.',
 		'stage 3': 'Нужно соответствовать и цвету.'
 	};
+
+	function checkWordStage(word: Word): Stage {
+		if (word.includes('stage')) {
+			return word as Stage;
+		}
+		return 'stage -1';
+	}
 </script>
 
 <div class="color-text flex h-20 flex-col items-center justify-center">
-	<h1 style="color: {currentColor};">{translate(currentWord)}</h1>
-	{#if currentWord.includes('stage')}
-		<p>{stageInstructions[currentWord]}</p>
+	{#if isTestRunning}
+		<h1 style="color: {currentColor};">{translate(currentWord)}</h1>
+		{#if currentWord.includes('stage')}
+			<p>{stageInstructions[checkWordStage(currentWord)]}</p>
+		{/if}
+	{:else}
+		<h1>Конец теста</h1>
 	{/if}
 </div>
 <div class="color-grid">
@@ -112,7 +126,9 @@
 		></button>
 	{/each}
 </div>
-<div>Осталось времени: {timeLeft} сек</div>
+{#if isTestRunning}
+	<div>Осталось времени: {timeLeft} сек</div>
+{/if}
 
 <style>
 	.color-button {
