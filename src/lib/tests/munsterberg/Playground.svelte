@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	let { data, gameEnd } = $props();
+	let { data, gameEnd, sendResults } = $props(); // Важно!
 
 	let innerWidth: number = $state(0);
 	let innerHeight: number = $state(0);
@@ -354,11 +354,6 @@
 	.incorrect {
 		background-color: rgb(251, 88, 69);
 	}
-	.button-container {
-		display: flex;
-		gap: 10px;
-		margin-top: 20px;
-	}
 
 	.subcontainer {
 		display: flex;
@@ -366,12 +361,5 @@
 		justify-content: center; /* Центрирование по горизонтали */
 		align-items: center; /* Центрирование по вертикали */
 		gap: 20px;
-	}
-
-	.button-container {
-		display: flex;
-		gap: 10px; /* Расстояние между кнопками */
-		justify-content: center; /* Выравнивание по центру */
-		align-items: center; /* Выравнивание по вертикали */
 	}
 </style>
