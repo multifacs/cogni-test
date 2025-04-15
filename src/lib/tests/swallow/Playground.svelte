@@ -19,6 +19,8 @@
 	let phase: 'intro' | 'test' | 'result' = 'intro';
 	let results = [];
 
+	let isGameOver = $derived(lives <= 0);
+
 	const directionToRotation: Record<Direction, string> = {
 		up: 'rotate(0deg)',
 		right: 'rotate(90deg)',
@@ -114,11 +116,12 @@ rounded-full
 
 <div class="controls grid w-40 grid-cols-3 grid-rows-2 gap-2">
 	<div></div>
-	<Button color="blue" onclick={() => handleAnswer('up')}><b>⬆</b></Button>
+	<Button color="blue" disabled={isGameOver} onclick={() => handleAnswer('up')}><b>⬆</b></Button>
 	<div></div>
-	<Button color="blue" onclick={() => handleAnswer('left')}><b>⬅</b></Button>
-	<Button color="blue" onclick={() => handleAnswer('down')}><b>⬇</b></Button>
-	<Button color="blue" onclick={() => handleAnswer('right')}><b>➡</b></Button>
+	<Button color="blue" disabled={isGameOver} onclick={() => handleAnswer('left')}><b>⬅</b></Button>
+	<Button color="blue" disabled={isGameOver} onclick={() => handleAnswer('down')}><b>⬇</b></Button>
+	<Button color="blue" disabled={isGameOver} onclick={() => handleAnswer('right')}><b>➡</b></Button
+	>
 </div>
 
 <style>
