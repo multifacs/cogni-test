@@ -84,6 +84,16 @@
 				};
 			});
 		}
+		if (testType == 'munsterberg') {
+			return results.map((result) => {
+				return {
+					x: result.attempt + 1,
+					y: result.time,
+					stage: 0,
+					isCorrect: result.guessed
+				};
+			});
+		}
 		return [];
 	}
 
