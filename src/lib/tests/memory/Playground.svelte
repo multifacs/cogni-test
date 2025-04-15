@@ -2,8 +2,22 @@
 	import { onMount } from 'svelte';
 	import { MemoryGame } from './logic/memory-game';
 	import Button from '$lib/components/ui/Button.svelte';
+	import type { MemoryResult } from './types';
 
-	let { data, gameEnd }: { data: { words: string[] }; gameEnd: () => void } = $props();
+	interface MemoryAndMeta {
+		results: MemoryResult[];
+		meta: string[];
+	}
+
+	let {
+		data,
+		gameEnd,
+		sendResults
+	}: {
+		data: { words: string[] };
+		gameEnd: () => void;
+		sendResults: (res: MemoryAndMeta) => void;
+	} = $props();
 
 	let words: string[] = [];
 	let game: MemoryGame = $state(Object());
@@ -21,13 +35,8 @@
 	// Загрузка слов из файла
 	onMount(async () => {
 		words = data.words;
+		resetGame();
 	});
-
-	function toIntro() {
-		isHome = true;
-		isTestRunning = false;
-		phase = 'waiting';
-	}
 
 	export function resetGame() {
 		game = new MemoryGame(words);
@@ -108,10 +117,14 @@
 		phase = 'waiting';
 		isTestRunning = false;
 		gameEnd();
+		sendResults({
+			results: game.getResults(),
+			meta: game.getWords()
+		});
 	}
 </script>
 
-{#if isHome}{:else if phase === 'waiting'}
+{#if phase === 'waiting'}
 	<p>Слова появятся через {timeLeft} секунд...</p>
 {:else if phase === 'memorize'}
 	<h2>Запомните слова:</h2>
@@ -134,6 +147,8 @@
 		<Button kind="big" color="red" onclick={() => handleAnswer(false)}>НЕТ</Button>
 	</div>
 	<div>Осталось времени: {timeLeft} сек</div>
+{:else}
+	<h1>Конец теста</h1>
 {/if}
 
 <style>
