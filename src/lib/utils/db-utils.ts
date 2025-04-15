@@ -20,10 +20,10 @@ export function checkFormData(data: FormData): boolean {
 export function formDataToUser(id: string | null = null, data: FormData): User {
 	if (!checkFormData(data)) error(422, 'wrong data format');
 
-	const day = (data.get('day') as string).padStart(2, '0');
-	const month = (data.get('month') as string).padStart(2, '0') as string;
-	const year = data.get('year') as string;
-	const birthdate = [day, month, year].join('.');
+	const day = parseInt(data.get('day') as string);
+	const month = parseInt(data.get('month') as string);
+	const year = parseInt(data.get('year') as string);
+	const birthdate = new Date(year, month - 1, day).toLocaleDateString();
 
 	const cataract = data.get('cataract') == 'yes';
 	const colorist = data.get('colorist') == 'yes';
