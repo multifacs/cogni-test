@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 
 	// import { tick } from 'svelte';
 	import { BirdGame } from './logic/bird-game';
@@ -77,6 +77,10 @@
 		}
 		throw 'incorrect direction in swallow test';
 	}
+
+	onDestroy(() => {
+		clearInterval(timer);
+	});
 </script>
 
 <div class="top-bar flex items-center justify-center">

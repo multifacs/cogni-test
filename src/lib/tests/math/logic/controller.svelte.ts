@@ -70,7 +70,7 @@ export class GameState {
 		}, 1000);
 	}
 
-	private clearTimer() {
+	public clearTimer() {
 		if (this.timer) {
 			clearInterval(this.timer);
 			this.timer = null;

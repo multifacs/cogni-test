@@ -9,7 +9,7 @@
 	let Component: typeof import('svelte').SvelteComponent | null = $state(null);
 
 	onMount(async () => {
-		await delay(300);
+		// await delay(300);
 		Component = (await import(`$lib/tests/${slug}/About.svelte`)).default;
 	});
 </script>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { MemoryGame } from './logic/memory-game';
 	import Button from '$lib/components/ui/Button.svelte';
 	import type { MemoryResult } from './types';
@@ -122,6 +122,10 @@
 			meta: game.getWords()
 		});
 	}
+
+	onDestroy(() => {
+		clearInterval(timer);
+	});
 </script>
 
 {#if phase === 'waiting'}
