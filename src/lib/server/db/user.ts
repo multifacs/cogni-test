@@ -34,7 +34,6 @@ async function createUser(userData: User): Promise<string> {
 }
 
 export async function addUser(data: FormData): Promise<string | null> {
-	console.log('check');
 	if (!checkFormData(data)) {
 		fail(500);
 		console.log('formdata check failed');
@@ -45,6 +44,24 @@ export async function addUser(data: FormData): Promise<string | null> {
 	const id = await createUser(user);
 	return id;
 }
+
+export async function getUserById(id: string) {
+	try {
+		const response = await fetch(`${DB_URL}/api/users?id=${id}`);
+
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		const data = await response.json();
+		console.log('User found:', data);
+		return data;
+	} catch (error) {
+		console.error('Error finding user:', error);
+		throw error;
+	}
+}
+
 // export function getDevUser(): string | null {
 // 	const devFormData = new FormData();
 // 	devFormData.append('name', 'debugus');
