@@ -25,11 +25,13 @@
 	class="test-container
 rounded-1xl
 flex
+max-h-[80dvh]
 w-full
 flex-col
 items-center
 gap-4
 overflow-y-scroll
+bg-gray-700
 "
 >
 	{#each results as result}
