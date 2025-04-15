@@ -1,11 +1,19 @@
-import { error } from '@sveltejs/kit';
+import { getResults } from '$lib/server/db/result.js';
+import type { TestResultMap } from '$lib/tests/types';
+// import { error } from '@sveltejs/kit';
 
-export async function load({ params }) {
-	const slug = params.slug;
+export async function load({ params, cookies }) {
+	const slug = params.slug as keyof TestResultMap;
+	const userId = cookies.get('user') as string;
 
-	try {
-		await import(`$lib/tests/${slug}/Results.svelte`);
-	} catch {
-		error(404, 'test not found');
-	}
+	const results = await getResults(slug, userId);
+	console.log('results: ', results);
+
+	// try {
+	// 	await import(`$lib/tests/${slug}/Results.svelte`);
+	// } catch {
+	// 	error(404, 'test not found');
+	// }
+
+	return { results };
 }

@@ -26,7 +26,7 @@
 		class="	controls
   flex items-center justify-center gap-2.5"
 	>
-		<Button color="green" goto={`/tests/${slug}/playground`}>К тесту</Button>
+		<Button color="green" goto={`/tests/${slug}/playground`}>Начать</Button>
 		<Button color="red" goto="/">Назад</Button>
 		<Button color="blue" goto={`/tests/${slug}/results`}>История</Button>
 	</div>

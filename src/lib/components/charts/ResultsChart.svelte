@@ -8,16 +8,17 @@
 	import { translate } from '../../utils/common';
 	import { onDestroy, onMount } from 'svelte';
 	import { getCSSVar } from '$lib/utils';
+	import type { TestResultMap } from '$lib/tests/types';
 
 	let {
-		stages = 1,
+		testType,
 		results,
 		xtitle,
 		ytitle,
 		evaltype = 'correctness'
 	}: {
-		stages: number;
-		results: Result[];
+		testType: keyof TestResultMap;
+		results: TestResultMap[typeof testType][];
 		xtitle: string;
 		ytitle: string;
 		evaltype?: EvalType;
@@ -47,22 +48,55 @@
 
 	let canvas: HTMLCanvasElement = $state(Object());
 	let chart = $state(Object());
-	const stageNums: number[] = [];
-	for (let i = 1; i <= stages; i++) stageNums.push(i);
+
+	let maxStage = Math.max(...results.map((item) => item.stage));
+	if (!maxStage || maxStage == 1) maxStage = 0;
+	let stageNums: number[] = [];
+	for (let i = 1; i <= maxStage; i++) stageNums.push(i);
+	if (!maxStage) stageNums = [0];
 
 	function compareNumbers(a: number, b: number) {
 		return a - b;
 	}
 
+	function getResults(
+		testType: keyof TestResultMap,
+		results: TestResultMap[typeof testType][]
+	): Result[] {
+		console.log(results);
+		if (testType == 'stroop') {
+			return results.map((result) => {
+				return {
+					x: result.attempt + 1,
+					y: result.time,
+					stage: result.stage,
+					isCorrect: result.isCorrect
+				};
+			});
+		}
+		if (testType == 'math' || testType == 'swallow' || testType == 'memory') {
+			return results.map((result) => {
+				return {
+					x: result.attempt + 1,
+					y: result.time,
+					stage: 0,
+					isCorrect: result.isCorrect
+				};
+			});
+		}
+		return [];
+	}
+
 	onMount(() => {
+		const parsedResults = getResults(testType, results);
 		chart = new Chart(canvas, {
 			type: 'line',
 			data: {
-				labels: results.map((el) => el.x).sort(compareNumbers),
+				labels: parsedResults.map((el) => el.x).sort(compareNumbers),
 				datasets: stageNums.map((stage) => {
 					return {
 						label: translate(`stage ${stage}`),
-						data: results.filter((el) => el.stage == stage),
+						data: parsedResults.filter((el) => el.stage == stage),
 						borderWidth: 1,
 						pointBackgroundColor: evalFuncs[evaltype],
 						pointRadius: 5,
@@ -97,7 +131,7 @@
 	});
 	onDestroy(() => {
 		// console.log('destroy');
-		chart.destroy();
+		// chart.destroy();
 	});
 </script>
 

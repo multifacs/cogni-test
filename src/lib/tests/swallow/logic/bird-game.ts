@@ -1,17 +1,4 @@
-export type Direction = 'up' | 'right' | 'down' | 'left';
-export type Background = 'red' | 'blue';
-
-export type BirdTask = {
-	direction: Direction;
-	background: Background;
-	correctAnswer: Direction;
-};
-
-export type BirdResult = {
-	time: number;
-	isCorrect: boolean;
-	task: BirdTask;
-};
+import type { Background, BirdResult, BirdTask, Direction } from '../types';
 
 export class BirdGame {
 	private readonly totalTasks = 100;
@@ -44,10 +31,7 @@ export class BirdGame {
 			const background: Background = Math.random() < 0.5 ? 'red' : 'blue';
 			const correctAnswer = background === 'blue' ? direction : opposite[direction];
 
-			if (
-				lastTask.direction === direction &&
-				lastTask.background === background
-			) {
+			if (lastTask.direction === direction && lastTask.background === background) {
 				continue;
 			}
 
@@ -55,7 +39,6 @@ export class BirdGame {
 			this.tasks.push(task);
 			lastTask = task;
 		}
-
 	}
 
 	public startNextTask(): void {
@@ -65,7 +48,7 @@ export class BirdGame {
 	public handleAnswer(answer: Direction): void {
 		const currentTask = this.tasks[this.currentTaskIndex];
 		const endTime = performance.now();
-		const timeTaken = endTime - this.startTime;
+		const timeTaken = Math.round(endTime - this.startTime);
 
 		const isCorrect = answer === currentTask.correctAnswer;
 		if (!isCorrect) {
@@ -73,9 +56,14 @@ export class BirdGame {
 		}
 
 		this.results.push({
+			// stage: 1,
+			attempt: this.results.length,
 			time: timeTaken,
-			isCorrect,
-			task: currentTask
+			direction: currentTask.direction,
+			background: currentTask.background,
+			correctAnswer: currentTask.correctAnswer,
+			userAnswer: answer,
+			isCorrect
 		});
 
 		this.currentTaskIndex++;
@@ -87,6 +75,10 @@ export class BirdGame {
 
 	public getLives(): number {
 		return this.livesLeft;
+	}
+
+	public setLives(livesLeft: number): void {
+		this.livesLeft = livesLeft;
 	}
 
 	public getResults(): BirdResult[] {
