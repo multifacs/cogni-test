@@ -13,7 +13,7 @@
 <div
 	class="
 	flex
-	max-h-[80vh]
+	max-h-[80dvh]
 	max-w-[350px]
 	min-w-[300px]
 	flex-col
