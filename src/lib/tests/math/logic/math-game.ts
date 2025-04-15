@@ -1,21 +1,12 @@
-export type Sign = '>' | '<' | '>=' | '<=' | '=' | '!=';
-
-export type Inequality = {
-	left: number | 'stage';
-	right: number | null;
-	sign: Sign | null;
-	answer: boolean | null;
-};
-import type { Result } from '$lib/components/charts/types';
+import { clamp } from '$lib/utils';
+import type { Inequality, MathResult } from '../types';
 
 export class MathGame {
 	private readonly stageTaskCounts: number[] = [10];
 	private currentTaskIndex: number = 0;
-	private currentX: number = 0;
-
 	private startTime: number = 0;
 	private tasks: Inequality[] = [];
-	private results: Result[] = [];
+	private results: MathResult[] = [];
 
 	constructor() {
 		this.generateTasks();
@@ -50,18 +41,21 @@ export class MathGame {
 	public handleAnswer(selectedAnswer: boolean | null): void {
 		const currentTask = this.getCurrentTask();
 		if (currentTask.left != 'stage') {
-			this.currentX++;
-
 			const endTime = performance.now();
-			const reactionTime = endTime - this.startTime;
+			const reactionTime = Math.round(clamp(endTime - this.startTime, 0, 3000));
 			const isCorrect = currentTask.answer == selectedAnswer;
 
 			this.results.push({
-				x: this.currentX,
-				y: reactionTime,
 				stage: 1,
+				attempt: this.results.length,
+				time: reactionTime,
+				left: currentTask.left,
+				sign: currentTask.sign,
+				right: currentTask.right,
+				correctAnswer: currentTask.answer,
+				userAnswer: selectedAnswer,
 				isCorrect
-			} as Result);
+			} as MathResult);
 		}
 
 		this.currentTaskIndex++;
@@ -112,7 +106,7 @@ export class MathGame {
 	 * Gets the results of the game.
 	 * @returns The reaction times and correctness of answers.
 	 */
-	public getResults(): Result[] {
+	public getResults(): MathResult[] {
 		console.log(this.results);
 		return this.results;
 	}

@@ -1,5 +1,5 @@
 import { MathGame } from './math-game'; // Adjust the import path as needed
-import { type Sign as SignType } from './math-game';
+import { type MathResult, type Sign as SignType } from '../types';
 
 export class GameState {
 	private isGameRunning = $state(false);
@@ -18,10 +18,12 @@ export class GameState {
 	// Game logic
 	private game: MathGame = $state(Object());
 
-	private gameEnd = () => {};
+	private gameEnd;
+	private sendResults;
 
-	constructor(gameEnd: () => void) {
+	constructor(gameEnd: () => void, sendResults: (results: MathResult[]) => void) {
 		this.gameEnd = gameEnd;
+		this.sendResults = sendResults;
 	}
 
 	public getState() {
@@ -53,6 +55,7 @@ export class GameState {
 		this.updateState('stage', null, 1);
 		this.clearTimer();
 		this.gameEnd();
+		this.sendResults(this.game.getResults());
 	}
 
 	public startTimer() {
