@@ -3,7 +3,7 @@
 	import type { LayoutData } from './$types';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
-	console.log(data);
+	// console.log(data);
 	const found = data.tests.find((x) => x.name == data.slug);
 	let title: string = $state('');
 	if (found) title = found.title;

@@ -2,16 +2,19 @@ import { error } from '@sveltejs/kit';
 
 export async function load({ params, fetch }) {
 	const slug = params.slug;
-	console.log(slug)
+	// console.log(slug);
 
 	try {
 		await import(`$lib/tests/${slug}/Playground.svelte`);
 	} catch (err) {
-		console.log(err)
+		console.log(err);
 		error(404, 'test not found');
 	}
 
-	const data = {};
+	const data: {
+		words?: string[];
+		silhouettes?: Record<string, string>;
+	} = {};
 
 	if (slug == 'munsterberg' || slug == 'memory') {
 		const response = await fetch('/words'); // Путь к файлу
