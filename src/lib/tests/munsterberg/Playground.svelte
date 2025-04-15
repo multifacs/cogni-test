@@ -1,348 +1,280 @@
 <script lang="ts">
+	import { clamp, delay } from '$lib/utils';
 	import { onMount } from 'svelte';
-	let { data, gameEnd, sendResults } = $props(); // Важно!
+	import type { Cell, Word, Selection, MunsterbergResult } from './types';
 
-	let innerWidth: number = $state(0);
-	let innerHeight: number = $state(0);
+	// Props
+	let { data, gameEnd, sendResults } = $props();
 
-	type Cell = {
-		letter: string;
-		isCorrect: boolean;
-		isIncorrect: boolean;
-	};
-
-	type Word = {
-		value: string;
-		row: number;
-		col: number;
-		guessed: boolean;
-	};
-
+	// Grid settings
 	const GRID_COLS = 9;
 	const GRID_ROWS = 11;
 	let CELL_W = $state(42);
 	let CELL_H = $state(42);
 
-	// Game state
-	let isTestRunning = $state(false);
-	let isHome = $state(true);
-	let grid: Cell[][] = $state([]);
-	let isDragging = false;
-	let words: string[] = $state([]); // Массив для хранения слов
-
-	let overlay: HTMLElement = $state(Object());
-
-	const generatedWords: Word[] = $state([]);
-	let guessedCount = $derived(generatedWords.filter((x) => x.guessed == true).length);
-	const selectedCells: { cell: Cell; i: number; j: number }[] = [];
+	// State
+	let innerWidth = $state(0);
+	let innerHeight = $state(0);
+	let isGameRunning = $state(false);
 	let timer = $state(60);
-	let timerInterval = $state(Object());
+	let timerInterval: any = $state(null);
 
-	// Загрузка слов из файла
-	onMount(async () => {
+	let grid: Cell[][] = $state([]);
+	let words: string[] = $state([]);
+	let generatedWords: Word[] = $state([]);
+	let guessedCount = $derived(generatedWords.filter((w) => w.guessed).length);
+
+	let overlay: HTMLElement;
+	let currentSelection: Selection | null = $state(null);
+	let isDragging = false;
+	let isResetting = false;
+
+	// Time tracking
+	let startTime: number = $state(0);
+
+	onMount(() => {
 		words = data.words;
-		console.log(innerWidth, innerHeight);
 		if (innerWidth < 400) {
 			CELL_W = 30;
 			CELL_H = 30;
 		}
+		resetGame();
 	});
-
-	// Запуск теста
-	export function resetGame() {
-		if (typeof timerInterval != 'object') clearInterval(timerInterval);
-		isTestRunning = true;
-		isHome = false;
-		timer = 60;
-		initializeGrid();
-
-		timerInterval = setInterval(() => {
-			timer -= 1;
-			if (!timer || guessedCount == generatedWords.length) {
-				stopGame();
-			}
-		}, 1000);
-	}
-
-	export function stopGame() {
-		clearInterval(timerInterval);
-		isTestRunning = false;
-		highlightUnguessed();
-		gameEnd();
-	}
 
 	function getRandomLetter() {
 		const abc = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ';
-		const randomCharIdx = Math.round(Math.random() * 32);
-		return abc.charAt(randomCharIdx);
+		return abc.charAt(Math.floor(Math.random() * abc.length));
 	}
 
-	// Инициализация сетки
-	function initializeGrid() {
-		generatedWords.length = 0;
-
-		grid = Array.from({ length: GRID_ROWS }, () =>
+	function createEmptyGrid(): Cell[][] {
+		return Array.from({ length: GRID_ROWS }, () =>
 			Array.from({ length: GRID_COLS }, () => ({
 				letter: getRandomLetter(),
 				isCorrect: false,
 				isIncorrect: false
 			}))
 		);
+	}
 
-		// Замена некоторых букв на слова из списка
+	function insertWords(grid: Cell[][], words: string[]): [Cell[][], Word[]] {
+		const newGrid = structuredClone(grid);
+		const result: Word[] = [];
 		let row = 0;
-		let count = 0;
 		while (row < GRID_ROWS) {
 			if (Math.random() < 0.7) {
-				count++;
 				const word = words[Math.floor(Math.random() * words.length)];
-				let col = Math.round(Math.random() * (GRID_COLS - word.length));
-				console.log(word, row, col);
-				generatedWords.push({ value: word, row, col, guessed: false });
+				const col = Math.floor(Math.random() * (GRID_COLS - word.length));
 				for (let i = 0; i < word.length; i++) {
-					grid[row][col + i].letter = word[i].toUpperCase();
+					newGrid[row][col + i].letter = word[i].toUpperCase();
 				}
-				row++;
-			} else {
-				row++;
+				result.push({ value: word, row, col, guessed: false, attempt: 0, time: 60000 });
 			}
+			row++;
 		}
-		console.log('count:', count);
+		return [newGrid, result];
 	}
 
-	let lastI = $state(-1);
-	let lastJ1 = $state(-1);
-	let lastJ2 = $state(-1);
+	export function resetGame() {
+		clearInterval(timerInterval);
+		isGameRunning = true;
+		timer = 60;
+		[grid, generatedWords] = insertWords(createEmptyGrid(), words);
 
-	function clamp(n: number, min: number, max: number) {
-		return Math.min(Math.max(n, min), max);
+		resetTime();
+
+		timerInterval = setInterval(() => {
+			timer--;
+			if (timer <= 0 || guessedCount === generatedWords.length) stopGame();
+		}, 1000);
 	}
 
-	function getTouchIJ(e: TouchEvent) {
-		const j = clamp(
-			Math.floor((e.touches[0].clientX - overlay.offsetLeft) / CELL_W),
-			0,
-			GRID_COLS - 1
-		);
-		const i = clamp(
-			Math.floor((e.touches[0].clientY - overlay.offsetTop) / CELL_H),
-			0,
-			GRID_ROWS - 1
-		);
-		return { j, i };
+	export function stopGame() {
+		clearInterval(timerInterval);
+		currentSelection = null;
+		isGameRunning = false;
+		highlightUnguessed();
+		gameEnd();
+
+		sendResults({
+			results: generatedWords.map((x) => {
+				const y = { ...x } as MunsterbergResult;
+				y.word = x.value;
+				return y;
+			}),
+			meta: generatedWords.map((x) => x.value)
+		});
 	}
 
-	const delay = (delayInms: number) => {
-		return new Promise((resolve) => setTimeout(resolve, delayInms));
-	};
-
-	async function resetCells() {
-		if (lastJ1 == -1 && lastJ2 != -1) {
-			lastJ1 = lastJ2;
-		}
-		if (lastJ2 == -1 && lastJ1 != -1) {
-			lastJ2 = lastJ1;
-		}
-
-		checkWord();
-		for (let j = lastJ1; j <= lastJ2; j++) {
-			if (!grid[lastI][j].isCorrect) {
-				grid[lastI][j].isIncorrect = true;
-			}
-		}
-		await delay(200);
-		for (let j = 0; j < GRID_COLS; j++) {
-			grid[lastI][j].isIncorrect = false;
-		}
-		selectedCells.length = 0;
-		lastI = -1;
-		lastJ1 = -1;
-		lastJ2 = -1;
+	function markFoundAndRecordTime(found: Word) {
+		found.attempt = guessedCount;
+		found.guessed = true;
+		found.time = Math.floor(performance.now() - startTime);
+		resetTime();
 	}
 
-	function checkWord() {
-		if (lastJ1 == -1 || lastJ2 == -1) return;
-
-		if (lastJ1 > lastJ2) {
-			const temp = lastJ1;
-			lastJ1 = lastJ2;
-			lastJ2 = temp;
-		}
-		let selectedWord = '';
-		for (let j = lastJ1; j <= lastJ2 && j != -1; j++) {
-			selectedWord += grid[lastI][j].letter;
-		}
-		const generated = generatedWords.filter(
-			(x) => x.guessed == false && x.row == lastI && x.value == selectedWord.toLowerCase()
-		);
-		if (generated.length != 0) {
-			generated[0].guessed = true;
-			for (let j = lastJ1; j <= lastJ2; j++) {
-				grid[lastI][j].isCorrect = true;
-			}
-		}
+	function markNotFound(found: Word, attemp: number): number {
+		found.attempt = attemp;
+		found.time = Math.floor(performance.now() - startTime);
+		return attemp + 1;
 	}
 
-	function highlightUnguessed() {
+	function resetTime() {
+		startTime = performance.now();
+	}
+
+	function getSelectedWord(grid: Cell[][], sel: Selection): string {
+		const from = Math.min(sel.fromCol, sel.toCol);
+		const to = Math.max(sel.fromCol, sel.toCol);
+		return grid[sel.row]
+			.slice(from, to + 1)
+			.map((cell) => cell.letter)
+			.join('');
+	}
+
+	function markCorrect(grid: Cell[][], sel: Selection): void {
+		const from = Math.min(sel.fromCol, sel.toCol);
+		const to = Math.max(sel.fromCol, sel.toCol);
+		for (let j = from; j <= to; j++) grid[sel.row][j].isCorrect = true;
+	}
+
+	function markIncorrect(grid: Cell[][], sel: Selection): void {
+		const from = Math.min(sel.fromCol, sel.toCol);
+		const to = Math.max(sel.fromCol, sel.toCol);
+		for (let j = from; j <= to; j++)
+			if (!grid[sel.row][j].isCorrect) grid[sel.row][j].isIncorrect = true;
+	}
+
+	function clearIncorrect(grid: Cell[][], row: number): void {
+		for (let j = 0; j < GRID_COLS; j++) grid[row][j].isIncorrect = false;
+	}
+
+	function highlightUnguessed(): void {
+		let x = guessedCount;
 		generatedWords.forEach((word) => {
 			if (!word.guessed) {
-				for (let j = word.col; j <= word.col + word.value.length - 1; j++) {
+				x = markNotFound(word, x);
+				for (let j = word.col; j < word.col + word.value.length; j++) {
 					grid[word.row][j].isIncorrect = true;
 				}
 			}
 		});
 	}
 
-	async function touchHandler(e: TouchEvent) {
-		if (!isTestRunning) return;
-		switch (e.type) {
-			case 'touchstart': {
-				isDragging = true;
-				const { j, i } = getTouchIJ(e);
-				lastI = i;
-				lastJ1 = j;
-				break;
+	function getEventSelection(e: TouchEvent | PointerEvent): Selection | null {
+		const x = 'touches' in e ? e.touches[0].clientX : e.clientX;
+		const y = 'touches' in e ? e.touches[0].clientY : e.clientY;
+		const j = clamp(Math.floor((x - overlay.offsetLeft) / CELL_W), 0, GRID_COLS - 1);
+		const i = clamp(Math.floor((y - overlay.offsetTop) / CELL_H), 0, GRID_ROWS - 1);
+		return isNaN(i) || isNaN(j) ? null : { row: i, fromCol: j, toCol: j };
+	}
+
+	async function resetCells(sel: Selection) {
+		if (isResetting) return;
+		isResetting = true;
+
+		const word = getSelectedWord(grid, sel);
+		const found = generatedWords.find(
+			(w) => !w.guessed && w.row === sel.row && w.value.toLowerCase() === word.toLowerCase()
+		);
+		if (found) {
+			markFoundAndRecordTime(found);
+			markCorrect(grid, sel);
+		} else {
+			markIncorrect(grid, sel);
+			await delay(200);
+			clearIncorrect(grid, sel.row);
+		}
+		currentSelection = null;
+		isResetting = false;
+	}
+
+	function handleInteraction(e: TouchEvent | PointerEvent) {
+		if (!isGameRunning || isResetting) return;
+		if (e.type === 'touchstart' || e.type === 'pointerdown') {
+			isDragging = true;
+			currentSelection = getEventSelection(e);
+
+			resetTime();
+		} else if ((e.type === 'touchmove' || e.type === 'pointermove') && isDragging) {
+			const sel = getEventSelection(e);
+			if (sel && currentSelection) {
+				currentSelection.toCol = sel.fromCol;
 			}
-			case 'touchmove': {
-				const { j, i } = getTouchIJ(e);
-				if (i == lastI) {
-					lastJ2 = j;
-				}
-				break;
-			}
-			case 'touchend': {
-				isDragging = false;
-				await resetCells();
-				break;
-			}
+		} else if (e.type === 'touchend' || e.type === 'pointerup' || e.type === 'pointerout') {
+			isDragging = false;
+			if (currentSelection) resetCells(currentSelection);
 		}
 	}
 
-	function getPointerIJ(e: PointerEvent) {
-		const j = clamp(Math.floor((e.clientX - overlay.offsetLeft) / CELL_W), 0, GRID_COLS - 1);
-		const i = clamp(Math.floor((e.clientY - overlay.offsetTop) / CELL_H), 0, GRID_ROWS - 1);
-		return { j, i };
-	}
-
-	async function pointerHandler(e: PointerEvent) {
-		if (!isTestRunning) return;
-		if (e.pointerType == 'touch') return;
-		switch (e.type) {
-			case 'pointerdown': {
-				isDragging = true;
-				const { j, i } = getPointerIJ(e);
-				lastI = i;
-				lastJ1 = j;
-				break;
-			}
-			case 'pointermove': {
-				if (isDragging) {
-					const { j, i } = getPointerIJ(e);
-					if (i == lastI) {
-						lastJ2 = j;
-					}
-				}
-				break;
-			}
-			case 'pointerup': {
-				isDragging = false;
-				await resetCells();
-				break;
-			}
-			case 'pointerout': {
-				if (isDragging) {
-					isDragging = false;
-					await resetCells();
-				}
-				break;
-			}
-		}
-	}
-
-	function checkSelected(i: number, j: number): boolean {
-		if (lastJ1 == -1 || lastJ2 == -1) return false;
-		return i == lastI && ((j >= lastJ1 && j <= lastJ2) || (j >= lastJ2 && j <= lastJ1));
+	function isSelected(i: number, j: number): boolean {
+		if (!currentSelection) return false;
+		const { row, fromCol, toCol } = currentSelection;
+		const [start, end] = [fromCol, toCol].sort((a, b) => a - b);
+		return i === row && j >= start && j <= end;
 	}
 </script>
 
-<div class="subcontainer">
-	<div class="grid-container">
-		<div
-			class="overlay"
-			bind:this={overlay}
-			ontouchstart={touchHandler}
-			ontouchmove={touchHandler}
-			ontouchend={touchHandler}
-			onpointerdown={pointerHandler}
-			onpointermove={pointerHandler}
-			onpointerup={pointerHandler}
-			onpointerout={pointerHandler}
-		>
+<div
+	class="
+	pointer-events-auto
+	z-0
+	box-border
+	grid
+	cursor-pointer
+	touch-none
+	border-[1px]
+	border-gray-700 select-none
+	"
+	style="grid-template-columns: repeat({GRID_COLS}, {CELL_W}px); grid-template-rows: repeat({GRID_ROWS}, {CELL_H}px);"
+	bind:this={overlay}
+	ontouchstart={handleInteraction}
+	ontouchmove={handleInteraction}
+	ontouchend={handleInteraction}
+	onpointerdown={handleInteraction}
+	onpointermove={handleInteraction}
+	onpointerup={handleInteraction}
+	onpointerout={handleInteraction}
+>
+	{#each grid as row, i}
+		{#each row as cell, j}
 			<div
-				class="grid"
-				style="
-				grid-template-columns: repeat({GRID_COLS}, {CELL_W}px);
-				grid-template-rows: repeat({GRID_ROWS}, {CELL_H}px);
-				"
+				class="
+						cell
+						pointer-events-none
+						relative
+						z-[1]
+						box-border
+						flex
+						transform-gpu
+						items-center
+						justify-center
+						border-[1px]
+						border-gray-700
+						text-center
+						transition-all
+						duration-300
+						select-none
+						{isSelected(i, j) ? 'selected z-[2] scale-110 overflow-hidden border-transparent shadow-md' : ''}
+						{cell.isCorrect ? 'correct text-gray-50' : ''}
+						{cell.isIncorrect ? 'incorrect text-gray-50' : ''}"
 			>
-				{#each grid as row, rowIndex}
-					{#each row as cell, colIndex}
-						<div
-							class="cell
-							{checkSelected(rowIndex, colIndex) ? 'selected' : ''}
-							{cell.isCorrect ? 'correct' : ''}
-							{cell.isIncorrect ? 'incorrect' : ''}
-							"
-						>
-							{cell.letter}
-						</div>
-					{/each}
-				{/each}
+				{cell.letter}
 			</div>
-		</div>
-	</div>
-	<!-- <h3 style="margin: 0">
-		Загадано {generatedWords.length} слов{generatedWords.length < 5
-			? generatedWords.length == 1
-				? 'о'
-				: 'а'
-			: ''}
-	</h3> -->
-	{#if isTestRunning}
-		<h3>{`0${timer == 60 ? 1 : 0}:${timer % 60 < 10 ? '0' : ''}${timer % 60}`}</h3>
-	{:else}
-		<h3>Вы отгадали {guessedCount}/{generatedWords.length}</h3>
-	{/if}
+		{/each}
+	{/each}
 </div>
+{#if isGameRunning}
+	<h3>{`0${timer === 60 ? 1 : 0}:${timer % 60 < 10 ? '0' : ''}${timer % 60}`}</h3>
+{:else}
+	<h3>Вы отгадали {guessedCount}/{generatedWords.length} за {60 - timer} сек.</h3>
+{/if}
 
 <svelte:window bind:innerWidth bind:innerHeight />
 
 <style>
-	.grid {
-		display: grid;
-		touch-action: none;
-		user-select: none;
-	}
-	.overlay {
-		width: 100%;
-		height: 100%;
-		background-color: transparent;
-		border: 1px solid var(--color-gray-700);
-		cursor: pointer;
-		box-sizing: border-box;
-		touch-action: none;
-		user-select: none;
-	}
 	.cell {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border: 1px solid var(--color-gray-700);
-		cursor: pointer;
-		box-sizing: border-box;
-		z-index: -1;
-		user-select: none;
-		transition: 0.5s ease;
+		backface-visibility: hidden;
+		transform-style: preserve-3d;
 	}
 	.selected {
 		background-color: rgb(249, 193, 98);
@@ -353,13 +285,5 @@
 	}
 	.incorrect {
 		background-color: rgb(251, 88, 69);
-	}
-
-	.subcontainer {
-		display: flex;
-		flex-direction: column;
-		justify-content: center; /* Центрирование по горизонтали */
-		align-items: center; /* Центрирование по вертикали */
-		gap: 20px;
 	}
 </style>

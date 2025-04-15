@@ -7,7 +7,7 @@ export type BirdTask = {
 	correctAnswer: Direction;
 };
 
-export interface BirdResult extends BirdTask {
+export interface SwallowResult extends BirdTask {
     // stage: number;
 	attempt: number;
 	time: number;

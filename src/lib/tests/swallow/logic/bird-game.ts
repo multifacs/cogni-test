@@ -1,11 +1,11 @@
-import type { Background, BirdResult, BirdTask, Direction } from '../types';
+import type { Background, SwallowResult, BirdTask, Direction } from '../types';
 
 export class BirdGame {
 	private readonly totalTasks = 100;
 	private readonly maxLives = 3;
 
 	private tasks: BirdTask[] = [];
-	private results: BirdResult[] = [];
+	private results: SwallowResult[] = [];
 	private currentTaskIndex = 0;
 
 	private startTime = 0;
@@ -81,7 +81,7 @@ export class BirdGame {
 		this.livesLeft = livesLeft;
 	}
 
-	public getResults(): BirdResult[] {
+	public getResults(): SwallowResult[] {
 		return this.results;
 	}
 
