@@ -1,8 +1,12 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
+	import { onMount } from 'svelte';
 
 	// import { tick } from 'svelte';
-	import { BirdGame, type Direction } from './logic/bird-game';
+	import { BirdGame } from './logic/bird-game';
+	import { type Direction } from './types';
+
+	let { gameEnd, sendResults } = $props();
 
 	let game: BirdGame;
 	let currentTask = $state({
@@ -15,12 +19,16 @@
 	let phase: 'intro' | 'test' | 'result' = 'intro';
 	let results = [];
 
-	const directionToRotation = {
+	const directionToRotation: Record<Direction, string> = {
 		up: 'rotate(0deg)',
 		right: 'rotate(90deg)',
 		down: 'rotate(180deg)',
 		left: 'rotate(-90deg) scaleX(-1)'
 	};
+
+	onMount(() => {
+		resetGame();
+	});
 
 	export function resetGame() {
 		game = new BirdGame();
@@ -55,11 +63,21 @@
 
 	export function stopGame() {
 		clearInterval(timer);
+		game.setLives(0);
 		phase = 'result';
+		gameEnd();
+		sendResults(game.getResults());
+	}
+
+	function checkDirection(str: string): Direction {
+		if (str == 'up' || str == 'down' || str == 'left' || str == 'right') {
+			return str as Direction;
+		}
+		throw 'incorrect direction in swallow test';
 	}
 </script>
 
-<div class="top-bar flex justify-center items-center">
+<div class="top-bar flex items-center justify-center">
 	<div class="lives">
 		{#each Array(lives) as _, i}
 			<span class="heart">❤️</span>
@@ -90,7 +108,7 @@ rounded-full
 		src="/tests/swallow.svg"
 		alt="bird"
 		class="bird-img h-24 w-24 transform"
-		style="transform: {directionToRotation[currentTask.direction]};"
+		style="transform: {directionToRotation[checkDirection(currentTask.direction)]};"
 	/>
 </div>
 
