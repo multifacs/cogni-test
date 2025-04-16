@@ -23,9 +23,9 @@
 {/if}
 <div
 	class="test-container
-rounded-1xl
+rounded-2xl
 flex
-max-h-[80dvh]
+max-h-[75dvh]
 w-full
 flex-col
 items-center
@@ -35,9 +35,9 @@ bg-gray-700
 "
 >
 	{#each results as result}
-		<div class="w-full rounded-lg bg-gray-600 shadow">
+		<div class="rounded-2xl w-full bg-gray-600 shadow">
 			<button
-				class="hover:rounded-1xl flex w-full items-center justify-between px-4 py-3 transition-colors hover:bg-gray-400"
+				class="rounded-t-2xl flex w-full items-center justify-between px-4 py-3 transition-colors hover:bg-gray-400"
 				onclick={() => toggleSession(result.sessionId)}
 			>
 				<span class="font-medium text-gray-50">
@@ -77,7 +77,7 @@ bg-gray-700
 </div>
 
 <div class="controls flex items-center justify-center gap-2.5">
-	<Button color="blue" goto={`/tests/${slug}`}>Назад</Button>
+	<Button color="blue" goto={`/tests/${slug}`}>В начало</Button>
 	<Button color="red" goto="/tests">К тестам</Button>
 </div>
 
