@@ -4,6 +4,7 @@
 	import { translate } from '$lib/utils/common';
 	import { GameState } from './logic/controller.svelte';
 	import { onDestroy, onMount } from 'svelte';
+	import '@fontsource/fira-code';
 
 	let { gameEnd, sendResults } = $props();
 	let gameState = $state(new GameState(gameEnd, sendResults));
@@ -26,33 +27,42 @@
 	onDestroy(() => {
 		gameState.clearTimer();
 	});
+
+	function getPaddedLeft(left: string | number | null) {
+		// if (left) return String(left).padStart(3, ' ');
+		if (left || left == 0) return String(left);
+		return '';
+	}
+
+	function getPaddedRight(right: string | number | null) {
+		// if (right) return String(right).padEnd(3, ' ');
+		if (right || right == 0) return String(right);
+		return '';
+	}
 </script>
 
-<div class="inequality grid grid-cols-[1fr_auto_1fr] items-center gap-5 text-4xl font-bold">
-	{#if gameState.getState().isGameRunning}
-		{#if gameState.getState().currentLeft == 'stage'}
-			<span></span>
-			<span
-				>{`${translate(`${gameState.getState().currentLeft}`)} ${gameState.getState().currentRight}`}</span
-			>
-			<span></span>
-		{:else}
-			<div class="left justify-self-end">
-				<span>{gameState.getState().currentLeft}</span>
-			</div>
-			<div class="sign grid-col">
-				<Sign sign={gameState.getState().currentSign}></Sign>
-			</div>
-			<div class="right justify-self-start">
-				<span>{gameState.getState().currentRight}</span>
-			</div>
-		{/if}
+{#if gameState.getState().isGameRunning}
+	{#if gameState.getState().currentLeft == 'stage'}
+		<h1>Тест начинается</h1>
 	{:else}
-		<span></span>
-		<span>Конец теста</span>
-		<span></span>
+		<div
+			class="inequality grid grid-cols-[1fr_auto_1fr] items-center gap-5 text-4xl font-bold text-gray-50"
+		>
+			<div class="left justify-self-center">
+				{getPaddedLeft(gameState.getState().currentLeft)}
+			</div>
+			<div class="sign grid-col justify-self-center">
+				{gameState.getState().currentSign}
+			</div>
+			<div class="right justify-self-center">
+				<span>{getPaddedRight(gameState.getState().currentRight)}</span>
+			</div>
+		</div>
 	{/if}
-</div>
+{:else}
+	<h1>Конец теста</h1>
+{/if}
+
 <div class="grid grid-cols-2 gap-2.5">
 	<Button
 		disabled={!gameState.getState().isGameRunning}
@@ -70,3 +80,9 @@
 {#if gameState.getState().isGameRunning}
 	<div>Осталось времени: {gameState.getState().timeLeft} сек</div>
 {/if}
+
+<style>
+	.inequality {
+		font-family: 'Fira Code';
+	}
+</style>
