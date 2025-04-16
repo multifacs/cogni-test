@@ -47,6 +47,13 @@ h1 {
 	text-align: center;
 }
 
+h2 {
+	font-size: var(--text-1xl);
+	--tw-font-weight: var(--font-weight-bold);
+	font-weight: var(--font-weight-bold);
+	text-align: center;
+}
+
 html,
 body {
 	width: 100%;
