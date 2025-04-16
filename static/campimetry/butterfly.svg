@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+
+<svg
+   version="1.1"
+   id="_x32_"
+   width="100"
+   height="100"
+   viewBox="0 0 64 64"
+   xml:space="preserve"
+   sodipodi:docname="butterfly.svg"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+   id="defs3" /><sodipodi:namedview
+   id="namedview3"
+   pagecolor="#ffffff"
+   bordercolor="#000000"
+   borderopacity="0.25"
+   inkscape:showpageshadow="2"
+   inkscape:pageopacity="0.0"
+   inkscape:pagecheckerboard="0"
+   inkscape:deskcolor="#d1d1d1"
+   inkscape:zoom="8.0115198"
+   inkscape:cx="50.052925"
+   inkscape:cy="60.475417"
+   inkscape:window-width="2560"
+   inkscape:window-height="1351"
+   inkscape:window-x="-9"
+   inkscape:window-y="-9"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="_x32_" />
+<style
+   type="text/css"
+   id="style1">
+<![CDATA[
+	.st0{fill:#000000;}
+]]>
+</style>
+<g
+   id="g3"
+   transform="matrix(0.12499487,0,0,0.12499487,0.00132003,0.00129541)">
+	<path
+   class="st0"
+   d="m 243.695,179.339 c 0.703,4.906 5.813,7.438 7.719,1.406 1.891,-6.031 -4.828,-17.219 -22.219,-36.531 -14.828,-16.484 -35.625,-39.391 -23.844,-51.578 14.609,-10.078 8.469,-27.75 -4.172,-29.469 -11.313,-1.516 -21.609,13.578 -15.031,38.703 6.563,25.094 55.547,63.422 57.547,77.469 z"
+   id="path1" />
+	<path
+   class="st0"
+   d="m 445.898,83.886 c -74.469,0 -160.703,89.859 -174.516,111.078 -3.594,-4.578 -9.109,-7.578 -15.375,-7.578 -6.281,0 -11.797,3 -15.391,7.578 C 226.805,173.73 140.57,83.886 66.102,83.886 c -76.828,0 -70.547,68.984 -59.578,112.891 10.969,43.922 56.453,92.516 106.609,94.094 -56.438,25.078 -61.141,89.375 -43.891,119.156 16.359,28.25 103.266,92.016 167.156,-50.296 v 29.141 c 0,10.813 8.781,19.593 19.609,19.593 10.813,0 19.594,-8.781 19.594,-19.593 v -29.156 c 63.891,142.328 150.813,78.562 167.156,50.312 17.25,-29.781 12.547,-94.078 -43.891,-119.156 50.172,-1.578 95.641,-50.172 106.609,-94.094 10.97,-43.907 17.252,-112.892 -59.577,-112.892 z"
+   id="path2" />
+	<path
+   class="st0"
+   d="m 268.305,179.339 c 2,-14.047 50.984,-52.375 57.563,-77.469 6.563,-25.125 -3.734,-40.219 -15.047,-38.703 -12.641,1.719 -18.766,19.391 -4.172,29.469 11.781,12.188 -9.016,35.094 -23.844,51.578 -17.391,19.313 -24.109,30.5 -22.219,36.531 1.906,6.032 7.016,3.501 7.719,-1.406 z"
+   id="path3" />
+</g>
+</svg>

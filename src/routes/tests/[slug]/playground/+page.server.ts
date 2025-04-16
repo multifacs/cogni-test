@@ -28,9 +28,11 @@ export async function load({ params, fetch }) {
 
 	if (slug == 'campimetry') {
 		const silhouettes = {
-			swallow: '/campimetry/swallow.svg',
-			alpaca: '/campimetry/alpaca.svg',
-			pig: '/campimetry/pig.svg'
+			bird: '/campimetry/bird.svg',
+			butterfly: '/campimetry/butterfly.svg',
+			cat: '/campimetry/cat.svg',
+			dog: '/campimetry/dog.svg',
+			shark: '/campimetry/shark.svg'
 		};
 
 		data.silhouettes = silhouettes;
