@@ -102,8 +102,8 @@
 	class="
 bird-wrapper
 flex
-h-30
-w-30
+h-40
+w-40
 items-center
 justify-center
 rounded-full
