@@ -56,10 +56,6 @@ body {
 }
 
 body {
-	min-height: 100dvh;
-}
-
-body {
 	font-family: 'Roboto', sans-serif;
 	background-color: var(--color-gray-800);
 	color: var(--color-gray-50);
@@ -68,13 +64,4 @@ body {
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
-
-	margin-top: 0px;
-}
-
-/* Minimum height */
-@media (min-height: 900px) {
-	body {
-		margin: 0;
-	}
 }

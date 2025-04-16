@@ -23,21 +23,21 @@
 {/if}
 <div
 	class="test-container
-rounded-2xl
 flex
-max-h-[75dvh]
+max-h-[69dvh]
 w-full
 flex-col
 items-center
 gap-4
 overflow-y-scroll
+rounded-2xl
 bg-gray-700
 "
 >
 	{#each results as result}
-		<div class="rounded-2xl w-full bg-gray-600 shadow">
+		<div class="w-full rounded-2xl bg-gray-600 shadow">
 			<button
-				class="rounded-t-2xl flex w-full items-center justify-between px-4 py-3 transition-colors hover:bg-gray-400"
+				class="flex w-full items-center justify-between rounded-t-2xl px-4 py-3 transition-colors hover:bg-gray-400"
 				onclick={() => toggleSession(result.sessionId)}
 			>
 				<span class="font-medium text-gray-50">

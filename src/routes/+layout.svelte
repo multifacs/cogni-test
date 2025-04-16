@@ -21,6 +21,7 @@ w-full
 flex-col
 items-center
 justify-between
+gap-2
 "
 >
 	<form
@@ -47,7 +48,7 @@ justify-between
 		class="
 	container
 	flex
-	h-[90vh]
+	h-full
 	max-w-2xl
 	flex-col
 	items-center
