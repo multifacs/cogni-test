@@ -14,14 +14,12 @@
 		testType,
 		results,
 		xtitle,
-		ytitle,
-		evaltype = 'correctness'
+		ytitle
 	}: {
 		testType: keyof TestResultMap;
 		results: TestResultMap[typeof testType][];
 		xtitle: string;
 		ytitle: string;
-		evaltype?: EvalType;
 	} = $props();
 
 	type EvalType = 'correctness' | 'value';
@@ -51,6 +49,9 @@
 
 	let maxStage = Math.max(...results.map((item) => item.stage));
 	if (!maxStage || maxStage == 1) maxStage = 0;
+
+	if (testType == 'campimetry') maxStage = 0;
+
 	let stageNums: number[] = [];
 	for (let i = 1; i <= maxStage; i++) stageNums.push(i);
 	if (!maxStage) stageNums = [0];
@@ -94,6 +95,19 @@
 				};
 			});
 		}
+
+		if (testType == 'campimetry') {
+			return results
+				.filter((x) => x.stage == 2)
+				.map((result) => {
+					return {
+						x: Math.round((result.attempt - 1) / 2) + 1,
+						y: result.delta,
+						stage: 0,
+						isCorrect: false
+					};
+				});
+		}
 		return [];
 	}
 
@@ -108,7 +122,8 @@
 						label: translate(`stage ${stage}`),
 						data: parsedResults.filter((el) => el.stage == stage),
 						borderWidth: 1,
-						pointBackgroundColor: evalFuncs[evaltype],
+						pointBackgroundColor:
+							testType == 'campimetry' ? evalFuncs['value'] : evalFuncs['correctness'],
 						pointRadius: 5,
 						tension: 0.4
 					};
