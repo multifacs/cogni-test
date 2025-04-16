@@ -7,7 +7,4 @@ export default defineConfig({
 		drop: process.env.MODE == 'PROD' ? ['console', 'debugger'] : []
 	},
 	plugins: [sveltekit(), tailwindcss()],
-	server: {
-		// allowedHosts: true,
-	}
 });
