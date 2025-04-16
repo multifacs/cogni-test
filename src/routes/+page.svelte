@@ -13,9 +13,9 @@
 	let year = $state('2001');
 	let sex = $state('male');
 
-	let cataract = $state('yes');
-	let colorist = $state('yes');
-	let neuro = $state('yes');
+	let cataract = $state('no');
+	let colorist = $state('no');
+	let neuro = $state('no');
 
 	let intervalId: ReturnType<typeof setInterval>;
 	let timeoutId: ReturnType<typeof setTimeout>;
@@ -96,7 +96,7 @@
 <form
 	class="
 	login-container flex
-	max-h-[80vh]
+	max-h-[85dvh]
 	max-w-[350px]
 	min-w-[300px]
 	touch-none
@@ -236,7 +236,7 @@
 		</div>
 	</div>
 
-	<div class="input-group">
+	<div class="input-group hidden">
 		<label for="cataract">Есть ли у вас катаракта?</label>
 		<div class="gender-group">
 			<label>
@@ -248,7 +248,7 @@
 		</div>
 	</div>
 
-	<div class="input-group">
+	<div class="input-group hidden">
 		<label for="colorist">Вы художник или фотограф?</label>
 		<div class="gender-group">
 			<label>
@@ -260,7 +260,7 @@
 		</div>
 	</div>
 
-	<div class="input-group">
+	<div class="input-group hidden">
 		<label for="neuro">Есть ли у вас неврологические заболевания ?</label>
 		<div class="gender-group">
 			<label>

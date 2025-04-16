@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 
 	// import { tick } from 'svelte';
 	import { BirdGame } from './logic/bird-game';
@@ -18,6 +18,8 @@
 	let timer: any = null;
 	let phase: 'intro' | 'test' | 'result' = 'intro';
 	let results = [];
+
+	let isGameOver = $derived(lives <= 0);
 
 	const directionToRotation: Record<Direction, string> = {
 		up: 'rotate(0deg)',
@@ -75,6 +77,10 @@
 		}
 		throw 'incorrect direction in swallow test';
 	}
+
+	onDestroy(() => {
+		clearInterval(timer);
+	});
 </script>
 
 <div class="top-bar flex items-center justify-center">
@@ -96,8 +102,8 @@
 	class="
 bird-wrapper
 flex
-h-30
-w-30
+h-40
+w-40
 items-center
 justify-center
 rounded-full
@@ -114,11 +120,12 @@ rounded-full
 
 <div class="controls grid w-40 grid-cols-3 grid-rows-2 gap-2">
 	<div></div>
-	<Button color="blue" onclick={() => handleAnswer('up')}><b>⬆</b></Button>
+	<Button color="blue" disabled={isGameOver} onclick={() => handleAnswer('up')}><b>⬆</b></Button>
 	<div></div>
-	<Button color="blue" onclick={() => handleAnswer('left')}><b>⬅</b></Button>
-	<Button color="blue" onclick={() => handleAnswer('down')}><b>⬇</b></Button>
-	<Button color="blue" onclick={() => handleAnswer('right')}><b>➡</b></Button>
+	<Button color="blue" disabled={isGameOver} onclick={() => handleAnswer('left')}><b>⬅</b></Button>
+	<Button color="blue" disabled={isGameOver} onclick={() => handleAnswer('down')}><b>⬇</b></Button>
+	<Button color="blue" disabled={isGameOver} onclick={() => handleAnswer('right')}><b>➡</b></Button
+	>
 </div>
 
 <style>

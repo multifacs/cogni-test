@@ -2,6 +2,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { addUser } from '$lib/server/db';
 // import type { User } from '$lib/server/db/types';
 import { checkFormData } from '$lib/utils';
+import { MODE } from '$env/static/private';
 
 export function load({ cookies }) {
 	const user = cookies.get('user');
@@ -26,7 +27,7 @@ export const actions = {
 		}
 
 		let id;
-		console.log('check')
+		console.log('check');
 
 		try {
 			id = await addUser(data);
@@ -40,13 +41,13 @@ export const actions = {
 
 		if (id) {
 			console.log('user set', id);
-			cookies.set('user', id, { path: '/' });
+			cookies.set('user', id, { path: '/', secure: MODE == 'PROD' });
 			redirect(307, '/tests');
 		}
 	},
 
 	logout: async ({ cookies }) => {
-		cookies.delete('user', { path: '/' });
+		cookies.delete('user', { path: '/', secure: MODE == 'PROD' });
 		redirect(307, '/');
 	}
 };

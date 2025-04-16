@@ -6,17 +6,17 @@
 	import { shuffle } from '$lib/utils';
 
 	import Button from '$lib/components/ui/Button.svelte';
-	let { data } = $props();
+	let { data, gameEnd, sendResults } = $props();
 
-	console.log(data)
+	console.log(data);
 
-	let isTestRunning = $state(false);
+	let isGameRunning = $state(false);
 	let showResults = $state(false);
 
 	let game: CampimetryGame = $state(Object());
 	let silhouettes: string[] = $state([]);
 
-	let currentAnswer = $state('swallow');
+	let currentSilhouette = $state('swallow');
 	let currentBackgroundColor: LabColor = $state(Object());
 	let currentSilhouetteColor: LabColor = $state(Object());
 	let currentChannel = $state('');
@@ -27,6 +27,7 @@
 
 	onMount(async () => {
 		console.log(Object.keys(data.silhouettes));
+		resetGame();
 	});
 
 	export function resetGame() {
@@ -34,27 +35,33 @@
 		currentStage = 1;
 		delta = 0;
 		game = new CampimetryGame(Object.keys(data.silhouettes));
-		isTestRunning = true;
+		isGameRunning = true;
 		nextTask();
 	}
 
 	function updateState(
 		s: string[],
-		answer: string,
+		stage: number,
+		silhouette: string,
 		color: LabColor,
 		channel: 'a' | 'b',
 		op: '+' | '-'
 	) {
 		silhouettes = s; // getSilhouetteChoices(2, currentAnswer)
-		currentAnswer = answer;
-		currentBackgroundColor = new LabColor(color);
-		currentSilhouetteColor = new LabColor(color);
+		currentStage = stage;
+		currentSilhouette = silhouette;
+		if (stage != 2) {
+			currentBackgroundColor = new LabColor(color);
+			currentSilhouetteColor = new LabColor(color);
+		}
 		currentChannel = channel;
 		currentOp = op;
 	}
 
 	export function stopGame() {
-		isTestRunning = false;
+		isGameRunning = false;
+		gameEnd();
+		sendResults(game.getResults());
 	}
 
 	function getSilhouetteChoices(num: number, correct: string): string[] {
@@ -69,13 +76,14 @@
 	}
 
 	function nextTask() {
-		if (!isTestRunning || game.isGameOver()) return stopGame();
-		if (currentStage == 2) return;
-
+		if (!isGameRunning || game.isGameOver()) return stopGame();
+		game.startNextTask();
 		const currentTask = game.getCurrentTask();
+		console.log(currentTask);
 		updateState(
-			getSilhouetteChoices(2, currentTask.answer),
-			currentTask.answer,
+			getSilhouetteChoices(2, currentTask.silhouette),
+			currentTask.stage,
+			currentTask.silhouette,
 			currentTask.color,
 			currentTask.channel,
 			currentTask.op
@@ -83,65 +91,90 @@
 	}
 
 	function handleAnswer() {
-		if (!isTestRunning) return;
+		if (!isGameRunning) return;
 		console.log('ui stage:', currentStage);
 
 		game.handleAnswer(delta);
-		currentStage = ((currentStage + 2) % 2) + 1;
-
 		if (currentStage == 1) {
-			delta = 0;
-			nextTask();
+			addRandomToDelta();
 		}
 		if (currentStage == 2) {
-			currentOp = currentOp == '+' ? '-' : '+';
+			delta = 0;
 		}
+		nextTask();
 	}
-	function changeColor() {
+
+	function addRandomToDelta() {
+		const increment = Math.round(Math.random() * 5 + 4);
+		delta += increment;
+		console.log('added ', increment);
 		if (currentChannel == 'a')
-			currentOp == '+' ? currentSilhouetteColor.incA() : currentSilhouetteColor.decA();
+			for (let i = 0; i < increment; i++) {
+				currentOp == '+' ? currentSilhouetteColor.incA() : currentSilhouetteColor.decA();
+			}
 		if (currentChannel == 'b')
-			currentOp == '+' ? currentSilhouetteColor.incB() : currentSilhouetteColor.decB();
+			for (let i = 0; i < increment; i++) {
+				currentOp == '+' ? currentSilhouetteColor.incB() : currentSilhouetteColor.decB();
+			}
+	}
+
+	function changeColor() {
+		if (delta > 0) {
+			if (currentChannel == 'a')
+				currentOp == '+' ? currentSilhouetteColor.incA() : currentSilhouetteColor.decA();
+			if (currentChannel == 'b')
+				currentOp == '+' ? currentSilhouetteColor.incB() : currentSilhouetteColor.decB();
+		}
 		if (currentStage == 1) delta++;
 		if (currentStage == 2) delta--;
+		console.log(delta);
 	}
 </script>
 
-<div class="background" style={`background-color: ${currentBackgroundColor.toString()}`}>
-	<div
-		class="silhouette"
-		style={`
+{#if isGameRunning}
+	<div class="background" style={`background-color: ${currentBackgroundColor.toString()}`}>
+		<div
+			class="silhouette"
+			style={`
         background-color: ${currentSilhouetteColor.toString()};
-        mask-image: url(${data.silhouettes[currentAnswer]});
-        -webkit-mask-image: url(${data.silhouettes[currentAnswer]});
+        mask-image: url(${data.silhouettes[currentSilhouette]});
+        -webkit-mask-image: url(${data.silhouettes[currentSilhouette]});
         `}
-	></div>
-</div>
-<Button color="blue" onclick={changeColor}>Изменить оттенок</Button>
-{#if currentStage == 1}
-	<div class="row flex">
-		{#each silhouettes as s}
-			<button
-				aria-label={`${s} button`}
-				class="silhouette"
-				disabled={!delta}
-				style={`
+		></div>
+	</div>
+	<div class="flex gap-2">
+		<Button color="green" onclick={changeColor}>Изменить оттенок</Button>
+		{#if currentStage == 2}
+			<Button color="blue" onclick={handleAnswer}>Больше не видно</Button>
+		{/if}
+	</div>
+	{#if currentStage == 1}
+		<div class="row flex">
+			{#each silhouettes as s}
+				<button
+					aria-label={`${s} button`}
+					class="silhouette"
+					disabled={!delta}
+					style={`
                     background-color: white;
                     mask-image: url(${data.silhouettes[s]});
                     -webkit-mask-image: url(${data.silhouettes[s]});
+					scale: 0.8
                     `}
-				onclick={() => {
-					if (s == currentAnswer) {
-						handleAnswer();
-					}
-				}}
-			></button>
-		{/each}
-	</div>
-	<p class="text-center">Изменяйте оттенок, пока силуэт не станет различимым.</p>
+					onclick={() => {
+						if (s == currentSilhouette) {
+							handleAnswer();
+						}
+					}}
+				></button>
+			{/each}
+		</div>
+		<p class="text-center">Изменяйте оттенок, пока силуэт не станет различимым.</p>
+	{:else}
+		<p class="text-center">Изменяйте оттенок, пока силуэт не перестанет быть виден.</p>
+	{/if}
 {:else}
-	<p class="text-center">Изменяйте оттенок, пока силуэт не перестанет быть виден.</p>
-	<Button color="blue" onclick={handleAnswer}>Больше не видно</Button>
+	<h1>Тест окончен</h1>
 {/if}
 
 <style>
@@ -158,7 +191,7 @@
 	.silhouette {
 		width: 100px;
 		height: 100px;
-		scale: 0.8;
+		scale: 1.5;
 		touch-action: manipulation;
 		user-select: none;
 		cursor: pointer;

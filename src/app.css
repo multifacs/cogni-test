@@ -50,7 +50,7 @@ h1 {
 html,
 body {
 	width: 100%;
-	height: 100%;
+	height: 100dvh;
 	overflow: hidden;
 	margin: 0;
 }
@@ -64,13 +64,4 @@ body {
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
-
-	margin-top: 0px;
-}
-
-/* Minimum height */
-@media (min-height: 900px) {
-	body {
-		margin: 0;
-	}
 }

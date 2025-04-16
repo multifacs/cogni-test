@@ -3,6 +3,7 @@ import type { MathResult } from './math/types';
 import type { MunsterbergResult } from './munsterberg/types';
 import type { MemoryResult } from './memory/types';
 import type { SwallowResult } from './swallow/types';
+import type { CampimetryResult } from './campimetry/types';
 
 export { type TestData } from './index';
 
@@ -12,7 +13,7 @@ export type TestResultMap = {
 	munsterberg: MunsterbergResult;
 	memory: MemoryResult;
 	swallow: SwallowResult;
-	// campimetry: CampimetryResult;
+	campimetry: CampimetryResult;
 	// можно добавлять дальше
 };
 

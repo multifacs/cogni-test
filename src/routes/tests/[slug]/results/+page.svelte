@@ -23,21 +23,21 @@
 {/if}
 <div
 	class="test-container
-rounded-1xl
 flex
-max-h-[80dvh]
+max-h-[69dvh]
 w-full
 flex-col
 items-center
 gap-4
 overflow-y-scroll
+rounded-2xl
 bg-gray-700
 "
 >
 	{#each results as result}
-		<div class="w-full rounded-lg bg-gray-600 shadow">
+		<div class="w-full rounded-2xl bg-gray-600 shadow">
 			<button
-				class="hover:rounded-1xl flex w-full items-center justify-between px-4 py-3 transition-colors hover:bg-gray-400"
+				class="flex w-full items-center justify-between rounded-t-2xl px-4 py-3 transition-colors hover:bg-gray-400"
 				onclick={() => toggleSession(result.sessionId)}
 			>
 				<span class="font-medium text-gray-50">
@@ -77,8 +77,8 @@ bg-gray-700
 </div>
 
 <div class="controls flex items-center justify-center gap-2.5">
-	<Button color="blue" goto={`/tests/${slug}`}>Назад</Button>
 	<Button color="red" goto="/tests">К тестам</Button>
+	<Button color="blue" goto={`/tests/${slug}`}>В начало</Button>
 </div>
 
 <style>

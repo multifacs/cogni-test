@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { StroopGame } from './logic/stroop-game';
 	import type { Color, Word, Stage } from './types';
 	import { translate } from '$lib/utils/common';
@@ -104,6 +104,10 @@
 		}
 		return 'stage -1';
 	}
+
+	onDestroy(() => {
+		clearTimer();
+	});
 </script>
 
 <div class="color-text flex h-20 flex-col items-center justify-center">

@@ -9,7 +9,7 @@
 	let Component: typeof import('svelte').SvelteComponent | null = $state(null);
 
 	onMount(async () => {
-		await delay(300);
+		// await delay(300);
 		Component = (await import(`$lib/tests/${slug}/About.svelte`)).default;
 	});
 </script>
@@ -26,8 +26,8 @@
 		class="	controls
   flex items-center justify-center gap-2.5"
 	>
-		<Button color="green" goto={`/tests/${slug}/playground`}>Начать</Button>
 		<Button color="red" goto="/">Назад</Button>
+		<Button color="green" goto={`/tests/${slug}/playground`}>Начать</Button>
 		<Button color="blue" goto={`/tests/${slug}/results`}>История</Button>
 	</div>
 {:else}

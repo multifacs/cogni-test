@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { clamp, delay } from '$lib/utils';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import type { Cell, Word, Selection, MunsterbergResult } from './types';
 
 	// Props
@@ -212,6 +212,10 @@
 		const [start, end] = [fromCol, toCol].sort((a, b) => a - b);
 		return i === row && j >= start && j <= end;
 	}
+
+	onDestroy(() => {
+		clearInterval(timerInterval);
+	});
 </script>
 
 <div

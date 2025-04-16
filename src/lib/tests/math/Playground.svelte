@@ -3,7 +3,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import { translate } from '$lib/utils/common';
 	import { GameState } from './logic/controller.svelte';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 
 	let { gameEnd, sendResults } = $props();
 	let gameState = $state(new GameState(gameEnd, sendResults));
@@ -22,6 +22,10 @@
 	export function stopGame() {
 		gameState.stopGame();
 	}
+
+	onDestroy(() => {
+		gameState.clearTimer();
+	});
 </script>
 
 <div class="inequality grid grid-cols-[1fr_auto_1fr] items-center gap-5 text-4xl font-bold">
