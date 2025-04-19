@@ -25,12 +25,12 @@ export function formDataToUser(id: string | null = null, data: FormData): User {
 	const year = parseInt(data.get('year') as string);
 	const birthdate = new Date(year, month - 1, day).toLocaleDateString();
 
-	// const cataract = data.get('cataract') == 'yes';
-	// const colorist = data.get('colorist') == 'yes';
-	// const neuro = data.get('neuro') == 'yes';
-	const cataract = null;
-	const colorist = null;
-	const neuro = null;
+	const cataract = data.get('cataract') == 'yes';
+	const colorist = data.get('colorist') == 'yes';
+	const neuro = data.get('neuro') == 'yes';
+	// const cataract = null;
+	// const colorist = null;
+	// const neuro = null;
 
 	const user = {
 		id,
