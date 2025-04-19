@@ -92,10 +92,14 @@
 	<div class="timer">⏱ {timeLeft} сек</div>
 </div>
 
-{#if currentTask.background === 'blue'}
-	<h2>Куда летит ласточка?</h2>
+{#if lives}
+	{#if currentTask.background === 'blue'}
+		<h2>Куда летит ласточка?</h2>
+	{:else}
+		<h2>Откуда летит ласточка?</h2>
+	{/if}
 {:else}
-	<h2>Откуда летит ласточка?</h2>
+	<h1>Конец теста</h1>
 {/if}
 
 <div

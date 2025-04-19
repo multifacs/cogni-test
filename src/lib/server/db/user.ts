@@ -11,6 +11,7 @@ if (MODE == 'DEV') {
 }
 
 async function createUser(userData: User): Promise<string> {
+	console.log(JSON.stringify(userData))
 	try {
 		const response = await fetch(`${DB_URL}/api/users`, {
 			method: 'POST',

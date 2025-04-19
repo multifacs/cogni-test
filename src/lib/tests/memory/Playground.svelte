@@ -114,7 +114,7 @@
 	}
 
 	export function stopGame() {
-		phase = 'waiting';
+		phase = 'result';
 		isTestRunning = false;
 		gameEnd();
 		sendResults({
@@ -132,15 +132,17 @@
 	<p>Слова появятся через {timeLeft} секунд...</p>
 {:else if phase === 'memorize'}
 	<h2>Запомните слова:</h2>
-	<div class="mem-grid">
-		{#each memorizationWords.slice(0, 3) as word}
-			<div class="mem-word">{word}</div>
-		{/each}
-	</div>
-	<div class="mem-grid">
-		{#each memorizationWords.slice(3, 6) as word}
-			<div class="mem-word">{word}</div>
-		{/each}
+	<div class="flex flex-col gap-2">
+		<div class="mem-grid">
+			{#each memorizationWords.slice(0, 3) as word}
+				<div class="mem-word">{word}</div>
+			{/each}
+		</div>
+		<div class="mem-grid">
+			{#each memorizationWords.slice(3, 6) as word}
+				<div class="mem-word">{word}</div>
+			{/each}
+		</div>
 	</div>
 	<p>Осталось времени: {timeLeft} сек</p>
 {:else if phase === 'task'}

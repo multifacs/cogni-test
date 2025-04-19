@@ -65,10 +65,10 @@
 	<Component bind:this={childComponent} gameEnd={onGameEnd} sendResults={onSendResults} {data}
 	></Component>
 	<div class="controls flex items-center justify-center gap-2.5">
-		<Button color="red" goto={`/tests/${slug}`}>Назад</Button>
 		{#if isGameEnd}
 			<Button color="blue" goto={`/tests/${slug}/results`}>Результаты</Button>
 		{/if}
+		<Button color="red" goto={`/tests/${slug}`}>Назад</Button>
 	</div>
 {:else}
 	<p>Загрузка логики теста...</p>

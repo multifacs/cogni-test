@@ -77,8 +77,8 @@ bg-gray-700
 </div>
 
 <div class="controls flex items-center justify-center gap-2.5">
+	<Button color="blue" goto={`/tests/${slug}`}>Заново</Button>
 	<Button color="red" goto="/tests">К тестам</Button>
-	<Button color="blue" goto={`/tests/${slug}`}>В начало</Button>
 </div>
 
 <style>

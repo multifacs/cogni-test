@@ -1,3 +1,4 @@
+import { shuffle } from '$lib/utils';
 import type { Word, MemoryResult } from '../types';
 
 export class MemoryGame {
@@ -18,15 +19,9 @@ export class MemoryGame {
 		this.generateTasks();
 	}
 
-	private shuffle<T>(arr: T[]): T[] {
-		return arr
-			.map((value) => ({ value, sort: Math.random() }))
-			.sort((a, b) => a.sort - b.sort)
-			.map(({ value }) => value);
-	}
-
 	private generateTasks() {
-		const shuffled = this.shuffle(this.allWords);
+		const shuffled = structuredClone(this.allWords);
+		shuffle(shuffled);
 		this.memorizedWords = shuffled.slice(0, this.memorizationCount);
 
 		const remaining = shuffled.slice(this.memorizationCount);
@@ -42,7 +37,9 @@ export class MemoryGame {
 			isCorrect: false
 		}));
 
-		this.tasks = this.shuffle([...trueTasks, ...falseTasks]);
+		this.tasks = [...trueTasks, ...falseTasks];
+		shuffle(this.tasks);
+		console.log(this.tasks);
 	}
 
 	public getMemorizationWords(): string[] {

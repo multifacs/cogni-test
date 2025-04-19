@@ -23,4 +23,5 @@
 	};
 </script>
 
-<img src={srcs[sign]} class={`w-8 invert-100 ${sign ? 'block' : 'hidden'}`} alt={srcs[sign]} />
+<!-- <img src={srcs[sign]} class={`w-8 invert-100 ${sign ? 'block' : 'hidden'}`} alt={srcs[sign]} /> -->
+<span class={`w-8 invert-100 ${sign ? 'block' : 'hidden'}`}>{sign}</span>
