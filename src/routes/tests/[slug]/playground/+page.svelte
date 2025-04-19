@@ -45,6 +45,7 @@
 	function onGameEnd() {
 		isGameRunning = false;
 		isGameEnd = true;
+		goto(`/tests/${slug}/results`);
 	}
 
 	async function onSendResults<T extends keyof TestResultMap>(

@@ -1,13 +1,29 @@
 <script lang="ts">
-	import ResultsChart from '$lib/components/charts/ResultsChart.svelte';
+	// import ResultsChart from '$lib/components/charts/ResultsChart.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import type { TestResultMap } from '$lib/tests/types.js';
 	import { formatUserLocalDate } from '$lib/utils/index.js';
+	import { onMount, type SvelteComponent } from 'svelte';
 
 	const { data } = $props();
 	const slug = data.slug;
 	const results = data.results;
 	console.log(slug, results);
+
+	let Component: typeof SvelteComponent | null = $state(null);
+
+	onMount(async () => {
+		const resultsChart = (await import(`$lib/components/charts/ResultsChart.svelte`)).default;
+		Component = resultsChart;
+
+		let customResultsChart;
+		try {
+			customResultsChart = (await import(`$lib/tests/${slug}/ResultsChart.svelte`)).default;
+			Component = customResultsChart;
+		} catch (err) {
+			console.log(err);
+		}
+	});
 
 	// Открытый элемент (по умолчанию первый)
 	let openedSessionId = $state(results[0]?.sessionId);
@@ -62,14 +78,9 @@ bg-gray-700
 				</svg>
 			</button>
 
-			{#if openedSessionId === result.sessionId}
+			{#if openedSessionId === result.sessionId && Component}
 				<div class="w-full border-t px-4 pt-2 pb-4">
-					<ResultsChart
-						testType={slug as keyof TestResultMap}
-						results={result.attempts}
-						xtitle="Попытки"
-						ytitle="Время (мс)"
-					/>
+					<Component testType={slug as keyof TestResultMap} results={result.attempts} />
 				</div>
 			{/if}
 		</div>
