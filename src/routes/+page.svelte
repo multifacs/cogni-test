@@ -6,11 +6,11 @@
 
 	let { data } = $props();
 
-	let firstname = $state('NICK');
-	let lastname = $state('SH');
+	let firstname = $state('');
+	let lastname = $state('');
 	let day = $state('01');
-	let month = $state('02');
-	let year = $state('2001');
+	let month = $state('01');
+	let year = $state('2000');
 	let sex = $state('male');
 
 	let cataract = $state('no');
