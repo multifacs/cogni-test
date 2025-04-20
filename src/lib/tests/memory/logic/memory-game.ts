@@ -1,4 +1,4 @@
-import { shuffle } from '$lib/utils';
+import { clamp, shuffle } from '$lib/utils';
 import type { Word, MemoryResult } from '../types';
 
 export class MemoryGame {
@@ -23,6 +23,7 @@ export class MemoryGame {
 		const shuffled = structuredClone(this.allWords);
 		shuffle(shuffled);
 		this.memorizedWords = shuffled.slice(0, this.memorizationCount);
+		console.log('inside logic', this.memorizedWords);
 
 		const remaining = shuffled.slice(this.memorizationCount);
 		const falseWords = remaining.slice(0, this.totalTasks / 2);
@@ -53,7 +54,7 @@ export class MemoryGame {
 	public handleSelection(selectedAnswer: boolean | null): void {
 		const currentTask = this.getCurrentTask();
 		const endTime = performance.now();
-		const reactionTime = Math.round(endTime - this.startTime);
+		const reactionTime = clamp(Math.round(endTime - this.startTime), 0, 3000);
 		const isCorrect = currentTask.isCorrect === selectedAnswer;
 		this.results.push({
 			attempt: this.results.length,

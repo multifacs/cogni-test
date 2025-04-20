@@ -135,12 +135,12 @@
 	<div class="flex flex-col gap-2">
 		<div class="mem-grid">
 			{#each memorizationWords.slice(0, 3) as word}
-				<div class="mem-word">{word}</div>
+				<Button color="green">{word}</Button>
 			{/each}
 		</div>
 		<div class="mem-grid">
 			{#each memorizationWords.slice(3, 6) as word}
-				<div class="mem-word">{word}</div>
+				<Button color="green">{word}</Button>
 			{/each}
 		</div>
 	</div>
@@ -177,12 +177,5 @@
 		background-color: rgb(2, 125, 27);
 		padding: 0.5rem 1rem;
 		border-radius: 6px;
-	}
-
-	.button-container {
-		display: flex;
-		justify-content: center;
-		gap: 1rem;
-		margin-top: 1rem;
 	}
 </style>
