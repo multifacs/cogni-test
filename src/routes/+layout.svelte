@@ -13,29 +13,9 @@
 	});
 </script>
 
-<div
-	class="
-flex
-h-[100dvh]
-w-full
-flex-col
-items-center
-justify-between
-gap-2
-"
->
+<div class="flex h-[100dvh] flex-col items-center justify-between p-2">
 	<form
-		class="
-	mt-2
-	flex
-	w-full
-	max-w-[600px]
-	shrink
-	items-center
-	justify-between
-	px-2
-	text-sm
-	sm:max-w-2xl"
+		class="mb-2 flex w-full items-center justify-between px-2 text-sm sm:w-2xl"
 		method="POST"
 		action="/?/logout"
 		use:enhance
@@ -44,20 +24,15 @@ gap-2
 		<Button type="submit" kind="small" color="red" disabled={$userStore == ''}>Выйти</Button>
 	</form>
 
-	<div
-		class="
-	container
-	flex
-	h-full
-	max-w-2xl
-	flex-col
-	items-center
-	justify-between
-  	gap-1
-	p-2.5
-"
-	>
-		{@render children()}
+	{@render children()}
+
+	<!-- Нижний блок — ссылка или футер -->
+	<div class="mt-2 text-sm">
+		<p>
+			Сообщить о проблеме: <a href="https://t.me/+Q08ShGg2nSRhYTEy" class=" font-bold text-sky-500"
+				>Telegram</a
+			>
+		</p>
 	</div>
 </div>
 
