@@ -13,7 +13,7 @@
 	});
 </script>
 
-<div class="flex h-[100dvh] flex-col items-center justify-between p-2">
+<div class="flex h-[100dvh] flex-col items-center justify-between p-2 sm:w-2xl">
 	<form
 		class="mb-2 flex w-full items-center justify-between px-2 text-sm sm:w-2xl"
 		method="POST"
