@@ -9,11 +9,13 @@
 	if (found) title = found.title;
 </script>
 
-<div class="flex flex-col min-h-0 justify-between items-center gap-2 w-full px-2 h-full max-xs:text-xs">
-	<h1 class="!mt-1 max-xs:hidden">
+<div
+	class="max-xs:text-xs flex h-full min-h-0 w-full flex-col items-center justify-between gap-2 px-2"
+>
+	<h1 class="max-xs:hidden xs:max-lg:landscape:hidden">
 		{title}
 	</h1>
-	<h2 class="!mt-1 xs:hidden">
+	<h2 class="xs:portrait:hidden lg:landscape:hidden">
 		{title}
 	</h2>
 	{@render children()}

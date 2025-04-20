@@ -11,9 +11,10 @@
 </script>
 
 <div
-	class="flex min-h-0 w-full max-w-96 grow-0 flex-col items-center gap-4 rounded-4xl bg-gray-700 p-5 shadow-md"
+	class="flex min-h-0 w-full max-w-96 grow-0 flex-col items-center gap-4 rounded-4xl bg-gray-700 p-5 max-xs:p-2 shadow-md"
 >
-	<h1 class="">Тесты</h1>
+	<h1 class="max-xs:hidden">Тесты</h1>
+	<h2 class="xs:hidden">Тесты</h2>
 
 	<div class="test-container flex w-full flex-col items-center gap-4 overflow-y-auto rounded-3xl">
 		{#each data.tests as { name, title, path, img }}

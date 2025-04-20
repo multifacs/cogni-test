@@ -4,7 +4,7 @@
 </script>
 
 <div
-	class="text-teal inline-flex items-center rounded-full bg-gray-50 xs:p-2 p-1 text-[10px] leading-none shadow sm:text-sm"
+	class="text-teal xs:p-2 xs:max-lg:landscape:text-xs inline-flex items-center rounded-full bg-gray-50 p-1 text-[10px] leading-none shadow sm:text-sm"
 >
 	<span
 		class="inline-flex h-6 items-center justify-center rounded-full bg-indigo-700 px-3 text-gray-50"

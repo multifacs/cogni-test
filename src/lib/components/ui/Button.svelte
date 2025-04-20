@@ -78,6 +78,7 @@
 	text-center
 	max-xs:text-xs
 	xs:text-base
+	xs:max-lg:landscape:text-xs
 	text-white
 	shadow-md
 	transition

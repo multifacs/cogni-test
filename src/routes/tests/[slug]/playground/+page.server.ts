@@ -21,8 +21,8 @@ export async function load({ params, fetch }) {
 		const text = await response.text();
 		const words = text
 			.split('\n')
-			.map((x) => x.split('\t')[0])
-			.filter((x) => x.length <= 9);
+			.map((x) => x.replace(/(\r\n|\n|\r)/gm, ''))
+			.filter((x) => x.length <= 9 && x !== 'TRUE' && x !== 'true');
 		data.words = words;
 	}
 
