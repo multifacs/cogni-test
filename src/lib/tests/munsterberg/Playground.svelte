@@ -108,13 +108,14 @@
 	function markFoundAndRecordTime(found: Word) {
 		found.attempt = guessedCount;
 		found.guessed = true;
+		console.log(startTime, performance.now());
 		found.time = clamp(Math.floor(performance.now() - startTime), 0, 60000);
 		resetTime();
 	}
 
 	function markNotFound(found: Word, attemp: number): number {
 		found.attempt = attemp;
-		found.time = Math.floor(performance.now() - startTime);
+		found.time = clamp(Math.floor(performance.now() - startTime), 0, 60000);
 		return attemp + 1;
 	}
 
@@ -193,8 +194,6 @@
 		if (e.type === 'touchstart' || e.type === 'pointerdown') {
 			isDragging = true;
 			currentSelection = getEventSelection(e);
-
-			resetTime();
 		} else if ((e.type === 'touchmove' || e.type === 'pointermove') && isDragging) {
 			const sel = getEventSelection(e);
 			if (sel && currentSelection) {
@@ -227,7 +226,8 @@
 	cursor-pointer
 	touch-none
 	border-[1px]
-	border-gray-700 select-none
+	border-gray-700
+	select-none
 	"
 	style="grid-template-columns: repeat({GRID_COLS}, {CELL_W}px); grid-template-rows: repeat({GRID_ROWS}, {CELL_H}px);"
 	bind:this={overlay}
@@ -250,6 +250,7 @@
 						box-border
 						flex
 						transform-gpu
+						touch-none
 						items-center
 						justify-center
 						border-[1px]
