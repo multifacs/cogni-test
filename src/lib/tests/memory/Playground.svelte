@@ -55,10 +55,10 @@
 	function startWaitingPhase() {
 		phase = 'waiting';
 		timeLeft = 3;
-		const countdown = setInterval(() => {
+		timer = setInterval(() => {
 			timeLeft--;
 			if (timeLeft <= 0) {
-				clearInterval(countdown);
+				clearInterval(timer);
 				startMemorization();
 			}
 		}, 1000);
@@ -68,10 +68,10 @@
 		phase = 'memorize';
 		timeLeft = 15;
 
-		const memTimer = setInterval(() => {
+		timer = setInterval(() => {
 			timeLeft--;
 			if (timeLeft <= 0) {
-				clearInterval(memTimer);
+				clearInterval(timer);
 				startTasks();
 			}
 		}, 1000);
