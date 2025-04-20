@@ -22,10 +22,10 @@
 	let isGameOver = $derived(lives <= 0);
 
 	const directionToRotation: Record<Direction, string> = {
-		up: 'rotate(0deg)',
-		right: 'rotate(90deg)',
-		down: 'rotate(180deg)',
-		left: 'rotate(-90deg) scaleX(-1)'
+		up: 'rotate-none',
+		right: 'rotate-90',
+		down: 'rotate-180',
+		left: '-rotate-90'
 	};
 
 	onMount(() => {
@@ -117,19 +117,17 @@ rounded-full
 	<img
 		src="/tests/swallow.svg"
 		alt="bird"
-		class="bird-img h-24 w-24 transform"
-		style="transform: {directionToRotation[checkDirection(currentTask.direction)]};"
+		class={`bird-img h-24 w-24 ${directionToRotation[checkDirection(currentTask.direction)]} transition-all duration-200`}
 	/>
 </div>
 
 <div class="controls grid w-40 grid-cols-3 grid-rows-2 gap-2">
 	<div></div>
-	<Button color="blue" disabled={isGameOver} onclick={() => handleAnswer('up')}><b>⬆</b></Button>
+	<Button color="blue" disabled={isGameOver} onclick={() => handleAnswer('up')}><b>▲</b></Button>
 	<div></div>
-	<Button color="blue" disabled={isGameOver} onclick={() => handleAnswer('left')}><b>⬅</b></Button>
-	<Button color="blue" disabled={isGameOver} onclick={() => handleAnswer('down')}><b>⬇</b></Button>
-	<Button color="blue" disabled={isGameOver} onclick={() => handleAnswer('right')}><b>➡</b></Button
-	>
+	<Button color="blue" disabled={isGameOver} onclick={() => handleAnswer('left')}><b>◄</b></Button>
+	<Button color="blue" disabled={isGameOver} onclick={() => handleAnswer('down')}><b>▼</b></Button>
+	<Button color="blue" disabled={isGameOver} onclick={() => handleAnswer('right')}><b>►</b></Button>
 </div>
 
 <style>
