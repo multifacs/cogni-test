@@ -20,6 +20,7 @@ export const actions = {
 	login: async ({ cookies, request }) => {
 		const data = await request.formData();
 		console.log(data, checkFormData(data));
+
 		if (!checkFormData(data)) {
 			return fail(422, {
 				error: 'incorrect data'
@@ -27,7 +28,6 @@ export const actions = {
 		}
 
 		let id;
-		console.log('check');
 
 		try {
 			id = await addUser(data);

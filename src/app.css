@@ -21,6 +21,10 @@
 	--camp-red-light: #f09286;
 }
 
+@theme {
+	--breakpoint-xs: 340px;
+}
+
 * {
 	box-sizing: border-box;
 }
@@ -71,4 +75,11 @@ body {
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
+}
+
+input,
+button,
+textarea,
+select {
+	font: inherit;
 }

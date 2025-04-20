@@ -7,9 +7,9 @@ export function checkFormData(data: FormData): boolean {
 	if (!data.get('firstname')) return false;
 	if (!data.get('lastname')) return false;
 	if ((data.get('lastname') as string).length != 2) return false;
-	if (!data.get('day')) return false;
-	if (!data.get('month')) return false;
-	if (!data.get('year')) return false;
+	if (!data.get('birthdate')) return false;
+	const dateRegex = /^\d{2}\.\d{2}\.\d{4}$/;
+	if (!dateRegex.test(data.get('birthdate') as string)) return false;
 	if (!data.get('sex')) return false;
 	if (!data.get('cataract')) return false;
 	if (!data.get('colorist')) return false;
@@ -20,17 +20,12 @@ export function checkFormData(data: FormData): boolean {
 export function formDataToUser(id: string | null = null, data: FormData): User {
 	if (!checkFormData(data)) error(422, 'wrong data format');
 
-	const day = parseInt(data.get('day') as string);
-	const month = parseInt(data.get('month') as string);
-	const year = parseInt(data.get('year') as string);
-	const birthdate = new Date(year, month - 1, day).toLocaleDateString();
+	const birthdateParsed = (data.get('birthdate') as string).split('.').reverse().join('-');
+	const birthdate = new Date(birthdateParsed).toISOString();
 
 	const cataract = data.get('cataract') == 'yes';
 	const colorist = data.get('colorist') == 'yes';
 	const neuro = data.get('neuro') == 'yes';
-	// const cataract = null;
-	// const colorist = null;
-	// const neuro = null;
 
 	const user = {
 		id,
