@@ -11,14 +11,14 @@
 	/* campimetry */
 	--camp-black: #141414;
 	--camp-white: #eeeeee;
-	--camp-magenta-dark: #611963;
-	--camp-magenta-light: #da8ed9;
-	--camp-blue-dark: #0c1452;
-	--camp-blue-light: #6c6dbf;
-	--camp-green-dark: #0a4d3b;
-	--camp-green-light: #6ad3c2;
-	--camp-red-dark: #7b1f14;
-	--camp-red-light: #f09286;
+	--camp-dark-magenta: #611963;
+	--camp-light-magenta: #da8ed9;
+	--camp-dark-blue: #0c1452;
+	--camp-light-blue: #6c6dbf;
+	--camp-dark-green: #0a4d3b;
+	--camp-light-green: #6ad3c2;
+	--camp-dark-red: #7b1f14;
+	--camp-light-red: #f09286;
 }
 
 @theme {
