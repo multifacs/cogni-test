@@ -29,9 +29,7 @@
 	<!-- Нижний блок — ссылка или футер -->
 	<div class="mt-2 text-sm">
 		<p>
-			Сообщить о проблеме: <a href="https://t.me/+Q08ShGg2nSRhYTEy" class=" font-bold text-sky-500"
-				>Telegram</a
-			>
+			Сообщить о проблеме: <a href={data.TG_GROUP_LINK} class=" font-bold text-sky-500">Telegram</a>
 		</p>
 	</div>
 </div>

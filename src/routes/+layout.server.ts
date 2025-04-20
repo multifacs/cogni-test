@@ -1,4 +1,5 @@
 // import { MODE } from '$env/static/private';
+import { TG_GROUP_LINK } from '$env/static/private';
 import { getUserById } from '$lib/server/db';
 
 export async function load({ cookies }) {
@@ -17,6 +18,7 @@ export async function load({ cookies }) {
 	//     cookies.set('user', user, { path: '/' });
 	// }
 	return {
-		user: userId
+		user: userId,
+		TG_GROUP_LINK
 	};
 }
