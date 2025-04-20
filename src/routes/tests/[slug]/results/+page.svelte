@@ -38,17 +38,7 @@
 	<h1>Попыток нет</h1>
 {/if}
 <div
-	class="test-container
-flex
-max-h-[69dvh]
-w-full
-flex-col
-items-center
-gap-4
-overflow-y-scroll
-rounded-2xl
-bg-gray-700
-"
+	class="test-container flex min-h-0 w-full max-w-2xl flex-col items-center gap-4 overflow-y-scroll p-2 rounded-2xl bg-gray-700"
 >
 	{#each results as result}
 		<div class="w-full rounded-2xl bg-gray-600 shadow">
@@ -79,7 +69,7 @@ bg-gray-700
 			</button>
 
 			{#if openedSessionId === result.sessionId && Component}
-				<div class="w-full border-t px-4 pt-2 pb-4">
+				<div class="box-border border-t px-2">
 					<Component testType={slug as keyof TestResultMap} results={result.attempts} />
 				</div>
 			{/if}

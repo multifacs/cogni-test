@@ -112,18 +112,19 @@
 
 <div class="color-text flex h-20 flex-col items-center justify-center">
 	{#if isTestRunning}
-		<h1 style="color: {currentColor};">{translate(currentWord)}</h1>
+		<h1 style="color: {currentColor};" class="max-xs:hidden text-sm">{translate(currentWord)}</h1>
+		<h2 style="color: {currentColor};" class="xs:hidden text-xl">{translate(currentWord)}</h2>
 		{#if currentWord.includes('stage')}
-			<p>{stageInstructions[checkWordStage(currentWord)]}</p>
+			<p class="text-center">{stageInstructions[checkWordStage(currentWord)]}</p>
 		{/if}
 	{:else}
 		<h1>Конец теста</h1>
 	{/if}
 </div>
-<div class="color-grid">
+<div class="grid gap-4 grid-cols-[1fr_1fr]">
 	{#each Object.values(colors) as color}
 		<button
-			class="color-button"
+			class="w-20 max-xs:w-16 h-16 max-xs:h-12 cursor-pointer border-none"
 			style="background-color: {color};"
 			aria-label={color}
 			onclick={() => handleAnswer(color)}
@@ -142,34 +143,5 @@
 		height: 60px;
 		border: none;
 		cursor: pointer;
-	}
-	.color-text {
-		/* font-family: 'Comic Neue'; */
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-	}
-	.color-text h1 {
-		font-size: 24pt;
-		-webkit-text-stroke-color: #5c70a3;
-		-webkit-text-stroke: 1px;
-	}
-	.color-text p {
-		font-size: 12pt;
-	}
-
-	.color-grid {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 10px;
-	}
-
-	@media (max-width: 600px) {
-		.color-text {
-			font-size: 1.5em;
-		}
-		.color-button {
-			padding: 8px 16px;
-		}
 	}
 </style>

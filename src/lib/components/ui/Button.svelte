@@ -76,7 +76,8 @@
 	px-4
 	py-2
 	text-center
-	text-base
+	max-xs:text-xs
+	xs:text-base
 	text-white
 	shadow-md
 	transition
@@ -95,27 +96,3 @@
 >
 	{@render children()}
 </button>
-
-<style>
-	.normal {
-		font-size: 16px;
-		padding: 10px 20px;
-	}
-
-	.big {
-		padding: 10px 20px;
-		margin: 5px;
-		width: 80px;
-		height: 60px;
-	}
-
-	.small {
-		width: 80px;
-		padding: 5px;
-		color: #fff;
-		border: none;
-		border-radius: 5px;
-		font-size: 16px;
-		cursor: pointer;
-	}
-</style>

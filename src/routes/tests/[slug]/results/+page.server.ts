@@ -4,6 +4,7 @@ import type { TestResultMap } from '$lib/tests/types';
 
 export async function load({ params, cookies }) {
 	const slug = params.slug as keyof TestResultMap;
+	console.log(slug);
 	const userId = cookies.get('user') as string;
 
 	const results = await getResults(slug, userId);

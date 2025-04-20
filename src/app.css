@@ -52,7 +52,7 @@ h1 {
 }
 
 h2 {
-	font-size: var(--text-1xl);
+	font-size: var(--text-xl);
 	--tw-font-weight: var(--font-weight-bold);
 	font-weight: var(--font-weight-bold);
 	text-align: center;
@@ -77,9 +77,9 @@ body {
 	align-items: center;
 }
 
-input,
+/* input,
 button,
 textarea,
 select {
 	font: inherit;
-}
+} */

@@ -13,9 +13,9 @@
 	});
 </script>
 
-<div class="flex h-[100dvh] flex-col items-center justify-between p-2 sm:w-2xl">
+<div class="flex h-[100dvh] flex-col items-center justify-between p-2 sm:w-2xl gap-2">
 	<form
-		class="mb-2 flex w-full items-center justify-between px-2 text-sm sm:w-2xl"
+		class="flex w-[100vw] items-center justify-between px-2 text-sm sm:w-2xl"
 		method="POST"
 		action="/?/logout"
 		use:enhance
@@ -27,7 +27,7 @@
 	{@render children()}
 
 	<!-- Нижний блок — ссылка или футер -->
-	<div class="mt-2 text-sm">
+	<div class="text-sm">
 		<p>
 			Сообщить о проблеме: <a href={data.TG_GROUP_LINK} class=" font-bold text-sky-500">Telegram</a>
 		</p>

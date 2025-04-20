@@ -16,8 +16,7 @@
 
 {#if Component}
 	<div
-		class="	scroll-container
-  group relative max-h-[60vh] shrink overflow-y-auto px-2"
+		class="scroll-container group max-xs:text-xs xs:text-base min-h-0 shrink grow-0 overflow-y-auto px-2"
 	>
 		<Component></Component>
 		<div class="scroll-fade"></div>
@@ -26,8 +25,8 @@
 		class="	controls
   flex items-center justify-center gap-2.5"
 	>
-	<Button color="blue" goto={`/tests/${slug}/results`}>История</Button>
-	<Button color="green" goto={`/tests/${slug}/playground`}>Начать</Button>
+		<Button color="blue" goto={`/tests/${slug}/results`}>История</Button>
+		<Button color="green" goto={`/tests/${slug}/playground`}>Начать</Button>
 		<Button color="red" goto="/">Назад</Button>
 	</div>
 {:else}

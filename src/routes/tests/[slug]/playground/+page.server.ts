@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 
 export async function load({ params, fetch }) {
 	const slug = params.slug;
-	// console.log(slug);
+	console.log(slug);
 
 	try {
 		await import(`$lib/tests/${slug}/Playground.svelte`);

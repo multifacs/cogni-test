@@ -11,20 +11,18 @@
 </script>
 
 <div
-	class="flex min-h-0 grow-0 w-full max-w-[350px] min-w-[300px] flex-col items-center gap-4 rounded-4xl bg-gray-700 p-5 shadow-md"
+	class="flex min-h-0 w-full max-w-96 grow-0 flex-col items-center gap-4 rounded-4xl bg-gray-700 p-5 shadow-md"
 >
 	<h1 class="">Тесты</h1>
 
-	<div
-		class="test-container flex w-full flex-col items-center gap-4 overflow-y-auto rounded-3xl"
-	>
+	<div class="test-container flex w-full flex-col items-center gap-4 overflow-y-auto rounded-3xl">
 		{#each data.tests as { name, title, path, img }}
 			<a
 				href={path}
-				class="test-button gap- box-border flex grow-0 shrink-0 w-full items-center justify-between rounded-3xl bg-gray-600 p-2.5 shadow-md transition hover:bg-gray-50"
+				class="test-button gap- box-border flex w-full shrink-0 grow-0 items-center justify-between rounded-3xl bg-gray-600 p-2.5 shadow-md transition hover:bg-gray-50"
 			>
 				<span>{title}</span>
-				<img src={img} alt={name} class="test-icon h-16 w-16 rounded-2xl ml-2" />
+				<img src={img} alt={name} class="test-icon ml-2 h-16 w-16 rounded-2xl" />
 			</a>
 		{/each}
 	</div>

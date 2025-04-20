@@ -36,7 +36,7 @@
 		words = data.words;
 		if (innerWidth < 400) {
 			CELL_W = 30;
-			CELL_H = 30;
+			CELL_H = 23;
 		}
 		resetGame();
 	});
@@ -108,7 +108,7 @@
 	function markFoundAndRecordTime(found: Word) {
 		found.attempt = guessedCount;
 		found.guessed = true;
-		found.time = Math.floor(performance.now() - startTime);
+		found.time = clamp(Math.floor(performance.now() - startTime), 0, 60000);
 		resetTime();
 	}
 
