@@ -134,7 +134,7 @@
 {#if isGameRunning}
 	<div class="background" style={`background-color: ${currentBackgroundColor.toString()}`}>
 		<div
-			class="silhouette"
+			class="max-xs:w-16 max-xs:h-16 h-32 w-32 mask-contain"
 			style={`
         background-color: ${currentSilhouetteColor.toString()};
         mask-image: url(${data.silhouettes[currentSilhouette]});
@@ -153,13 +153,11 @@
 			{#each silhouettes as s}
 				<button
 					aria-label={`${s} button`}
-					class="silhouette"
+					class="max-xs:w-16 max-xs:h-16 h-[100px] w-[100px] cursor-pointer touch-none bg-white mask-contain select-none"
 					disabled={!delta}
 					style={`
-                    background-color: white;
                     mask-image: url(${data.silhouettes[s]});
                     -webkit-mask-image: url(${data.silhouettes[s]});
-					scale: 0.8
                     `}
 					onclick={() => {
 						if (s == currentSilhouette) {
@@ -169,9 +167,11 @@
 				></button>
 			{/each}
 		</div>
-		<p class="text-center">Изменяйте оттенок, пока силуэт не станет различимым.</p>
+		<p class="text-center">
+			Изменяйте оттенок, пока силуэт не станет различимым, а затем выберите правильный силуэт.
+		</p>
 	{:else}
-		<p class="text-center">Изменяйте оттенок, пока силуэт не перестанет быть виден.</p>
+		<p class="text-center">Изменяйте оттенок, пока силуэт не перестанет быть виден. Затем нажмите "Больне не видно".</p>
 	{/if}
 {:else}
 	<h1>Тест окончен</h1>
@@ -186,14 +186,5 @@
 		flex-grow: 1;
 		/* background-color: #553131; */
 		margin: 10px 0;
-	}
-
-	.silhouette {
-		width: 100px;
-		height: 100px;
-		scale: 1.5;
-		touch-action: manipulation;
-		user-select: none;
-		cursor: pointer;
 	}
 </style>
