@@ -143,7 +143,7 @@
 		></div>
 	</div>
 	<div class="flex gap-2">
-		<Button color="green" onclick={changeColor}>Изменить оттенок</Button>
+		<Button color="green" onclick={changeColor}>{currentStage == 1 ? 'Проявить фигуру' : 'Скрыть фигуру'}</Button>
 		{#if currentStage == 2}
 			<Button color="blue" onclick={handleAnswer}>Больше не видно</Button>
 		{/if}

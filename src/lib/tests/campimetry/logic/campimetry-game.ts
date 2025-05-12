@@ -22,8 +22,24 @@ export class CampimetryGame {
 	 * Generates tasks for all stages.
 	 */
 	private generateTasks(): void {
-		shuffle(this.allColors);
-		this.allColors.slice(0, Math.round((this.allColors.length / 5) * 3)).forEach((color) => {
+		let NUM_OF_COLORS = Math.round((this.allColors.length / 5) * 3);
+
+		const colors: Array<string> = [];
+
+		for (let i = 4; i < 9; i += 2) {
+			const randomChoice = Math.round(Math.random());
+			colors.push(this.allColors[i + randomChoice]);
+		}
+		NUM_OF_COLORS -= 3;
+		
+		const restOfColors = this.allColors.slice(0, 4);
+		shuffle(restOfColors);
+		
+		colors.push(...restOfColors.slice(0, NUM_OF_COLORS));
+		shuffle(colors);
+		console.log(colors);
+
+		colors.forEach((color) => {
 			const task1 = this.getRandomTask(color);
 			task1.attempt = this.tasks.length;
 			this.tasks.push(task1);
@@ -34,7 +50,6 @@ export class CampimetryGame {
 			task2.op = task2.op == '+' ? '-' : '+';
 			this.tasks.push(task2);
 		});
-		console.log(this.tasks);
 	}
 
 	/**

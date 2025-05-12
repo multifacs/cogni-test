@@ -21,6 +21,8 @@
 		results: CampimetryResult[];
 	} = $props();
 
+	let MOOD: '' | 'Радость' | 'Благодушие' | 'Гнев' | 'Печаль' | 'Тревожность' | 'Дискомфорт' = $state('');
+
 	const evalFunc = (ctx: ScriptableContext<'line'>) => {
 		const result = ctx.raw as Result;
 		return result.y == 0
@@ -59,6 +61,50 @@
 	const avg = Math.round(((results.reduce((a, b) => a + b.time, 0) / results.length) * 2) / 1000);
 
 	let parsedResults: Result[];
+
+	function calculateMood(results: CampimetryResult[]) {
+		const data = [
+			{
+				colors: ['dark-red', 'light-red'],
+				delta: 0
+			},
+			{
+				colors: ['dark-green', 'light-green'],
+				delta: 0
+			},
+			{
+				colors: ['dark-blue', 'light-blue'],
+				delta: 0
+			}
+		];
+
+		data.forEach((x) => {
+			const filtered = results.filter((y) => x.colors.includes(y.color));
+			x.delta = filtered[0].delta + filtered[1].delta;
+		});
+
+		console.log(data.map((x) => x.delta));
+
+		if (data[0].delta <= data[1].delta && data[1].delta <= data[2].delta) {
+			console.log(true);
+			MOOD = 'Радость';
+		} else if (data[1].delta <= data[0].delta && data[0].delta <= data[2].delta) {
+			console.log(true);
+			MOOD = 'Благодушие';
+		} else if (data[0].delta <= data[2].delta && data[2].delta <= data[1].delta) {
+			console.log(true);
+			MOOD = 'Гнев';
+		} else if (data[2].delta <= data[1].delta && data[1].delta <= data[0].delta) {
+			console.log(true);
+			MOOD = 'Печаль';
+		} else if (data[1].delta <= data[2].delta && data[2].delta <= data[0].delta) {
+			console.log(true);
+			MOOD = 'Тревожность';
+		} else if (data[2].delta <= data[0].delta && data[0].delta <= data[1].delta) {
+			console.log(true);
+			MOOD = 'Дискомфорт';
+		}
+	}
 
 	onMount(() => {
 		parsedResults = getResults(testType, results);
@@ -175,6 +221,9 @@
 				}
 			}
 		});
+
+		calculateMood(results);
+		console.log(MOOD)
 	});
 	onDestroy(() => {
 		// console.log('destroy');
@@ -185,3 +234,4 @@
 <p>Время прохождения теста: {allTime} с</p>
 <p>Среднее время на один цвет: {avg} с</p>
 <canvas bind:this={canvas}></canvas>
+<p>Ваше настроение: {MOOD}</p>
