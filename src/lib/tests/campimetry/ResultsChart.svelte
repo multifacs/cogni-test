@@ -21,7 +21,8 @@
 		results: CampimetryResult[];
 	} = $props();
 
-	let MOOD: '' | 'Радость' | 'Благодушие' | 'Гнев' | 'Печаль' | 'Тревожность' | 'Дискомфорт' = $state('');
+	let MOOD: '' | 'Радость' | 'Благодушие' | 'Гнев' | 'Печаль' | 'Тревожность' | 'Дискомфорт' =
+		$state('');
 
 	const evalFunc = (ctx: ScriptableContext<'line'>) => {
 		const result = ctx.raw as Result;
@@ -78,10 +79,18 @@
 			}
 		];
 
+		let CANCEL_FLAG = false;
+
 		data.forEach((x) => {
 			const filtered = results.filter((y) => x.colors.includes(y.color));
+			if (!filtered.length) {
+				CANCEL_FLAG = true;
+				return;
+			}
 			x.delta = filtered[0].delta + filtered[1].delta;
 		});
+
+		if (CANCEL_FLAG) return;
 
 		console.log(data.map((x) => x.delta));
 
@@ -223,7 +232,7 @@
 		});
 
 		calculateMood(results);
-		console.log(MOOD)
+		console.log(MOOD);
 	});
 	onDestroy(() => {
 		// console.log('destroy');
