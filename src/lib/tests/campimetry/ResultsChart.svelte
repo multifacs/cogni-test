@@ -63,27 +63,20 @@
 
 	let parsedResults: Result[];
 
+	let MOODS: string[] = $state([]);
+
 	function calculateMood(results: CampimetryResult[]) {
 		const data = [
-			{
-				colors: ['dark-red', 'light-red'],
-				delta: 0
-			},
-			{
-				colors: ['dark-green', 'light-green'],
-				delta: 0
-			},
-			{
-				colors: ['dark-blue', 'light-blue'],
-				delta: 0
-			}
+			{ colors: ['dark-red', 'light-red'], delta: 0 },
+			{ colors: ['dark-green', 'light-green'], delta: 0 },
+			{ colors: ['dark-blue', 'light-blue'], delta: 0 }
 		];
 
 		let CANCEL_FLAG = false;
 
 		data.forEach((x) => {
 			const filtered = results.filter((y) => x.colors.includes(y.color));
-			if (!filtered.length) {
+			if (filtered.length < 2) {
 				CANCEL_FLAG = true;
 				return;
 			}
@@ -92,27 +85,18 @@
 
 		if (CANCEL_FLAG) return;
 
-		console.log(data.map((x) => x.delta));
+		MOODS = []; // очищаем
 
-		if (data[0].delta <= data[1].delta && data[1].delta <= data[2].delta) {
-			console.log(true);
-			MOOD = 'Радость';
-		} else if (data[1].delta <= data[0].delta && data[0].delta <= data[2].delta) {
-			console.log(true);
-			MOOD = 'Благодушие';
-		} else if (data[0].delta <= data[2].delta && data[2].delta <= data[1].delta) {
-			console.log(true);
-			MOOD = 'Гнев';
-		} else if (data[2].delta <= data[1].delta && data[1].delta <= data[0].delta) {
-			console.log(true);
-			MOOD = 'Печаль';
-		} else if (data[1].delta <= data[2].delta && data[2].delta <= data[0].delta) {
-			console.log(true);
-			MOOD = 'Тревожность';
-		} else if (data[2].delta <= data[0].delta && data[0].delta <= data[1].delta) {
-			console.log(true);
-			MOOD = 'Дискомфорт';
-		}
+		const [red, green, blue] = data;
+
+		if (red.delta <= green.delta && green.delta <= blue.delta) MOODS.push('Радость');
+		if (green.delta <= red.delta && red.delta <= blue.delta) MOODS.push('Благодушие');
+		if (red.delta <= blue.delta && blue.delta <= green.delta) MOODS.push('Гнев');
+		if (blue.delta <= green.delta && green.delta <= red.delta) MOODS.push('Печаль');
+		if (green.delta <= blue.delta && blue.delta <= red.delta) MOODS.push('Тревожность');
+		if (blue.delta <= red.delta && red.delta <= green.delta) MOODS.push('Дискомфорт');
+
+		console.log('Возможные настроения:', MOODS);
 	}
 
 	onMount(() => {
@@ -243,4 +227,10 @@
 <p>Время прохождения теста: {allTime} с</p>
 <p>Среднее время на один цвет: {avg} с</p>
 <canvas bind:this={canvas}></canvas>
-<p>Ваше настроение: {MOOD}</p>
+{#if MOODS.length === 0}
+	<p>Настроение не определено.</p>
+{:else if MOODS.length === 1}
+	<p>Вы испытываете: {MOODS[0]}</p>
+{:else}
+	<p>Вы, возможно, испытываете одно из: {MOODS.join(', ')}</p>
+{/if}
