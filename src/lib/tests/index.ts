@@ -48,4 +48,10 @@ export const tests: TestData[] = [
 		path: '/tests/word-morphing/about',
 		img: '/tests/word-morphing.svg'
 	},
+	{
+		name: 'rhythm',
+		title: 'Тест на ритм',
+		path: '/tests/rhythm/about',
+		img: '/tests/rhythm.svg'
+	}
 ];
