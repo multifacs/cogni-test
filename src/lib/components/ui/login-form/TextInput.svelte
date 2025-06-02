@@ -1,7 +1,15 @@
 <script lang="ts">
-	let { name, value = $bindable(), required, errorMessage = $bindable() } = $props();
+	let {
+		name,
+		value = $bindable(),
+		required = false,
+		errorMessage = $bindable(),
+		placeholder = '',
+		plain = false
+	} = $props();
 
 	function handleInput(e: Event) {
+		if (plain) return;
 		const input = e.target as HTMLInputElement;
 		let val = input.value.toUpperCase().replace(/[^A-ZА-Я]/g, '');
 
@@ -16,6 +24,7 @@
 		validate(value);
 	}
 	function validate(valueStr: string) {
+		if (plain) return;
 		if (valueStr.length < 2) {
 			errorMessage = 'Нужно ввести всё';
 			return false;
@@ -31,9 +40,9 @@
 	{name}
 	type="text"
 	bind:value
-	placeholder={name == 'firstname' ? 'ИМЯ' : 'ФА'}
+	placeholder={placeholder ? placeholder : name == 'firstname' ? 'ИМЯ' : 'ФА'}
 	oninput={handleInput}
-	maxlength="10"
+	maxlength={plain ? 99 : 10}
 	class={`
 	max-xs:text-base
 	max-xs:p-1

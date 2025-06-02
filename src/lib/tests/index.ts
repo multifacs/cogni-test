@@ -41,5 +41,11 @@ export const tests: TestData[] = [
 		title: 'Тест «Ласточка»',
 		path: '/tests/swallow/about',
 		img: '/tests/swallow.svg'
-	}
+	},
+	{
+		name: 'word-morphing',
+		title: 'Тест на словосочетания',
+		path: '/tests/word-morphing/about',
+		img: '/tests/word-morphing.svg'
+	},
 ];
