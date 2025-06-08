@@ -13,3 +13,4 @@ export type User = {
 	colorist: boolean | null;
 	neuro: boolean | null;
 };
+

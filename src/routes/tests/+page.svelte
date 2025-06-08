@@ -6,7 +6,8 @@
 
 	onMount(() => {
 		userStore.set(data.user || '');
-		console.log(Object.entries(data.tests));
+		console.log('Тесты:', Object.entries(data.tests));
+		console.log('Возраст:', data.predictedAge);
 	});
 </script>
 
@@ -16,7 +17,21 @@
 	<h1 class="max-xs:hidden">Тесты</h1>
 	<h2 class="xs:hidden">Тесты</h2>
 
-	<div class="test-container flex w-full flex-col items-center gap-4 overflow-y-auto rounded-3xl">
+	<!-- 💡 Когнитивный возраст -->
+	<div class="rounded-3xl bg-blue-300 p-4 text-center text-black shadow-md w-full">
+		<p class="text-lg font-semibold">Ваш когнитивный возраст:</p>
+		<p class="text-2xl font-bold mt-2">
+			{#if data.predictedAge !== null}
+				{Math.round(data.predictedAge)} лет
+			{:else}
+				<span title="Пройдите хотя бы один раз каждый тест">
+					??
+				</span>
+			{/if}
+		</p>
+	</div>
+
+	<div class="test-container flex w-full flex-col items-center gap-4 overflow-y-auto rounded-3xl mt-4">
 		{#each data.tests as { name, title, path, img }}
 			<a
 				href={path}
