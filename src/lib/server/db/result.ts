@@ -56,3 +56,28 @@ export async function getResults<T extends keyof TestResultMap>(
 		throw error;
 	}
 }
+
+export async function getLastResult<T extends keyof TestResultMap>(
+	testType: T,
+	userId: string
+): Promise<ResultInfo<T> | null> {
+	try {
+		const response = await fetch(`${DB_URL}/api/results/${testType}?userId=${userId}`);
+
+		if (!response.ok) {
+			return null;
+		}
+
+		const data = (await response.json()) as ResultInfo<T>[];
+
+		if (data.length === 0) return null;
+
+		// Находим результат с максимальным createdAt
+		return data.reduce((latest, curr) =>
+			new Date(curr.createdAt) > new Date(latest.createdAt) ? curr : latest
+		);
+	} catch (error) {
+		console.error(`Ошибка при получении последнего результата по ${testType}:`, error);
+		return null;
+	}
+}
