@@ -7,4 +7,7 @@ export default defineConfig({
 		drop: process.env.MODE == 'PROD' ? ['console', 'debugger'] : []
 	},
 	plugins: [sveltekit(), tailwindcss()],
+	define: {
+		'process.env.NODE_ENV': '"production"'
+	}
 });
