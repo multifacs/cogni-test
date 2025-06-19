@@ -6,6 +6,7 @@
 	import { onMount } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import IdBadge from '$lib/components/ui/IdBadge.svelte';
+	import NotificationToggle from '$lib/components/NotificationToggle.svelte';
 	let { data, children } = $props();
 
 	onMount(() => {
@@ -21,7 +22,11 @@
 		use:enhance
 	>
 		<IdBadge userId={$userStore}></IdBadge>
-		<Button type="submit" kind="small" color="red" disabled={$userStore == ''}>Выйти</Button>
+
+		<div class="flex gap-2">
+			<NotificationToggle />
+			<Button type="submit" kind="small" color="red" disabled={$userStore == ''}>Выйти</Button>
+		</div>
 	</form>
 
 	{@render children()}

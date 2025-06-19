@@ -41,13 +41,13 @@ export const actions = {
 
 		if (id) {
 			console.log('user set', id);
-			cookies.set('user', id, { path: '/', secure: MODE == 'PROD' });
+			cookies.set('user', id, { path: '/', secure: true });
 			redirect(307, '/tests');
 		}
 	},
 
 	logout: async ({ cookies }) => {
-		cookies.delete('user', { path: '/', secure: MODE == 'PROD' });
+		cookies.delete('user', { path: '/', secure: true });
 		redirect(307, '/');
 	}
 };
