@@ -1,12 +1,14 @@
 /// <reference types="@sveltejs/kit" />
-import { build, files, prerendered, version } from '$service-worker';
-import {precacheAndRoute} from 'workbox-precaching';
+// import { build, files, prerendered, version } from '$service-worker';
+// import {precacheAndRoute} from 'workbox-precaching';
 
-const precache_list = [
-    ...build, ...files, ...prerendered
-].map((file) => ({
-    url: file,
-    revision: version
-}));
-
-precacheAndRoute(precache_list);
+self.addEventListener('push', (event) => {
+	const data = event.data?.json();
+	event.waitUntil(
+		self.registration.showNotification(data.title, {
+			body: data.body,
+			icon: data.icon,
+			tag: data.tag || 'default'
+		})
+	);
+});

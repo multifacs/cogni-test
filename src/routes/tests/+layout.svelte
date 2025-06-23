@@ -1,43 +1,32 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	let { data, children } = $props();
-	import { notifStore } from '$lib/stores/notif.js';
 
-	let notificationInterval: NodeJS.Timer;
+	onMount(async () => {
+		if ('serviceWorker' in navigator && 'PushManager' in window) {
+			const registration = await navigator.serviceWorker.register('/service-worker.js');
 
-	let tests;
+			// Проверяем разрешение
+			let permission = Notification.permission;
+			if (permission === 'default') {
+				permission = await Notification.requestPermission();
+			}
+			if (permission !== 'granted') return;
 
-	onMount(() => {
-		if (!('Notification' in window)) return;
-		tests = data.tests;
+			// Подписываемся
+			const subscription = await registration.pushManager.subscribe({
+				userVisibleOnly: true,
+				applicationServerKey: data.VAPID_PUBLIC_KEY
+			});
 
-		console.log('passed');
-
-		if (Notification.permission === 'granted') {
-			// Запускаем таймер уведомлений
-			console.log('passed 2', data);
-			notificationInterval = setInterval(() => {
-				const test = getRandomTest();
-				sendTestNotification(test);
-			}, 600_000); // 600 секунд
+			// Отправляем подписку на сервер
+			await fetch('/api/subscribe', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(subscription)
+			});
 		}
-
-		// Очистка интервала при уничтожении компонента
-		return () => clearInterval(notificationInterval);
 	});
-
-	function getRandomTest() {
-		const index = Math.floor(Math.random() * tests.length);
-		return tests[index];
-	}
-
-	function sendTestNotification(test: (typeof tests)[number]) {
-        if (!$notifStore) return;
-		new Notification('Попробуйте пройти тест!', {
-			body: `${test.title}`,
-			icon: test.img
-		});
-	}
 </script>
 
 {@render children()}
