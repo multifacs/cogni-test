@@ -48,12 +48,9 @@
 	}
 </script>
 
-<button
-	class={enabled ? 'bell' : 'bell-off'}
-	onclick={toggleNotifications}
-	aria-label="Toggle notifications"
-	type="button"
-></button>
+<button onclick={toggleNotifications} aria-label="Toggle notifications" type="button"
+	>{enabled ? '🔔' : '🔕'}</button
+>
 
 <style>
 	button {
@@ -65,11 +62,5 @@
 		border: none;
 		cursor: pointer;
 		filter: invert(90%);
-	}
-	.bell {
-		background-image: url('/icons/bell.svg');
-	}
-	.bell-off {
-		background-image: url('/icons/bell-off.svg');
 	}
 </style>

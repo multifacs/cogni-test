@@ -2,12 +2,13 @@
 import { TG_GROUP_LINK } from '$env/static/private';
 import { getUserById } from '$lib/server/db';
 import { tests } from '$lib/tests';
+import type { User } from '$lib/types/index.js';
 
 export async function load({ cookies }) {
 	const userId = cookies.get('user');
-
+	let userData: User;
 	if (userId) {
-		const userData = await getUserById(userId);
+		userData = await getUserById(userId) as User;
 		if (!userData['id']) {
 			cookies.set('user', '', { path: '/' });
 		}
@@ -19,7 +20,7 @@ export async function load({ cookies }) {
 	//     cookies.set('user', user, { path: '/' });
 	// }
 	return {
-		user: userId,
+		user: userData,
 		TG_GROUP_LINK,
 		tests
 	};

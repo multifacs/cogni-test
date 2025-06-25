@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { enhance } from '$app/forms';
 	import '../app.css';
 	import '@fontsource/roboto';
@@ -7,10 +7,16 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import IdBadge from '$lib/components/ui/IdBadge.svelte';
 	import NotificationToggle from '$lib/components/NotificationToggle.svelte';
+	import NavBar from '$lib/components/NavBar.svelte';
+
 	let { data, children } = $props();
+	let userId = $state('');
 
 	onMount(() => {
 		userStore.set(data.user || '');
+		console.log($userStore);
+		userId = $userStore.id as string;
+		console.log(userId);
 	});
 </script>
 
@@ -21,7 +27,7 @@
 		action="/?/logout"
 		use:enhance
 	>
-		<IdBadge userId={$userStore}></IdBadge>
+		<IdBadge {userId}></IdBadge>
 
 		<div class="flex gap-2">
 			<NotificationToggle />
@@ -37,4 +43,5 @@
 			Сообщить о проблеме: <a href={data.TG_GROUP_LINK} class=" font-bold text-sky-500">Telegram</a>
 		</p>
 	</div>
+	<NavBar />
 </div>
