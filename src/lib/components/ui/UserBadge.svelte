@@ -2,11 +2,6 @@
 	import { userStore } from '$lib/stores/user';
 	import { derived } from 'svelte/store';
 
-	// const user = $state($userStore);
-	// userStore.subscribe((value) => {
-	// 	console.log(value);
-	// });
-	// const userName = $state(`${user?.firstname} ${user?.lastname}`);
 	const userName = derived(userStore, ($userStore) => {
 		if ($userStore) return `${$userStore.firstname} ${$userStore.lastname}`;
 		return '- - -';
