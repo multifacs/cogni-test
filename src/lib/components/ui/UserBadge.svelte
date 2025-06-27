@@ -1,8 +1,15 @@
 <script lang="ts">
 	import { userStore } from '$lib/stores/user';
+	import { derived } from 'svelte/store';
 
-	const user = $userStore;
-	const userName = $state(`${user?.firstname} ${user?.lastname}`);
+	// const user = $state($userStore);
+	// userStore.subscribe((value) => {
+	// 	console.log(value);
+	// });
+	// const userName = $state(`${user?.firstname} ${user?.lastname}`);
+	const userName = derived(userStore, ($userStore) => {
+		return `${$userStore?.firstname} ${$userStore?.lastname}`;
+	});
 </script>
 
 <div
@@ -22,9 +29,9 @@
 >
 	👤
 	<span class="flex flex-col px-2 text-indigo-700">
-		{#if user}
+		{#if $userStore}
 			<span>
-				{userName}
+				{$userName}
 			</span>
 		{:else}
 			<span>- - -</span>
