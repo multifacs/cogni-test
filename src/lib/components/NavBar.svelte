@@ -7,16 +7,16 @@
 	</a>
 	<a href="/tests" class="flex flex-col items-center text-sm">
 		<span>🧪</span>
-		<span>Тесты</span>
+		<span>Возраст</span>
+	</a>
+	<a href="/exercise" class="flex flex-col items-center text-sm">
+		<span>📊</span>
+		<span>Тренажер</span>
 	</a>
 	<a href="/materials" class="flex flex-col items-center text-sm">
 		<span>📚</span>
-		<span>Материалы</span>
+		<span>Долголетие</span>
 	</a>
-	<!-- <a href="/results" class="flex flex-col items-center text-sm">
-		<span>📊</span>
-		<span>Результаты</span>
-	</a> -->
 	<a href="/profile" class="flex flex-col items-center text-sm">
 		<span>⚙️</span>
 		<span>Профиль</span>

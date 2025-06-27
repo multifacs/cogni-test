@@ -7,7 +7,7 @@ export default defineConfig({
 	esbuild: {
 		drop: process.env.MODE == 'PROD' ? ['console', 'debugger'] : []
 	},
-	plugins: [sveltekit(), tailwindcss()],
+	plugins: [sveltekit(), tailwindcss(), mkcert()],
 	define: {
 		'process.env.NODE_ENV': '"production"'
 	}

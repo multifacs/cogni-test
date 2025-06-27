@@ -14,16 +14,12 @@
 	let birthdate = $state('31.01.2001');
 	let sex = $state<'male' | 'female'>('male');
 
-	let cataract = $state('no');
-	let colorist = $state('no');
-	let neuro = $state('no');
-
 	let firstnameError = $state('');
 	let lastnameError = $state('');
 	let dateError = $state('');
 
 	onMount(() => {
-		userStore.set(data.user || '');
+		userStore.set(null);
 	});
 
 	function isSubmitDisabled() {
@@ -70,10 +66,6 @@
 		<label><input type="radio" name="sex" bind:group={sex} value="male" /> Мужской</label>
 		<label><input type="radio" name="sex" bind:group={sex} value="female" /> Женский</label>
 	</div>
-
-	<input type="hidden" name="cataract" value={cataract} />
-	<input type="hidden" name="colorist" value={colorist} />
-	<input type="hidden" name="neuro" value={neuro} />
 
 	<Button type="submit" color="green" disabled={isSubmitDisabled()}>Войти</Button>
 </form>

@@ -7,8 +7,8 @@
 	<p class="max-w-md text-center text-lg">Выберите, с чего начать:</p>
 
 	<div class="flex w-full max-w-xs flex-col gap-4">
-		<Button color="green" goto="/tests">🧪 Пройти тесты</Button>
-		<Button color="blue" goto="/materials">📚 Информационные материалы</Button>
-		<Button color="gray" goto="/results">📊 Посмотреть результаты</Button>
+		<Button color="green" goto="/tests">🧪 Когнитивный возраст</Button>
+		<Button color="gray" goto="/exercise">📊 Когнитивный тренажёр</Button>
+		<Button color="blue" goto="/materials">📚 Когнитивное долголетие</Button>
 	</div>
 </main>

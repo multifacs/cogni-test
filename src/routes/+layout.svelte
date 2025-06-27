@@ -5,19 +5,11 @@
 	import { userStore } from '$lib/stores/user';
 	import { onMount } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import IdBadge from '$lib/components/ui/IdBadge.svelte';
+	import UserBadge from '$lib/components/ui/UserBadge.svelte';
 	import NotificationToggle from '$lib/components/NotificationToggle.svelte';
 	import NavBar from '$lib/components/NavBar.svelte';
 
 	let { data, children } = $props();
-	let userId = $state('');
-
-	onMount(() => {
-		userStore.set(data.user || '');
-		console.log($userStore);
-		userId = $userStore.id as string;
-		console.log(userId);
-	});
 </script>
 
 <div class="flex h-[100dvh] flex-col items-center justify-between gap-2 p-2 sm:w-2xl">
@@ -27,11 +19,11 @@
 		action="/?/logout"
 		use:enhance
 	>
-		<IdBadge {userId}></IdBadge>
+		<UserBadge></UserBadge>
 
 		<div class="flex gap-2">
 			<NotificationToggle />
-			<Button type="submit" kind="small" color="red" disabled={$userStore == ''}>Выйти</Button>
+			<Button type="submit" kind="small" color="red">Выйти</Button>
 		</div>
 	</form>
 
