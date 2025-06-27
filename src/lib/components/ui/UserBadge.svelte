@@ -8,7 +8,7 @@
 	// });
 	// const userName = $state(`${user?.firstname} ${user?.lastname}`);
 	const userName = derived(userStore, ($userStore) => {
-		if ($userStore) return `${$userStore?.firstname} ${$userStore?.lastname}`;
+		if ($userStore) return `${$userStore.firstname} ${$userStore.lastname}`;
 		return '- - -';
 	});
 </script>
