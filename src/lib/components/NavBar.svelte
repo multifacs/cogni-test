@@ -9,7 +9,7 @@
 		<span>🧪</span>
 		<span>Возраст</span>
 	</a>
-	<a href="/exercise" class="flex flex-col items-center text-sm">
+	<a href="/exercises" class="flex flex-col items-center text-sm">
 		<span>📊</span>
 		<span>Тренажер</span>
 	</a>

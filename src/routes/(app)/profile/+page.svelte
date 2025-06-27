@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
+	import Button from '$lib/components/ui/Button.svelte';
 	import { userStore } from '$lib/stores/user';
 	import { derived } from 'svelte/store';
 
@@ -25,8 +27,8 @@
 	}
 </script>
 
-<main class="mx-auto max-w-xl p-6 text-white">
-	<h1 class="mb-4 text-2xl font-bold">👤 Профиль пользователя</h1>
+<main class="flex h-full w-full flex-col justify-center text-white">
+	<h1 class="mb-4 text-2xl font-bold">👤 Профиль</h1>
 
 	{#await $user}
 		<p>Загрузка...</p>
@@ -39,9 +41,11 @@
 				<p><b>Дата рождения:</b> {formatDate(u.birthdate)}</p>
 				<p><b>Пол:</b> {formatSex(u.sex)}</p>
 				<hr class="my-2 border-gray-600" />
-				<p><b>Катаракта:</b> {formatBool(u.cataract)}</p>
-				<p><b>Колорист:</b> {formatBool(u.colorist)}</p>
-				<p><b>Неврологическое заболевание:</b> {formatBool(u.neuro)}</p>
+				<form class="flex justify-center" method="POST" action="/?/logout" use:enhance>
+					<div class="flex gap-2">
+						<Button type="submit" kind="small" color="red">Выйти</Button>
+					</div>
+				</form>
 			</div>
 		{:else}
 			<p>Пользователь не найден. Возможно, вы не вошли в систему.</p>
