@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { getCSSVar, translate } from '$lib/utils';
+	import { onMount } from 'svelte';
 	import { colors } from './logic/lab-color.svelte';
 </script>
 
-<p>Тест включает в себя ограниченный набор цветов:</p>
+<p>Тест включает в себя полный набор цветов:</p>
 <p class="font-bold">
 	{#each Object.keys(colors).slice(0, -1) as color}
 		<span style={`color: ${getCSSVar(`--camp-${color}`)}`}>{translate(color)}{`, `}</span>

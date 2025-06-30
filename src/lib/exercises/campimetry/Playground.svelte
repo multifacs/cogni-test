@@ -5,12 +5,16 @@
 	import { error } from '@sveltejs/kit';
 	import { shuffle } from '$lib/utils';
 
+	
 	import Button from '$lib/components/ui/Button.svelte';
-	let { data, gameEnd, sendResults } = $props();
+	import ResultsChart from '$lib/tests/campimetry/ResultsChart.svelte';
+	import type { CampimetryResult } from '$lib/tests/campimetry/types';
+
+	let { data } = $props();
 
 	console.log(data);
 
-	let isGameRunning = $state(false);
+	let isGameRunning = $state(true);
 	let showResults = $state(false);
 
 	let game: CampimetryGame = $state(Object());
@@ -58,10 +62,12 @@
 		currentOp = op;
 	}
 
+	let results: CampimetryResult[] | null = $state(null)
+
 	export function stopGame() {
 		isGameRunning = false;
-		gameEnd();
-		sendResults(game.getResults());
+		console.log(game.getResults());
+		results = game.getResults();
 	}
 
 	function getSilhouetteChoices(num: number, correct: string): string[] {
@@ -134,7 +140,7 @@
 {#if isGameRunning}
 	<div class="background" style={`background-color: ${currentBackgroundColor.toString()}`}>
 		<div
-			class="max-xs:w-16 max-xs:h-16 h-32 w-32 mask-contain"
+			class="max-xs:w-16 max-xs:h-16 relative h-32 w-32 mask-contain"
 			style={`
         background-color: ${currentSilhouetteColor.toString()};
         mask-image: url(${data.silhouettes[currentSilhouette]});
@@ -143,7 +149,9 @@
 		></div>
 	</div>
 	<div class="flex gap-2">
-		<Button color="green" onclick={changeColor}>{currentStage == 1 ? 'Проявить фигуру' : 'Скрыть фигуру'}</Button>
+		<Button color="green" onclick={changeColor}
+			>{currentStage == 1 ? 'Проявить фигуру' : 'Скрыть фигуру'}</Button
+		>
 		{#if currentStage == 2}
 			<Button color="blue" onclick={handleAnswer}>Больше не видно</Button>
 		{/if}
@@ -171,10 +179,12 @@
 			Изменяйте оттенок, пока силуэт не станет различимым, а затем выберите правильный силуэт.
 		</p>
 	{:else}
-		<p class="text-center">Изменяйте оттенок, пока силуэт не перестанет быть виден. Затем нажмите "Больне не видно".</p>
+		<p class="text-center">
+			Изменяйте оттенок, пока силуэт не перестанет быть виден. Затем нажмите "Больне не видно".
+		</p>
 	{/if}
 {:else}
-	<h1>Тест окончен</h1>
+	<ResultsChart testType="campimetry" results={results!}></ResultsChart>
 {/if}
 
 <style>

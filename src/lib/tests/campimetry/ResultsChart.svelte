@@ -2,7 +2,7 @@
 	import Chart from 'chart.js/auto';
 	import annotationPlugin from 'chartjs-plugin-annotation';
 
-	import { Colors, type ScriptableContext } from 'chart.js';
+	import { Colors, Scale, type CoreScaleOptions, type ScriptableContext } from 'chart.js';
 	Chart.register(Colors);
 	Chart.register(annotationPlugin);
 
@@ -89,12 +89,12 @@
 
 		const [red, green, blue] = data;
 
-		if (red.delta <= green.delta && green.delta <= blue.delta) MOODS.push('Радость');
-		if (green.delta <= red.delta && red.delta <= blue.delta) MOODS.push('Благодушие');
-		if (red.delta <= blue.delta && blue.delta <= green.delta) MOODS.push('Гнев');
-		if (blue.delta <= green.delta && green.delta <= red.delta) MOODS.push('Печаль');
-		if (green.delta <= blue.delta && blue.delta <= red.delta) MOODS.push('Тревожность');
-		if (blue.delta <= red.delta && red.delta <= green.delta) MOODS.push('Дискомфорт');
+		if (red.delta <= green.delta && green.delta <= blue.delta) MOODS.push('Радость 😊');
+		if (green.delta <= red.delta && red.delta <= blue.delta) MOODS.push('Благодушие 😌');
+		if (red.delta <= blue.delta && blue.delta <= green.delta) MOODS.push('Гнев 😡');
+		if (blue.delta <= green.delta && green.delta <= red.delta) MOODS.push('Печаль 😢');
+		if (green.delta <= blue.delta && blue.delta <= red.delta) MOODS.push('Тревожность 😰');
+		if (blue.delta <= red.delta && red.delta <= green.delta) MOODS.push('Дискомфорт 😖');
 
 		console.log('Возможные настроения:', MOODS);
 	}
@@ -193,9 +193,9 @@
 							text: 'Цвета'
 						},
 						ticks: {
-							maxRotation: 0,
+							maxRotation: 90,
 							minRotation: 0,
-							callback: () => '◼',
+							callback: (ctx) => translate(parsedResults[ctx].raw.color),
 							color: (ctx) => {
 								const color = parsedResults[ctx.index].raw.color;
 								return getCSSVar(`--camp-${color}`);
@@ -224,13 +224,17 @@
 	});
 </script>
 
-<p>Время прохождения теста: {allTime} с</p>
-<p>Среднее время на один цвет: {avg} с</p>
+<div class="flex flex-col items-center gap-2">
+	<p>Время прохождения теста: {allTime} с</p>
+	<p>Среднее время на один цвет: {avg} с</p>
+</div>
 <canvas bind:this={canvas}></canvas>
-{#if MOODS.length === 0}
-	<p>Настроение не определено.</p>
-{:else if MOODS.length === 1}
-	<p>Вы испытываете: {MOODS[0]}</p>
-{:else}
-	<p>Вы, возможно, испытываете одно из: {MOODS.join(', ')}</p>
-{/if}
+<div class="flex flex-col items-center gap-2 text-center">
+	{#if MOODS.length === 0}
+		<p>Настроение не определено.</p>
+	{:else if MOODS.length === 1}
+		<p>Возможно, вы испытываете: {MOODS[0]}</p>
+	{:else}
+		<p>Вы, возможно, испытываете одно из: {MOODS.join(', ')}</p>
+	{/if}
+</div>
