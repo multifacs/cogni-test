@@ -27,7 +27,7 @@
 	>
 		<Button color="blue" goto={`/tests/${slug}/results`}>История</Button>
 		<Button color="green" goto={`/tests/${slug}/playground`}>Начать</Button>
-		<Button color="red" goto="/">Назад</Button>
+		<Button color="red" goto="/tests">Назад</Button>
 	</div>
 {:else}
 	<Spinner></Spinner>

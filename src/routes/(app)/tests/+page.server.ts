@@ -4,11 +4,11 @@ import { runAgeModel } from '$lib/server/age/runAgeModel';
 
 export async function load({ cookies }) {
 	const userId = cookies.get('user_id');
-	let predictedAge = null; 
+	let predictedAge = null;
 	if (!userId) return { tests };
 	const features = await getFeaturesFromDB(userId);
 	if (features) predictedAge = await runAgeModel(features);
-	console.log(predictedAge)
+	console.log(predictedAge);
 	return {
 		tests,
 		userId,

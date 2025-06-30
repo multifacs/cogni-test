@@ -10,7 +10,7 @@
 </script>
 
 <div
-	class="max-xs:text-xs flex h-full min-h-0 w-full flex-col items-center justify-between gap-2 px-2"
+	class="max-xs:text-xs flex h-full min-h-0 w-full flex-col items-center justify-around px-2"
 >
 	<h1 class="max-xs:hidden xs:max-lg:landscape:hidden">
 		{title}
