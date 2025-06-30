@@ -3,6 +3,7 @@
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import { delay } from '$lib/utils/common.js';
 	import Button from '$lib/components/ui/Button.svelte';
+	import { page } from '$app/state';
 
 	const { data } = $props();
 	const slug = data.slug;
@@ -14,6 +15,9 @@
 	});
 </script>
 
+<div class="w-full rounded-2xl bg-blue-100 p-4 text-center text-blue-900 shadow">
+	<p class="text-xs opacity-70">👼 Это только начало, следи за моим ростом 👼</p>
+</div>
 {#if Component}
 	<div
 		class="scroll-container group max-xs:text-xs xs:text-base min-h-0 shrink grow-0 overflow-y-auto px-2"
@@ -22,6 +26,7 @@
 		<div class="scroll-fade"></div>
 	</div>
 	<div
+		hidden={page.url.pathname.includes('road-trip') || page.url.pathname.includes('not-lost')}
 		class="	controls
   flex items-center justify-center gap-2.5"
 	>

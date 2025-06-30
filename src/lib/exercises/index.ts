@@ -23,5 +23,17 @@ export const exercises: TestData[] = [
 		title: 'Расширенная кампиметрия',
 		path: '/exercises/campimetry/about',
 		img: '/tests/campimetry.svg'
+	},
+	{
+		name: 'road-trip',
+		title: 'По дороге на работу',
+		path: '/exercises/road-trip/about',
+		img: '/exercises/road-trip.svg'
+	},
+	{
+		name: 'not-lost',
+		title: 'По дороге на работу',
+		path: '/exercises/not-lost/about',
+		img: '/exercises/not-lost.svg'
 	}
 ];

@@ -23,6 +23,7 @@
 				<span title="Пройдите хотя бы один раз каждый тест">??</span>
 			{/if}
 		</p>
+		<p class="text-xs opacity-70">⚠️ Я только учусь, и я могу ошибаться ⚠️</p>
 	</div>
 
 	<div class="flex w-full flex-col gap-3">
