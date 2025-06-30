@@ -122,7 +122,7 @@
 				{#each recalledCombos as recalled, i}
 					<li
 						class="text-center"
-						style="color: {recalled === expectedCombos[i]
+						style="color: {recalled.toLocaleLowerCase() === expectedCombos[i].toLocaleLowerCase()
 							? 'var(--color-green-500)'
 							: 'var(--color-red-400)'}"
 					>
