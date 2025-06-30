@@ -12,5 +12,18 @@ export async function load({ params, fetch }) {
 	}
 
 	const data = {};
+
+	if (slug == 'campimetry') {
+		const silhouettes = {
+			bird: '/campimetry/bird.svg',
+			butterfly: '/campimetry/butterfly.svg',
+			cat: '/campimetry/cat.svg',
+			dog: '/campimetry/dog.svg',
+			shark: '/campimetry/shark.svg'
+		};
+
+		data.silhouettes = silhouettes;
+	}
+
 	return data;
 }

@@ -26,7 +26,7 @@
   flex items-center justify-center gap-2.5"
 	>
 		<Button color="green" goto={`/exercises/${slug}/playground`}>Начать</Button>
-		<Button color="red" goto="/home">Назад</Button>
+		<Button color="red" goto="/exercises">Назад</Button>
 	</div>
 {:else}
 	<Spinner></Spinner>

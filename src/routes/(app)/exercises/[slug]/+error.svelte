@@ -7,7 +7,7 @@
 <Button
 	color="red"
 	onclick={() => {
-		goto('/tests');
+		goto('/exercises');
 	}}
 >
 	Назад к тестам

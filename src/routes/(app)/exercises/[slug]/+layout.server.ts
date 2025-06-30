@@ -1,7 +1,8 @@
-import { tests } from '$lib/tests';
+import { exercises } from '$lib/exercises';
 export function load({ params }) {
 	const slug = params.slug;
 	return {
-		slug, tests
+		slug,
+		exercises
 	};
 }
