@@ -6,7 +6,7 @@ import devtoolsJson from 'vite-plugin-devtools-json';
 
 export default defineConfig({
 	esbuild: {
-		// drop: process.env.MODE == 'PROD' ? ['console', 'debugger'] : []
+		drop: process.env.MODE == 'PROD' ? ['console', 'debugger'] : []
 	},
 	plugins: [sveltekit(), tailwindcss(), mkcert(), devtoolsJson()],
 	define: {
