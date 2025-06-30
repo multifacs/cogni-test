@@ -17,5 +17,11 @@ export const exercises: TestData[] = [
 		title: 'Тест на ритм',
 		path: '/exercises/rhythm/about',
 		img: '/exercises/rhythm.svg'
+	},
+	{
+		name: 'campimetry',
+		title: 'Расширенная кампиметрия',
+		path: '/exercises/campimetry/about',
+		img: '/tests/campimetry.svg'
 	}
 ];
