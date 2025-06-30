@@ -15,9 +15,6 @@
 	});
 </script>
 
-<div class="w-full rounded-2xl bg-blue-100 p-4 text-center text-blue-900 shadow">
-	<p class="text-xs opacity-70">👼 Это только начало, следи за моим ростом 👼</p>
-</div>
 {#if Component}
 	<div
 		class="scroll-container group max-xs:text-xs xs:text-base min-h-0 shrink grow-0 overflow-y-auto px-2"
