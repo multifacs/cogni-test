@@ -71,14 +71,17 @@
 	class={`
 	cursor-pointer
 	rounded-full
+	active:scale-95
+	active:ring-2
+	active:ring-white/50
 	${colorClasses[disabled ? 'gray' : color].bg}
+	max-xs:text-xs
+	xs:text-base
+	xs:max-lg:landscape:text-xs
 	touch-none
 	px-4
 	py-2
 	text-center
-	max-xs:text-xs
-	xs:text-base
-	xs:max-lg:landscape:text-xs
 	text-white
 	shadow-md
 	transition
