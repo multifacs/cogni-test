@@ -27,14 +27,14 @@
 	}
 </script>
 
-<main class="flex h-full w-full flex-col justify-center text-white">
+<main class="flex h-full w-full flex-col justify-center p-4 text-white gap-2">
 	<h1 class="mb-4 text-2xl font-bold">👤 Профиль</h1>
 
 	{#await $user}
 		<p>Загрузка...</p>
 	{:then u}
 		{#if u && u.id}
-			<div class="rounded-xl bg-gray-800 p-4 shadow-lg">
+			<div class="rounded-xl bg-gray-700 p-4 shadow-lg">
 				<p><b>ID:</b> {u.id}</p>
 				<p><b>Имя:</b> {u.firstname}</p>
 				<p><b>Фамилия:</b> {u.lastname}</p>
