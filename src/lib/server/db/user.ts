@@ -10,16 +10,17 @@ if (MODE == 'DEV') {
 	DB_URL = DB_URL_PROD;
 }
 
-async function createUser(userData: User): Promise<string> {
-	console.log(JSON.stringify(userData))
+async function createUser(userInstance: User): Promise<User> {
 	try {
 		const response = await fetch(`${DB_URL}/api/users`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
-			body: JSON.stringify(userData)
+			body: JSON.stringify(userInstance)
 		});
+
+		console.log(response)
 
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
@@ -27,23 +28,22 @@ async function createUser(userData: User): Promise<string> {
 
 		const data = await response.json();
 		console.log('User created:', data);
-		return data.id;
+		return data.user;
 	} catch (error) {
 		console.error('Error creating user:', error);
 		throw error;
 	}
 }
 
-export async function addUser(data: FormData): Promise<string | null> {
-	if (!checkFormData(data)) {
+export async function addUser(formData: FormData): Promise<User | null> {
+	if (!checkFormData(formData)) {
 		fail(500);
 		console.log('formdata check failed');
 		return null;
 	}
-	const user = formDataToUser(null, data);
-
-	const id = await createUser(user);
-	return id;
+	const userInstance = formDataToUser(null, formData);
+	const newUser = await createUser(userInstance);
+	return newUser;
 }
 
 export async function getUserById(id: string) {
@@ -56,20 +56,9 @@ export async function getUserById(id: string) {
 
 		const data = await response.json();
 		console.log('User found:', data);
-		return data;
+		return data.user;
 	} catch (error) {
 		console.error('Error finding user:', error);
 		throw error;
 	}
 }
-
-// export function getDevUser(): string | null {
-// 	const devFormData = new FormData();
-// 	devFormData.append('name', 'debugus');
-// 	devFormData.append('surname', 'er');
-// 	devFormData.append('day', '1');
-// 	devFormData.append('month', '1');
-// 	devFormData.append('year', '2001');
-// 	devFormData.append('sex', 'male');
-// 	return addUser(devFormData);
-// }

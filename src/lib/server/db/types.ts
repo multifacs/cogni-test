@@ -9,8 +9,4 @@ export type User = {
 	lastname: string;
 	birthdate: string;
 	sex: 'male' | 'female';
-	cataract: boolean | null;
-	colorist: boolean | null;
-	neuro: boolean | null;
 };
-

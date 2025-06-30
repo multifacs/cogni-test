@@ -10,7 +10,20 @@ export function translate(word: string): string {
 		'stage 0': 'Попытки',
 		'stage 1': 'Этап 1',
 		'stage 2': 'Этап 2',
-		'stage 3': 'Этап 3'
+		'stage 3': 'Этап 3',
+
+		black: 'чёрный',
+		white: 'белый',
+		'dark-magenta': 'тёмно-пурпурный',
+		'light-magenta': 'светло-пурпурный',
+		'dark-blue': 'тёмно-синий',
+		'light-blue': 'светло-синий',
+		'dark-green': 'тёмно-зелёный',
+		'light-green': 'светло-зелёный',
+		'dark-red': 'тёмно-красный',
+		'light-red': 'светло-красный',
+		'dark-yellow': 'тёмно-жёлтый',
+		'light-yellow': 'светло-жёлтый'
 	};
 	if (word && word in dict) return dict[word];
 	if (word && !(word in dict)) return word;

@@ -24,6 +24,8 @@ export async function postResult<T extends keyof TestResultMap>(
 			body: JSON.stringify(results)
 		});
 
+		console.log(response)
+
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
 		}

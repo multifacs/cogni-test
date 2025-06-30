@@ -149,7 +149,7 @@
 		{/if}
 	</div>
 	{#if currentStage == 1}
-		<div class="row flex">
+		<div class="row flex w-4/5 max-w-96 justify-between">
 			{#each silhouettes as s}
 				<button
 					aria-label={`${s} button`}
@@ -182,8 +182,9 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		width: 100%;
-		flex-grow: 1;
+		width: 80vw;
+		height: 80vw;
+		aspect-ratio: 1 / 1;
 		/* background-color: #553131; */
 		margin: 10px 0;
 	}

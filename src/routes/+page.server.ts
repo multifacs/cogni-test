@@ -1,20 +1,17 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { addUser } from '$lib/server/db';
-// import type { User } from '$lib/server/db/types';
+import { addUser, getUserById } from '$lib/server/db';
 import { checkFormData } from '$lib/utils';
-import { MODE } from '$env/static/private';
+import type { User } from '$lib/server/db/types';
 
-export function load({ cookies }) {
-	const user = cookies.get('user');
-	console.log('start page loading');
-
-	if (user) {
-		redirect(307, '/tests');
+export const load = async ({ cookies }) => {
+	const userId = cookies.get('user_id');
+	if (!userId) return;
+	const user: User = await getUserById(userId);
+	if (!user) {
+		cookies.delete('user_id', { path: '/' });
 	}
-	return {
-		user
-	};
-}
+	redirect(307, '/home');
+};
 
 export const actions = {
 	login: async ({ cookies, request }) => {
@@ -30,24 +27,25 @@ export const actions = {
 		let id;
 
 		try {
-			id = await addUser(data);
-			console.log(id);
+			const response = await addUser(data);
+			if (response) {
+				id = response.id;
+			}
 		} catch (error) {
-			console.log(error);
 			return fail(422, {
-				error: 'failed to get user'
+				error
 			});
 		}
 
 		if (id) {
 			console.log('user set', id);
-			cookies.set('user', id, { path: '/', secure: true });
-			redirect(307, '/tests');
+			cookies.set('user_id', id, { path: '/', secure: true });
+			redirect(307, '/home');
 		}
 	},
 
 	logout: async ({ cookies }) => {
-		cookies.delete('user', { path: '/', secure: true });
+		cookies.delete('user_id', { path: '/', secure: true });
 		redirect(307, '/');
 	}
 };

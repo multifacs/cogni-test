@@ -1,3 +1,17 @@
+<script lang="ts">
+	import { getCSSVar, translate } from '$lib/utils';
+	import { colors } from './logic/lab-color.svelte';
+</script>
+
+<p>Тест включает в себя ограниченный набор цветов:</p>
+<p class="font-bold">
+	{#each Object.keys(colors).slice(0, -1) as color}
+		<span style={`color: ${getCSSVar(`--camp-${color}`)}`}>{translate(color)}{`, `}</span>
+	{/each}
+	<span style={`color: ${getCSSVar(`--camp-${Object.keys(colors).slice(-1)[0]}`)}`}
+		>{translate(Object.keys(colors).slice(-1)[0])}.</span
+	>
+</p>
 <p>
 	<b>Первый этап.</b> На экране отображен фон и чей-то силуэт одного и того же цвета. Необходимо нажимать
 	на кнопку «Добавить оттенок», чтобы прибавлять оттенок силуэту. Когда фигурка становится распознаваемой,
