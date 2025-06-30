@@ -3,7 +3,7 @@ import path from 'path';
 import matter from 'gray-matter';
 
 export async function load() {
-	const materialsDir = ('/static/materials');
+	const materialsDir = ('/materials');
 	const files = readdirSync(materialsDir).filter((f) => f.endsWith('.html'));
 
 	const articles = files.map((filename) => {
