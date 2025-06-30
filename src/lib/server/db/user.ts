@@ -20,6 +20,8 @@ async function createUser(userInstance: User): Promise<User> {
 			body: JSON.stringify(userInstance)
 		});
 
+		console.log(response)
+
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
 		}
