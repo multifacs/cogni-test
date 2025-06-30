@@ -1,149 +1,244 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { RhythmEngine } from './logic/RhythmEngine'; // предполагаем, что ты сохранил его как RhythmEngine.ts
 	import Button from '$lib/components/ui/Button.svelte';
 
-	let audio = new Audio('/rhythm/morse.mp3');
+	let engine: RhythmEngine;
 
-	function playSound() {
-		audio.currentTime = 0;
-		audio.play();
+	let phase = $state<'idle' | 'computer' | 'player' | 'done'>('idle');
+	let currentStep = $state(0);
+	let autoJump = $state(false);
+	let userJump = $state(false);
+
+	let beat: number[] = $state([]);
+	let userBeat: number[] = $state([]);
+
+	let intervalHandle: ReturnType<typeof setInterval>;
+
+	const audio = new Audio('/rhythm/sfx_point.mp3');
+
+	const audio1 = new Audio('/rhythm/ding 1.mp3');
+	const audio2 = new Audio('/rhythm/ding 2.mp3');
+	const audio3 = new Audio('/rhythm/ding 3.mp3');
+	const audio4 = new Audio('/rhythm/ding 4.mp3');
+	const audios = [audio1, audio2, audio3, audio4];
+
+	function playSound(index: number) {
+		// audio.currentTime = 0;
+		// audio.play();
+		audios[index].play();
 	}
 
-	let phase: 'listen' | 'repeat' | 'result' = $state('listen');
+	function updateFromEngine() {
+		phase = engine.getPhase();
+		currentStep = engine.getPosition();
+		autoJump = engine.getAutoJump();
+		userJump = engine.getUserJump();
+		if (autoJump || userJump) {
+			playSound(currentStep - 1);
+		}
 
-	let beat: number[] = $state([]); // [0, 1, 0, 1, 0, 0, 1]
-	let userBeat: number[] = $state([]); // фиксируется как [0, 1, 0, 0, ...] по времени
-	let beatLength = 4;
-	let interval = 500; // 500 мс между шагами
+		if (engine.isFinished()) {
+			clearInterval(intervalHandle);
+			const result = engine.getResults();
+			beat = result.beat;
+			userBeat = result.userBeat;
 
-	let currentStep = -1;
-	let timer: ReturnType<typeof setInterval>;
-
-	const DOT_ON = '🌕';
-	const DOT_OFF = '🌑';
-
-	let isLit = $state(false);
-	let isPlayingBack = $state(false);
-
-	function generateBeat() {
-		beat = Array.from({ length: beatLength }, () => (Math.random() < 0.5 ? 1 : 0));
-		console.log('Target beat:', beat);
+			isPassed = engine.isPerfectMatch();
+			avgDelay = engine.getAverageReactionDelay();
+		}
 	}
 
-	function playBeat(onEnd: () => void, source: number[]) {
-		let i = 0;
-		isPlayingBack = true;
-		currentStep = -1;
-
-		timer = setInterval(() => {
-			if (i >= source.length) {
-				clearInterval(timer);
-				isPlayingBack = false;
-				onEnd();
-				return;
-			}
-			isLit = source[i] === 1;
-			if (isLit) playSound();
-			currentStep = i;
-			i++;
-		}, interval);
+	// Инициализация RhythmEngine теперь с длиной 6 (0..5), но рабочий ритм будет на 1–4
+	function startGame() {
+		engine = new RhythmEngine(6, 600);
+		engine.startComputerPhase();
+		intervalHandle = setInterval(updateFromEngine, 50);
 	}
 
-	function startListening() {
-		phase = 'listen';
-		generateBeat();
-		playBeat(() => {
-			phase = 'repeat';
-			currentStep = -1;
-			userBeat = [];
-			startRecording();
-		}, beat);
+	function handleUserInput() {
+		engine?.registerUserJump();
 	}
 
-	let recordingTimer: ReturnType<typeof setInterval>;
-	let recordingStep = 0;
-
-	function startRecording() {
-		recordingStep = 0;
-		recordingTimer = setInterval(() => {
-			if (recordingStep >= beatLength) {
-				clearInterval(recordingTimer);
-				phase = 'result';
-				currentStep = -1;
-			} else {
-				userBeat.push(0);
-				recordingStep++;
-			}
-		}, interval);
-	}
-
-	function handleUserClick() {
-		if (phase !== 'repeat' || recordingStep <= 0 || recordingStep > beatLength) return;
-
-		userBeat[recordingStep - 1] = 1;
-		isLit = true;
-		playSound();
-
-		setTimeout(() => {
-			isLit = false;
-		}, 150);
-	}
+	let isPassed = $state(false);
+	let avgDelay = $state<number | null>(null);
 
 	onMount(() => {
-		startListening();
+		startGame();
+		window.addEventListener('keydown', (e) => {
+			if (e.code === 'Space') {
+				handleUserInput();
+			}
+		});
 	});
 </script>
 
-{#if phase === 'listen'}
-	<h2>Слушайте ритм...</h2>
-	<div class="dot" class:is-on={isLit}>{isLit ? DOT_ON : DOT_OFF}</div>
-{:else if phase === 'repeat'}
-	<h2>Повторите ритм:</h2>
-	<div class="dot interactive select-none" on:click={handleUserClick}>
-		{isLit ? DOT_ON : DOT_OFF}
-	</div>
-{:else if phase === 'result'}
-	<h2>Результат:</h2>
+{#if phase === 'computer'}
+	<h2>Слушайте ритм</h2>
+	<div class="flex w-full flex-col items-center gap-2">
+		<button class="playfield" aria-label="Игровое поле">
+			<div class="track relative flex h-full w-full flex-col items-center justify-center">
+				<div class="h-full w-10/12 pb-3">
+					<div
+						class="ball auto"
+						class:jump={autoJump}
+						style:left={`calc(19.5% * ${currentStep} - 20px + 5px)`}
+					></div>
+				</div>
 
-	<p>Оригинал:</p>
-	<div class="timeline">
-		{#each beat as step, i}
-			<div class="dot small" class:is-on={step === 1}>{step === 1 ? DOT_ON : DOT_OFF}</div>
-		{/each}
+				<div class="flex w-10/12 items-end justify-between pb-1">
+					{#each Array(6) as _, i}
+						<div
+							class={i === currentStep && i > 0 && i < 5
+								? 'active-marker'
+								: i === 0 || i === 5
+									? 'stop-marker'
+									: 'go-marker'}
+						></div>
+					{/each}
+				</div>
+			</div>
+		</button>
+		<p class="text-transparent">Нажмите <kbd>пробел</kbd> или кликните</p>
 	</div>
+{/if}
 
-	<p>Ваш ответ:</p>
-	<div class="timeline">
-		{#each userBeat as step, i}
-			<div class="dot small" class:is-on={step === 1}>{step === 1 ? DOT_ON : DOT_OFF}</div>
-		{/each}
+{#if phase === 'player'}
+	<h2>Повторите ритм</h2>
+
+	<div class="flex w-full flex-col items-center gap-2">
+		<button class="playfield" onclick={handleUserInput} aria-label="Игровое поле">
+			<div class="track relative flex h-full w-full flex-col items-center justify-center">
+				<div class="h-full w-10/12 pb-3">
+					<div
+						class="ball user"
+						class:jump={userJump}
+						style:left={`calc(19.5% * ${currentStep} - 20px + 5px)`}
+					></div>
+				</div>
+
+				<div class="flex w-10/12 items-end justify-between pb-1">
+					{#each Array(6) as _, i}
+						<div
+							class={i === currentStep && i > 0 && i < 5
+								? 'active-marker'
+								: i === 0 || i === 5
+									? 'stop-marker'
+									: 'go-marker'}
+						></div>
+					{/each}
+				</div>
+			</div>
+		</button>
+		<p>Нажмите <kbd>пробел</kbd> или кликните</p>
 	</div>
+{/if}
 
-	<Button color="green" onclick={startListening}>Начать заново</Button>
+{#if phase === 'done'}
+	<div class="flex flex-col gap-4">
+		<h2>Результат</h2>
+
+		<div class="flex flex-col gap-2">
+			<p>Оригинал:</p>
+			<div class="timeline">
+				{#each beat.slice(1, 5) as b}
+					<div class="dot" class:jumped={b === 1}>{b === 1 ? '⬆️' : '⚪'}</div>
+				{/each}
+			</div>
+		</div>
+
+		<div class="flex flex-col gap-2">
+			<p>Ваш ответ:</p>
+			<div class="timeline">
+				{#each userBeat.slice(1, 5) as b, i}
+					<div class="dot" class:correct={b === beat[i]} class:wrong={b !== beat[i]}>
+						{b === 1 ? '⬆️' : '⚪'}
+					</div>
+				{/each}
+			</div>
+		</div>
+
+		<p class="text-center text-xl font-bold">
+			{isPassed ? 'Тест пройден ✅' : 'Тест не пройден ❌'}
+		</p>
+
+		{#if isPassed && avgDelay !== null}
+			<p class="text-center text-sm text-gray-300">
+				Среднее время реакции: {Math.round(avgDelay)} мс
+			</p>
+		{/if}
+	</div>
 {/if}
 
 <style>
-	.dot {
-		font-size: 4rem;
+	h2 {
 		text-align: center;
-		margin: 1rem;
-		cursor: default;
 	}
-	.dot.interactive {
+	.playfield {
+		margin: 2rem auto;
+		width: 80%;
+		height: 100px;
+		position: relative;
+		border: 2px solid #ccc;
+		border-radius: 10px;
+		background: #f8f8f8;
 		cursor: pointer;
 	}
-	.dot.small {
-		font-size: 2rem;
-		display: inline-block;
-		margin: 0.2rem;
+	.ball {
+		position: relative;
+		top: 40px;
+		left: calc(-20px + 5px + 49px * 0);
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		background: gray;
+		transition:
+			transform 0.2s ease,
+			left 0.2s linear;
+	}
+	.ball.auto {
+		background: #facc15;
+	}
+	.ball.user {
+		background: #60a5fa;
+	}
+	.jump {
+		transform: translateY(-35px);
 	}
 	.timeline {
 		display: flex;
 		justify-content: center;
-		gap: 0.5rem;
+		gap: 1rem;
 		margin-bottom: 1rem;
 	}
-	.is-on {
-		color: var(--color-yellow-300);
+	.dot {
+		font-size: 2rem;
+	}
+	.correct {
+		color: green;
+	}
+	.wrong {
+		color: red;
+	}
+
+	.stop-marker {
+		width: 10px;
+		height: 10px;
+		background-color: #e2e2e2;
+		border-radius: 50%;
+	}
+	.go-marker {
+		width: 10px;
+		height: 10px;
+		background-color: #bbb;
+		border-radius: 50%;
+	}
+
+	.active-marker {
+		width: 12px;
+		height: 12px;
+		background-color: #ff0000;
+		border-radius: 50%;
+		transition: all 0.2s;
 	}
 </style>
