@@ -14,8 +14,7 @@ RUN npm install
 COPY . .
 
 # Собираем SvelteKit-приложение
-RUN DATABASE_URL=file:/data/db.sqlite npx drizzle-kit push
-RUN BUILD=node DATABASE_URL=file:/data/db.sqlite npm run build
+RUN BUILD=node DATABASE_URL=:memory: npm run build
 
 # Указываем порт, который будем слушать (HTTPS)
 EXPOSE 443
