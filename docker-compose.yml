@@ -11,6 +11,13 @@ services:
       - "4983:4983"
     environment:
       - BUILD=node
+      - PUSH_API_URL=123
+      - VAPID_PUBLIC_KEY=123
+      - VAPID_PRIVATE_KEY=456
+      - MODE=PROD
+      - TG_GROUP_LINK=https://t.me/+Q08ShGg2nSRhYTEy
+      - DB_URL_DEV=http://localhost:3000
+      - DB_URL_PROD=http://5.39.217.221:3000
     volumes:
       - /etc/ssl/private/cogni-test.ru_private_key.pem:/etc/ssl/private/cogni-test.ru_private_key.pem:ro
       - /etc/ssl/certs/cogni-test.ru_cert.pem:/etc/ssl/certs/cogni-test.ru_cert.pem:ro
