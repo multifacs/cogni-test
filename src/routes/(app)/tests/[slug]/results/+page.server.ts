@@ -1,4 +1,4 @@
-import { getResults } from '$lib/server/db/result.js';
+import { getResults } from '$lib/server/db/controllers/result.js';
 import type { TestResultMap } from '$lib/tests/types';
 // import { error } from '@sveltejs/kit';
 

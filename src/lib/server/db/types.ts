@@ -7,6 +7,6 @@ export type User = {
 	id: string | null;
 	firstname: string;
 	lastname: string;
-	birthdate: string;
+	birthday: Date;
 	sex: 'male' | 'female';
 };

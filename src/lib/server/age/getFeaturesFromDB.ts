@@ -1,5 +1,5 @@
-import { getUserById } from '$lib/server/db/user';
-import { getLastResult } from '$lib/server/db/result';
+import { getUserById } from '$lib/server/db/controllers/user';
+import { getLastResult } from '$lib/server/db/controllers/result';
 
 export async function getFeaturesFromDB(userId: string) {
 	console.log('➡️ getFeaturesFromDB: получаю признаки для пользователя', userId);

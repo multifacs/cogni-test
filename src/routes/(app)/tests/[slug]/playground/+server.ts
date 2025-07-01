@@ -1,4 +1,4 @@
-import { postResult } from '$lib/server/db/result.js';
+import { postResult } from '$lib/server/db/controllers/result.js';
 import type { MetaResult, RegularResult, TestResultMap } from '$lib/tests/types.js';
 import { json } from '@sveltejs/kit';
 

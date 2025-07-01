@@ -8,8 +8,10 @@ services:
     restart: always
     ports:
       - "443:443"
+      - "4983:4983"
     environment:
       - BUILD=node
     volumes:
       - /etc/ssl/private/cogni-test.ru_private_key.pem:/etc/ssl/private/cogni-test.ru_private_key.pem:ro
       - /etc/ssl/certs/cogni-test.ru_cert.pem:/etc/ssl/certs/cogni-test.ru_cert.pem:ro
+      - /root/data:/app/data

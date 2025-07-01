@@ -18,8 +18,7 @@
 		return val === 'male' ? 'Мужской' : 'Женский';
 	}
 
-	export function formatDate(isoDate: string): string {
-		const date = new Date(isoDate);
+	export function formatDate(date: Date): string {
 		const day = String(date.getDate()).padStart(2, '0');
 		const month = String(date.getMonth() + 1).padStart(2, '0'); // месяцы с 0
 		const year = date.getFullYear();
@@ -38,7 +37,7 @@
 				<p><b>ID:</b> {u.id}</p>
 				<p><b>Имя:</b> {u.firstname}</p>
 				<p><b>Фамилия:</b> {u.lastname}</p>
-				<p><b>Дата рождения:</b> {formatDate(u.birthdate)}</p>
+				<p><b>Дата рождения:</b> {formatDate(u.birthday)}</p>
 				<p><b>Пол:</b> {formatSex(u.sex)}</p>
 				<hr class="my-2 border-gray-600" />
 				<form class="flex justify-center" method="POST" action="/?/logout" use:enhance>

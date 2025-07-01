@@ -1,4 +1,4 @@
-export * from './user';
+export * from './controllers/user';
 
 import { drizzle } from 'drizzle-orm/libsql';
 import { createClient } from '@libsql/client';

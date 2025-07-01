@@ -57,8 +57,8 @@
 	</div>
 
 	<div class="flex flex-col gap-1">
-		<label for="birthdate">🎂 Дата рождения</label>
-		<DateInput required name="birthdate" bind:value={birthdate} bind:errorMessage={dateError} />
+		<label for="birthday">🎂 Дата рождения</label>
+		<DateInput required name="birthday" bind:value={birthdate} bind:errorMessage={dateError} />
 	</div>
 
 	<div class="flex items-center justify-between gap-2 text-sm">

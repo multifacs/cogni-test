@@ -7,9 +7,9 @@ export function checkFormData(data: FormData): boolean {
 	if (!data.get('firstname')) return false;
 	if (!data.get('lastname')) return false;
 	if ((data.get('lastname') as string).length != 2) return false;
-	if (!data.get('birthdate')) return false;
+	if (!data.get('birthday')) return false;
 	const dateRegex = /^\d{2}\.\d{2}\.\d{4}$/;
-	if (!dateRegex.test(data.get('birthdate') as string)) return false;
+	if (!dateRegex.test(data.get('birthday') as string)) return false;
 	if (!data.get('sex')) return false;
 
 	return true;
@@ -17,14 +17,15 @@ export function checkFormData(data: FormData): boolean {
 export function formDataToUser(id: string | null = null, data: FormData): User {
 	if (!checkFormData(data)) error(422, 'wrong data format');
 
-	const birthdateParsed = (data.get('birthdate') as string).split('.').reverse().join('-');
-	const birthdate = new Date(birthdateParsed).toISOString();
+	const birthdayParsed = (data.get('birthday') as string).split('.').reverse().join('-');
+	const birthday = new Date(birthdayParsed);
+	// const birthday = Math.floor(birthdayDate.getTime() / 1000);
 
 	const user = {
 		id,
 		firstname: (data.get('firstname') as string).toUpperCase(),
 		lastname: (data.get('lastname') as string).toUpperCase(),
-		birthdate,
+		birthday,
 		sex: data.get('sex')
 	} as User;
 
