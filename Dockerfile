@@ -14,7 +14,7 @@ RUN npm install
 COPY . .
 
 # Собираем SvelteKit-приложение
-RUN BUILD=node DATABASE_URL=file:data/db.sqlite npm run build
+RUN BUILD=node DATABASE_URL=file:/data/db.sqlite npm run build
 
 # Указываем порт, который будем слушать (HTTPS)
 EXPOSE 443
