@@ -7,7 +7,7 @@ export const load = async ({ cookies }) => {
 	const userId = cookies.get('user_id');
 	if (!userId) return;
 	const user: User | null = await getUserById(userId);
-	console.log(user, "12123321")
+	console.log(user, '12123321');
 	if (!user) {
 		cookies.delete('user_id', { path: '/' });
 	}
@@ -28,30 +28,30 @@ export const actions = {
 	login: async ({ cookies, request }) => {
 		const data = await request.formData();
 		console.log(data, checkFormData(data), 123);
+		console.log('checkpoint 1');
 
 		if (!checkFormData(data)) {
-			return fail(422, {
-				error: 'incorrect data'
-			});
+			console.log('error data');
 		}
 
+		console.log('checkpoint 2');
 		let id;
 
 		try {
 			const response = await createUser(formDataToUser(null, data));
-			console.log(response, 12355)
+			console.log(response, 12355);
 			if (response) {
 				id = response.id;
 			}
 		} catch (error) {
-			return fail(422, {
-				error
-			});
+			console.log(error);
 		}
 
+		console.log('checkpoint 3');
 		if (id) {
 			console.log('user set', id);
 			cookies.set('user_id', id, { path: '/', secure: true });
+			console.log('checkpoint 4');
 			redirect(307, '/home');
 		}
 	},

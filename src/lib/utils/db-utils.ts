@@ -19,7 +19,6 @@ export function formDataToUser(id: string | null = null, data: FormData): User {
 
 	const birthdayParsed = (data.get('birthday') as string).split('.').reverse().join('-');
 	const birthday = new Date(birthdayParsed);
-	// const birthday = Math.floor(birthdayDate.getTime() / 1000);
 
 	const user = {
 		id,

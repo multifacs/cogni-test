@@ -15,6 +15,13 @@
       "when": 1751363438250,
       "tag": "0001_bright_giant_girl",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1751486184683,
+      "tag": "0002_powerful_the_phantom",
+      "breakpoints": true
     }
   ]
 }

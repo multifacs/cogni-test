@@ -1,7 +1,7 @@
 version: '3.9'
 
 services:
-  cogni-test:
+  cogni:
     build:
       context: . # директория с Dockerfile и проектом
     container_name: cogni-test
@@ -18,7 +18,7 @@ services:
       - TG_GROUP_LINK=https://t.me/+Q08ShGg2nSRhYTEy
       - DB_URL_DEV=http://localhost:3000
       - DB_URL_PROD=http://5.39.217.221:3000
-      - DATABASE_URL=":memory:"
+      - DATABASE_URL=file:./data/cogni.db
     volumes:
       - /etc/ssl/private/cogni-test.ru_private_key.pem:/etc/ssl/private/cogni-test.ru_private_key.pem:ro
       - /etc/ssl/certs/cogni-test.ru_cert.pem:/etc/ssl/certs/cogni-test.ru_cert.pem:ro

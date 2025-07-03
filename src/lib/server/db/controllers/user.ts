@@ -15,46 +15,50 @@ import { user } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 
 function checkUserInput(input: Partial<User>): input is User {
-	return !!(
-		input.firstname &&
-		input.lastname &&
-		input.birthday &&
-		input.sex
-	);
+	return !!(input.firstname && input.lastname && input.birthday && input.sex);
 }
 
 export async function createUser(userInput: Partial<User>): Promise<User | null> {
-	if (!checkUserInput(userInput)) return null;
+	if (!checkUserInput(userInput)) {
+		return null;
+	}
 
-	console.log(123)
+	try {
+		// Проверяем существование пользователя
+		const [existing] = await db
+			.select()
+			.from(user)
+			.where(
+				and(
+					eq(user.firstname, userInput.firstname),
+					eq(user.lastname, userInput.lastname),
+					eq(user.birthday, userInput.birthday),
+					eq(user.sex, userInput.sex)
+				)
+			);
 
-	const [existing] = await db
-		.select()
-		.from(user)
-		.where(
-			and(
-				eq(user.firstname, userInput.firstname),
-				eq(user.lastname, userInput.lastname),
-				eq(user.birthday, userInput.birthday),
-				eq(user.sex, userInput.sex)
-			)
+		if (existing) {
+			return existing;
+		}
+
+		// Создаем нового пользователя
+		const [newUser] = await db
+			.insert(user)
+			.values({
+				firstname: userInput.firstname,
+				lastname: userInput.lastname,
+				birthday: userInput.birthday,
+				sex: userInput.sex
+			})
+			.returning();
+
+		return newUser;
+	} catch (error) {
+		// Можно добавить более детальную обработку ошибок в зависимости от типа ошибки
+		throw new Error(
+			`Failed to create user: ${error instanceof Error ? error.message : String(error)}`
 		);
-
-	if (existing) return existing;
-
-	const [newUser] = await db
-		.insert(user)
-		.values({
-			firstname: userInput.firstname,
-			lastname: userInput.lastname,
-			birthday: userInput.birthday,
-			sex: userInput.sex,
-		})
-		.returning();
-
-	console.log("in db", newUser);
-
-	return newUser;
+	}
 }
 
 export async function getUserById(id: string): Promise<User | null> {

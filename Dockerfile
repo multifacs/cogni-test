@@ -14,7 +14,11 @@ RUN npm install
 COPY . .
 
 # Собираем SvelteKit-приложение
-RUN BUILD=node DATABASE_URL=:memory: npm run build
+RUN mkdir ./data
+RUN touch ./data/cogni.db
+RUN npx drizzle-kit push --force
+RUN BUILD=node DATABASE_URL=file:./data/cogni.db npm run build
+RUN rm -rf ./data
 
 # Указываем порт, который будем слушать (HTTPS)
 EXPOSE 443
