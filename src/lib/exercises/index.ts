@@ -25,6 +25,12 @@ export const exercises: TestData[] = [
 		img: '/tests/campimetry.svg'
 	},
 	{
+		name: 'flash-campimetry',
+		title: 'Мигающая кампиметрия',
+		path: '/exercises/flash-campimetry/about',
+		img: '/tests/campimetry.svg'
+	},
+	{
 		name: 'road-trip',
 		title: 'По дороге на работу',
 		path: '/exercises/road-trip/about',

@@ -13,7 +13,7 @@ export async function load({ params, fetch }) {
 
 	const data = {};
 
-	if (slug == 'campimetry') {
+	if (slug.includes('campimetry')) {
 		const silhouettes = {
 			bird: '/campimetry/bird.svg',
 			butterfly: '/campimetry/butterfly.svg',
