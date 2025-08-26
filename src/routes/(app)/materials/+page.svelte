@@ -4,7 +4,7 @@
 </script>
 
 <main class="flex flex-col h-full items-center justify-center gap-6 p-8 text-white">
-	<h1 class="text-2xl font-bold">📚 Информационные материалы</h1>
+	<h1 class="text-2xl font-bold">Информационные материалы</h1>
 
 	<div class="flex w-full max-w-md flex-col gap-4">
 		{#each data.articles as article}

@@ -27,7 +27,7 @@
 </script>
 
 <main class="flex h-full w-full flex-col justify-center p-4 text-white gap-2">
-	<h1 class="mb-4 text-2xl font-bold">👤 Профиль</h1>
+	<h1 class="mb-4 text-2xl font-bold">Профиль</h1>
 
 	{#await $user}
 		<p>Загрузка...</p>

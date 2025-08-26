@@ -178,14 +178,29 @@
 {/if}
 
 <style>
+.background {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	aspect-ratio: 1 / 1;
+	margin: 10px 0;
+}
+
+/* Вертикальная ориентация */
+@media (orientation: portrait) {
 	.background {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		width: 80vw;
-		height: 80vw;
-		aspect-ratio: 1 / 1;
-		/* background-color: #553131; */
-		margin: 10px 0;
+		width: 70vw;
+		height: 70vw;
+		/* например, квадрат по ширине */
 	}
+}
+
+/* Горизонтальная ориентация */
+@media (orientation: landscape) {
+	.background {
+		width: 50vh;
+		height: 50vh;
+		/* квадрат по высоте */
+	}
+}
 </style>
