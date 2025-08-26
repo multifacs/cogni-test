@@ -143,7 +143,9 @@
 		></div>
 	</div>
 	<div class="flex gap-2">
-		<Button color="green" onclick={changeColor}>{currentStage == 1 ? 'Проявить фигуру' : 'Скрыть фигуру'}</Button>
+		<Button color="green" onclick={changeColor}
+			>{currentStage == 1 ? 'Проявить фигуру' : 'Скрыть фигуру'}</Button
+		>
 		{#if currentStage == 2}
 			<Button color="blue" onclick={handleAnswer}>Больше не видно</Button>
 		{/if}
@@ -171,36 +173,38 @@
 			Изменяйте оттенок, пока силуэт не станет различимым, а затем выберите правильный силуэт.
 		</p>
 	{:else}
-		<p class="text-center">Изменяйте оттенок, пока силуэт не перестанет быть виден. Затем нажмите "Больне не видно".</p>
+		<p class="text-center">
+			Изменяйте оттенок, пока силуэт не перестанет быть виден. Затем нажмите "Больне не видно".
+		</p>
 	{/if}
 {:else}
 	<h1>Тест окончен</h1>
 {/if}
 
 <style>
-.background {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	aspect-ratio: 1 / 1;
-	margin: 10px 0;
-}
-
-/* Вертикальная ориентация */
-@media (orientation: portrait) {
 	.background {
-		width: 70vw;
-		height: 70vw;
-		/* например, квадрат по ширине */
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		aspect-ratio: 1 / 1;
+		margin: 10px 0;
 	}
-}
 
-/* Горизонтальная ориентация */
-@media (orientation: landscape) {
-	.background {
-		width: 50vh;
-		height: 50vh;
-		/* квадрат по высоте */
+	/* Вертикальная ориентация */
+	@media (orientation: portrait) {
+		.background {
+			width: 70vw;
+			height: 70vw;
+			/* например, квадрат по ширине */
+		}
 	}
-}
+
+	/* Горизонтальная ориентация */
+	@media (orientation: landscape) {
+		.background {
+			width: 50vh;
+			height: 50vh;
+			/* квадрат по высоте */
+		}
+	}
 </style>
