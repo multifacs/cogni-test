@@ -1,14 +1,4 @@
 import type { User } from '../types';
-import { MODE, DB_URL_DEV, DB_URL_PROD } from '$env/static/private';
-import { checkFormData, formDataToUser } from '$lib/utils';
-import { fail } from '@sveltejs/kit';
-
-let DB_URL: string;
-if (MODE == 'DEV') {
-	DB_URL = DB_URL_DEV;
-} else {
-	DB_URL = DB_URL_PROD;
-}
 
 import { db } from '$lib/server/db';
 import { user } from '$lib/server/db/schema';

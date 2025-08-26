@@ -5,15 +5,17 @@
 	"type": "module",
 	"scripts": {
 		"host": "vite --host",
-		"dev": "vite dev",
-		"build": "vite build",
+		"dev": "cross-env MODE=DEV DATABASE_URL=file:sqlite.db vite dev",
+		"build": "cross-env MODE=DEV vite build",
+		"build-prod": "cross-env MODE=PROD vite build",
 		"preview": "vite preview --host",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
-		"start": "npx drizzle-kit push --force && DATABASE_URL=file:local.db node index.js"
+		"start": "npx drizzle-kit push --force && DATABASE_URL=file:local.db node index.js",
+		"init-db": "cross-env DATABASE_URL=file:sqlite.db npx drizzle-kit push --force"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
@@ -26,6 +28,7 @@
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
 		"@tailwindcss/typography": "^0.5.16",
 		"@types/better-sqlite3": "^7.6.13",
+		"cross-env": "^10.0.0",
 		"drizzle-kit": "^0.31.4",
 		"eslint": "^9.18.0",
 		"eslint-config-prettier": "^10.0.1",
