@@ -147,12 +147,12 @@ export class LabColor {
 		return this.colorName;
 	}
 
-	public jitterColor(maxDelta = 7) {
+	public jitterColor(maxDelta = 5) {
 		const channels: Array<'a' | 'b'> = ['a', 'b'];
 		const channel = channels[Math.floor(Math.random() * channels.length)];
 
 		// случайное смещение от -maxDelta до +maxDelta
-		const delta = (Math.random() * 2 - 1) * maxDelta;
+		const delta = Math.round((5 + Math.random() * maxDelta) * (Math.random() * 5 > 2 ? -1 : 1));
 
 		switch (channel) {
 			case 'l':

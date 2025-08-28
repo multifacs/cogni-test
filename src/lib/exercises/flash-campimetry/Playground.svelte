@@ -30,20 +30,24 @@
 	let canvas: HTMLCanvasElement | null = $state(null);
 	let ctx;
 
+	let canvas2: HTMLCanvasElement | null = $state(null);
+	let ctx2;
+
 	let lastSwitch = 0;
 
 	onMount(async () => {
 		console.log(Object.keys(data.silhouettes));
 		ctx = canvas!.getContext('2d');
+		ctx2 = canvas2!.getContext('2d');
 		resetGame();
 	});
 
-	function drawSquare(bgColor, color) {
-		if (!canvas || !ctx) return;
+	function drawSquare(size1, size2, ctx, bgColor, color) {
+		if (!ctx) return;
 
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		ctx.clearRect(0, 0, size1, size1);
 		ctx.fillStyle = bgColor;
-		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		ctx.fillRect(0, 0, size1, size1);
 		ctx.fillStyle = color;
 		ctx.fillRect(50, 50, 200, 200);
 	}
@@ -56,8 +60,18 @@
 			lastSwitch = timestamp;
 		}
 		drawSquare(
+			300,
+			50,
+			ctx,
 			currentBGColor.toString(),
 			visible ? currentSilhouetteColor.toString() : currentBGColor.toString()
+		);
+		drawSquare(
+			300,
+			50,
+			ctx2,
+			currentBGColor.toString(),
+			visible ? 'black' : currentBGColor.toString()
 		);
 		requestAnimationFrame(animate);
 	}
@@ -107,11 +121,20 @@
 </script>
 
 {#if isGameRunning}
-	<canvas id="canvas" width="300" height="300" bind:this={canvas}></canvas>
+	<div class="flex gap-2">
+		<canvas id="canvas" width="300" height="300" bind:this={canvas}></canvas>
+		<canvas id="canvas2" width="300" height="300" bind:this={canvas2}></canvas>
+	</div>
 	<div class="flex gap-2">
 		<Button color="green" onclick={changeFreq}>Изменить частоту</Button>
 		<Button color="blue" onclick={handleAnswer}>Больше не видно</Button>
 	</div>
+	<p class="text-center">
+		Частота: {frequency} Гц
+	</p>
+	<p class="text-center">
+		Цвет фона: {currentBGColor.toString()}, цвет фигуры: {currentSilhouetteColor.toString()}
+	</p>
 	<p class="text-center">
 		Изменяйте частоту мигания, пока мигание не перестанет быть видно. Затем нажмите "Больне не
 		видно".
