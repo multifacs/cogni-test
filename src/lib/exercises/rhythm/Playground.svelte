@@ -1,244 +1,642 @@
-<script lang="ts">
-	import { onMount } from 'svelte';
-	import { RhythmEngine } from './logic/RhythmEngine'; // предполагаем, что ты сохранил его как RhythmEngine.ts
-	import Button from '$lib/components/ui/Button.svelte';
+<!-- RhythmGame.svelte -->
+<script>
+	import { onMount, onDestroy } from 'svelte';
 
-	let engine: RhythmEngine;
+	// Размеры canvas
+	let canvasWidth = $state(100);
+	let canvasHeight = $state(100);
+	let canvas = $state(Object());
+	let ctx = $state(Object());
 
-	let phase = $state<'idle' | 'computer' | 'player' | 'done'>('idle');
-	let currentStep = $state(0);
-	let autoJump = $state(false);
-	let userJump = $state(false);
+	// Данные для отрисовки
+	let tracks = 9;
+	let trackHeight = 50;
+	let trackSpacing = 10;
+	let totalSteps = 16;
 
-	let beat: number[] = $state([]);
-	let userBeat: number[] = $state([]);
+	// Отступы для canvas
+	const padding = 16;
 
-	let intervalHandle: ReturnType<typeof setInterval>;
+	// Мелодия
+	let melody = $state([]);
 
-	const audio = new Audio('/rhythm/sfx_point.mp3');
+	// Состояние игры
+	let isPlaying = $state(false);
+	let currentTrack = $state(0); // 0 - образец, 1-8 - попытки
+	let currentStep = $state(-4); // Начинаем с -3 для отсчета трех нот
+	let repetitionCount = $state(0); // Счетчик повторений образца
 
-	const audio1 = new Audio('/rhythm/ding 1.mp3');
-	const audio2 = new Audio('/rhythm/ding 2.mp3');
-	const audio3 = new Audio('/rhythm/ding 3.mp3');
-	const audio4 = new Audio('/rhythm/ding 4.mp3');
-	const audios = [audio1, audio2, audio3, audio4];
+	// Состояние инициализации
+	let gameInitialized = $state(false);
 
-	function playSound(index: number) {
-		// audio.currentTime = 0;
-		// audio.play();
-		audios[index].play();
-	}
+	// Аудио контекст
+	let audioContext = $state(Object());
 
-	function updateFromEngine() {
-		phase = engine.getPhase();
-		currentStep = engine.getPosition();
-		autoJump = engine.getAutoJump();
-		userJump = engine.getUserJump();
-		if (autoJump || userJump) {
-			playSound(currentStep - 1);
-		}
+	// Анимация
+	let animationFrame = $state(Object());
+	let lastTimestamp = $state(0);
+	let bpm = 60; // Темп (ударов в минуту)
+	let stepDuration = $state(Object()); // Длительность шага в мс
 
-		if (engine.isFinished()) {
-			clearInterval(intervalHandle);
-			const result = engine.getResults();
-			beat = result.beat;
-			userBeat = result.userBeat;
+	// Записи пользовательских попыток
+	let userAttempts = $state(
+		Array(8)
+			.fill()
+			.map(() => [])
+	);
 
-			isPassed = engine.isPerfectMatch();
-			avgDelay = engine.getAverageReactionDelay();
-		}
-	}
-
-	// Инициализация RhythmEngine теперь с длиной 6 (0..5), но рабочий ритм будет на 1–4
-	function startGame() {
-		engine = new RhythmEngine(6, 600);
-		engine.startComputerPhase();
-		intervalHandle = setInterval(updateFromEngine, 50);
-	}
-
-	function handleUserInput() {
-		engine?.registerUserJump();
-	}
-
-	let isPassed = $state(false);
-	let avgDelay = $state<number | null>(null);
+	let resizeTimer = $state(Object());
 
 	onMount(() => {
-		startGame();
-		window.addEventListener('keydown', (e) => {
-			if (e.code === 'Space') {
-				handleUserInput();
-			}
-		});
+		// Генерация мелодии при загрузке
+		generateMelody();
+
+		// Инициализация canvas для отображения стартового экрана
+		initCanvas();
+
+		// Отрисовка стартового экрана
+		drawStartScreen();
+
+		// Добавляем обработчик нажатия
+		if (canvas) {
+			canvas.addEventListener('click', handleCanvasClick);
+		}
+
+		window.addEventListener('resize', handleResize);
 	});
+
+	onDestroy(() => {
+		window.removeEventListener('resize', handleResize);
+		if (canvas) {
+			canvas.removeEventListener('click', handleCanvasClick);
+		}
+		if (resizeTimer) clearTimeout(resizeTimer);
+		if (animationFrame) cancelAnimationFrame(animationFrame);
+	});
+
+	// Функция для генерации мелодии
+	function generateMelody() {
+		melody = [];
+
+		// Определяем общее количество нот (4-6)
+		const totalNotes = 4 + Math.floor(Math.random() * 3); // 4, 5 или 6
+
+		// Распределяем количество для каждого типа нот
+		let tonCount = 1;
+		let pultonCount = 1;
+		let ctvrtCount = 1;
+
+		// Распределяем оставшиеся ноты случайным образом
+		let remaining = totalNotes - (tonCount + pultonCount + ctvrtCount);
+		while (remaining > 0) {
+			const type = Math.floor(Math.random() * 3); // 0, 1, или 2
+			if (type === 0) tonCount++;
+			else if (type === 1) pultonCount++;
+			else ctvrtCount++;
+			remaining--;
+		}
+
+		// Доступные позиции для каждого типа нот
+		const tonPositions = [0, 4, 8, 12];
+		const pultonPositions = [2, 6, 10, 14];
+		const ctvrtPositions = [1, 3, 5, 7, 9, 11, 13, 15];
+
+		// Функция для случайного выбора позиций
+		function getRandomPositions(positions, count) {
+			const shuffled = [...positions].sort(() => Math.random() - 0.5);
+			return shuffled.slice(0, count);
+		}
+
+		// Добавляем тоны
+		getRandomPositions(tonPositions, tonCount).forEach((step) => {
+			melody.push({ step, type: 'ton' });
+		});
+
+		// Добавляем полутоны
+		getRandomPositions(pultonPositions, pultonCount).forEach((step) => {
+			melody.push({ step, type: 'pulton' });
+		});
+
+		// Добавляем четверти тонов
+		getRandomPositions(ctvrtPositions, ctvrtCount).forEach((step) => {
+			melody.push({ step, type: 'ctvrton' });
+		});
+
+		// Сортируем мелодию по шагам
+		melody.sort((a, b) => a.step - b.step);
+
+		console.log('Сгенерирована мелодия:', melody);
+	}
+
+	function initCanvas() {
+		if (!canvas) return;
+
+		ctx = canvas.getContext('2d');
+		updateCanvasSize();
+	}
+
+	function updateCanvasSize() {
+		const viewportWidth = window.innerWidth;
+		const viewportHeight = window.innerHeight;
+		const isPortrait = viewportHeight > viewportWidth;
+
+		if (isPortrait) {
+			canvasWidth = viewportWidth - padding * 2;
+			canvasHeight = trackHeight * tracks + trackSpacing * (tracks - 1);
+		} else {
+			canvasHeight = viewportHeight * 0.8 - padding * 2;
+			canvasWidth = Math.min(viewportWidth - padding * 2, canvasHeight * 0.8);
+
+			trackHeight = Math.floor((canvasHeight - trackSpacing * (tracks - 1)) / tracks);
+		}
+
+		canvas.width = canvasWidth;
+		canvas.height = canvasHeight;
+	}
+
+	function handleResize() {
+		if (resizeTimer) clearTimeout(resizeTimer);
+
+		resizeTimer = setTimeout(() => {
+			if (canvas && ctx) {
+				updateCanvasSize();
+				if (gameInitialized) {
+					requestAnimationFrame(drawTracks);
+				} else {
+					drawStartScreen();
+				}
+			}
+		}, 100);
+	}
+
+	// Отрисовка стартового экрана
+	function drawStartScreen() {
+		if (!ctx || !canvas) return;
+
+		// Очистка canvas
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+		// Фон
+		ctx.fillStyle = '#f0f0f0';
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+		// Рамка
+		ctx.strokeStyle = '#cccccc';
+		ctx.lineWidth = 2;
+		ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+
+		// Надпись
+		ctx.fillStyle = '#333333';
+		ctx.font = 'bold 24px Arial';
+		ctx.textAlign = 'center';
+		ctx.textBaseline = 'middle';
+		ctx.fillText('Нажмите чтобы начать', canvas.width / 2, canvas.height / 2);
+
+		// Подсказка
+		ctx.font = '16px Arial';
+		ctx.fillText('Повторяйте ритм, нажимая на дорожку', canvas.width / 2, canvas.height / 2 + 40);
+	}
+
+	// Обработчик нажатия на canvas
+	function handleCanvasClick(event) {
+		if (!gameInitialized) {
+			// Первое нажатие - инициализация игры
+			initializeGame();
+			return;
+		}
+
+		// Последующие нажатия - обработка игровых нажатий
+		handleUserClick(event);
+	}
+
+	// Инициализация игры после первого нажатия
+	function initializeGame() {
+		console.log('Инициализация игры...');
+		gameInitialized = true;
+
+		// Инициализация audio context (теперь это разрешено)
+		try {
+			audioContext = new (window.AudioContext || window.webkitAudioContext)();
+			console.log('Аудио контекст создан');
+		} catch (e) {
+			console.error('Web Audio API не поддерживается браузером:', e);
+		}
+
+		// Расчет длительности шага на основе BPM
+		stepDuration = 60000 / bpm / 4; // мс на четверть тона
+
+		// Запускаем игру
+		startGame();
+	}
+
+	// Получить цвет ноты по ее типу
+	function getNoteColor(type) {
+		switch (type) {
+			case 'ton':
+				return '#3366cc'; // Синий для тона
+			case 'pulton':
+				return '#8833cc'; // Фиолетовый для полутона
+			case 'ctvrton':
+				return '#cc3366'; // Красноватый для четверти тона
+			default:
+				return '#333333';
+		}
+	}
+
+	// Отрисовка всех дорожек и анимационного шарика
+	function drawTracks(timestamp) {
+		if (!ctx || !canvas) {
+			console.error('Canvas контекст не доступен');
+			return;
+		}
+
+		// Очистка canvas
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+		// Отрисовка фона
+		ctx.fillStyle = '#f0f0f0';
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+		// Отрисовка каждой дорожки
+		for (let i = 0; i < tracks; i++) {
+			const y = i * (trackHeight + trackSpacing);
+
+			// Фон дорожки
+			ctx.fillStyle = i === 0 ? '#e0f0ff' : '#ffffff';
+			ctx.fillRect(0, y, canvas.width, trackHeight);
+
+			// Рамка дорожки
+			ctx.strokeStyle = '#cccccc';
+			ctx.lineWidth = 1;
+			ctx.strokeRect(0, y, canvas.width, trackHeight);
+
+			// Разметка дорожки (16 частей)
+			for (let j = 0; j <= totalSteps; j++) {
+				const x = (canvas.width / totalSteps) * j;
+
+				// Линии разметки разной толщины в зависимости от типа деления
+				if (j % 4 === 0) {
+					// Тон (целая нота)
+					ctx.strokeStyle = '#666666';
+					ctx.lineWidth = 2;
+				} else if (j % 2 === 0) {
+					// Полутон
+					ctx.strokeStyle = '#999999';
+					ctx.lineWidth = 1;
+				} else {
+					// Четверть тона
+					ctx.strokeStyle = '#dddddd';
+					ctx.lineWidth = 0.5;
+				}
+
+				ctx.beginPath();
+				ctx.moveTo(x, y);
+				ctx.lineTo(x, y + trackHeight);
+				ctx.stroke();
+			}
+
+			// Отрисовка нот мелодии только на первой дорожке
+			if (i === 0) {
+				melody.forEach((note) => {
+					const x = (canvas.width / totalSteps) * note.step + canvas.width / totalSteps / 2;
+					const centerY = y + trackHeight / 2;
+
+					// Рисуем шарик
+					ctx.fillStyle = getNoteColor(note.type);
+					ctx.beginPath();
+					ctx.arc(x, centerY, trackHeight / 5, 0, Math.PI * 2);
+					ctx.fill();
+
+					// Добавляем небольшую тень для объемности
+					ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+					ctx.shadowBlur = 3;
+					ctx.shadowOffsetX = 1;
+					ctx.shadowOffsetY = 1;
+
+					// Рисуем блик для объемности
+					ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+					ctx.beginPath();
+					ctx.arc(
+						x - trackHeight / 15,
+						centerY - trackHeight / 15,
+						trackHeight / 12,
+						0,
+						Math.PI * 2
+					);
+					ctx.fill();
+
+					// Сбрасываем тени для остальных элементов
+					ctx.shadowColor = 'transparent';
+					ctx.shadowBlur = 0;
+					ctx.shadowOffsetX = 0;
+					ctx.shadowOffsetY = 0;
+				});
+			}
+
+			// Отрисовка пользовательских нажатий
+			if (i > 0 && userAttempts[i - 1] && userAttempts[i - 1].length > 0) {
+				userAttempts[i - 1].forEach((tap) => {
+					const x = (canvas.width / totalSteps) * tap.step + canvas.width / totalSteps / 2;
+					const centerY = y + trackHeight / 2;
+
+					// Цвет в зависимости от точности
+					const color =
+						tap.accuracy < 0.05
+							? '#33cc66' // Очень точно
+							: tap.accuracy < 0.1
+								? '#99cc33' // Хорошо
+								: tap.accuracy < 0.2
+									? '#cccc33' // Нормально
+									: '#cc6633'; // Неточно
+
+					// Рисуем шарик пользователя
+					ctx.fillStyle = color;
+					ctx.beginPath();
+					ctx.arc(x, centerY, trackHeight / 6, 0, Math.PI * 2);
+					ctx.fill();
+				});
+			}
+		}
+
+		// Отрисовка анимационного шарика, если игра активна
+		if (isPlaying && currentStep >= -4) {
+			// Расчет текущей позиции шарика
+			let stepPosition = currentStep;
+			if (timestamp && lastTimestamp) {
+				const deltaTime = timestamp - lastTimestamp;
+				const progress = deltaTime / stepDuration;
+				stepPosition += progress;
+			}
+
+			// Определяем, на какой дорожке должен быть шарик
+			const trackY = currentTrack * (trackHeight + trackSpacing) + trackHeight / 2;
+
+			// Рассчитываем X-позицию
+			let x;
+			if (stepPosition < 0) {
+				// Для отсчета перед началом (3 ноты)
+				x = canvasWidth / 2; // Центр экрана
+			} else {
+				// Для движения по дорожке
+				x = (canvasWidth / totalSteps) * stepPosition;
+			}
+
+			// Рисуем шарик
+			ctx.fillStyle = '#ff3333';
+			ctx.beginPath();
+			ctx.arc(x, trackY, trackHeight / 4, 0, Math.PI * 2);
+			ctx.fill();
+
+			// Добавляем тень
+			ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+			ctx.shadowBlur = 5;
+			ctx.shadowOffsetX = 2;
+			ctx.shadowOffsetY = 2;
+
+			// Добавляем блик
+			ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+			ctx.beginPath();
+			ctx.arc(x - trackHeight / 12, trackY - trackHeight / 12, trackHeight / 8, 0, Math.PI * 2);
+			ctx.fill();
+
+			// Сбрасываем тени
+			ctx.shadowColor = 'transparent';
+			ctx.shadowBlur = 0;
+			ctx.shadowOffsetX = 0;
+			ctx.shadowOffsetY = 0;
+		}
+	}
+
+	// Запуск игры
+	function startGame() {
+		if (isPlaying) return;
+
+		isPlaying = true;
+		currentTrack = 0; // Начинаем с образца
+		currentStep = -4; // Начинаем с отсчета трех нот
+		repetitionCount = 0; // Сбрасываем счетчик повторений
+
+		// Очищаем предыдущие попытки
+		userAttempts = Array(8)
+			.fill()
+			.map(() => []);
+
+		// Запускаем анимацию
+		lastTimestamp = performance.now();
+		animationFrame = requestAnimationFrame(gameLoop);
+	}
+
+	// Основной игровой цикл
+	function gameLoop(timestamp) {
+		const deltaTime = timestamp - lastTimestamp;
+
+		// Обновляем позицию шарика
+		if (deltaTime >= stepDuration) {
+			lastTimestamp = timestamp;
+			currentStep += 1;
+
+			// Проверяем, нужно ли воспроизводить звук
+
+			// 1. Отсчет перед началом движения (3 ноты)
+			if (currentStep < 0) {
+				// Для каждого шага отсчета свой звук
+				playCountdownSound(currentStep);
+			}
+			// 2. Метроном на полунотах (только не на первой дорожке)
+			else if (currentStep % 2 === 0 && currentTrack > 0 && currentTrack < 3) {
+				playMetronomeSound(0.2); // Тихий звук метронома
+			}
+
+			// 3. Звук ноты мелодии (только на первой дорожке-образце)
+			if (currentStep >= 0) {
+				const noteAtStep = melody.find((note) => note.step === currentStep);
+				if (noteAtStep && currentTrack === 0) {
+					playNoteSound(noteAtStep.type, 0.5); // Громкий звук ноты
+				}
+			}
+
+			// Проверяем завершение дорожки
+			if (currentStep >= totalSteps) {
+				currentStep = -4; // Сброс на отсчет перед следующей дорожкой
+
+				// Логика повторения и перехода
+				if (currentTrack === 0) {
+					repetitionCount += 1;
+
+					// После двух повторений образца переходим к попыткам пользователя
+					if (repetitionCount >= 2) {
+						currentTrack = 1;
+						repetitionCount = 0;
+					}
+				} else {
+					// Переход к следующей попытке пользователя
+					currentTrack += 1;
+
+					// Если все попытки завершены
+					if (currentTrack >= tracks) {
+						isPlaying = false;
+						cancelAnimationFrame(animationFrame);
+						drawTracks(); // Финальная отрисовка
+						return;
+					}
+				}
+			}
+		}
+
+		// Отрисовка
+		drawTracks(timestamp);
+
+		// Продолжаем анимацию, если игра активна
+		if (isPlaying) {
+			animationFrame = requestAnimationFrame(gameLoop);
+		}
+	}
+
+	// Воспроизведение звука отсчета
+	function playCountdownSound(step) {
+		if (!audioContext) return;
+
+		const oscillator = audioContext.createOscillator();
+		const gainNode = audioContext.createGain();
+
+		oscillator.type = 'sine';
+
+		// Разные частоты для шагов отсчета, чтобы звучали как полутоны
+		switch (step) {
+			case -3:
+				oscillator.frequency.value = 659.25; // E5
+				break;
+			case -2:
+				oscillator.frequency.value = 587.33; // D5
+				break;
+			case -1:
+				oscillator.frequency.value = 523.25; // C5
+				break;
+			default:
+				oscillator.frequency.value = 587.33;
+		}
+
+		oscillator.connect(gainNode);
+		gainNode.connect(audioContext.destination);
+
+		// Параметры звука
+		gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
+		gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+
+		oscillator.start();
+		oscillator.stop(audioContext.currentTime + 0.15);
+	}
+
+	// Воспроизведение звука метронома
+	function playMetronomeSound(volume = 0.2) {
+		if (!audioContext) return;
+
+		const oscillator = audioContext.createOscillator();
+		const gainNode = audioContext.createGain();
+
+		oscillator.type = 'triangle';
+		oscillator.frequency.value = 880; // A5
+
+		oscillator.connect(gainNode);
+		gainNode.connect(audioContext.destination);
+
+		gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+		gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+		oscillator.start();
+		oscillator.stop(audioContext.currentTime + 0.1);
+	}
+
+	// Воспроизведение звука ноты
+	function playNoteSound(type, volume = 0.5) {
+		if (!audioContext) return;
+
+		const oscillator = audioContext.createOscillator();
+		const gainNode = audioContext.createGain();
+
+		// Разные типы и частоты для разных типов нот
+		switch (type) {
+			case 'ton':
+				oscillator.type = 'sine';
+				oscillator.frequency.value = 880; // A5
+				break;
+			case 'pulton':
+				oscillator.type = 'sine';
+				oscillator.frequency.value = 784; // G5
+				break;
+			case 'ctvrton':
+				oscillator.type = 'sine';
+				oscillator.frequency.value = 698; // F5
+				break;
+			default:
+				oscillator.frequency.value = 880;
+		}
+
+		oscillator.connect(gainNode);
+		gainNode.connect(audioContext.destination);
+
+		gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+		gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+
+		oscillator.start();
+		oscillator.stop(audioContext.currentTime + 0.2);
+	}
+
+	// Обработка нажатий пользователя
+	function handleUserClick(event) {
+		if (!isPlaying || currentTrack === 0 || currentStep < 0) return;
+
+		// Используем текущую позицию движущегося шарика вместо координаты нажатия
+		const currentPosition = currentStep;
+
+		// Вычисляем точность (относительно ближайшей ноты мелодии)
+		let minDistance = Infinity;
+		let closestNote = null;
+
+		for (const note of melody) {
+			const distance = Math.abs(currentPosition - note.step);
+			if (distance < minDistance) {
+				minDistance = distance;
+				closestNote = note;
+			}
+		}
+
+		// Нормализуем точность от 0 до 1 (0 - идеально, 1 - максимальное отклонение)
+		const accuracy = Math.min(minDistance / 2, 1);
+
+		// Записываем нажатие пользователя
+		userAttempts[currentTrack - 1].push({
+			step: currentPosition,
+			time: Date.now(),
+			accuracy: accuracy
+		});
+
+		// Воспроизводим звук ноты
+		playNoteSound(closestNote?.type || 'ton', 0.5);
+
+		// Перерисовка
+		drawTracks();
+	}
 </script>
 
-{#if phase === 'computer'}
-	<h2>Слушайте ритм</h2>
-	<div class="flex w-full flex-col items-center gap-2">
-		<button class="playfield" aria-label="Игровое поле">
-			<div class="track relative flex h-full w-full flex-col items-center justify-center">
-				<div class="h-full w-10/12 pb-3">
-					<div
-						class="ball auto"
-						class:jump={autoJump}
-						style:left={`calc(19.5% * ${currentStep} - 20px + 5px)`}
-					></div>
-				</div>
-
-				<div class="flex w-10/12 items-end justify-between pb-1">
-					{#each Array(6) as _, i}
-						<div
-							class={i === currentStep && i > 0 && i < 5
-								? 'active-marker'
-								: i === 0 || i === 5
-									? 'stop-marker'
-									: 'go-marker'}
-						></div>
-					{/each}
-				</div>
-			</div>
-		</button>
-		<p class="text-transparent">Нажмите <kbd>пробел</kbd> или кликните</p>
-	</div>
-{/if}
-
-{#if phase === 'player'}
-	<h2>Повторите ритм</h2>
-
-	<div class="flex w-full flex-col items-center gap-2">
-		<button class="playfield" onclick={handleUserInput} aria-label="Игровое поле">
-			<div class="track relative flex h-full w-full flex-col items-center justify-center">
-				<div class="h-full w-10/12 pb-3">
-					<div
-						class="ball user"
-						class:jump={userJump}
-						style:left={`calc(19.5% * ${currentStep} - 20px + 5px)`}
-					></div>
-				</div>
-
-				<div class="flex w-10/12 items-end justify-between pb-1">
-					{#each Array(6) as _, i}
-						<div
-							class={i === currentStep && i > 0 && i < 5
-								? 'active-marker'
-								: i === 0 || i === 5
-									? 'stop-marker'
-									: 'go-marker'}
-						></div>
-					{/each}
-				</div>
-			</div>
-		</button>
-		<p>Нажмите <kbd>пробел</kbd> или кликните</p>
-	</div>
-{/if}
-
-{#if phase === 'done'}
-	<div class="flex flex-col gap-4">
-		<h2>Результат</h2>
-
-		<div class="flex flex-col gap-2">
-			<p>Оригинал:</p>
-			<div class="timeline">
-				{#each beat.slice(1, 5) as b}
-					<div class="dot" class:jumped={b === 1}>{b === 1 ? '⬆️' : '⚪'}</div>
-				{/each}
-			</div>
-		</div>
-
-		<div class="flex flex-col gap-2">
-			<p>Ваш ответ:</p>
-			<div class="timeline">
-				{#each userBeat.slice(1, 5) as b, i}
-					<div class="dot" class:correct={b === beat[i]} class:wrong={b !== beat[i]}>
-						{b === 1 ? '⬆️' : '⚪'}
-					</div>
-				{/each}
-			</div>
-		</div>
-
-		<p class="text-center text-xl font-bold">
-			{isPassed ? 'Тест пройден ✅' : 'Тест не пройден ❌'}
-		</p>
-
-		{#if isPassed && avgDelay !== null}
-			<p class="text-center text-sm text-gray-300">
-				Среднее время реакции: {Math.round(avgDelay)} мс
-			</p>
-		{/if}
-	</div>
-{/if}
+<div class="rhythm-game">
+	<canvas bind:this={canvas}></canvas>
+</div>
 
 <style>
-	h2 {
-		text-align: center;
-	}
-	.playfield {
-		margin: 2rem auto;
-		width: 80%;
-		height: 100px;
-		position: relative;
-		border: 2px solid #ccc;
-		border-radius: 10px;
-		background: #f8f8f8;
-		cursor: pointer;
-	}
-	.ball {
-		position: relative;
-		top: 40px;
-		left: calc(-20px + 5px + 49px * 0);
-		width: 40px;
-		height: 40px;
-		border-radius: 50%;
-		background: gray;
-		transition:
-			transform 0.2s ease,
-			left 0.2s linear;
-	}
-	.ball.auto {
-		background: #facc15;
-	}
-	.ball.user {
-		background: #60a5fa;
-	}
-	.jump {
-		transform: translateY(-35px);
-	}
-	.timeline {
+	.rhythm-game {
 		display: flex;
 		justify-content: center;
-		gap: 1rem;
-		margin-bottom: 1rem;
-	}
-	.dot {
-		font-size: 2rem;
-	}
-	.correct {
-		color: green;
-	}
-	.wrong {
-		color: red;
+		align-items: center;
+		width: 100%;
+		height: 100%;
+		padding: 16px;
+		box-sizing: border-box;
 	}
 
-	.stop-marker {
-		width: 10px;
-		height: 10px;
-		background-color: #e2e2e2;
-		border-radius: 50%;
-	}
-	.go-marker {
-		width: 10px;
-		height: 10px;
-		background-color: #bbb;
-		border-radius: 50%;
-	}
-
-	.active-marker {
-		width: 12px;
-		height: 12px;
-		background-color: #ff0000;
-		border-radius: 50%;
-		transition: all 0.2s;
+	canvas {
+		border: 1px solid #ccc;
+		background-color: #f9f9f9;
+		display: block;
 	}
 </style>
