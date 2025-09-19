@@ -23,7 +23,7 @@
 	// Состояние игры
 	let isPlaying = $state(false);
 	let currentTrack = $state(0); // 0 - образец, 1-8 - попытки
-	let currentStep = $state(-4); // Начинаем с -3 для отсчета трех нот
+	let currentStep = $state(-1); // Начинаем с -3 для отсчета трех нот
 	let repetitionCount = $state(0); // Счетчик повторений образца
 
 	// Состояние инициализации
@@ -359,7 +359,7 @@
 		}
 
 		// Отрисовка анимационного шарика, если игра активна
-		if (isPlaying && currentStep >= -4) {
+		if (isPlaying && currentStep >= 0) {
 			// Расчет текущей позиции шарика
 			let stepPosition = currentStep;
 			if (timestamp && lastTimestamp) {
@@ -413,7 +413,7 @@
 
 		isPlaying = true;
 		currentTrack = 0; // Начинаем с образца
-		currentStep = -4; // Начинаем с отсчета трех нот
+		currentStep = -1; // Начинаем с отсчета трех нот
 		repetitionCount = 0; // Сбрасываем счетчик повторений
 
 		// Очищаем предыдущие попытки
@@ -438,18 +438,19 @@
 			// Проверяем, нужно ли воспроизводить звук
 
 			// 1. Отсчет перед началом движения (3 ноты)
-			if (currentStep < 0) {
-				// Для каждого шага отсчета свой звук
-				playCountdownSound(currentStep);
-			}
+			// if (currentStep < 0) {
+			// 	// Для каждого шага отсчета свой звук
+			// 	playCountdownSound(currentStep);
+			// }
 			// 2. Метроном на полунотах (только не на первой дорожке)
-			else if (currentStep % 2 === 0 && currentTrack > 0 && currentTrack < 3) {
+			if (currentStep % 4 === 0 && currentTrack > 0 && currentTrack < 3) {
 				playMetronomeSound(0.2); // Тихий звук метронома
 			}
 
 			// 3. Звук ноты мелодии (только на первой дорожке-образце)
 			if (currentStep >= 0) {
 				const noteAtStep = melody.find((note) => note.step === currentStep);
+				
 				if (noteAtStep && currentTrack === 0) {
 					playNoteSound(noteAtStep.type, 0.5); // Громкий звук ноты
 				}
@@ -457,7 +458,7 @@
 
 			// Проверяем завершение дорожки
 			if (currentStep >= totalSteps) {
-				currentStep = -4; // Сброс на отсчет перед следующей дорожкой
+				currentStep = 0; // Сброс на отсчет перед следующей дорожкой
 
 				// Логика повторения и перехода
 				if (currentTrack === 0) {
