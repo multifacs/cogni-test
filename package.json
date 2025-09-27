@@ -14,7 +14,7 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
-		"start": "npx drizzle-kit push --force && DATABASE_URL=file:local.db node index.js",
+		"start": "cross-env DATABASE_URL=file:local.db npx drizzle-kit push --force && cross-env DATABASE_URL=file:local.db node index.js",
 		"init-db": "cross-env DATABASE_URL=file:sqlite.db npx drizzle-kit push --force"
 	},
 	"devDependencies": {
