@@ -13,9 +13,6 @@
 	let Component: typeof SvelteComponent | null = $state(null);
 
 	onMount(async () => {
-		const resultsChart = (await import(`$lib/components/charts/ResultsChart.svelte`)).default;
-		Component = resultsChart;
-
 		let customResultsChart;
 		try {
 			customResultsChart = (await import(`$lib/tests/${slug}/ResultsChart.svelte`)).default;
@@ -23,6 +20,9 @@
 		} catch (err) {
 			console.log(err);
 		}
+		if (Component) return;
+		const resultsChart = (await import(`$lib/components/charts/ResultsChart.svelte`)).default;
+		Component = resultsChart;
 	});
 
 	// Открытый элемент (по умолчанию первый)

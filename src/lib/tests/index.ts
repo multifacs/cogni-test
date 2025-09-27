@@ -41,5 +41,11 @@ export const tests: TestData[] = [
 		title: 'Тест «Ласточка»',
 		path: '/tests/swallow/about',
 		img: '/tests/swallow.svg'
+	},
+	{
+		name: 'rhythm',
+		title: 'Тест на ритм',
+		path: '/tests/rhythm/about',
+		img: '/exercises/rhythm.svg'
 	}
 ];

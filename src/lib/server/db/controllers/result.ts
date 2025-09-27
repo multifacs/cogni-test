@@ -1,8 +1,13 @@
 import { db } from '$lib/server/db';
 import { session, user } from '$lib/server/db/schema';
 import {
-	mathAttempt, stroopAttempt, memoryAttempt, swallowAttempt,
-	munsterbergAttempt, campimetryAttempt
+	mathAttempt,
+	stroopAttempt,
+	memoryAttempt,
+	swallowAttempt,
+	munsterbergAttempt,
+	campimetryAttempt,
+	rhythmAttempt
 } from '$lib/server/db/models/tests';
 import type { MetaResult, RegularResult, TestResultMap } from '$lib/tests/types';
 import short from 'short-uuid';
@@ -21,7 +26,7 @@ export async function postResult<T extends keyof TestResultMap>(
 		id: sessionId,
 		testType,
 		userId,
-		meta,
+		meta
 	});
 
 	const attempts = hasMeta ? results.results : results;
@@ -33,6 +38,7 @@ export async function postResult<T extends keyof TestResultMap>(
 		swallow: swallowAttempt,
 		munsterberg: munsterbergAttempt,
 		campimetry: campimetryAttempt,
+		rhythm: rhythmAttempt
 	}[testType];
 
 	if (!insertAttempt) throw new Error(`Unknown test type: ${testType}`);
@@ -40,7 +46,7 @@ export async function postResult<T extends keyof TestResultMap>(
 	await db.insert(insertAttempt).values(
 		attempts.map((attempt) => ({
 			...attempt,
-			sessionId,
+			sessionId
 		}))
 	);
 
@@ -56,7 +62,7 @@ export async function getResults<T extends keyof TestResultMap>(
 ): Promise<ResultInfo<T>[]> {
 	const sessions = await db.query.session.findMany({
 		where: (fields, { eq, and }) => and(eq(fields.testType, testType), eq(fields.userId, userId)),
-		orderBy: (fields, { desc }) => desc(fields.createdAt),
+		orderBy: (fields, { desc }) => desc(fields.createdAt)
 	});
 
 	const attemptTable = {
@@ -66,6 +72,7 @@ export async function getResults<T extends keyof TestResultMap>(
 		swallow: db.query.swallowAttempt,
 		munsterberg: db.query.munsterbergAttempt,
 		campimetry: db.query.campimetryAttempt,
+		rhythm: db.query.rhythmAttempt
 	}[testType] as typeof db.query.campimetryAttempt;
 
 	const results: ResultInfo<T>[] = [];
@@ -73,14 +80,14 @@ export async function getResults<T extends keyof TestResultMap>(
 	for (const s of sessions) {
 		const attempts = await attemptTable.findMany({
 			where: (fields) => eq(fields.sessionId, s.id),
-			orderBy: (fields) => asc(fields.attempt),
+			orderBy: (fields) => asc(fields.attempt)
 		});
 
 		results.push({
 			sessionId: s.id,
 			createdAt: s.createdAt,
 			attempts,
-			meta: s.meta ? JSON.parse(s.meta) : undefined,
+			meta: s.meta ? JSON.parse(s.meta) : undefined
 		});
 	}
 

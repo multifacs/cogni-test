@@ -13,12 +13,6 @@ export const exercises: TestData[] = [
 		img: '/exercises/word-morphing.svg'
 	},
 	{
-		name: 'rhythm',
-		title: 'Тест на ритм',
-		path: '/exercises/rhythm/about',
-		img: '/exercises/rhythm.svg'
-	},
-	{
 		name: 'campimetry',
 		title: 'Расширенная кампиметрия',
 		path: '/exercises/campimetry/about',

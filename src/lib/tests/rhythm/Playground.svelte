@@ -1,6 +1,9 @@
 <!-- RhythmGame.svelte -->
-<script>
+<script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import type { RhythmResult } from './types';
+
+	let { gameEnd, sendResults } = $props();
 
 	// Размеры canvas
 	let canvasWidth = $state(100);
@@ -35,7 +38,7 @@
 	// Анимация
 	let animationFrame = $state(Object());
 	let lastTimestamp = $state(0);
-	let bpm = 60; // Темп (ударов в минуту)
+	let bpm = 75; // Темп (ударов в минуту)
 	let stepDuration = $state(Object()); // Длительность шага в мс
 
 	// Записи пользовательских попыток
@@ -44,6 +47,8 @@
 			.fill()
 			.map(() => [])
 	);
+
+	let noteTimesteps = $state(Array());
 
 	let resizeTimer = $state(Object());
 
@@ -109,17 +114,21 @@
 
 		// Добавляем тоны
 		getRandomPositions(tonPositions, tonCount).forEach((step) => {
-			melody.push({ step, type: 'ton' });
+			// melody.push({ step, type: 'ton' });
 		});
+		melody.push({ step: 0, type: 'ton' });
+		melody.push({ step: 4, type: 'ton' });
+		melody.push({ step: 8, type: 'ton' });
+		melody.push({ step: 12, type: 'ton' });
 
 		// Добавляем полутоны
 		getRandomPositions(pultonPositions, pultonCount).forEach((step) => {
-			melody.push({ step, type: 'pulton' });
+			// melody.push({ step, type: 'pulton' });
 		});
 
 		// Добавляем четверти тонов
 		getRandomPositions(ctvrtPositions, ctvrtCount).forEach((step) => {
-			melody.push({ step, type: 'ctvrton' });
+			// melody.push({ step, type: 'ctvrton' });
 		});
 
 		// Сортируем мелодию по шагам
@@ -362,10 +371,13 @@
 		if (isPlaying && currentStep >= 0) {
 			// Расчет текущей позиции шарика
 			let stepPosition = currentStep;
-			if (timestamp && lastTimestamp) {
+			// Интерполяция позиции для плавного движения
+			const INTERPOLATE = false;
+			if (INTERPOLATE && timestamp && lastTimestamp) {
 				const deltaTime = timestamp - lastTimestamp;
-				const progress = deltaTime / stepDuration;
-				stepPosition += progress;
+				const progress = Math.min(deltaTime / stepDuration, 1); // Ограничиваем от 0 до 1
+				const easedProgress = easeInOutCubic(progress);
+				stepPosition += easedProgress;
 			}
 
 			// Определяем, на какой дорожке должен быть шарик
@@ -375,10 +387,10 @@
 			let x;
 			if (stepPosition < 0) {
 				// Для отсчета перед началом (3 ноты)
-				x = canvasWidth / 2; // Центр экрана
+				x = 0; // Центр экрана
 			} else {
 				// Для движения по дорожке
-				x = (canvasWidth / totalSteps) * stepPosition;
+				x = (canvasWidth / totalSteps) * (stepPosition + 0.5);
 			}
 
 			// Рисуем шарик
@@ -407,13 +419,34 @@
 		}
 	}
 
+	// Функция ease-in-out
+	function easeInOut(t: number) {
+		// t от 0 до 1
+		return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+	}
+
+	// Ease-out (медленный финиш)
+	function easeOut(t: number) {
+		return t * (2 - t);
+	}
+
+	// Ease-in-out-cubic (более выраженный эффект)
+	function easeInOutCubic(t: number) {
+		return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+	}
+
+	// Ease-in-out-sine (более плавный)
+	function easeInOutSine(t: number) {
+		return -(Math.cos(Math.PI * t) - 1) / 2;
+	}
+
 	// Запуск игры
 	function startGame() {
 		if (isPlaying) return;
 
 		isPlaying = true;
 		currentTrack = 0; // Начинаем с образца
-		currentStep = -1; // Начинаем с отсчета трех нот
+		currentStep = -1; // Начинаем с -1, чтобы первый шаг был 0
 		repetitionCount = 0; // Сбрасываем счетчик повторений
 
 		// Очищаем предыдущие попытки
@@ -435,30 +468,9 @@
 			lastTimestamp = timestamp;
 			currentStep += 1;
 
-			// Проверяем, нужно ли воспроизводить звук
-
-			// 1. Отсчет перед началом движения (3 ноты)
-			// if (currentStep < 0) {
-			// 	// Для каждого шага отсчета свой звук
-			// 	playCountdownSound(currentStep);
-			// }
-			// 2. Метроном на полунотах (только не на первой дорожке)
-			if (currentStep % 4 === 0 && currentTrack > 0 && currentTrack < 3) {
-				playMetronomeSound(0.2); // Тихий звук метронома
-			}
-
-			// 3. Звук ноты мелодии (только на первой дорожке-образце)
-			if (currentStep >= 0) {
-				const noteAtStep = melody.find((note) => note.step === currentStep);
-				
-				if (noteAtStep && currentTrack === 0) {
-					playNoteSound(noteAtStep.type, 0.5); // Громкий звук ноты
-				}
-			}
-
 			// Проверяем завершение дорожки
 			if (currentStep >= totalSteps) {
-				currentStep = 0; // Сброс на отсчет перед следующей дорожкой
+				currentStep = 0; // Сразу переходим на начало следующей дорожки
 
 				// Логика повторения и перехода
 				if (currentTrack === 0) {
@@ -475,12 +487,26 @@
 
 					// Если все попытки завершены
 					if (currentTrack >= tracks) {
-						isPlaying = false;
-						cancelAnimationFrame(animationFrame);
-						drawTracks(); // Финальная отрисовка
+						finishGame();
 						return;
 					}
 				}
+			}
+
+			// Проверяем, нужно ли воспроизводить звук
+			// 1. Метроном на полунотах (только не на первой дорожке)
+			if (currentStep % 4 === 0 && currentTrack > 0 && currentTrack < 3) {
+				playMetronomeSound(0.5); // Тихий звук метронома
+			}
+
+			// 2. Звук ноты мелодии (только на первой дорожке-образце)
+			const noteAtStep = melody.find((note) => note.step === currentStep);
+			if (noteAtStep && currentTrack !== 0) {
+				console.log('Воспроизведение ноты:', noteAtStep, timestamp);
+				noteTimesteps.push(timestamp);
+			}
+			if (noteAtStep && currentTrack === 0) {
+				playNoteSound(noteAtStep.type, 0.5); // Громкий звук ноты
 			}
 		}
 
@@ -584,7 +610,7 @@
 	}
 
 	// Обработка нажатий пользователя
-	function handleUserClick(event) {
+	function handleUserClick(_event: Event) {
 		if (!isPlaying || currentTrack === 0 || currentStep < 0) return;
 
 		// Используем текущую позицию движущегося шарика вместо координаты нажатия
@@ -608,7 +634,7 @@
 		// Записываем нажатие пользователя
 		userAttempts[currentTrack - 1].push({
 			step: currentPosition,
-			time: Date.now(),
+			time: performance.now(),
 			accuracy: accuracy
 		});
 
@@ -618,9 +644,31 @@
 		// Перерисовка
 		drawTracks();
 	}
+
+	function finishGame() {
+		isPlaying = false;
+		cancelAnimationFrame(animationFrame);
+		drawTracks(); // Финальная отрисовка
+		console.log('Игра завершена', userAttempts);
+		console.log('Ноты воспроизведены в следующие моменты времени (мс):', noteTimesteps);
+
+		gameEnd();
+		const results: RhythmResult[] = [];
+		noteTimesteps.forEach((time, index) => {
+			const start = time - stepDuration;
+			const end = time + stepDuration;
+			const attempsFlat = userAttempts.flat().map((x) => x.time);
+			const userTap = attempsFlat.find((t) => t >= start && t <= end) || -1;
+
+			results.push({ attempt: userTap, note: time });
+		});
+
+		console.log(results);
+		sendResults(results);
+	}
 </script>
 
-<div class="rhythm-game">
+<div class="rhythm-game flex flex-col justify-center">
 	<canvas bind:this={canvas}></canvas>
 </div>
 
@@ -629,15 +677,11 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		width: 100%;
-		height: 100%;
-		padding: 16px;
 		box-sizing: border-box;
 	}
 
 	canvas {
-		border: 1px solid #ccc;
-		background-color: #f9f9f9;
 		display: block;
+		cursor: pointer;
 	}
 </style>
