@@ -85,7 +85,7 @@
 	}
 </script>
 
-<div>
+<div hidden>
 	<h1>Push Notifications Demo</h1>
 
 	{#if isSubscribed}

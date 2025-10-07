@@ -7,7 +7,8 @@ import {
 	swallowAttempt,
 	munsterbergAttempt,
 	campimetryAttempt,
-	rhythmAttempt
+	rhythmAttempt,
+	memoryMatchAttempt
 } from '$lib/server/db/models/tests';
 import type { MetaResult, RegularResult, TestResultMap } from '$lib/tests/types';
 import short from 'short-uuid';
@@ -38,7 +39,8 @@ export async function postResult<T extends keyof TestResultMap>(
 		swallow: swallowAttempt,
 		munsterberg: munsterbergAttempt,
 		campimetry: campimetryAttempt,
-		rhythm: rhythmAttempt
+		rhythm: rhythmAttempt,
+		memoryMatch: memoryMatchAttempt, 
 	}[testType];
 
 	if (!insertAttempt) throw new Error(`Unknown test type: ${testType}`);
@@ -72,7 +74,8 @@ export async function getResults<T extends keyof TestResultMap>(
 		swallow: db.query.swallowAttempt,
 		munsterberg: db.query.munsterbergAttempt,
 		campimetry: db.query.campimetryAttempt,
-		rhythm: db.query.rhythmAttempt
+		rhythm: db.query.rhythmAttempt,
+		memoryMatch: db.query.memoryMatchAttempt
 	}[testType] as typeof db.query.campimetryAttempt;
 
 	const results: ResultInfo<T>[] = [];
