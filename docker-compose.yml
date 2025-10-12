@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   cogni:
     build:
@@ -8,18 +6,30 @@ services:
     restart: always
     ports:
       - "443:443"
-      - "4983:4983"
     environment:
-      - BUILD=node
-      - PUSH_API_URL=123
-      - VAPID_PUBLIC_KEY=123
-      - VAPID_PRIVATE_KEY=456
-      - MODE=PROD
-      - TG_GROUP_LINK=https://t.me/+Q08ShGg2nSRhYTEy
-      - DB_URL_DEV=http://localhost:3000
-      - DB_URL_PROD=http://5.39.217.221:3000
-      - DATABASE_URL=file:./data/cogni.db
+      - PUBLIC_VAPID_SUBJECT=mailto:kiwi0tails@gmail.com
+      - PUBLIC_VAPID_KEY=BD9jplqlYOmo4t59X3RFsFGnjZqbRRPWUjaNT15vDHYe0xujD6CKHw-09JyJB5FthVQEBI0HgjWc0TFJcX7Mzdg
+      - PRIVATE_VAPID_KEY=VJC7Hf2IipUGCbHNCLIR6T1elkQFB1cO_LzSCwMwfWU
     volumes:
       - /etc/ssl/private/cogni-test.ru_private_key.pem:/etc/ssl/private/cogni-test.ru_private_key.pem:ro
       - /etc/ssl/certs/cogni-test.ru_cert.pem:/etc/ssl/certs/cogni-test.ru_cert.pem:ro
-      - /root/data:/app/data
+      - /root/cogni-data:/app/data
+    stdin_open: true  # -i
+    tty: true         # -t
+
+  drizzle-gateway:
+    image: ghcr.io/drizzle-team/gateway:latest
+    container_name: drizzle-gate
+    restart: always
+    ports:
+      - "4983:4983"
+    environment:
+      - PORT=4983
+      - STORE_PATH=/database
+      - MASTERPASS=2001nikita  # Change this!
+    volumes:
+      - drizzle-gateway:/app
+      - /root/cogni-data:/database  # Mount your DB folder as read-only
+
+volumes:
+  drizzle-gateway:  # Named volume for Drizzle Gateway config
