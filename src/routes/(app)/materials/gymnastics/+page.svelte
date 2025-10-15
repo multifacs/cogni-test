@@ -1,3 +1,15 @@
+<script lang="ts">
+	import { onMount } from 'svelte';
+
+	let { data } = $props();
+	let sex = $state('male');
+
+	onMount(() => {
+		console.log(data.user.sex);
+		sex = data.user.sex;
+	});
+</script>
+
 <main class="prose prose-invert mx-auto max-w-2xl overflow-scroll p-6">
 	<h1 class="code-line" data-line-start="0" data-line-end="1">
 		<a id="____0"></a>Гимнастика для шейного отдела
@@ -45,6 +57,17 @@
 	<p class="has-line-data" data-line-start="27" data-line-end="28">
 		<strong>Повторения:</strong> 15 раз (через 1-2 недели можно увеличить до 30)
 	</p>
+	{#if sex == 'male'}
+		<video width="400" height="400" autoplay loop>
+			<source src="ex1-m.mp4" type="video/mp4" />
+			Ваш браузер не поддерживает видео.
+		</video>
+	{:else}
+		<video width="400" height="400" autoplay loop>
+			<source src="ex1-f.mp4" type="video/mp4" />
+			Ваш браузер не поддерживает видео.
+		</video>
+	{/if}
 	<hr />
 	<h2 class="code-line" data-line-start="31" data-line-end="32"><a id="_2_31"></a>Упражнение 2</h2>
 	<p class="has-line-data" data-line-start="32" data-line-end="33">
@@ -66,6 +89,17 @@
 	<p class="has-line-data" data-line-start="40" data-line-end="41">
 		<strong>Повторения:</strong> 15 раз
 	</p>
+	{#if sex == 'male'}
+		<video width="400" height="400" autoplay loop>
+			<source src="ex2-m.mp4" type="video/mp4" />
+			Ваш браузер не поддерживает видео.
+		</video>
+	{:else}
+		<video width="400" height="400" autoplay loop>
+			<source src="ex2-f.mp4" type="video/mp4" />
+			Ваш браузер не поддерживает видео.
+		</video>
+	{/if}
 	<hr />
 	<h2 class="code-line" data-line-start="44" data-line-end="45"><a id="_3_44"></a>Упражнение 3</h2>
 	<p class="has-line-data" data-line-start="45" data-line-end="46">
@@ -92,10 +126,17 @@
 	<p class="has-line-data" data-line-start="55" data-line-end="56">
 		<strong>Повторения:</strong> 10 раз в каждую сторону
 	</p>
-	<video width="400" height="400" autoplay loop>
-		<source src="head-tilt.mp4" type="video/mp4" />
-		Ваш браузер не поддерживает видео.
-	</video>
+	{#if sex == 'male'}
+		<video width="400" height="400" autoplay loop>
+			<source src="ex3-m.mp4" type="video/mp4" />
+			Ваш браузер не поддерживает видео.
+		</video>
+	{:else}
+		<video width="400" height="400" autoplay loop>
+			<source src="ex3-f.mp4" type="video/mp4" />
+			Ваш браузер не поддерживает видео.
+		</video>
+	{/if}
 	<hr />
 	<h2 class="code-line" data-line-start="59" data-line-end="60">
 		<a id="_4__59"></a>Упражнение 4 (“Щенок”)
@@ -138,6 +179,17 @@
 	<p class="has-line-data" data-line-start="74" data-line-end="75">
 		<strong>Повторения:</strong> 15 раз
 	</p>
+	{#if sex == 'male'}
+		<video width="400" height="400" autoplay loop>
+			<source src="ex4-m.mp4" type="video/mp4" />
+			Ваш браузер не поддерживает видео.
+		</video>
+	{:else}
+		<video width="400" height="400" autoplay loop>
+			<source src="ex4-f.mp4" type="video/mp4" />
+			Ваш браузер не поддерживает видео.
+		</video>
+	{/if}
 	<hr />
 	<h2 class="code-line" data-line-start="78" data-line-end="79"><a id="_5_78"></a>Упражнение 5</h2>
 	<p class="has-line-data" data-line-start="79" data-line-end="80">
@@ -161,6 +213,17 @@
 	<p class="has-line-data" data-line-start="87" data-line-end="88">
 		<strong>Повторения:</strong> 5-10 раз в каждую сторону
 	</p>
+	{#if sex == 'male'}
+		<video width="400" height="400" autoplay loop>
+			<source src="ex5-m.mp4" type="video/mp4" />
+			Ваш браузер не поддерживает видео.
+		</video>
+	{:else}
+		<video width="400" height="400" autoplay loop>
+			<source src="ex5-f.mp4" type="video/mp4" />
+			Ваш браузер не поддерживает видео.
+		</video>
+	{/if}
 	<hr />
 	<h2 class="code-line" data-line-start="91" data-line-end="92">
 		<a id="_6___91"></a>Упражнение 6 (Круговые движения)
@@ -191,4 +254,15 @@
 	<p class="has-line-data" data-line-start="103" data-line-end="104">
 		<strong>Повторения:</strong> 5-7 раз в каждую сторону
 	</p>
+	{#if sex == 'male'}
+		<video width="400" height="400" autoplay loop>
+			<source src="ex6-m.mp4" type="video/mp4" />
+			Ваш браузер не поддерживает видео.
+		</video>
+	{:else}
+		<video width="400" height="400" autoplay loop>
+			<source src="ex6-f.mp4" type="video/mp4" />
+			Ваш браузер не поддерживает видео.
+		</video>
+	{/if}
 </main>

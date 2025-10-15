@@ -15,7 +15,7 @@
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
 		"start": "cross-env DATABASE_URL=file:./data/cogni.db npx drizzle-kit push --force && cross-env DATABASE_URL=file:./data/cogni.db node index.js",
-		"init-db": "cross-env DATABASE_URL=file:./data/cogni.db npx drizzle-kit push --force"
+		"init-db": "cross-env DATABASE_URL=file:sqlite.db npx drizzle-kit push --force"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
