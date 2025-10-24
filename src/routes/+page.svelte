@@ -18,6 +18,9 @@
 	let lastnameError = $state('');
 	let dateError = $state('');
 
+	// по умолчанию галочка стоит
+	let consentChecked = true;
+
 	onMount(() => {
 		userStore.set(null);
 	});
@@ -28,7 +31,8 @@
 			!lastname ||
 			firstnameError.length > 0 ||
 			lastnameError.length > 0 ||
-			dateError.length > 0
+			dateError.length > 0 ||
+			!consentChecked
 		);
 	}
 </script>
@@ -65,6 +69,25 @@
 		<label for="sex">⚧️ Пол</label>
 		<label><input type="radio" name="sex" bind:group={sex} value="male" /> Мужской</label>
 		<label><input type="radio" name="sex" bind:group={sex} value="female" /> Женский</label>
+	</div>
+
+	<!-- чекбокс согласия -->
+	<div class="mt-3 flex items-center gap-2 text-sm">
+		<input
+			id="consent"
+			type="checkbox"
+			class="h-4 w-4"
+			name="consent"
+			value="true"
+			required
+			bind:checked={consentChecked}
+		/>
+		<label for="consent" class="select-none">
+			Согласен(а) на
+			<a href="/consent" class="underline hover:opacity-80" target="_blank">
+				обработку персональных данных
+			</a>
+		</label>
 	</div>
 
 	<Button type="submit" color="green" disabled={isSubmitDisabled()}>Войти</Button>
