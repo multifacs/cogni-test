@@ -35,8 +35,10 @@ jobs:
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
+          eval $(ssh-agent -s)
           echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/server_key
           chmod 600 ~/.ssh/server_key
+          ssh-add ~/.ssh/server_key
       
       - name: Deploy using DOCKER_HOST
         env:
