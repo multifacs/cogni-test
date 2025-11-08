@@ -4,6 +4,11 @@ on:
   push:
     branches: [dev]
   workflow_dispatch:
+    inputs:
+      deploy_target:
+        description: 'Deployment target environment'
+        required: true
+        default: 'development'
 
 jobs:
   deploy:
@@ -16,7 +21,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Build and push the image
         env:
           PUBLIC_VAPID_SUBJECT: ${{ secrets.PUBLIC_VAPID_SUBJECT }}
@@ -31,7 +36,7 @@ jobs:
             --build-arg MODE=DEV \
             --build-arg BUILD=node
           docker push ghcr.io/${{ github.actor }}/cogni-test-dev:latest
-      
+
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
@@ -40,7 +45,7 @@ jobs:
           chmod 600 ~/.ssh/server_key
           ssh-add ~/.ssh/server_key
           ssh-keyscan ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
-      
+
       - name: Deploy using DOCKER_HOST
         env:
           DOCKER_HOST: ssh://${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}
