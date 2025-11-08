@@ -32,6 +32,9 @@ jobs:
       - name: Deploy using DOCKER_HOST
         env:
           DOCKER_HOST: ssh://${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}
+          PUBLIC_VAPID_SUBJECT: ${{ secrets.PUBLIC_VAPID_SUBJECT }}
+          PUBLIC_VAPID_KEY: ${{ secrets.PUBLIC_VAPID_KEY }}
+          PRIVATE_VAPID_KEY: ${{ secrets.PRIVATE_VAPID_KEY }}
         run: |
           # Теперь все docker команды выполняются на удаленном сервере
           docker compose --profile dev up -d --pull always --remove-orphans --force-recreate --wait --wait-timeout 30
