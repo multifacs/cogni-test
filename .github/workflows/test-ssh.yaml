@@ -1,8 +1,6 @@
 name: Test SSH connection
 
-on:
-  push:
-    branches: [dev]
+on: workflow_dispatch
 
 jobs:
   deploy:
@@ -16,18 +14,20 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          script: whoami
+          script: ls -la
 
       - name: Set up SSH agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
 
+      - name: Add to Known Hosts
+        run: |
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
       - name: Deploy using DOCKER_HOST
         env:
           DOCKER_HOST: ssh://${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}
         run: |
-          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
-          # Теперь все docker команды выполняются на удаленном сервере
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           docker compose ls
