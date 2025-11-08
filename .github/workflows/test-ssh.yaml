@@ -18,14 +18,10 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: whoami
 
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          eval $(ssh-agent -s)
-          echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/server_key
-          chmod 600 ~/.ssh/server_key
-          ssh-add ~/.ssh/server_key
-          ssh-keyscan ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
 
       - name: Deploy using DOCKER_HOST
         env:
