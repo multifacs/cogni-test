@@ -1,14 +1,11 @@
 name: Deploy DEV
 
-on:
-  push:
-    branches: [dev]
-  workflow_dispatch:
-    inputs:
-      deploy_target:
-        description: 'Deployment target environment'
-        required: true
-        default: 'development'
+# on:
+#   push:
+#     branches: [main]
+#   workflow_dispatch:
+
+on: workflow_dispatch
 
 jobs:
   deploy:
