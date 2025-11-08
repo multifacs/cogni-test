@@ -1,5 +1,14 @@
 # Используем официальный Node.js-образ
-FROM node:20
+FROM node:lts-alpine AS builder
+
+ARG PUBLIC_VAPID_SUBJECT
+ARG PUBLIC_VAPID_KEY
+ARG PRIVATE_VAPID_KEY
+
+# Для сборки
+ENV PUBLIC_VAPID_SUBJECT=$PUBLIC_VAPID_SUBJECT
+ENV PUBLIC_VAPID_KEY=$PUBLIC_VAPID_KEY
+ENV PRIVATE_VAPID_KEY=$PRIVATE_VAPID_KEY
 
 # Задаём рабочую директорию
 WORKDIR /app
@@ -16,8 +25,21 @@ COPY . .
 # Собираем SvelteKit-приложение
 RUN npm run build
 
+FROM node:lts-alpine AS runner
+
+# Объявляем для рантайма (можно переопределить при запуске)
+ENV PUBLIC_VAPID_SUBJECT=""
+ENV PUBLIC_VAPID_KEY=""
+ENV PRIVATE_VAPID_KEY=""
+ENV DATABASE_URL=""
+
 # Указываем порт, который будем слушать (HTTPS)
 EXPOSE 443
+
+WORKDIR /app
+COPY --from=builder /app/build ./build
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/index.js ./
 
 # Запускаем сервер
 CMD ["/bin/sh", "-c", "npm run init-db && npm run start"]
