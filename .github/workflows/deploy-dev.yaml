@@ -1,11 +1,8 @@
 name: Deploy DEV
 
-# on:
-#   push:
-#     branches: [main]
-#   workflow_dispatch:
-
-on: workflow_dispatch
+on:
+  push:
+    branches: [dev]
 
 jobs:
   deploy:
@@ -17,31 +14,21 @@ jobs:
       id-token: write
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
 
-      - name: Build and push the image
-        env:
-          PUBLIC_VAPID_SUBJECT: ${{ secrets.PUBLIC_VAPID_SUBJECT }}
-          PUBLIC_VAPID_KEY: ${{ secrets.PUBLIC_VAPID_KEY }}
-          PRIVATE_VAPID_KEY: ${{ secrets.PRIVATE_VAPID_KEY }}
+      - name: Add to Known Hosts
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          docker build . --tag ghcr.io/${{ github.actor }}/cogni-test-dev:latest \
-            --build-arg PUBLIC_VAPID_SUBJECT="$PUBLIC_VAPID_SUBJECT" \
-            --build-arg PUBLIC_VAPID_KEY="$PUBLIC_VAPID_KEY" \
-            --build-arg PRIVATE_VAPID_KEY="$PRIVATE_VAPID_KEY" \
-            --build-arg MODE=DEV \
-            --build-arg BUILD=node
-          docker push ghcr.io/${{ github.actor }}/cogni-test-dev:latest
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          eval $(ssh-agent -s)
-          echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/server_key
-          chmod 600 ~/.ssh/server_key
-          ssh-add ~/.ssh/server_key
-          ssh-keyscan ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Deploy using DOCKER_HOST
         env:
@@ -51,6 +38,5 @@ jobs:
           PRIVATE_VAPID_KEY: ${{ secrets.PRIVATE_VAPID_KEY }}
         run: |
           # Теперь все docker команды выполняются на удаленном сервере
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           docker compose --profile dev up -d --pull always --remove-orphans --force-recreate --wait --wait-timeout 30
           docker image prune -f
