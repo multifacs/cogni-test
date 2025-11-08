@@ -14,7 +14,6 @@ RUN npm install
 COPY . .
 
 # Собираем SvelteKit-приложение
-RUN npm run init-db
 RUN npm run build
 
 # Указываем порт, который будем слушать (HTTPS)
