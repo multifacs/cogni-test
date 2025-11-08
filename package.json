@@ -5,17 +5,16 @@
 	"type": "module",
 	"scripts": {
 		"host": "cross-env MODE=DEV DATABASE_URL=file:sqlite.db vite --host",
-		"dev": "cross-env MODE=DEV DATABASE_URL=file:sqlite.db vite dev",
-		"build": "cross-env MODE=DEV vite build",
-		"build-prod": "cross-env MODE=PROD BUILD=node vite build",
+		"dev": "cross-env MODE=DEV vite dev",
+		"build": "vite build",
 		"preview": "vite preview --host",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
-		"start": "cross-env DATABASE_URL=file:./data/cogni.db npx drizzle-kit push --force && cross-env DATABASE_URL=file:./data/cogni.db node index.js",
-		"init-db": "cross-env DATABASE_URL=file:sqlite.db npx drizzle-kit push --force"
+		"start": "npx drizzle-kit push --force && node index.js",
+		"init-db": "npx drizzle-kit push --force"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",

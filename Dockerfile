@@ -14,11 +14,8 @@ RUN npm install
 COPY . .
 
 # Собираем SvelteKit-приложение
-RUN mkdir ./data
-RUN touch ./data/cogni.db
 RUN npm run init-db
-RUN npm run build-prod
-# RUN rm -rf ./data
+RUN npm run build
 
 # Указываем порт, который будем слушать (HTTPS)
 EXPOSE 443
