@@ -1,4 +1,4 @@
-name: Deploy DEV
+name: Test SSH connection
 
 on:
   push:
