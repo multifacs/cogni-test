@@ -39,7 +39,7 @@ jobs:
           echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/server_key
           chmod 600 ~/.ssh/server_key
           ssh-add ~/.ssh/server_key
-          ssh-keygen -R ${{ secrets.SERVER_HOST }}
+          ssh-keyscan ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
       
       - name: Deploy using DOCKER_HOST
         env:
