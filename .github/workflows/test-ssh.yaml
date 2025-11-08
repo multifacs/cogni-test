@@ -1,0 +1,33 @@
+name: Deploy DEV
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+    inputs:
+      deploy_target:
+        description: 'Deployment target environment'
+        required: true
+        default: 'development'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          eval $(ssh-agent -s)
+          echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/server_key
+          chmod 600 ~/.ssh/server_key
+          ssh-add ~/.ssh/server_key
+          # ssh-keyscan ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy using DOCKER_HOST
+        env:
+          DOCKER_HOST: ssh://${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}
+        run: |
+          # Теперь все docker команды выполняются на удаленном сервере
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker compose ls
