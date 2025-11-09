@@ -50,4 +50,4 @@ COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/index.js ./
 
 # Запускаем сервер
-CMD ["/bin/sh", "-c", "npm i && npx drizzle-kit push --force && node index.js"]
+CMD ["/bin/sh", "-c", "npm i --omit=dev && npx drizzle-kit push --force && node index.js"]
