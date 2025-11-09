@@ -1,4 +1,4 @@
-name: Build and Push DEV
+name: Build and Push Nginx
 
 on:
   push:
@@ -30,13 +30,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./nginx/
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/app-dev:latest
-          build-args: |
-            PUBLIC_VAPID_SUBJECT=${{ secrets.PUBLIC_VAPID_SUBJECT }}
-            PUBLIC_VAPID_KEY=${{ secrets.PUBLIC_VAPID_KEY }}
-            PRIVATE_VAPID_KEY=${{ secrets.PRIVATE_VAPID_KEY }}
-            MODE=DEV
-            BUILD=node
+            ghcr.io/${{ github.repository }}/nginx:latest

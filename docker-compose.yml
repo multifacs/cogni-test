@@ -1,20 +1,35 @@
 services:
-  cogni-dev:
-    build:
-      context: .
-    image: ghcr.io/multifacs/cogni-test-dev:latest
+  nginx:
+    image: ghcr.io/multifacs/cogni-test/nginx:latest
     profiles:
-      - "dev"
-    container_name: cogni-test-dev
-    restart: always
+      - "nginx"
     ports:
+      - "80:80"
       - "443:443"
     volumes:
       - /etc/ssl/private/cogni-test.ru_private_key.pem:/etc/ssl/private/cogni-test.ru_private_key.pem:ro
       - /etc/ssl/certs/cogni-test.ru_cert.pem:/etc/ssl/certs/cogni-test.ru_cert.pem:ro
+    depends_on:
+      - cogni-dev
+      - cogni
+    networks:
+      - cogni-network
 
+  cogni-dev:
+    build:
+      context: .
+    image: ghcr.io/multifacs/cogni-test/app-dev:latest
+    profiles:
+      - "dev"
+    container_name: cogni-test-dev
+    restart: always
+    networks:
+      - cogni-network  # ← All containers on same network
+    volumes:
+      - /root/cogni-test/data/:/app/data
     environment:
       - MODE=DEV
+      - DATABASE_URL=file:./data/dev.db
       - PUBLIC_VAPID_SUBJECT=${PUBLIC_VAPID_SUBJECT}
       - PUBLIC_VAPID_KEY=${PUBLIC_VAPID_KEY}
       - PRIVATE_VAPID_KEY=${PRIVATE_VAPID_KEY}
@@ -24,21 +39,28 @@ services:
   cogni:
     build:
       context: .
-    image: ghcr.io/multifacs/cogni-test:latest
+    image: ghcr.io/multifacs/cogni-test/app:latest
     profiles:
       - "prod"
     container_name: cogni-test
     restart: always
-    ports:
-      - "443:443"
+    networks:
+      - cogni-network  # ← All containers on same network
     volumes:
-      - /etc/ssl/private/cogni-test.ru_private_key.pem:/etc/ssl/private/cogni-test.ru_private_key.pem:ro
-      - /etc/ssl/certs/cogni-test.ru_cert.pem:/etc/ssl/certs/cogni-test.ru_cert.pem:ro
+      - /root/cogni-test/data/:/app/data
+    environment:
+      - MODE=PROD
+      - DATABASE_URL=file:./data/cogni.db
+      - PUBLIC_VAPID_SUBJECT=${PUBLIC_VAPID_SUBJECT}
+      - PUBLIC_VAPID_KEY=${PUBLIC_VAPID_KEY}
+      - PRIVATE_VAPID_KEY=${PRIVATE_VAPID_KEY}
     stdin_open: true  # -i
     tty: true         # -t
 
   drizzle-gateway:
     image: ghcr.io/drizzle-team/gateway:latest
+    profiles:
+      - "web-db"
     container_name: drizzle-gate
     restart: always
     ports:
@@ -49,7 +71,7 @@ services:
       - MASTERPASS=2001nikita  # Change this!
     volumes:
       - drizzle-gateway:/app
-      - /root/cogni-data:/database  # Mount your DB folder as read-only
+      - /root/cogni-test/data/:/database  # Mount your DB folder as read-only
 
 volumes:
   drizzle-gateway:  # Named volume for Drizzle Gateway config
