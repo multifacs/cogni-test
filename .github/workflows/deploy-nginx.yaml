@@ -1,4 +1,4 @@
-name: Deploy Nginx
+name: Deploy DEV
 
 on: workflow_dispatch
 
@@ -12,14 +12,6 @@ jobs:
       id-token: write
 
     steps:
-      - name: Execute remote SSH commands using SSH key
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: ls -la
-      
       - name: Clone Repository
         uses: actions/checkout@v4
       

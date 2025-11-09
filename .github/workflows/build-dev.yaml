@@ -33,7 +33,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.actor }}/cogni-test-dev:latest
+            ghcr.io/${{ github.repository }}/app-dev:latest
           build-args: |
             PUBLIC_VAPID_SUBJECT=${{ secrets.PUBLIC_VAPID_SUBJECT }}
             PUBLIC_VAPID_KEY=${{ secrets.PUBLIC_VAPID_KEY }}
