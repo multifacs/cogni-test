@@ -1,19 +1,39 @@
 services:
+  cogni-dev:
+    build:
+      context: .
+    image: ghcr.io/multifacs/cogni-test-dev:latest
+    profiles:
+      - "dev"
+    container_name: cogni-test-dev
+    restart: always
+    ports:
+      - "443:443"
+    volumes:
+      - /etc/ssl/private/cogni-test.ru_private_key.pem:/etc/ssl/private/cogni-test.ru_private_key.pem:ro
+      - /etc/ssl/certs/cogni-test.ru_cert.pem:/etc/ssl/certs/cogni-test.ru_cert.pem:ro
+
+    environment:
+      - MODE=DEV
+      - PUBLIC_VAPID_SUBJECT=${PUBLIC_VAPID_SUBJECT}
+      - PUBLIC_VAPID_KEY=${PUBLIC_VAPID_KEY}
+      - PRIVATE_VAPID_KEY=${PRIVATE_VAPID_KEY}
+    stdin_open: true  # -i
+    tty: true         # -t
+
   cogni:
     build:
-      context: . # директория с Dockerfile и проектом
+      context: .
+    image: ghcr.io/multifacs/cogni-test:latest
+    profiles:
+      - "prod"
     container_name: cogni-test
     restart: always
     ports:
       - "443:443"
-    environment:
-      - PUBLIC_VAPID_SUBJECT=mailto:kiwi0tails@gmail.com
-      - PUBLIC_VAPID_KEY=BD9jplqlYOmo4t59X3RFsFGnjZqbRRPWUjaNT15vDHYe0xujD6CKHw-09JyJB5FthVQEBI0HgjWc0TFJcX7Mzdg
-      - PRIVATE_VAPID_KEY=VJC7Hf2IipUGCbHNCLIR6T1elkQFB1cO_LzSCwMwfWU
     volumes:
       - /etc/ssl/private/cogni-test.ru_private_key.pem:/etc/ssl/private/cogni-test.ru_private_key.pem:ro
       - /etc/ssl/certs/cogni-test.ru_cert.pem:/etc/ssl/certs/cogni-test.ru_cert.pem:ro
-      - /root/cogni-data:/app/data
     stdin_open: true  # -i
     tty: true         # -t
 

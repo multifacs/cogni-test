@@ -1,5 +1,18 @@
 # Используем официальный Node.js-образ
-FROM node:20
+FROM node:lts-alpine AS builder
+
+ARG PUBLIC_VAPID_SUBJECT
+ARG PUBLIC_VAPID_KEY
+ARG PRIVATE_VAPID_KEY
+ARG MODE
+ARG BUILD
+
+# Для сборки
+ENV PUBLIC_VAPID_SUBJECT=$PUBLIC_VAPID_SUBJECT
+ENV PUBLIC_VAPID_KEY=$PUBLIC_VAPID_KEY
+ENV PRIVATE_VAPID_KEY=$PRIVATE_VAPID_KEY
+ENV MODE=$MODE
+ENV BUILD=$BUILD
 
 # Задаём рабочую директорию
 WORKDIR /app
@@ -13,19 +26,28 @@ RUN npm install
 # Копируем остальные файлы проекта
 COPY . .
 
-ARG PUBLIC_VAPID_SUBJECT=mailto:kiwi0tails@gmail.com
-ARG PUBLIC_VAPID_KEY=BD9jplqlYOmo4t59X3RFsFGnjZqbRRPWUjaNT15vDHYe0xujD6CKHw-09JyJB5FthVQEBI0HgjWc0TFJcX7Mzdg
-ARG PRIVATE_VAPID_KEY=VJC7Hf2IipUGCbHNCLIR6T1elkQFB1cO_LzSCwMwfWU
-
 # Собираем SvelteKit-приложение
-RUN mkdir ./data
-RUN touch ./data/cogni.db
-RUN npm run init-db
-RUN npm run build-prod
-# RUN rm -rf ./data
+RUN npm run build
+
+FROM node:lts-alpine AS runner
+
+ARG PORT
+
+# Объявляем для рантайма (можно переопределить при запуске)
+ENV PUBLIC_VAPID_SUBJECT=""
+ENV PUBLIC_VAPID_KEY=""
+ENV PRIVATE_VAPID_KEY=""
+ENV DATABASE_URL=""
+ENV MODE=""
+ENV PORT=""
 
 # Указываем порт, который будем слушать (HTTPS)
-EXPOSE 443
+EXPOSE $PORT
+
+WORKDIR /app
+COPY --from=builder /app/build ./build
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/index.js ./
 
 # Запускаем сервер
 CMD ["/bin/sh", "-c", "npm run init-db && npm run start"]
