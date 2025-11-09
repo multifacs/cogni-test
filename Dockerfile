@@ -31,18 +31,12 @@ RUN npm run build
 
 FROM node:lts-alpine AS runner
 
-ARG PORT
-
 # Объявляем для рантайма (можно переопределить при запуске)
 ENV PUBLIC_VAPID_SUBJECT=""
 ENV PUBLIC_VAPID_KEY=""
 ENV PRIVATE_VAPID_KEY=""
 ENV DATABASE_URL=""
 ENV MODE=""
-ENV PORT=""
-
-# Указываем порт, который будем слушать (HTTPS)
-EXPOSE $PORT
 
 WORKDIR /app
 COPY --from=builder /app/build ./build

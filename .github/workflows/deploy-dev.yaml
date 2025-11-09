@@ -37,7 +37,6 @@ jobs:
           PUBLIC_VAPID_SUBJECT: ${{ secrets.PUBLIC_VAPID_SUBJECT }}
           PUBLIC_VAPID_KEY: ${{ secrets.PUBLIC_VAPID_KEY }}
           PRIVATE_VAPID_KEY: ${{ secrets.PRIVATE_VAPID_KEY }}
-          PORT: 3001
           MODE: DEV
         run: |
           # Теперь все docker команды выполняются на удаленном сервере
