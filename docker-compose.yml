@@ -9,9 +9,6 @@ services:
     volumes:
       - /etc/ssl/private/cogni-test.ru_private_key.pem:/etc/ssl/private/cogni-test.ru_private_key.pem:ro
       - /etc/ssl/certs/cogni-test.ru_cert.pem:/etc/ssl/certs/cogni-test.ru_cert.pem:ro
-    depends_on:
-      - cogni-dev
-      - cogni
     networks:
       - cogni-network
 
