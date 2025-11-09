@@ -48,4 +48,4 @@ COPY --from=builder /app/drizzle.config.ts ./
 COPY --from=builder /app/src/lib ./
 
 # Запускаем сервер
-CMD ["/bin/sh", "-c", "npm i drizzle-orm drizzle-kit && npm run init-db && npm run start"]
+CMD ["/bin/sh", "-c", "npm i drizzle-orm drizzle-kit && npx drizzle-kit push --force && node index.js"]
