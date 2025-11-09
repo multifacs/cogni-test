@@ -46,6 +46,7 @@ WORKDIR /app
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/drizzle.config.ts ./
 COPY --from=builder /app/src/lib ./src/lib
+COPY --from=builder /app/package*.json ./
 
 # Запускаем сервер
-CMD ["/bin/sh", "-c", "npm i drizzle-orm drizzle-kit @libsql/client short-uuid && npx drizzle-kit push --force && node index.js"]
+CMD ["/bin/sh", "-c", "npm i && npx drizzle-kit push --force && node index.js"]
