@@ -75,3 +75,6 @@ services:
 
 volumes:
   drizzle-gateway:  # Named volume for Drizzle Gateway config
+
+networks:
+  cogni-network:
