@@ -45,7 +45,8 @@ ENV CI=true
 WORKDIR /app
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/index.js ./
+COPY --from=builder /app/drizzle.config.ts ./
+COPY --from=builder /app/src/lib ./
 
 # Запускаем сервер
 CMD ["/bin/sh", "-c", "npm run init-db && npm run start"]
