@@ -33,4 +33,4 @@ jobs:
           context: ./nginx/
           push: true
           tags: |
-            ghcr.io/${{ github.actor }}/${{ github.repository }}/nginx:latest
+            ghcr.io/${{ github.repository }}/nginx:latest
