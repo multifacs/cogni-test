@@ -14,6 +14,8 @@ ENV PRIVATE_VAPID_KEY=$PRIVATE_VAPID_KEY
 ENV MODE=$MODE
 ENV BUILD=$BUILD
 
+ENV CI=true
+
 # Задаём рабочую директорию
 WORKDIR /app
 
@@ -37,6 +39,8 @@ ENV PUBLIC_VAPID_KEY=""
 ENV PRIVATE_VAPID_KEY=""
 ENV DATABASE_URL=""
 ENV MODE=""
+
+ENV CI=true
 
 WORKDIR /app
 COPY --from=builder /app/build ./build
