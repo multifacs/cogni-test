@@ -1,4 +1,4 @@
-name: Deploy DEV
+name: Deploy Nginx
 
 on: workflow_dispatch
 
