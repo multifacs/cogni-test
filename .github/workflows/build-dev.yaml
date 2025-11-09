@@ -39,3 +39,4 @@ jobs:
             PRIVATE_VAPID_KEY=${{ secrets.PRIVATE_VAPID_KEY }}
             MODE=DEV
             BUILD=node
+            PORT=3001
