@@ -3,6 +3,7 @@ name: Build and Push DEV
 on:
   push:
     branches: [dev]
+  workflow_dispatch:
 
 jobs:
   deploy:
