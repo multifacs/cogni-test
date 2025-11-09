@@ -45,7 +45,7 @@ ENV CI=true
 WORKDIR /app
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/drizzle.config.ts ./
-COPY --from=builder /app/src/lib ./
+COPY --from=builder /app/src/lib ./src/lib
 
 # Запускаем сервер
 CMD ["/bin/sh", "-c", "npm i drizzle-orm drizzle-kit && npx drizzle-kit push --force && node index.js"]
