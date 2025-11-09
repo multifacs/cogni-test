@@ -4,7 +4,7 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
-		"host": "cross-env MODE=DEV DATABASE_URL=file:sqlite.db vite --host",
+		"host": "cross-env MODE=LOCAL DATABASE_URL=file:sqlite.db vite --host",
 		"dev": "cross-env MODE=DEV vite dev",
 		"build": "vite build",
 		"preview": "vite preview --host",

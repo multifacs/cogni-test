@@ -99,4 +99,8 @@
 	{/if}
 </div>
 
+<div class="text-gray-500 text-sm fixed top-1 left-1">
+	{ data.MODE }
+</div>
+
 {@render children()}
