@@ -1,4 +1,4 @@
-import { createServer } from 'https';
+import { createServer } from 'http';
 import { handler } from './build/handler.js'; // путь зависит от версии сборки
 
 createServer(handler).listen(80, () => {
