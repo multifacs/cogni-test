@@ -7,6 +7,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
+      - /root/cogni-test/certs:/etc/ssl/new-certs:ro
       - /etc/ssl/private/cogni-test.ru_private_key.pem:/etc/ssl/private/cogni-test.ru_private_key.pem:ro
       - /etc/ssl/certs/cogni-test.ru_cert.pem:/etc/ssl/certs/cogni-test.ru_cert.pem:ro
     networks:
@@ -30,7 +31,7 @@ services:
       - PUBLIC_VAPID_SUBJECT=${PUBLIC_VAPID_SUBJECT}
       - PUBLIC_VAPID_KEY=${PUBLIC_VAPID_KEY}
       - PRIVATE_VAPID_KEY=${PRIVATE_VAPID_KEY}
-      - ORIGIN=https://dev.cogni-test.ru
+      - ORIGIN=https://dev2.cogni-test.ru
     stdin_open: true  # -i
     tty: true         # -t
 
