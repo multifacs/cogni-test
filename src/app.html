@@ -8,6 +8,19 @@
 	<title>Cogni Test</title>
 	%sveltekit.head%
 	<link rel="manifest" href="%sveltekit.assets%/manifest.json">
+    <script type="module">
+        const dev = "%sveltekit.env.PUBLIC_DEV%" === "true" ? true : false;
+        const browser = "%sveltekit.env.PUBLIC_BROWSER%" === "true" ? true : false;
+
+        if ('serviceWorker' in navigator && browser) {
+            window.addEventListener('load', () => {
+                console.log('service worker in supported, registering');
+                navigator.serviceWorker.register('./src/service-worker.ts', {
+                    type: dev ? 'module' : 'classic',
+                });
+            });
+        }
+    </script>
 </head>
 
 <body data-sveltekit-preload-data="hover">
