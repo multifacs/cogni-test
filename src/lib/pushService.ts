@@ -34,7 +34,8 @@ export class PushService {
 		return outputArray;
 	}
 
-	async subscribe(registration: ServiceWorkerRegistration) {
+	async subscribe() {
+        const registration = await navigator.serviceWorker.ready;
         if (!registration) {
             throw new Error('No service worker registration found');
         }
@@ -58,8 +59,10 @@ export class PushService {
 		return subscription;
 	}
 
-	async unsubscribe(registration: ServiceWorkerRegistration) {
+	async unsubscribe() {
 		if (!browser) return;
+
+        const registration = await navigator.serviceWorker.ready;
 
 		if (registration) {
 			const subscription = await registration.pushManager.getSubscription();
@@ -78,7 +81,8 @@ export class PushService {
 		}
 	}
 
-	async getSubscription(registration: ServiceWorkerRegistration) {
+	async getSubscription() {
+        const registration = await navigator.serviceWorker.ready;
 		if (!browser) return null;
 
 		if (registration) {

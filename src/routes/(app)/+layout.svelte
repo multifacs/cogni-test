@@ -8,7 +8,6 @@
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import NavBar from '$lib/components/ui/NavBar.svelte';
 
-    let registration: ServiceWorkerRegistration | undefined = $state();
     let subscription: PushSubscription | null = $state(null);
     let isSubscribed = $state(false);
     let showModal = $state(false);
@@ -18,9 +17,7 @@
 	onMount(async () => {
         userStore.set(data.user);
 
-        registration = await navigator.serviceWorker.ready;
-
-        subscription = await pushService.getSubscription(registration);
+        subscription = await pushService.getSubscription();
         isSubscribed = !!subscription;
         showModal = !subscription;
         console.log('showModal:', showModal);
@@ -32,13 +29,8 @@
 			return;
 		}
 
-		if (!registration) {
-			console.error('No service worker registration found');
-			return;
-		}
-
 		try {
-			await pushService.subscribe(registration);
+			await pushService.subscribe();
 			isSubscribed = true;
 			showModal = false;
 			console.log('Subscribed successfully');
@@ -48,13 +40,8 @@
 	}
 
 	async function unsubscribe() {
-		if (!registration) {
-			console.error('No service worker registration found');
-			return;
-		}
-
 		try {
-			await pushService.unsubscribe(registration);
+			await pushService.unsubscribe();
 			subscription = null;
 			isSubscribed = false;
 			console.log('Unsubscribed successfully');
