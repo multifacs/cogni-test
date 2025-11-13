@@ -1,25 +1,44 @@
 <script lang="ts">
 	import '../app.css';
 	import '@fontsource/roboto';
+	import { browser, dev } from '$app/environment';
 	let { data, children } = $props();
 
 	import { onMount } from 'svelte';
-	import { PushService } from '$lib/pushService';
+	import { pushService } from '$lib/pushService';
 	import Button from '$lib/components/ui/Button.svelte';
 
-	let pushService = $state(null);
+	let subscription: PushSubscription | null = $state(null);
+	let registration: ServiceWorkerRegistration | null = $state(null);
 	let isSubscribed = $state(false);
-	let subscription = $state(null);
 
 	onMount(async () => {
-		pushService = new PushService();
-		subscription = await pushService.getSubscription();
+		if (!browser || !('serviceWorker' in navigator)) {
+			throw new Error('Service workers not supported');
+		}
+
+		registration = await navigator.serviceWorker.register('./src/service-worker.ts', {
+			type: dev ? 'module' : 'classic'
+		});
+
+		subscription = await pushService.getSubscription(registration);
+        console.log('subscription', subscription);
 		isSubscribed = !!subscription;
 	});
 
 	async function subscribe() {
+		if (!pushService) {
+			console.error('Push service not initialized');
+			return;
+		}
+
+        if (!registration) {
+            console.error('No service worker registration found');
+            return;
+        }
+
 		try {
-			subscription = await pushService.subscribe();
+			await pushService.subscribe(registration);
 			isSubscribed = true;
 			console.log('Subscribed successfully');
 		} catch (error) {
@@ -85,7 +104,7 @@
 	}
 </script>
 
-<div hidden>
+<div>
 	<h1>Push Notifications Demo</h1>
 
 	{#if isSubscribed}
@@ -99,8 +118,8 @@
 	{/if}
 </div>
 
-<div class="text-gray-500 text-sm fixed top-1 left-1">
-	{ data.MODE }
+<div class="fixed top-1 left-1 text-sm text-gray-500">
+	{data.MODE}
 </div>
 
 {@render children()}

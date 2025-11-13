@@ -10,7 +10,8 @@
 // Ensures that the `$service-worker` import has proper type definitions
 /// <reference types="@sveltejs/kit" />
 
-// это можно будет юзать потом, (и также после этого импорта мой lsp перестаёт орать не меня)
+// Так-то может пригодиться для кэширования, но сейчас только ради
+// того, чтобы на меня не ругался lsp (я хз почему это так работает)
 import { build, files, version } from '$service-worker';
 
 // This gives `self` the correct types
