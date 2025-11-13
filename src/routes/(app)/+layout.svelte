@@ -9,7 +9,6 @@
 	import NavBar from '$lib/components/ui/NavBar.svelte';
 	import { isSubscribed } from '$lib/utils/push';
 
-	let subscription: PushSubscription | null = $state(null);
 	let subscribed = $state(false);
 	let showModal = $state(false);
 
@@ -19,9 +18,7 @@
 		userStore.set(data.user);
 
 		subscribed = await isSubscribed();
-		subscription = await pushService.getSubscription();
 		showModal = !subscribed;
-		console.log('showModal:', showModal);
 	});
 
 	async function subscribe() {
