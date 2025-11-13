@@ -58,10 +58,9 @@ export class PushService {
 		return subscription;
 	}
 
-	async unsubscribe() {
+	async unsubscribe(registration: ServiceWorkerRegistration) {
 		if (!browser) return;
 
-		const registration = await navigator.serviceWorker.getRegistration();
 		if (registration) {
 			const subscription = await registration.pushManager.getSubscription();
 			if (subscription) {

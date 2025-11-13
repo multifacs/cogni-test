@@ -7,10 +7,12 @@
 	import { onMount } from 'svelte';
 	import { pushService } from '$lib/pushService';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Modal from '$lib/components/ui/Modal.svelte';
 
 	let subscription: PushSubscription | null = $state(null);
 	let registration: ServiceWorkerRegistration | null = $state(null);
 	let isSubscribed = $state(false);
+	let showModal = $state(false);
 
 	onMount(async () => {
 		if (!browser || !('serviceWorker' in navigator)) {
@@ -22,8 +24,9 @@
 		});
 
 		subscription = await pushService.getSubscription(registration);
-        console.log('subscription', subscription);
 		isSubscribed = !!subscription;
+		showModal = !subscription;
+		console.log('showModal:', showModal);
 	});
 
 	async function subscribe() {
@@ -32,14 +35,15 @@
 			return;
 		}
 
-        if (!registration) {
-            console.error('No service worker registration found');
-            return;
-        }
+		if (!registration) {
+			console.error('No service worker registration found');
+			return;
+		}
 
 		try {
 			await pushService.subscribe(registration);
 			isSubscribed = true;
+			showModal = false;
 			console.log('Subscribed successfully');
 		} catch (error) {
 			console.error('Failed to subscribe:', error);
@@ -47,8 +51,13 @@
 	}
 
 	async function unsubscribe() {
+		if (!registration) {
+			console.error('No service worker registration found');
+			return;
+		}
+
 		try {
-			await pushService.unsubscribe();
+			await pushService.unsubscribe(registration);
 			subscription = null;
 			isSubscribed = false;
 			console.log('Unsubscribed successfully');
@@ -106,6 +115,23 @@
 
 <div>
 	<h1>Push Notifications Demo</h1>
+
+	{#if showModal}
+		<Modal bind:showModal>
+			{#snippet header()}
+				<h2 class="text-2xl text-white">Подпишитесь на пуш-уведомления</h2>
+			{/snippet}
+			<div class="flex flex-col gap-4">
+				<p class="text-white">
+					Для корректной работы некоторых функций требуется подписка на уведомления.
+					Например, мы сможем отправлять вам напоминания о прохождении тестов.
+				</p>
+				<p class="text-white">Для подписки достаточно нажать зелёную кнопочку и всё</p>
+				<Button color="green" onclick={subscribe}>Подписаться</Button>
+				<Button color="red" onclick={() => (showModal = false)}>Нет, спасибо</Button>
+			</div>
+		</Modal>
+	{/if}
 
 	{#if isSubscribed}
 		<p>✅ You are subscribed to notifications</p>
