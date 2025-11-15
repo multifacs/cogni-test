@@ -38,12 +38,15 @@
 				intervalWorker.postMessage('stop');
 				intervalWorker.terminate();
 				phase = 'recall';
-				// Отправляем пуш-уведомление
-				sendNotification({
-					title: 'Время вышло!',
-					body: 'Пора вспомнить сочетания.',
-					icon: '/icon.png' // Добавьте путь к вашей иконке
-				});
+
+                // Отправляем пуш-уведомление
+				if (subscribed) {
+					sendNotification({
+						title: 'Время вышло!',
+						body: 'Пора вспомнить сочетания.',
+						icon: '/icon.png' // Добавьте путь к вашей иконке
+					});
+				}
 			} else {
 				countdown = countdown - 1;
 			}
