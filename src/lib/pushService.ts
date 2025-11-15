@@ -3,17 +3,10 @@ import { browser } from '$app/environment';
 import { PUBLIC_VAPID_KEY } from '$env/static/public';
 
 export class PushService {
+	private vapidPublicKey: string;
+
 	constructor() {
 		this.vapidPublicKey = PUBLIC_VAPID_KEY;
-	}
-
-	async registerServiceWorker() {
-		if (!browser || !('serviceWorker' in navigator)) {
-			throw new Error('Service workers not supported');
-		}
-
-		const registration = await navigator.serviceWorker.register('/sw.js');
-		return registration;
 	}
 
 	async requestPermission() {
@@ -28,7 +21,7 @@ export class PushService {
 		return permission;
 	}
 
-	urlBase64ToUint8Array(base64String) {
+	urlBase64ToUint8Array(base64String: string) {
 		const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
 		const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
 
@@ -42,7 +35,11 @@ export class PushService {
 	}
 
 	async subscribe() {
-		const registration = await this.registerServiceWorker();
+        const registration = await navigator.serviceWorker.ready;
+        if (!registration) {
+            throw new Error('No service worker registration found');
+        }
+
 		await this.requestPermission();
 
 		const subscription = await registration.pushManager.subscribe({
@@ -65,7 +62,8 @@ export class PushService {
 	async unsubscribe() {
 		if (!browser) return;
 
-		const registration = await navigator.serviceWorker.getRegistration();
+        const registration = await navigator.serviceWorker.ready;
+
 		if (registration) {
 			const subscription = await registration.pushManager.getSubscription();
 			if (subscription) {
@@ -84,12 +82,14 @@ export class PushService {
 	}
 
 	async getSubscription() {
+        const registration = await navigator.serviceWorker.ready;
 		if (!browser) return null;
 
-		const registration = await navigator.serviceWorker.getRegistration();
 		if (registration) {
 			return await registration.pushManager.getSubscription();
 		}
 		return null;
 	}
 }
+
+export const pushService = new PushService();
