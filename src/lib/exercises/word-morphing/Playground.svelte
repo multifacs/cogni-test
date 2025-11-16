@@ -270,7 +270,8 @@
 
 	// Функция для проверки совпадения комбинаций
 	function isCorrectCombination(recalled: string, expected: string) {
-		return recalled.toLocaleLowerCase() === expected.toLocaleLowerCase();
+		// замена на случаи зеленый/зелёный
+		return recalled.toLocaleLowerCase().replace('ё', 'е') === expected.toLocaleLowerCase();
 	}
 
 	onMount(() => {
