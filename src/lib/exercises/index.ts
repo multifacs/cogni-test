@@ -30,13 +30,13 @@ export const exercises: TestData[] = [
 		name: 'memory-match',
 		title: 'Совпадения',
 		path: '/exercises/memory-match/about',
-		img: '/tests/campimetry.svg'
+		img: '/exercises/memory-match.svg'
 	},
 	{
   		name: 'nback-stream',
   		title: 'N-back поток',
   		path: '/exercises/nback-stream/about', 
-  		img: '/tests/campimetry.svg' 
+  		img: '/exercises/n-back.svg' 
 	},
 	{
 		name: 'road-trip',
