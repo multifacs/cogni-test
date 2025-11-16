@@ -2,7 +2,11 @@
 	import { onMount } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import TextInput from '$lib/components/ui/login-form/TextInput.svelte';
+	import Modal from '$lib/components/ui/Modal.svelte';
+	import IntervalWorker from '$lib/workers/interval_worker.ts?worker';
 	import { shuffle } from '$lib/utils';
+	import { isSubscribed, sendNotification } from '$lib/utils/push';
+	import { pushService } from '$lib/pushService';
 	import { adjectives, nouns } from './logic/data';
 
 	// Добавляем выбор категории
@@ -21,6 +25,34 @@
 		{ name: 'Кастомный', seconds: 0 } // Особый случай
 	];
 
+	let subscribed = $state(false);
+	let showModal = $state(false);
+
+	// Веб воркер для отслеживания интервала
+	// Нужно, для корректной работы таймера, когда страница не в фокусе
+	let intervalWorker = new IntervalWorker();
+	intervalWorker.onmessage = (e) => {
+		if (e.data === 'tick') {
+			console.log('tick');
+			if (countdown <= 1) {
+				intervalWorker.postMessage('stop');
+				intervalWorker.terminate();
+				phase = 'recall';
+
+                // Отправляем пуш-уведомление
+				if (subscribed) {
+					sendNotification({
+						title: 'Время вышло!',
+						body: 'Пора вспомнить сочетания.',
+						icon: '/icon.png' // Добавьте путь к вашей иконке
+					});
+				}
+			} else {
+				countdown = countdown - 1;
+			}
+		}
+	};
+
 	let selectedTimeOption: TimeOption = $state(timeOptions[0]);
 	let customTimeInSeconds = $state(60); // По умолчанию 1 минута
 	let customTimeInput = $state('1'); // Для ввода в минутах
@@ -32,9 +64,6 @@
 	let currentNoun = $state('');
 	let adjectiveChoices = $state(['громкий', 'сетчатый', 'яркий', 'скучный']);
 	let nounChoices = $state(['подвал', 'эклер', 'телефон', 'рука']);
-
-	// Notification API
-	let notificationsAllowed = $state(false);
 
 	// Данные для фигур и цветов
 	type Shape = {
@@ -130,28 +159,20 @@
 		}
 	}
 
-	// Функция для запроса разрешения на отправку уведомлений
-	async function requestNotificationPermission() {
-		// Проверяем поддержку Notification API
-		if (!('Notification' in window)) {
-			console.warn('Этот браузер не поддерживает уведомления');
+	async function subscribe() {
+		if (!pushService) {
+			console.error('Push service not initialized');
 			return;
 		}
 
-		// Запрашиваем разрешение
-		const permission = await Notification.requestPermission();
-		notificationsAllowed = permission === 'granted';
-	}
-
-	// Функция для отправки уведомления
-	function sendNotification(title: string, options: NotificationOptions = {}) {
-		// Проверяем поддержку и разрешение
-		if (!('Notification' in window) || Notification.permission !== 'granted') {
-			return;
+		try {
+			await pushService.subscribe();
+			subscribed = true;
+			showModal = false;
+			console.log('Subscribed successfully');
+		} catch (error) {
+			console.error('Failed to subscribe:', error);
 		}
-
-		// Создаем и отправляем уведомление
-		new Notification(title, options);
 	}
 
 	function selectCategory(selected: 'words' | 'shapes') {
@@ -210,22 +231,12 @@
 			phase = 'wait';
 			// Устанавливаем время на основе выбранной опции
 			const waitTime =
-				selectedTimeOption.name === 'Кастомный' ? customTimeInSeconds : selectedTimeOption.seconds;
+				selectedTimeOption.name === 'Кастомный'
+					? customTimeInSeconds
+					: selectedTimeOption.seconds;
 			countdown = waitTime;
 
-			const countdownInterval = setInterval(() => {
-				if (countdown <= 1) {
-					clearInterval(countdownInterval);
-					phase = 'recall';
-					// Отправляем уведомление через Notification API
-					sendNotification('Время вышло!', {
-						body: 'Пора вспомнить сочетания.',
-						icon: '/icon.png' // Добавьте путь к вашей иконке
-					});
-				} else {
-					countdown = countdown - 1;
-				}
-			}, 1000);
+			intervalWorker.postMessage('start');
 		} else if (phase === 'recall') phase = 'result';
 	}
 
@@ -274,12 +285,35 @@
 		return recalled.toLocaleLowerCase().replace('ё', 'е') === expected.toLocaleLowerCase();
 	}
 
-	onMount(() => {
-		// Запрашиваем разрешение на уведомления при загрузке компонента
-		requestNotificationPermission();
+	onMount(async () => {
+		// Проверям подписку на пуш
+		subscribed = await isSubscribed();
+		showModal = !subscribed;
 	});
 </script>
 
+<div>
+	{#if showModal}
+		<Modal bind:showModal>
+			{#snippet header()}
+				<h2 class="text-2xl text-white">Подпишитесь на пуш-уведомления</h2>
+			{/snippet}
+			<div class="flex flex-col gap-4">
+				<p class="text-white">
+					Для корректной работы некоторых функций требуется подписка на уведомления.
+					Например, мы сможем отправлять вам напоминания о прохождении тестов.
+				</p>
+				<p class="text-white">Для подписки достаточно нажать зелёную кнопочку.</p>
+				<p class="text-white">
+					Вы всегда сможете подписаться или отписаться от push-уведомлений в любое время
+					на странице профиля.
+				</p>
+				<Button color="green" onclick={subscribe}>Подписаться</Button>
+				<Button color="red" onclick={() => (showModal = false)}>Нет, спасибо</Button>
+			</div>
+		</Modal>
+	{/if}
+</div>
 <div class="flex flex-col items-center gap-6">
 	{#if phase === 'category-select'}
 		<h2>Выберите категорию:</h2>
@@ -380,7 +414,9 @@
 		<div class="countdown-container">
 			<h2>Время запоминания:</h2>
 			<div style="display: grid; justify-items: center; align-items: center">
-				<span style="grid-column: 1; grid-row: 1;" class="text-3xl">{formatTime(countdown)}</span>
+				<span style="grid-column: 1; grid-row: 1;" class="text-3xl"
+					>{formatTime(countdown)}</span
+				>
 				{#if countdown <= 30}
 					<svg class="countdown-svg" style="grid-column: 1; grid-row: 1;">
 						<circle r="40" cx="50" cy="50"> </circle>
@@ -392,21 +428,34 @@
 		<h2>Вспомните все три сочетания:</h2>
 		<div class="flex w-9/12 flex-col gap-2">
 			{#if category === 'words'}
-				<TextInput plain name="input1" bind:value={input1} placeholder="1. Исходное"></TextInput>
+				<TextInput plain name="input1" bind:value={input1} placeholder="1. Исходное"
+				></TextInput>
 				<TextInput
 					plain
 					name="input2"
 					bind:value={input2}
 					placeholder="2. С заменой прилагательного"
 				></TextInput>
-				<TextInput plain name="input3" bind:value={input3} placeholder="3. С заменой прил. и сущ."
+				<TextInput
+					plain
+					name="input3"
+					bind:value={input3}
+					placeholder="3. С заменой прил. и сущ."
 				></TextInput>
 			{:else}
-				<TextInput plain name="input1" bind:value={input1} placeholder="1. Исходная фигура и цвет"
+				<TextInput
+					plain
+					name="input1"
+					bind:value={input1}
+					placeholder="1. Исходная фигура и цвет"
 				></TextInput>
 				<TextInput plain name="input2" bind:value={input2} placeholder="2. С заменой фигуры"
 				></TextInput>
-				<TextInput plain name="input3" bind:value={input3} placeholder="3. С заменой фигуры и цвета"
+				<TextInput
+					plain
+					name="input3"
+					bind:value={input3}
+					placeholder="3. С заменой фигуры и цвета"
 				></TextInput>
 			{/if}
 		</div>

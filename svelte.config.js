@@ -20,8 +20,13 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
-		adapter
-	}
+		adapter,
+        // svelte-kit вообще может автоматически регистрировать service worker
+        // но только в билде, чтобы работал локально, надо будет ручками регать
+		serviceWorker: {
+			register: false
+		},
+	},
 };
 
 export default config;
