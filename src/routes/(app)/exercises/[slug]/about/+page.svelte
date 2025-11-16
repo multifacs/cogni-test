@@ -22,14 +22,22 @@
 		<Component></Component>
 		<div class="scroll-fade"></div>
 	</div>
-	<div
-		hidden={page.url.pathname.includes('road-trip') || page.url.pathname.includes('not-lost')}
-		class="	controls
+	{#if page.url.pathname.includes('road-trip') || page.url.pathname.includes('not-lost')}
+		<div
+			class="	controls
+  mb-2 flex items-center justify-center"
+		>
+			<Button color="red" goto="/exercises">Назад</Button>
+		</div>
+	{:else}
+		<div
+			class="	controls
   flex items-center justify-center gap-2.5"
-	>
-		<Button color="green" goto={`/exercises/${slug}/playground`}>Начать</Button>
-		<Button color="red" goto="/exercises">Назад</Button>
-	</div>
+		>
+			<Button color="green" goto={`/exercises/${slug}/playground`}>Начать</Button>
+			<Button color="red" goto="/exercises">Назад</Button>
+		</div>
+	{/if}
 {:else}
 	<Spinner></Spinner>
 	<p>Загрузка теста {slug}...</p>
