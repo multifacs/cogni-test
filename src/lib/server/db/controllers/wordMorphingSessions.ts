@@ -1,11 +1,12 @@
 import { db } from '$lib/server/db';
 import { wordMorphingSessions } from '../schema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 
 export async function createWordMorphingSession(
 	userId: string,
 	timerStartedAt: Date,
-	timerValueInSeconds: number
+	timerValueInSeconds: number,
+	expectedCombos: string[]
 ) {
 	if (!db || !userId) {
 		throw new Error('Database connection or userId is not provided');
@@ -14,6 +15,7 @@ export async function createWordMorphingSession(
 	try {
 		await db.insert(wordMorphingSessions).values({
 			userId,
+			expectedCombos,
 			timerStartedAt: timerStartedAt,
 			timerValueInSeconds,
 			isActive: true
@@ -49,4 +51,25 @@ export async function deleteWordMorphingSessionByUserId(userId: string) {
 			`Failed to delete word morphing session: ${error instanceof Error ? error.message : String(error)}`
 		);
 	}
+}
+
+export async function hasActiveSession(userId: string) {
+	if (!db || !userId) {
+		throw new Error('Database connection or userId is not provided');
+	}
+
+    let count = 0;
+
+	try {
+		count = await db.$count(
+			wordMorphingSessions,
+			and(eq(wordMorphingSessions.userId, userId), eq(wordMorphingSessions.isActive, true))
+		);
+	} catch (error) {
+		throw new Error(
+			`Failed to get word morphing session: ${error instanceof Error ? error.message : String(error)}`
+		);
+	}
+
+    return count > 0;
 }
