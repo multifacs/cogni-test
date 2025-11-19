@@ -230,7 +230,8 @@
 					? customTimeInSeconds
 					: selectedTimeOption.seconds;
 			countdown = waitTime;
-            setExpectedCombos();
+
+			setExpectedCombos();
 
 			try {
 				fetch('/api/word-morphing', {
@@ -241,10 +242,9 @@
 					body: JSON.stringify({
 						timerValueInSeconds: waitTime,
 						expectedCombos,
-						recalledCombos
+						category: category
 					})
 				});
-				console.log('session created');
 			} catch (error) {
 				console.error(error);
 			}
@@ -306,6 +306,7 @@
 
 	function finishRecall() {
 		setRecalledCombos();
+
 		try {
 			fetch('/api/word-morphing', {
 				method: 'DELETE',
@@ -316,6 +317,7 @@
 		} catch (error) {
 			console.error(error);
 		}
+
 		nextPhase();
 	}
 
@@ -328,19 +330,29 @@
 		);
 	}
 
-	function InterruptCountdown() {
-		countdown = 0;
-		intervalWorker.postMessage('stop');
-		intervalWorker.terminate();
-		fetch('/api/word-morphing', {
-			method: 'DELETE',
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		});
-		phase = 'category-select';
-		console.log('interrupted');
-	}
+    function setOriginalShapeAndColor(shapeName: string, colorName: string) {
+        const foundShape = shapes.find(s => s.name === shapeName);
+        const foundColor = colors.find(c => c.name === colorName);
+
+        if (foundShape) {
+            originalShape = foundShape;
+        }
+        if (foundColor) {
+            originalColor = foundColor;
+        }
+    }
+
+    function setCurrentShapeAndColor(shapeName: string, colorName: string) {
+        const foundShape = shapes.find(s => s.name === shapeName);
+        const foundColor = colors.find(c => c.name === colorName);
+
+        if (foundShape) {
+            currentShape = foundShape;
+        }
+        if (foundColor) {
+            currentColor = foundColor;
+        }
+    }
 
 	async function getSession() {
 		let response = await fetch('/api/word-morphing', {
@@ -355,7 +367,36 @@
 			return;
 		}
 
-		session = await response.json();
+		try {
+			session = await response.json();
+			if (session && session.isActive) {
+				const startTime = new Date(session.timerStartedAt);
+				const elapsedSeconds = Math.floor(
+					(new Date().getTime() - startTime.getTime()) / 1000
+				);
+
+				countdown = session.timerValueInSeconds - elapsedSeconds;
+				expectedCombos = session.expectedCombos;
+                category = session.category;
+
+                if (category === 'shapes') {
+                    const [origShapeName, origColorName] = expectedCombos[0].split(' ');
+                    const [currentShapeName, currentColorName] = expectedCombos[2].split(' ');
+                    setOriginalShapeAndColor(origShapeName, origColorName);
+                    setCurrentShapeAndColor(currentShapeName, currentColorName);
+                }
+
+				if (countdown <= 0) {
+					phase = 'recall';
+					return;
+				}
+
+				phase = 'wait';
+				intervalWorker.postMessage('start');
+			}
+		} catch (error) {
+			console.error(error);
+		}
 	}
 
 	onMount(async () => {
@@ -365,21 +406,6 @@
 
 		try {
 			await getSession();
-			if (session && session.isActive) {
-				const startTime = new Date(session.timerStartedAt);
-                const elapsedSeconds = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
-                
-				countdown = session.timerValueInSeconds - elapsedSeconds;
-				expectedCombos = session.expectedCombos;
-
-				if (countdown <= 0) {
-					phase = 'recall';
-					return;
-				}
-
-				phase = 'wait';
-                intervalWorker.postMessage('start');
-			}
 		} catch (error) {
 			console.error(error);
 		}
@@ -441,6 +467,7 @@
 						plain
 						name="customTime"
 						bind:value={customTimeInput}
+						type="number"
 						min="0.5"
 						step="0.5"
 						onchange={handleCustomTimeChange}
@@ -521,9 +548,6 @@
 					</svg>
 				{/if}
 			</div>
-			<div>
-				<Button color="blue" onclick={InterruptCountdown}>Interrupt</Button>
-			</div>
 		</div>
 	{:else if phase === 'recall'}
 		<h2>Вспомните все три сочетания:</h2>
@@ -582,9 +606,9 @@
 			<h2>Ожидаемые ответы:</h2>
 			{#if category === 'words'}
 				<ul>
-                    {#each expectedCombos as expected}
-                        <li class="text-center">{expected}</li>
-                    {/each}
+					{#each expectedCombos as expected}
+						<li class="text-center">{expected}</li>
+					{/each}
 				</ul>
 			{:else}
 				<div class="expected-shapes">

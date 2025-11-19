@@ -56,6 +56,7 @@ export const wordMorphingSessions = sqliteTable('word_morphing_sessions', {
 	userId: text('user_id')
 		.notNull()
 		.references(() => user.id),
+    category: text('category').notNull(),
 	expectedCombos: text('expected_combos', { mode: 'json' }).$type<string[]>().notNull(),
 	timerStartedAt: integer('timer_started_at', { mode: 'timestamp' })
 		.notNull()

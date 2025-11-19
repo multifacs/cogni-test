@@ -27,7 +27,7 @@ export const GET: RequestHandler = async ({ cookies }) => {
 };
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
-	const { timerValueInSeconds, expectedCombos } = await request.json();
+	const { timerValueInSeconds, expectedCombos, category } = await request.json();
 	const userId = cookies.get('user_id');
 	const timerStartedAt = new Date();
 
@@ -38,9 +38,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	try {
 		await createWordMorphingSession(
 			userId,
-			timerStartedAt,
-			parseInt(timerValueInSeconds),
+			category,
 			expectedCombos,
+			timerStartedAt,
+			parseInt(timerValueInSeconds)
 		);
 		return json({ success: true }, { status: 201 });
 	} catch (error) {

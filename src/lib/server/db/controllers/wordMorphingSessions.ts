@@ -4,9 +4,10 @@ import { eq, and } from 'drizzle-orm';
 
 export async function createWordMorphingSession(
 	userId: string,
+    category: string,
+    expectedCombos: string[],
 	timerStartedAt: Date,
 	timerValueInSeconds: number,
-	expectedCombos: string[]
 ) {
 	if (!db || !userId) {
 		throw new Error('Database connection or userId is not provided');
@@ -15,6 +16,7 @@ export async function createWordMorphingSession(
 	try {
 		await db.insert(wordMorphingSessions).values({
 			userId,
+            category,
 			expectedCombos,
 			timerStartedAt: timerStartedAt,
 			timerValueInSeconds,
@@ -58,7 +60,7 @@ export async function hasActiveSession(userId: string) {
 		throw new Error('Database connection or userId is not provided');
 	}
 
-    let count = 0;
+	let count = 0;
 
 	try {
 		count = await db.$count(
@@ -71,5 +73,5 @@ export async function hasActiveSession(userId: string) {
 		);
 	}
 
-    return count > 0;
+	return count > 0;
 }
