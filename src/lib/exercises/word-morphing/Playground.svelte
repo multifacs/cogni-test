@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import TextInput from '$lib/components/ui/login-form/TextInput.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
@@ -8,6 +8,8 @@
 	import { isSubscribed, sendNotification } from '$lib/utils/push';
 	import { pushService } from '$lib/pushService';
 	import { adjectives, nouns } from './logic/data';
+
+	import type { WordMorphingSession } from './types';
 
 	// Добавляем выбор категории
 	let category: 'words' | 'shapes' = $state('words');
@@ -38,20 +40,13 @@
 				intervalWorker.postMessage('stop');
 				intervalWorker.terminate();
 				phase = 'recall';
-
-                // Отправляем пуш-уведомление
-				if (subscribed) {
-					sendNotification({
-						title: 'Время вышло!',
-						body: 'Пора вспомнить сочетания.',
-						icon: '/icon.png' // Добавьте путь к вашей иконке
-					});
-				}
 			} else {
 				countdown = countdown - 1;
 			}
 		}
 	};
+
+	let session: WordMorphingSession | null = $state(null);
 
 	let selectedTimeOption: TimeOption = $state(timeOptions[0]);
 	let customTimeInSeconds = $state(60); // По умолчанию 1 минута
@@ -236,6 +231,32 @@
 					: selectedTimeOption.seconds;
 			countdown = waitTime;
 
+			try {
+				fetch('/api/word-morphing', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						timerValueInSeconds: waitTime
+					})
+				});
+				console.log('session created');
+			} catch (error) {
+				console.error(error);
+			}
+
+			if (subscribed) {
+				sendNotification(
+					{
+						title: 'Время вышло!',
+						body: 'Пора вспомнить сочетания.',
+						icon: '/icon.png' // Добавьте путь к вашей иконке
+					},
+					waitTime
+				);
+			}
+
 			intervalWorker.postMessage('start');
 		} else if (phase === 'recall') phase = 'result';
 	}
@@ -276,6 +297,16 @@
 		}
 
 		recalledCombos = [input1.trim(), input2.trim(), input3.trim()];
+		try {
+			fetch('/api/word-morphing', {
+				method: 'DELETE',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+		} catch (error) {
+			console.error(error);
+		}
 		nextPhase();
 	}
 
@@ -289,6 +320,45 @@
 		// Проверям подписку на пуш
 		subscribed = await isSubscribed();
 		showModal = !subscribed;
+
+		try {
+			let response = await fetch('/api/word-morphing', {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+			console.log(response);
+
+			if (!response.ok) {
+				console.log('no session');
+				return;
+			}
+
+			session = await response.json();
+			if (session && session.isActive) {
+				console.log('session is active');
+				let startTime = new Date(session.timerStartedAt);
+				countdown =
+					session.timerValueInSeconds -
+					Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
+				console.log('countdown', countdown);
+
+				if (countdown <= 0) {
+					phase = 'recall';
+					return;
+				}
+				phase = 'wait';
+			}
+			intervalWorker.postMessage('start');
+		} catch (error) {
+			console.error(error);
+		}
+	});
+
+	onDestroy(() => {
+		intervalWorker.postMessage('stop');
+		intervalWorker.terminate();
 	});
 </script>
 
