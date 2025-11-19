@@ -230,6 +230,7 @@
 					? customTimeInSeconds
 					: selectedTimeOption.seconds;
 			countdown = waitTime;
+            setExpectedCombos();
 
 			try {
 				fetch('/api/word-morphing', {
@@ -238,7 +239,9 @@
 						'Content-Type': 'application/json'
 					},
 					body: JSON.stringify({
-						timerValueInSeconds: waitTime
+						timerValueInSeconds: waitTime,
+						expectedCombos,
+						recalledCombos
 					})
 				});
 				console.log('session created');
@@ -281,7 +284,7 @@
 
 	let expectedCombos: string[] = $state([]);
 
-	function finishRecall() {
+	function setExpectedCombos() {
 		if (category === 'words') {
 			expectedCombos = [
 				`${originalAdjective} ${originalNoun}`,
@@ -295,8 +298,14 @@
 				`${currentShape.name} ${currentColor.name}`
 			];
 		}
+	}
 
+	function setRecalledCombos() {
 		recalledCombos = [input1.trim(), input2.trim(), input3.trim()];
+	}
+
+	function finishRecall() {
+		setRecalledCombos();
 		try {
 			fetch('/api/word-morphing', {
 				method: 'DELETE',
@@ -313,7 +322,40 @@
 	// Функция для проверки совпадения комбинаций
 	function isCorrectCombination(recalled: string, expected: string) {
 		// замена на случаи зеленый/зелёный
-		return recalled.toLocaleLowerCase().replace('ё', 'е') === expected.toLocaleLowerCase();
+		return (
+			recalled.toLocaleLowerCase().replace('ё', 'е') ===
+			expected.toLocaleLowerCase().replace('ё', 'е')
+		);
+	}
+
+	function InterruptCountdown() {
+		countdown = 0;
+		intervalWorker.postMessage('stop');
+		intervalWorker.terminate();
+		fetch('/api/word-morphing', {
+			method: 'DELETE',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+		phase = 'category-select';
+		console.log('interrupted');
+	}
+
+	async function getSession() {
+		let response = await fetch('/api/word-morphing', {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+
+		if (!response.ok) {
+			console.log('no session');
+			return;
+		}
+
+		session = await response.json();
 	}
 
 	onMount(async () => {
@@ -322,35 +364,22 @@
 		showModal = !subscribed;
 
 		try {
-			let response = await fetch('/api/word-morphing', {
-				method: 'GET',
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			});
-			console.log(response);
-
-			if (!response.ok) {
-				console.log('no session');
-				return;
-			}
-
-			session = await response.json();
+			await getSession();
 			if (session && session.isActive) {
-				console.log('session is active');
-				let startTime = new Date(session.timerStartedAt);
-				countdown =
-					session.timerValueInSeconds -
-					Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
-				console.log('countdown', countdown);
+				const startTime = new Date(session.timerStartedAt);
+                const elapsedSeconds = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
+                
+				countdown = session.timerValueInSeconds - elapsedSeconds;
+				expectedCombos = session.expectedCombos;
 
 				if (countdown <= 0) {
 					phase = 'recall';
 					return;
 				}
+
 				phase = 'wait';
+                intervalWorker.postMessage('start');
 			}
-			intervalWorker.postMessage('start');
 		} catch (error) {
 			console.error(error);
 		}
@@ -412,7 +441,6 @@
 						plain
 						name="customTime"
 						bind:value={customTimeInput}
-						type="number"
 						min="0.5"
 						step="0.5"
 						onchange={handleCustomTimeChange}
@@ -493,6 +521,9 @@
 					</svg>
 				{/if}
 			</div>
+			<div>
+				<Button color="blue" onclick={InterruptCountdown}>Interrupt</Button>
+			</div>
 		</div>
 	{:else if phase === 'recall'}
 		<h2>Вспомните все три сочетания:</h2>
@@ -551,9 +582,9 @@
 			<h2>Ожидаемые ответы:</h2>
 			{#if category === 'words'}
 				<ul>
-					<li class="text-center">{originalAdjective} {originalNoun}</li>
-					<li class="text-center">{currentAdj} {originalNoun}</li>
-					<li class="text-center">{currentAdj} {currentNoun}</li>
+                    {#each expectedCombos as expected}
+                        <li class="text-center">{expected}</li>
+                    {/each}
 				</ul>
 			{:else}
 				<div class="expected-shapes">
