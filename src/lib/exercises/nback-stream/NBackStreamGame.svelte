@@ -134,9 +134,8 @@
 </script>
 
 {#if phase === 'config'}
-  <div class="p-6 space-y-6">
+  <div class="flex flex-col gap-4">
     <h2 class="text-xl font-semibold">Выберите режим</h2>
-<hr>
     <div class="grid grid-cols-2 gap-4 max-w-xl">
       <button class="card" class:selected={domain==='figures'} on:click={()=> domain='figures'}>
         <div class="text-3xl mb-2">⬢</div>
