@@ -1,6 +1,6 @@
 <main class="prose prose-invert mx-auto max-w-2xl overflow-scroll p-6">
 	<h1 class="code-line" data-line-start="0" data-line-end="1">
-		<a id="________0"></a>Сон: зачем он нужен и как его улучшить
+		Сон: зачем он нужен и как его улучшить
 	</h1>
 	<blockquote>
 		<p class="has-line-data" data-line-start="2" data-line-end="3">
@@ -12,9 +12,7 @@
 			>, но без сна человек умирает через несколько дней.&quot;
 		</p>
 	</blockquote>
-	<h2 class="code-line" data-line-start="4" data-line-end="5">
-		<a id="_____4"></a>🔍 Основные факты о сне
-	</h2>
+	<h2 class="code-line" data-line-start="4" data-line-end="5">🔍 Основные факты о сне</h2>
 	<ul>
 		<li class="has-line-data" data-line-start="5" data-line-end="6">
 			Все животные спят, подчиняясь <strong>циркадным ритмам</strong>
@@ -31,16 +29,16 @@
 				<li class="has-line-data" data-line-start="9" data-line-end="10">
 					Повышенный риск сердечно-сосудистых заболеваний
 				</li>
-				<li class="has-line-data" data-line-start="10" data-line-end="11">Ослабленный иммунитет</li>
+				<li class="has-line-data" data-line-start="10" data-line-end="11">
+					Ослабленный иммунитет
+				</li>
 				<li class="has-line-data" data-line-start="11" data-line-end="13">
 					Раздражительность и стресс
 				</li>
 			</ul>
 		</li>
 	</ul>
-	<h3 class="code-line" data-line-start="13" data-line-end="14">
-		<a id="___13"></a>🚺 Гендерные различия
-	</h3>
+	<h3 class="code-line" data-line-start="13" data-line-end="14">🚺 Гендерные различия</h3>
 	<ul>
 		<li class="has-line-data" data-line-start="14" data-line-end="15">
 			60% женщин старшего возраста страдают бессонницей
@@ -56,9 +54,7 @@
 			После 50 лет потребность в качественном сне возрастает
 		</li>
 	</ul>
-	<h2 class="code-line" data-line-start="18" data-line-end="19">
-		<a id="____18"></a>⏰ Идеальный режим сна
-	</h2>
+	<h2 class="code-line" data-line-start="18" data-line-end="19">⏰ Идеальный режим сна</h2>
 	<table class="table-striped table-bordered table">
 		<thead>
 			<tr>
@@ -79,7 +75,8 @@
 				<td>Условия</td>
 				<td>
 					Полная темнота (для выработки
-					<a href="#%D0%BC%D0%B5%D0%BB%D0%B0%D1%82%D0%BE%D0%BD%D0%B8%D0%BD">мелатонина</a>)
+					<a href="#%D0%BC%D0%B5%D0%BB%D0%B0%D1%82%D0%BE%D0%BD%D0%B8%D0%BD">мелатонина</a
+					>)
 				</td>
 			</tr>
 			<tr>
@@ -89,7 +86,7 @@
 		</tbody>
 	</table>
 	<h2 class="code-line" data-line-start="26" data-line-end="27">
-		<a id="_4_____26"></a>📜 4 золотых правила здорового сна
+		📜 4 золотых правила здорового сна
 	</h2>
 	<ol>
 		<li class="has-line-data" data-line-start="27" data-line-end="28">
@@ -101,8 +98,12 @@
 		<li class="has-line-data" data-line-start="29" data-line-end="32">
 			<strong>Идеальная атмосфера</strong>:
 			<ul>
-				<li class="has-line-data" data-line-start="30" data-line-end="31">Проветренная комната</li>
-				<li class="has-line-data" data-line-start="31" data-line-end="32">Полная темнота</li>
+				<li class="has-line-data" data-line-start="30" data-line-end="31">
+					Проветренная комната
+				</li>
+				<li class="has-line-data" data-line-start="31" data-line-end="32">
+					Полная темнота
+				</li>
 			</ul>
 		</li>
 		<li class="has-line-data" data-line-start="32" data-line-end="34">
@@ -122,11 +123,9 @@
 		</p>
 	</blockquote>
 	<hr />
-	<h2 class="code-line" data-line-start="38" data-line-end="39">
-		<a id="___38"></a>🔗 Дополнительные материалы
-	</h2>
+	<h2 class="code-line" data-line-start="38" data-line-end="39">🔗 Дополнительные материалы</h2>
 	<h3 class="code-line" data-line-start="40" data-line-end="41">
-		<a id="____40"></a>🧠 <em>Зачем мы спим?</em>
+		🧠 <em>Зачем мы спим?</em>
 	</h3>
 	<p class="has-line-data" data-line-start="41" data-line-end="42">
 		Мозг никогда не отдыхает полностью. Во сне:
@@ -143,7 +142,7 @@
 		</li>
 	</ul>
 	<h3 class="code-line" data-line-start="46" data-line-end="47">
-		<a id="______46"></a>👩 <em>Почему женщинам нужно больше сна?</em>
+		👩 <em>Почему женщинам нужно больше сна?</em>
 	</h3>
 	<ol>
 		<li class="has-line-data" data-line-start="47" data-line-end="48">
@@ -160,13 +159,15 @@
 		</li>
 	</ol>
 	<h3 class="code-line" data-line-start="52" data-line-end="53">
-		<a id="_______52"></a>🌙 <em>Мелатонин – гормон молодости и сна</em>
+		🌙 <em>Мелатонин – гормон молодости и сна</em>
 	</h3>
 	<p class="has-line-data" data-line-start="53" data-line-end="54">
 		<strong>Как повысить естественно:</strong>
 	</p>
 	<ul>
-		<li class="has-line-data" data-line-start="54" data-line-end="55">🌑 Спать в полной темноте</li>
+		<li class="has-line-data" data-line-start="54" data-line-end="55">
+			🌑 Спать в полной темноте
+		</li>
 		<li class="has-line-data" data-line-start="55" data-line-end="56">⏰ Ложиться до 22:00</li>
 		<li class="has-line-data" data-line-start="56" data-line-end="60">
 			🍽️ Употреблять продукты с триптофаном:
@@ -182,7 +183,7 @@
 		</li>
 	</ul>
 	<h3 class="code-line" data-line-start="62" data-line-end="63">
-		<a id="______62"></a>❓ Почему не получается заснуть рано?
+		❓ Почему не получается заснуть рано?
 	</h3>
 	<p class="has-line-data" data-line-start="63" data-line-end="64">
 		<strong>5 основных причин:</strong>
@@ -191,7 +192,9 @@
 		<li class="has-line-data" data-line-start="64" data-line-end="65">
 			Привычка позднего отхода ко сну
 		</li>
-		<li class="has-line-data" data-line-start="65" data-line-end="66">Синий свет от гаджетов</li>
+		<li class="has-line-data" data-line-start="65" data-line-end="66">
+			Синий свет от гаджетов
+		</li>
 		<li class="has-line-data" data-line-start="66" data-line-end="67">Стресс и тревожность</li>
 		<li class="has-line-data" data-line-start="67" data-line-end="68">
 			Недостаток физической активности днём
