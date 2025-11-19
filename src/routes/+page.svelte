@@ -19,7 +19,7 @@
 	let dateError = $state('');
 
 	// по умолчанию галочка стоит
-	let consentChecked = true;
+	let consentChecked = $state(true);
 
 	onMount(() => {
 		userStore.set(null);
@@ -57,7 +57,12 @@
 
 	<div class="flex flex-col gap-1">
 		<label for="lastname">🔠 Первые 2 буквы фамилии</label>
-		<TextInput required name="lastname" bind:value={lastname} bind:errorMessage={lastnameError} />
+		<TextInput
+			required
+			name="lastname"
+			bind:value={lastname}
+			bind:errorMessage={lastnameError}
+		/>
 	</div>
 
 	<div class="flex flex-col gap-1">

@@ -180,7 +180,13 @@
 		phase = 'time-select';
 	}
 
-	function selectTime(timeOption: TimeOption) {
+	import { scheduleTestReminder } from '$lib/notifications';
+
+	async function selectTime(timeOption: TimeOption){
+
+		await scheduleTestReminder('stroop', 10);
+		console.log('Pressed: Reminder scheduled for stroop test');
+
 		selectedTimeOption = timeOption;
 		if (timeOption.name !== 'Кастомный') {
 			prepareData();

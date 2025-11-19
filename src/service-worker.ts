@@ -12,6 +12,9 @@
 
 import { build, files, version } from '$service-worker';
 
+// import localforage from 'localforage';
+// console.log(await localforage.getItem('TG_GROUP_LINK'));
+
 // This gives `self` the correct types
 const self = globalThis.self as unknown as ServiceWorkerGlobalScope;
 
@@ -20,10 +23,12 @@ const CACHE = `cache-${version}`;
 
 const ASSETS = [
 	...build, // the app itself
-	...files  // everything in `static`
+	...files // everything in `static`
 ];
 
 self.addEventListener('install', (event) => {
+	console.log('[SW] Installing service worker version:', version);
+
 	// Create a new cache and add all files to it
 	async function addFilesToCache() {
 		const cache = await caches.open(CACHE);
@@ -47,6 +52,13 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
 	// ignore POST requests etc
 	if (event.request.method !== 'GET') return;
+
+	// Filter out chrome-extension protocol requests
+	if (event.request.url.includes('chrome-extension:')) {
+		// Option 1: Let the request proceed normally
+		console.log('[SW] Ignoring chrome-extension request:', event.request.url);
+		return;
+	}
 
 	async function respond() {
 		const url = new URL(event.request.url);
@@ -91,4 +103,44 @@ self.addEventListener('fetch', (event) => {
 	}
 
 	event.respondWith(respond());
+});
+
+import localforage from 'localforage';
+
+self.addEventListener('periodicsync', async (event) => {
+	if (event.tag === 'check-reminders') {
+		event.waitUntil(checkAllReminders());
+	}
+});
+
+async function checkAllReminders() {
+	const keys = await localforage.keys();
+	const reminderKeys = keys.filter((k) => k.startsWith('reminder-'));
+
+	await self.registration.showNotification('Время для теста!', {
+		body: `Пора завершить тест`,
+		requireInteraction: true
+	});
+
+	// for (const key of reminderKeys) {
+	// 	const reminder = await localforage.getItem(key);
+	// 	if (reminder && Date.now() >= reminder.scheduledFor) {
+	// 		await self.registration.showNotification('Время для теста!', {
+	// 			body: `Пора завершить тест "${reminder.testSlug}"`,
+	// 			icon: '/icon.png',
+	// 			requireInteraction: true
+	// 		});
+	// 		await localforage.removeItem(key);
+	// 	}
+	// }
+}
+
+// Handle notification clicks
+self.addEventListener('notificationclick', (event) => {
+	event.notification.close();
+
+	if (event.action === 'open') {
+		// const testSlug = event.notification.tag.replace('test-', '');
+		event.waitUntil(clients.openWindow(`/tests/stroop/playground`));
+	}
 });
