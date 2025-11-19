@@ -56,10 +56,10 @@ export const wordMorphingSessions = sqliteTable('word_morphing_sessions', {
 	userId: text('user_id')
 		.notNull()
 		.references(() => user.id),
+	expectedCombos: text('expected_combos', { mode: 'json' }).$type<string[]>().notNull(),
 	timerStartedAt: integer('timer_started_at', { mode: 'timestamp' })
 		.notNull()
 		.$defaultFn(() => new Date()),
 	timerValueInSeconds: integer('timer_value_in_seconds').notNull(),
 	isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true)
 });
-

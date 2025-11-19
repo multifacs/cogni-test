@@ -16,9 +16,9 @@ export const GET: RequestHandler = async ({ cookies }) => {
 	try {
 		const session = await getWordMorphingSessionByUserId(userId);
 
-        if (!session) {
-            return json({ error: 'No active session' }, { status: 404 });
-        }
+		if (!session) {
+			return json({ error: 'No active session' }, { status: 404 });
+		}
 
 		return json(session, { status: 200 });
 	} catch (error) {
@@ -27,17 +27,21 @@ export const GET: RequestHandler = async ({ cookies }) => {
 };
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
-    const { timerValueInSeconds } = await request.json();
+	const { timerValueInSeconds, expectedCombos } = await request.json();
 	const userId = cookies.get('user_id');
-    const timerStartedAt = new Date();
-
+	const timerStartedAt = new Date();
 
 	if (!userId) {
 		return json({ error: 'Missing userId cookie' }, { status: 401 });
 	}
 
 	try {
-		await createWordMorphingSession(userId, timerStartedAt, parseInt(timerValueInSeconds));
+		await createWordMorphingSession(
+			userId,
+			timerStartedAt,
+			parseInt(timerValueInSeconds),
+			expectedCombos,
+		);
 		return json({ success: true }, { status: 201 });
 	} catch (error) {
 		return json({ error: `Failed to create word morphing session: ${error}` }, { status: 500 });

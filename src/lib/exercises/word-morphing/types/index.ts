@@ -9,6 +9,7 @@ export type WordMorphingResult = {
 export type WordMorphingSession = {
 	id: string;
     userId: string;
+    expectedCombos: string[];
 	timerStartedAt: number;
     timerValueInSeconds: number;
 	isActive: boolean;
