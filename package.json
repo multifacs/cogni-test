@@ -57,6 +57,7 @@
 		"drizzle-kit": "^0.31.7",
 		"drizzle-orm": "^0.44.7",
 		"gray-matter": "^4.0.3",
+		"localforage": "^1.10.0",
 		"short-uuid": "^5.2.0",
 		"tailwindcss": "^4.1.17",
 		"web-push": "^3.6.7"
