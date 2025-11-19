@@ -10,10 +10,6 @@
 		if (!browser || !('serviceWorker' in navigator)) {
 			throw new Error('Service workers not supported');
 		}
-
-		await navigator.serviceWorker.register('/service-worker.js', {
-			type: dev ? 'module' : 'classic'
-		});
 	});
 
 </script>

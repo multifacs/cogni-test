@@ -2,7 +2,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 </script>
 
-<main class="flex flex-col h-full items-center justify-center gap-6 p-8 text-white">
+<main class="flex h-full flex-col items-center justify-center gap-6 p-8 text-white">
 	<h1 class="text-3xl font-bold">Добро пожаловать!</h1>
 	<p class="max-w-md text-center text-lg">Выберите, с чего начать:</p>
 
