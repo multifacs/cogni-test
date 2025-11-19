@@ -6,7 +6,7 @@ type PushPayload = {
     icon: string;
 };
 
-export async function sendNotification(payload: PushPayload) {
+export async function sendNotification(payload: PushPayload, delayInSeconds = 0) {
     const subscription = await pushService.getSubscription();
 
     if (!subscription) {
@@ -22,7 +22,8 @@ export async function sendNotification(payload: PushPayload) {
             },
             body: JSON.stringify({
                 subscription,
-                payload
+                payload,
+                delay: delayInSeconds
             })
         });
     } catch (error) {
