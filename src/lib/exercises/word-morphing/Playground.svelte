@@ -46,7 +46,8 @@
 		}
 	};
 
-	let session: WordMorphingSession | null = $state(null);
+	let { data } = $props();
+    let session: WordMorphingSession | null = data.session;
 
 	let selectedTimeOption: TimeOption = $state(timeOptions[0]);
 	let customTimeInSeconds = $state(60); // По умолчанию 1 минута
@@ -330,72 +331,53 @@
 		);
 	}
 
-    function setOriginalShapeAndColor(shapeName: string, colorName: string) {
-        const foundShape = shapes.find(s => s.name === shapeName);
-        const foundColor = colors.find(c => c.name === colorName);
+	function setOriginalShapeAndColor(shapeName: string, colorName: string) {
+		const foundShape = shapes.find((s) => s.name === shapeName);
+		const foundColor = colors.find((c) => c.name === colorName);
 
-        if (foundShape) {
-            originalShape = foundShape;
-        }
-        if (foundColor) {
-            originalColor = foundColor;
-        }
-    }
+		if (foundShape) {
+			originalShape = foundShape;
+		}
+		if (foundColor) {
+			originalColor = foundColor;
+		}
+	}
 
-    function setCurrentShapeAndColor(shapeName: string, colorName: string) {
-        const foundShape = shapes.find(s => s.name === shapeName);
-        const foundColor = colors.find(c => c.name === colorName);
+	function setCurrentShapeAndColor(shapeName: string, colorName: string) {
+		const foundShape = shapes.find((s) => s.name === shapeName);
+		const foundColor = colors.find((c) => c.name === colorName);
 
-        if (foundShape) {
-            currentShape = foundShape;
-        }
-        if (foundColor) {
-            currentColor = foundColor;
-        }
-    }
+		if (foundShape) {
+			currentShape = foundShape;
+		}
+		if (foundColor) {
+			currentColor = foundColor;
+		}
+	}
 
 	async function getSession() {
-		let response = await fetch('/api/word-morphing', {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json'
+		if (session && session.isActive) {
+			const startTime = new Date(session.timerStartedAt);
+			const elapsedSeconds = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
+
+			countdown = session.timerValueInSeconds - elapsedSeconds;
+			expectedCombos = session.expectedCombos;
+			category = session.category;
+
+			if (category === 'shapes') {
+				const [origShapeName, origColorName] = expectedCombos[0].split(' ');
+				const [currentShapeName, currentColorName] = expectedCombos[2].split(' ');
+				setOriginalShapeAndColor(origShapeName, origColorName);
+				setCurrentShapeAndColor(currentShapeName, currentColorName);
 			}
-		});
 
-		if (!response.ok) {
-			console.log('no session');
-			return;
-		}
-
-		try {
-			session = await response.json();
-			if (session && session.isActive) {
-				const startTime = new Date(session.timerStartedAt);
-				const elapsedSeconds = Math.floor(
-					(new Date().getTime() - startTime.getTime()) / 1000
-				);
-
-				countdown = session.timerValueInSeconds - elapsedSeconds;
-				expectedCombos = session.expectedCombos;
-                category = session.category;
-
-                if (category === 'shapes') {
-                    const [origShapeName, origColorName] = expectedCombos[0].split(' ');
-                    const [currentShapeName, currentColorName] = expectedCombos[2].split(' ');
-                    setOriginalShapeAndColor(origShapeName, origColorName);
-                    setCurrentShapeAndColor(currentShapeName, currentColorName);
-                }
-
-				if (countdown <= 0) {
-					phase = 'recall';
-					return;
-				}
-
-				phase = 'wait';
-				intervalWorker.postMessage('start');
+			if (countdown <= 0) {
+				phase = 'recall';
+				return;
 			}
-		} catch (error) {
-			console.error(error);
+
+			phase = 'wait';
+			intervalWorker.postMessage('start');
 		}
 	}
 
@@ -404,11 +386,7 @@
 		subscribed = await isSubscribed();
 		showModal = !subscribed;
 
-		try {
-			await getSession();
-		} catch (error) {
-			console.error(error);
-		}
+		getSession();
 	});
 
 	onDestroy(() => {
