@@ -1,6 +1,9 @@
 import { error } from '@sveltejs/kit';
+import { getWordMorphingSessionByUserId } from '$lib/server/db/controllers/wordMorphingSessions';
+import type { PageServerLoad } from './$types';
 
-export async function load({ params, fetch }) {
+export const load: PageServerLoad = async ({ params, fetch, cookies }) => {
+    const userId = cookies.get('user_id');
 	const slug = params.slug;
 	console.log(slug);
 
@@ -11,7 +14,6 @@ export async function load({ params, fetch }) {
 		error(404, 'test not found');
 	}
 
-	const data = {};
 
 	if (slug.includes('campimetry')) {
 		const silhouettes = {
@@ -22,8 +24,14 @@ export async function load({ params, fetch }) {
 			shark: '/campimetry/shark.svg'
 		};
 
-		data.silhouettes = silhouettes;
+        return { silhouettes };
 	}
 
-	return data;
+    if (slug.includes("word-morphing")) {
+        if (!userId) {
+            error(401, 'Missing userId cookie');
+        }
+        const session = await getWordMorphingSessionByUserId(userId);
+        return { session };
+    }
 }

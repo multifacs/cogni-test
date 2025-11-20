@@ -60,7 +60,9 @@
 	}
 	.scroll-container .scroll-fade {
 		animation: scrolling forwards;
-		animation-timeline: scroll(); /* it will consider the ancestor having overflow: auto/hidden  */
+		animation-timeline: scroll(
+
+		); /* it will consider the ancestor having overflow: auto/hidden  */
 	}
 	@keyframes scrolling {
 		from {

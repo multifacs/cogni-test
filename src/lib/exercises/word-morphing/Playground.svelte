@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import TextInput from '$lib/components/ui/login-form/TextInput.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
@@ -8,6 +8,8 @@
 	import { isSubscribed, sendNotification } from '$lib/utils/push';
 	import { pushService } from '$lib/pushService';
 	import { adjectives, nouns } from './logic/data';
+
+	import type { WordMorphingSession } from './types';
 
 	// Добавляем выбор категории
 	let category: 'words' | 'shapes' = $state('words');
@@ -38,20 +40,14 @@
 				intervalWorker.postMessage('stop');
 				intervalWorker.terminate();
 				phase = 'recall';
-
-                // Отправляем пуш-уведомление
-				if (subscribed) {
-					sendNotification({
-						title: 'Время вышло!',
-						body: 'Пора вспомнить сочетания.',
-						icon: '/icon.png' // Добавьте путь к вашей иконке
-					});
-				}
 			} else {
 				countdown = countdown - 1;
 			}
 		}
 	};
+
+	let { data } = $props();
+    let session: WordMorphingSession | null = data.session;
 
 	let selectedTimeOption: TimeOption = $state(timeOptions[0]);
 	let customTimeInSeconds = $state(60); // По умолчанию 1 минута
@@ -236,6 +232,35 @@
 					: selectedTimeOption.seconds;
 			countdown = waitTime;
 
+			setExpectedCombos();
+
+			try {
+				fetch('/api/word-morphing', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						timerValueInSeconds: waitTime,
+						expectedCombos,
+						category: category
+					})
+				});
+			} catch (error) {
+				console.error(error);
+			}
+
+			if (subscribed) {
+				sendNotification(
+					{
+						title: 'Время вышло!',
+						body: 'Пора вспомнить сочетания.',
+						icon: '/icon.png' // Добавьте путь к вашей иконке
+					},
+					waitTime
+				);
+			}
+
 			intervalWorker.postMessage('start');
 		} else if (phase === 'recall') phase = 'result';
 	}
@@ -260,7 +285,7 @@
 
 	let expectedCombos: string[] = $state([]);
 
-	function finishRecall() {
+	function setExpectedCombos() {
 		if (category === 'words') {
 			expectedCombos = [
 				`${originalAdjective} ${originalNoun}`,
@@ -274,21 +299,99 @@
 				`${currentShape.name} ${currentColor.name}`
 			];
 		}
+	}
 
+	function setRecalledCombos() {
 		recalledCombos = [input1.trim(), input2.trim(), input3.trim()];
+	}
+
+	function finishRecall() {
+		setRecalledCombos();
+
+		try {
+			fetch('/api/word-morphing', {
+				method: 'DELETE',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+		} catch (error) {
+			console.error(error);
+		}
+
 		nextPhase();
 	}
 
 	// Функция для проверки совпадения комбинаций
 	function isCorrectCombination(recalled: string, expected: string) {
 		// замена на случаи зеленый/зелёный
-		return recalled.toLocaleLowerCase().replace('ё', 'е') === expected.toLocaleLowerCase();
+		return (
+			recalled.toLocaleLowerCase().replace('ё', 'е') ===
+			expected.toLocaleLowerCase().replace('ё', 'е')
+		);
+	}
+
+	function setOriginalShapeAndColor(shapeName: string, colorName: string) {
+		const foundShape = shapes.find((s) => s.name === shapeName);
+		const foundColor = colors.find((c) => c.name === colorName);
+
+		if (foundShape) {
+			originalShape = foundShape;
+		}
+		if (foundColor) {
+			originalColor = foundColor;
+		}
+	}
+
+	function setCurrentShapeAndColor(shapeName: string, colorName: string) {
+		const foundShape = shapes.find((s) => s.name === shapeName);
+		const foundColor = colors.find((c) => c.name === colorName);
+
+		if (foundShape) {
+			currentShape = foundShape;
+		}
+		if (foundColor) {
+			currentColor = foundColor;
+		}
+	}
+
+	async function getSession() {
+		if (session && session.isActive) {
+			const startTime = new Date(session.timerStartedAt);
+			const elapsedSeconds = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
+
+			countdown = session.timerValueInSeconds - elapsedSeconds;
+			expectedCombos = session.expectedCombos;
+			category = session.category;
+
+			if (category === 'shapes') {
+				const [origShapeName, origColorName] = expectedCombos[0].split(' ');
+				const [currentShapeName, currentColorName] = expectedCombos[2].split(' ');
+				setOriginalShapeAndColor(origShapeName, origColorName);
+				setCurrentShapeAndColor(currentShapeName, currentColorName);
+			}
+
+			if (countdown <= 0) {
+				phase = 'recall';
+				return;
+			}
+
+			phase = 'wait';
+			intervalWorker.postMessage('start');
+		}
 	}
 
 	onMount(async () => {
 		// Проверям подписку на пуш
 		subscribed = await isSubscribed();
 		showModal = !subscribed;
+
+		getSession();
+	});
+
+	onDestroy(() => {
+		intervalWorker.postMessage('stop');
+		intervalWorker.terminate();
 	});
 </script>
 
@@ -481,9 +584,9 @@
 			<h2>Ожидаемые ответы:</h2>
 			{#if category === 'words'}
 				<ul>
-					<li class="text-center">{originalAdjective} {originalNoun}</li>
-					<li class="text-center">{currentAdj} {originalNoun}</li>
-					<li class="text-center">{currentAdj} {currentNoun}</li>
+					{#each expectedCombos as expected}
+						<li class="text-center">{expected}</li>
+					{/each}
 				</ul>
 			{:else}
 				<div class="expected-shapes">

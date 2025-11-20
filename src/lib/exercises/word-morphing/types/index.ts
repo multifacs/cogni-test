@@ -5,3 +5,13 @@ export type WordMorphingResult = {
 	recalled: string[];
 	timestamp: number;
 };
+
+export type WordMorphingSession = {
+	id: string;
+    userId: string;
+    category: "words" | "shapes";
+    expectedCombos: string[];
+	timerStartedAt: number;
+    timerValueInSeconds: number;
+	isActive: boolean;
+};
