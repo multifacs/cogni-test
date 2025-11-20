@@ -4,7 +4,6 @@
 	import localforage from 'localforage';
 	import { onMount } from 'svelte';
 	import { dev } from '$app/environment';
-	import { requestNotificationPermissions } from '$lib/notifications';
 	let { children } = $props();
 
 	onMount(async () => {
@@ -15,8 +14,6 @@
 		navigator.serviceWorker.register('/service-worker.js', {
 			type: dev ? 'module' : 'classic'
 		});
-
-		requestNotificationPermissions();
 
 		try {
 			await localforage.setItem('TG_GROUP_LINK', 'https://t.me/+Q08ShGg2nSRhYTEy');

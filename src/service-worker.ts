@@ -139,8 +139,14 @@ async function checkAllReminders() {
 self.addEventListener('notificationclick', (event) => {
 	event.notification.close();
 
+	// Get URL from notification data, or use default
+	const url = event.notification.data?.url || 'https://cogni-test.ru';
+	
 	if (event.action === 'open') {
 		// const testSlug = event.notification.tag.replace('test-', '');
 		event.waitUntil(clients.openWindow(`/tests/stroop/playground`));
+	} else {
+		// Default action: open the URL from notification data
+		event.waitUntil(clients.openWindow(url));
 	}
 });

@@ -5,10 +5,10 @@
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import IntervalWorker from '$lib/workers/interval_worker.ts?worker';
 	import { shuffle } from '$lib/utils';
-	import { isSubscribed, sendNotification } from '$lib/utils/push';
+	import { isSubscribed } from '$lib/utils/push';
 	import { pushService } from '$lib/pushService';
 	import { adjectives, nouns } from './logic/data';
-
+	import localforage from 'localforage';
 	import type { WordMorphingSession } from './types';
 
 	// Добавляем выбор категории
@@ -35,19 +35,18 @@
 	let intervalWorker = new IntervalWorker();
 	intervalWorker.onmessage = (e) => {
 		if (e.data === 'tick') {
-			console.log('tick');
-			if (countdown <= 1) {
+			currentTime = Date.now();
+			if (timerEndsAt && currentTime >= timerEndsAt) {
 				intervalWorker.postMessage('stop');
 				intervalWorker.terminate();
 				phase = 'recall';
-			} else {
-				countdown = countdown - 1;
+				timerEndsAt = null;
+				showLocalNotification();
 			}
 		}
 	};
 
 	let { data } = $props();
-    let session: WordMorphingSession | null = data.session;
 
 	let selectedTimeOption: TimeOption = $state(timeOptions[0]);
 	let customTimeInSeconds = $state(60); // По умолчанию 1 минута
@@ -131,6 +130,9 @@
 	let input3 = $state('');
 
 	let countdown = $state(30);
+	let timerEndsAt = $state<number | null>(null);
+	let currentTime = $state(Date.now());
+	let timeInterval: ReturnType<typeof setInterval> | null = null;
 
 	// Функция для обработки изменения кастомного времени
 	function handleCustomTimeChange() {
@@ -155,6 +157,25 @@
 		}
 	}
 
+	// Функция для отправки локального уведомления
+	async function showLocalNotification() {
+		if ('Notification' in window) {
+			// Запрашиваем разрешение, если еще не получено
+			if (Notification.permission === 'default') {
+				await Notification.requestPermission();
+			}
+
+			// Показываем уведомление, если разрешено
+			if (Notification.permission === 'granted') {
+				new Notification('Время вышло!', {
+					body: 'Пора вспомнить сочетания.',
+					icon: '/icon.png',
+					tag: 'word-morphing-timer' // Тег для замены предыдущих уведомлений
+				});
+			}
+		}
+	}
+
 	async function subscribe() {
 		if (!pushService) {
 			console.error('Push service not initialized');
@@ -176,13 +197,7 @@
 		phase = 'time-select';
 	}
 
-	import { scheduleTestReminder } from '$lib/notifications';
-
 	async function selectTime(timeOption: TimeOption){
-
-		await scheduleTestReminder('stroop', 10);
-		console.log('Pressed: Reminder scheduled for stroop test');
-
 		selectedTimeOption = timeOption;
 		if (timeOption.name !== 'Кастомный') {
 			prepareData();
@@ -236,36 +251,57 @@
 				selectedTimeOption.name === 'Кастомный'
 					? customTimeInSeconds
 					: selectedTimeOption.seconds;
-			countdown = waitTime;
-
+			
 			setExpectedCombos();
 
-			try {
-				fetch('/api/word-morphing', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify({
-						timerValueInSeconds: waitTime,
-						expectedCombos,
-						category: category
-					})
-				});
-			} catch (error) {
-				console.error(error);
-			}
+			// Calculate timer end time (Unix timestamp in milliseconds)
+			const now = Date.now();
+			timerEndsAt = now + waitTime * 1000;
+			currentTime = now;
 
-			if (subscribed) {
-				sendNotification(
-					{
-						title: 'Время вышло!',
-						body: 'Пора вспомнить сочетания.',
-						icon: '/icon.png' // Добавьте путь к вашей иконке
-					},
-					waitTime
-				);
+			// Save session to localforage
+			// Create a plain object with a copy of the array to avoid DataCloneError
+			const session: WordMorphingSession = {
+				timerEndsAt,
+				expectedCombos: [...expectedCombos], // Create a plain array copy
+				category
+			};
+			await localforage.setItem('wordMorphingSession', session);
+
+			// Schedule notifications: web push if online and subscribed, local as fallback
+			const isOnline = navigator.onLine;
+			
+			if (isOnline && subscribed) {
+				// Schedule web push notification
+				try {
+					// Get current subscription to send endpoint
+					const subscription = await pushService.getSubscription();
+					if (subscription) {
+						await fetch('/api/push/schedule', {
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/json'
+							},
+							body: JSON.stringify({
+								endpoint: subscription.endpoint,
+								payload: {
+									title: 'Время вышло!',
+									body: 'Пора вспомнить сочетания.',
+									icon: '/icon.png'
+								},
+								scheduledFor: timerEndsAt
+							})
+						});
+					}
+				} catch (error) {
+					console.error('Failed to schedule web push notification:', error);
+					// Fall back to local notification
+					// Local notification will be shown when timer expires
+				}
 			}
+			
+			// Always set up local notification as fallback (works offline)
+			// This will be triggered when timer expires in showLocalNotification()
 
 			intervalWorker.postMessage('start');
 		} else if (phase === 'recall') phase = 'result';
@@ -311,18 +347,15 @@
 		recalledCombos = [input1.trim(), input2.trim(), input3.trim()];
 	}
 
-	function finishRecall() {
+	async function finishRecall() {
 		setRecalledCombos();
 
+		// Clear session from localforage
 		try {
-			fetch('/api/word-morphing', {
-				method: 'DELETE',
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			});
+			await localforage.removeItem('wordMorphingSession');
+			timerEndsAt = null;
 		} catch (error) {
-			console.error(error);
+			console.error('Error clearing session:', error);
 		}
 
 		nextPhase();
@@ -362,28 +395,36 @@
 	}
 
 	async function getSession() {
-		if (session && session.isActive) {
-			const startTime = new Date(session.timerStartedAt);
-			const elapsedSeconds = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
+		try {
+			const session: WordMorphingSession | null = await localforage.getItem('wordMorphingSession');
+			
+			if (session) {
+				timerEndsAt = session.timerEndsAt;
+				currentTime = Date.now();
+				expectedCombos = session.expectedCombos;
+				category = session.category;
 
-			countdown = session.timerValueInSeconds - elapsedSeconds;
-			expectedCombos = session.expectedCombos;
-			category = session.category;
+				if (category === 'shapes') {
+					const [origShapeName, origColorName] = expectedCombos[0].split(' ');
+					const [currentShapeName, currentColorName] = expectedCombos[2].split(' ');
+					setOriginalShapeAndColor(origShapeName, origColorName);
+					setCurrentShapeAndColor(currentShapeName, currentColorName);
+				}
 
-			if (category === 'shapes') {
-				const [origShapeName, origColorName] = expectedCombos[0].split(' ');
-				const [currentShapeName, currentColorName] = expectedCombos[2].split(' ');
-				setOriginalShapeAndColor(origShapeName, origColorName);
-				setCurrentShapeAndColor(currentShapeName, currentColorName);
+				// Check if timer has already expired
+				if (currentTime >= timerEndsAt) {
+					phase = 'recall';
+					timerEndsAt = null;
+					// Clear expired session
+					await localforage.removeItem('wordMorphingSession');
+					return;
+				}
+
+				phase = 'wait';
+				intervalWorker.postMessage('start');
 			}
-
-			if (countdown <= 0) {
-				phase = 'recall';
-				return;
-			}
-
-			phase = 'wait';
-			intervalWorker.postMessage('start');
+		} catch (error) {
+			console.error('Error loading session from localforage:', error);
 		}
 	}
 
@@ -393,11 +434,28 @@
 		showModal = !subscribed;
 
 		getSession();
+
+		// Update currentTime each second for the display
+		timeInterval = setInterval(() => {
+			if (phase === 'wait' && timerEndsAt) {
+				currentTime = Date.now();
+				// Check if timer expired
+				if (currentTime >= timerEndsAt) {
+					phase = 'recall';
+					timerEndsAt = null;
+					localforage.removeItem('wordMorphingSession').catch(console.error);
+					showLocalNotification();
+				}
+			}
+		}, 1000);
 	});
 
 	onDestroy(() => {
 		intervalWorker.postMessage('stop');
 		intervalWorker.terminate();
+		if (timeInterval) {
+			clearInterval(timeInterval);
+		}
 	});
 </script>
 
@@ -520,17 +578,12 @@
 			</div>
 		{/if}
 	{:else if phase === 'wait'}
-		<div class="countdown-container">
+		<div class="flex flex-col items-center gap-4">
 			<h2>Время запоминания:</h2>
-			<div style="display: grid; justify-items: center; align-items: center">
-				<span style="grid-column: 1; grid-row: 1;" class="text-3xl"
-					>{formatTime(countdown)}</span
+			<div class="grid justify-items-center items-center">
+				<span class="text-3xl col-start-1 row-start-1"
+					>{timerEndsAt ? formatTime(Math.max(0, Math.floor((timerEndsAt - currentTime) / 1000))) : formatTime(0)}</span
 				>
-				{#if countdown <= 30}
-					<svg class="countdown-svg" style="grid-column: 1; grid-row: 1;">
-						<circle r="40" cx="50" cy="50"> </circle>
-					</svg>
-				{/if}
 			</div>
 		</div>
 	{:else if phase === 'recall'}
@@ -701,36 +754,4 @@
 		transform: scale(1.05);
 	}
 
-	.countdown-container {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 1rem;
-	}
-
-	/* Стили для таймера */
-	.countdown-svg {
-		width: 100px;
-		height: 100px;
-		transform: rotateY(-180deg) rotateZ(-90deg);
-	}
-
-	.countdown-svg circle {
-		stroke-dasharray: 251px;
-		stroke-dashoffset: 0px;
-		stroke-linecap: round;
-		stroke-width: 5px;
-		stroke: rgb(246, 246, 246);
-		fill: none;
-		animation: countdown 30s linear infinite forwards;
-	}
-
-	@keyframes countdown {
-		from {
-			stroke-dashoffset: 0px;
-		}
-		to {
-			stroke-dashoffset: 251px;
-		}
-	}
 </style>

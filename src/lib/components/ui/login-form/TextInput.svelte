@@ -5,7 +5,8 @@
 		required = false,
 		errorMessage = $bindable(),
 		placeholder = '',
-		plain = false
+		plain = false,
+		...restProps
 	} = $props();
 
 	function handleInput(e: Event) {
@@ -38,11 +39,12 @@
 <input
 	{required}
 	{name}
-	type="text"
+	type={restProps.type ?? 'text'}
 	bind:value
 	placeholder={placeholder ? placeholder : name == 'firstname' ? 'ИМЯ' : 'ФА'}
 	oninput={handleInput}
 	maxlength={plain ? 99 : 10}
+	{...restProps}
 	class={`
 	max-xs:text-base
 	max-xs:p-1

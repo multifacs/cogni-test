@@ -14,7 +14,7 @@
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
 		"start": "npx drizzle-kit push --force && node index.js",
-		"init-db": "npx drizzle-kit push --force"
+		"init-db": "cross-env DATABASE_URL=file:sqlite.db npx drizzle-kit push --force"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.0",

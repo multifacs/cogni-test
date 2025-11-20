@@ -7,11 +7,7 @@ export type WordMorphingResult = {
 };
 
 export type WordMorphingSession = {
-	id: string;
-    userId: string;
-    category: "words" | "shapes";
-    expectedCombos: string[];
-	timerStartedAt: number;
-    timerValueInSeconds: number;
-	isActive: boolean;
+	timerEndsAt: number; // Unix timestamp in milliseconds
+	expectedCombos: string[];
+	category: 'words' | 'shapes';
 };

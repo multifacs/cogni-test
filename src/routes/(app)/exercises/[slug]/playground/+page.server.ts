@@ -1,9 +1,7 @@
 import { error } from '@sveltejs/kit';
-import { getWordMorphingSessionByUserId } from '$lib/server/db/controllers/wordMorphingSessions';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params, fetch, cookies }) => {
-    const userId = cookies.get('user_id');
+export const load: PageServerLoad = async ({ params }) => {
 	const slug = params.slug;
 	console.log(slug);
 
@@ -26,12 +24,4 @@ export const load: PageServerLoad = async ({ params, fetch, cookies }) => {
 
         return { silhouettes };
 	}
-
-    if (slug.includes("word-morphing")) {
-        if (!userId) {
-            error(401, 'Missing userId cookie');
-        }
-        const session = await getWordMorphingSessionByUserId(userId);
-        return { session };
-    }
 }

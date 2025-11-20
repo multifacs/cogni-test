@@ -35,32 +35,5 @@ export const session = sqliteTable('session', {
 		.notNull()
 });
 
-export const pushSubscriptions = sqliteTable('push_subscriptions', {
-	id: integer('id').primaryKey({ autoIncrement: true }),
-	userId: text('user_id'), // Optional: link to user accounts
-	endpoint: text('endpoint').notNull(),
-	p256dh: text('p256dh').notNull(),
-	auth: text('auth').notNull(),
-	userAgent: text('user_agent'),
-	createdAt: integer('created_at', { mode: 'timestamp' })
-		.notNull()
-		.$defaultFn(() => new Date()),
-	updatedAt: integer('updated_at', { mode: 'timestamp' })
-		.notNull()
-		.$defaultFn(() => new Date()),
-	isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true)
-});
-
-export const wordMorphingSessions = sqliteTable('word_morphing_sessions', {
-	id: integer('id').primaryKey({ autoIncrement: true }),
-	userId: text('user_id')
-		.notNull()
-		.references(() => user.id),
-    category: text('category').notNull(),
-	expectedCombos: text('expected_combos', { mode: 'json' }).$type<string[]>().notNull(),
-	timerStartedAt: integer('timer_started_at', { mode: 'timestamp' })
-		.notNull()
-		.$defaultFn(() => new Date()),
-	timerValueInSeconds: integer('timer_value_in_seconds').notNull(),
-	isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true)
-});
+export { pushSubscriptions } from './pushSubscriptions';
+export { scheduledPushNotifications } from './scheduledPushNotifications';

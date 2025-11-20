@@ -5,8 +5,14 @@ async function loop() {
   const jobs = await db.getPendingJobs(Date.now());
 
   for (const job of jobs) {
-    await sendPush(job.userId, job.payload);
-    await db.markJobSent(job.id);
+    try {
+      await sendPush(job);
+      await db.markJobSent(job.id);
+    } catch (error) {
+      console.error(`Error processing job ${job.id}:`, error);
+      // Still mark as sent to avoid infinite retries, or implement retry logic
+      await db.markJobSent(job.id);
+    }
   }
 }
 
