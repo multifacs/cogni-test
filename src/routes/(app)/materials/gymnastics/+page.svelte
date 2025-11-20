@@ -2,24 +2,26 @@
 	import { onMount } from 'svelte';
 
 	let { data } = $props();
-	let sex = $state('male');
+	let sex: string | undefined = $state('male');
 
 	onMount(() => {
-		console.log(data.user.sex);
-		sex = data.user.sex;
+		console.log(data.user?.sex);
+		sex = data.user?.sex;
 	});
 </script>
 
 <main class="prose prose-invert mx-auto max-w-2xl overflow-scroll p-6">
-	<h1 class="code-line" data-line-start="0" data-line-end="1">
-		<a id="____0"></a>Гимнастика для шейного отдела
-	</h1>
+	<h1 class="code-line" data-line-start="0" data-line-end="1">Гимнастика для шейного отдела</h1>
 	<p class="has-line-data" data-line-start="2" data-line-end="3">
 		Регулярная зарядка (не профессиональный спорт) улучшает когнитивные функции за счет:
 	</p>
 	<ul>
-		<li class="has-line-data" data-line-start="3" data-line-end="4">Нормализации кровоснабжения</li>
-		<li class="has-line-data" data-line-start="4" data-line-end="6">Увеличения тонуса организма</li>
+		<li class="has-line-data" data-line-start="3" data-line-end="4">
+			Нормализации кровоснабжения
+		</li>
+		<li class="has-line-data" data-line-start="4" data-line-end="6">
+			Увеличения тонуса организма
+		</li>
 	</ul>
 	<p class="has-line-data" data-line-start="6" data-line-end="14">
 		<strong>Польза гимнастики для шейного отдела:</strong><br />
@@ -32,7 +34,7 @@
 		✔ Улучшает питание мозга
 	</p>
 	<hr />
-	<h2 class="code-line" data-line-start="17" data-line-end="18"><a id="_1_17"></a>Упражнение 1</h2>
+	<h2 class="code-line" data-line-start="17" data-line-end="18">Упражнение 1</h2>
 	<p class="has-line-data" data-line-start="18" data-line-end="19">
 		<strong>Исходное положение:</strong> Корпус прямой, подбородок опущен на грудь.
 	</p>
@@ -59,17 +61,19 @@
 	</p>
 	{#if sex == 'male'}
 		<video width="400" height="400" autoplay loop>
+			<track kind="captions" />
 			<source src="ex1-m.mp4" type="video/mp4" />
 			Ваш браузер не поддерживает видео.
 		</video>
 	{:else}
 		<video width="400" height="400" autoplay loop>
+			<track kind="captions" />
 			<source src="ex1-f.mp4" type="video/mp4" />
 			Ваш браузер не поддерживает видео.
 		</video>
 	{/if}
 	<hr />
-	<h2 class="code-line" data-line-start="31" data-line-end="32"><a id="_2_31"></a>Упражнение 2</h2>
+	<h2 class="code-line" data-line-start="31" data-line-end="32">Упражнение 2</h2>
 	<p class="has-line-data" data-line-start="32" data-line-end="33">
 		<strong>Исходное положение:</strong> Корпус прямой, плечи выпрямлены.
 	</p>
@@ -80,8 +84,12 @@
 		<li class="has-line-data" data-line-start="35" data-line-end="36">
 			Слегка отклоняем голову назад (не запрокидываем!)
 		</li>
-		<li class="has-line-data" data-line-start="36" data-line-end="37">Тянем подбородок вверх</li>
-		<li class="has-line-data" data-line-start="37" data-line-end="38">Задерживаем на 1 секунду</li>
+		<li class="has-line-data" data-line-start="36" data-line-end="37">
+			Тянем подбородок вверх
+		</li>
+		<li class="has-line-data" data-line-start="37" data-line-end="38">
+			Задерживаем на 1 секунду
+		</li>
 		<li class="has-line-data" data-line-start="38" data-line-end="40">
 			Чуть отпускаем напряжение и снова тянемся
 		</li>
@@ -91,17 +99,19 @@
 	</p>
 	{#if sex == 'male'}
 		<video width="400" height="400" autoplay loop>
+			<track kind="captions" />
 			<source src="ex2-m.mp4" type="video/mp4" />
 			Ваш браузер не поддерживает видео.
 		</video>
 	{:else}
 		<video width="400" height="400" autoplay loop>
+			<track kind="captions" />
 			<source src="ex2-f.mp4" type="video/mp4" />
 			Ваш браузер не поддерживает видео.
 		</video>
 	{/if}
 	<hr />
-	<h2 class="code-line" data-line-start="44" data-line-end="45"><a id="_3_44"></a>Упражнение 3</h2>
+	<h2 class="code-line" data-line-start="44" data-line-end="45">Упражнение 3</h2>
 	<p class="has-line-data" data-line-start="45" data-line-end="46">
 		<strong>Исходное положение:</strong> Позвоночник прямой, плечи неподвижны.
 	</p>
@@ -118,7 +128,9 @@
 		<li class="has-line-data" data-line-start="50" data-line-end="51">
 			Возвращаемся в исходное положение
 		</li>
-		<li class="has-line-data" data-line-start="51" data-line-end="53">Повторяем в левую сторону</li>
+		<li class="has-line-data" data-line-start="51" data-line-end="53">
+			Повторяем в левую сторону
+		</li>
 	</ol>
 	<p class="has-line-data" data-line-start="53" data-line-end="54">
 		Со временем амплитуда увеличится.
@@ -128,19 +140,19 @@
 	</p>
 	{#if sex == 'male'}
 		<video width="400" height="400" autoplay loop>
+			<track kind="captions" />
 			<source src="ex3-m.mp4" type="video/mp4" />
 			Ваш браузер не поддерживает видео.
 		</video>
 	{:else}
 		<video width="400" height="400" autoplay loop>
+			<track kind="captions" />
 			<source src="ex3-f.mp4" type="video/mp4" />
 			Ваш браузер не поддерживает видео.
 		</video>
 	{/if}
 	<hr />
-	<h2 class="code-line" data-line-start="59" data-line-end="60">
-		<a id="_4__59"></a>Упражнение 4 (“Щенок”)
-	</h2>
+	<h2 class="code-line" data-line-start="59" data-line-end="60">Упражнение 4 (“Щенок”)</h2>
 	<p class="has-line-data" data-line-start="60" data-line-end="61">
 		<strong>Исходное положение:</strong> Корпус прямой, голова перед собой.
 	</p>
@@ -154,8 +166,12 @@
 				<li class="has-line-data" data-line-start="64" data-line-end="65">
 					Подбородок → вправо-вверх
 				</li>
-				<li class="has-line-data" data-line-start="65" data-line-end="66">Макушка → влево-вниз</li>
-				<li class="has-line-data" data-line-start="66" data-line-end="67">Глаза смотрят вверх</li>
+				<li class="has-line-data" data-line-start="65" data-line-end="66">
+					Макушка → влево-вниз
+				</li>
+				<li class="has-line-data" data-line-start="66" data-line-end="67">
+					Глаза смотрят вверх
+				</li>
 			</ul>
 		</li>
 		<li class="has-line-data" data-line-start="67" data-line-end="69">
@@ -181,17 +197,19 @@
 	</p>
 	{#if sex == 'male'}
 		<video width="400" height="400" autoplay loop>
+			<track kind="captions" />
 			<source src="ex4-m.mp4" type="video/mp4" />
 			Ваш браузер не поддерживает видео.
 		</video>
 	{:else}
 		<video width="400" height="400" autoplay loop>
+			<track kind="captions" />
 			<source src="ex4-f.mp4" type="video/mp4" />
 			Ваш браузер не поддерживает видео.
 		</video>
 	{/if}
 	<hr />
-	<h2 class="code-line" data-line-start="78" data-line-end="79"><a id="_5_78"></a>Упражнение 5</h2>
+	<h2 class="code-line" data-line-start="78" data-line-end="79">Упражнение 5</h2>
 	<p class="has-line-data" data-line-start="79" data-line-end="80">
 		<strong>Исходное положение:</strong> Корпус прямой, голова на линии с позвоночником.
 	</p>
@@ -215,18 +233,20 @@
 	</p>
 	{#if sex == 'male'}
 		<video width="400" height="400" autoplay loop>
+			<track kind="captions" />
 			<source src="ex5-m.mp4" type="video/mp4" />
 			Ваш браузер не поддерживает видео.
 		</video>
 	{:else}
 		<video width="400" height="400" autoplay loop>
+			<track kind="captions" />
 			<source src="ex5-f.mp4" type="video/mp4" />
 			Ваш браузер не поддерживает видео.
 		</video>
 	{/if}
 	<hr />
 	<h2 class="code-line" data-line-start="91" data-line-end="92">
-		<a id="_6___91"></a>Упражнение 6 (Круговые движения)
+		Упражнение 6 (Круговые движения)
 	</h2>
 	<p class="has-line-data" data-line-start="92" data-line-end="93">
 		<strong>Техника выполнения:</strong>
@@ -238,9 +258,15 @@
 				<li class="has-line-data" data-line-start="94" data-line-end="95">
 					Подбородок → к грудине
 				</li>
-				<li class="has-line-data" data-line-start="95" data-line-end="96">К правому плечу</li>
-				<li class="has-line-data" data-line-start="96" data-line-end="97">Затылок → к спине</li>
-				<li class="has-line-data" data-line-start="97" data-line-end="98">К левому плечу</li>
+				<li class="has-line-data" data-line-start="95" data-line-end="96">
+					К правому плечу
+				</li>
+				<li class="has-line-data" data-line-start="96" data-line-end="97">
+					Затылок → к спине
+				</li>
+				<li class="has-line-data" data-line-start="97" data-line-end="98">
+					К левому плечу
+				</li>
 			</ul>
 		</li>
 		<li class="has-line-data" data-line-start="98" data-line-end="100">
@@ -256,11 +282,13 @@
 	</p>
 	{#if sex == 'male'}
 		<video width="400" height="400" autoplay loop>
+			<track kind="captions" />
 			<source src="ex6-m.mp4" type="video/mp4" />
 			Ваш браузер не поддерживает видео.
 		</video>
 	{:else}
 		<video width="400" height="400" autoplay loop>
+			<track kind="captions" />
 			<source src="ex6-f.mp4" type="video/mp4" />
 			Ваш браузер не поддерживает видео.
 		</video>
