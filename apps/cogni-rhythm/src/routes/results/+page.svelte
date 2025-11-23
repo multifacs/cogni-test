@@ -26,7 +26,7 @@
 {:else}
 	<h1>Попыток нет</h1>
 {/if}
-<div class="controls flex items-center justify-center gap-2.5">
+<div class="controls flex items-center justify-center gap-2.5 mt-4">
 	<Button color="blue" goto={`/about`}>Заново</Button>
 </div>
 

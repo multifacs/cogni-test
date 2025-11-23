@@ -4,7 +4,7 @@
 	Chart.register(Colors);
 
 	import { onMount, onDestroy } from 'svelte';
-	import { getCSSVar } from '$lib/utils/common';
+	import { getCSSVar } from '$lib/utils';
 
 	import type { RhythmResult } from './types';
 
@@ -16,7 +16,6 @@
 	Chart.defaults.color = 'white';
 
 	const TRACKS = 8; // фиксированное число дорожек
-	// 0 1 2 3 4 5 6 7
 
 	// нормализация значения в [0,1]
 	function normalize(value: number, max: number) {
@@ -27,7 +26,8 @@
 	function getColor(error: number, maxError: number, isMiss: boolean): string {
 		if (isMiss) return getCSSVar('--color-black-500') || '#000000';
 
-		const t = 1 - normalize(error, maxError); // 1 = зелёный, 0 = красный
+		// 1 = зелёный, 0 = красный
+		const t = 1 - normalize(error, maxError || 1);
 		// градиент от красного -> жёлтого -> зелёного
 		const r = t < 0.5 ? 255 : Math.round(255 * (1 - (t - 0.5) * 2));
 		const g = t < 0.5 ? Math.round(255 * (t * 2)) : 255;
@@ -51,35 +51,49 @@
 		sortByNote(results).forEach((r, i) => {
 			const track = Math.floor(i / AttemptsInTrack);
 			console.log(i, '->', track, i / AttemptsInTrack);
-			// const attemptIndex = Math.floor(i / TRACKS) + 1;
+
 			const attemptIndex = i + 1; // просто по порядку
 
 			grouped[track].push({
 				x: attemptIndex,
-				y: r.attempt === -1 ? 0 : Math.floor(Math.abs(r.attempt - r.note)), // <- всегда число!
+				y: r.attempt === -1 ? 0 : Math.floor(Math.abs(r.attempt - r.note)),
 				raw: r
 			});
 		});
 
-		// находим максимальное отклонение среди всех (для нормализации цвета)
-		const maxError = Math.max(...grouped.flat().map((r) => r.y ?? 0));
+		const flat = grouped.flat();
+		if (flat.length === 0) {
+			console.warn('ResultsChart: нет данных для отображения');
+			return;
+		}
 
-		let datasets = grouped.map((group, trackIndex) => ({
-			label: `${trackIndex + 1}`,
-			data: group,
-			borderWidth: 1,
-			pointRadius: 5,
-			tension: 0.3,
-			pointBackgroundColor: (ctx: ScriptableContext<'line'>) => {
-				const result = ctx.raw as { y: number | null; raw: RhythmResult };
-				const isMiss = result.raw.attempt === -1;
-				const error = result.y ?? maxError;
-				return getColor(error, maxError, isMiss);
-			},
-			segment: {
-				// borderColor: 'rgba(255,255,255,0.3)'
-			}
-		}));
+		// максимальное отклонение среди всех (для нормализации цвета)
+		const maxError = Math.max(...flat.map((r) => r.y ?? 0)) || 1;
+
+		let datasets = grouped
+			.map((group, trackIndex) => ({
+				label: `${trackIndex + 1}`,
+				data: group,
+				borderWidth: 1,
+				pointRadius: 5,
+				tension: 0.3,
+				pointBackgroundColor: (ctx: ScriptableContext<'line'>) => {
+					// Chart.js иногда вызывает скриптабл-колбэк без точки (легенда/ресайз)
+					const point = ctx.raw as { y: number | null; raw: RhythmResult } | undefined;
+					if (!point) {
+						return getColor(0, maxError, false);
+					}
+
+					const isMiss = point.raw?.attempt === -1;
+					const error = point.y ?? maxError;
+					return getColor(error, maxError, isMiss);
+				},
+				segment: {
+					// borderColor: 'rgba(255,255,255,0.3)'
+				}
+			}))
+			// убираем полностью пустые дорожки
+			.filter((d) => d.data.length > 0);
 
 		console.log(datasets);
 
@@ -88,41 +102,19 @@
 			data: { datasets },
 			options: {
 				responsive: true,
-				onHover: function (event, chartElements) {
-					const target = event.native ? event.native.target : event.chart.canvas;
-					target.style.cursor = chartElements.length ? 'pointer' : 'default';
-				},
+				maintainAspectRatio: false,
 				plugins: {
 					legend: {
 						display: true,
-						position: 'top',
 						labels: {
-							color: 'white',
-							font: {
-								size: 14
-							},
-							boxWidth: 10,
-							boxHeight: 10,
-							padding: 10
-						},
-						title: {
-							display: true,
-							text: 'Дорожки',
-							color: 'white',
-							font: {
-								size: 16,
-								weight: 'bold'
-							}
+							color: getCSSVar('--color-white') || '#ffffff'
 						}
 					},
 					tooltip: {
 						callbacks: {
-							title: (context) => {
-								const v = context[0].raw as any;
-								return `Попытка ${v.x}`;
-							},
-							label: (context) => {
-								const v = context.raw as any;
+							label: (ctx) => {
+								const v = ctx.raw as { y: number | null; raw: RhythmResult };
+								if (!v) return '';
 								return v.raw.attempt === -1 ? 'Промах' : `Отклонение: ${v.y} мс`;
 							}
 						}
