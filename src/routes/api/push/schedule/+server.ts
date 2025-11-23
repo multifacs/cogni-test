@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { scheduledPushNotifications } from '$lib/server/db/scheduledPushNotifications';
-import { pushSubscriptions } from '$lib/server/db/pushSubscriptions';
+import { scheduledPushNotifications } from '$lib/server/db/schema';
+import { pushSubscriptions } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
 

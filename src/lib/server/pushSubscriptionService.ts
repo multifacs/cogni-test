@@ -1,6 +1,6 @@
 // src/lib/server/pushSubscriptionService.js
 import { db } from '$lib/server/db';
-import { pushSubscriptions } from '$lib/server/db/pushSubscriptions';
+import { pushSubscriptions } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 
 export class PushSubscriptionService {

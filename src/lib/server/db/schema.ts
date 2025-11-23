@@ -35,5 +35,30 @@ export const session = sqliteTable('session', {
 		.notNull()
 });
 
-export { pushSubscriptions } from './pushSubscriptions';
-export { scheduledPushNotifications } from './scheduledPushNotifications';
+export const scheduledPushNotifications = sqliteTable('scheduled_push_notifications', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	userId: text('user_id'),
+	endpoint: text('endpoint').notNull(),
+	payload: text('payload').notNull(), // JSON string
+	scheduledFor: integer('scheduled_for', { mode: 'timestamp' }).notNull(), // Unix timestamp in milliseconds
+	createdAt: integer('created_at', { mode: 'timestamp' })
+		.notNull()
+		.$defaultFn(() => new Date())
+});
+
+
+export const pushSubscriptions = sqliteTable('push_subscriptions', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	userId: text('user_id'), // Optional: link to user accounts
+	endpoint: text('endpoint').notNull(),
+	p256dh: text('p256dh').notNull(),
+	auth: text('auth').notNull(),
+	userAgent: text('user_agent'),
+	createdAt: integer('created_at', { mode: 'timestamp' })
+		.notNull()
+		.$defaultFn(() => new Date()),
+	updatedAt: integer('updated_at', { mode: 'timestamp' })
+		.notNull()
+		.$defaultFn(() => new Date()),
+	isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true)
+});

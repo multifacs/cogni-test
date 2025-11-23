@@ -114,7 +114,7 @@
 	полученные словосочетания.
 </p>
 
-<div class="mt-4 flex flex-col gap-4">
+<div class="mt-4 flex flex-col gap-4 hidden">
 	<Button onclick={sendLocalNotification} color="green">Отправить локальное уведомление</Button>
 	<Button onclick={sendServiceWorkerNotification} color="blue">
 		Отправить push-подобное уведомление (Service Worker)
