@@ -11,7 +11,7 @@
 </script>
 
 <dialog
-	class="fixed inset-0 z-999 grid min-h-screen min-w-screen place-items-center bg-black/50 backdrop-blur-sm"
+	class="fixed inset-0 z-999 grid min-h-screen min-w-screen place-items-center bg-black/50 text-justify backdrop-blur-sm"
 	bind:this={dialog}
 	onclose={() => (showModal = false)}
 	onclick={(e) => {
@@ -19,10 +19,10 @@
 	}}
 >
 	<div
-		class="relative m-4 w-full max-w-[90vw] rounded-lg bg-gray-900 p-4 shadow-sm md:w-2/5 md:max-w-[25%] md:min-w-[25%]"
+		class="relative m-4 w-full max-w-[90vw] rounded-lg bg-gray-900 p-4 shadow-sm md:w-2/5 md:max-w-[50%] md:min-w-[25%]"
 	>
 		{@render header?.()}
-		<hr class="my-4 h-px bg-gray-900 md:my-8" />
+		<hr class="my-4 h-px bg-gray-900" />
 		{@render children?.()}
 	</div>
 </dialog>

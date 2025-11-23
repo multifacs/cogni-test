@@ -105,12 +105,78 @@ self.addEventListener('fetch', (event) => {
 	event.respondWith(respond());
 });
 
+// Example: Showing a notification with action buttons
 self.addEventListener('push', (event) => {
-	const data = event.data.json();
-	let title = data.title || 'a default message if nothing was passed to us';
-	let body = data.body || 'WOW! The things I learned at FloridaJS';
-	let tag = data.tag || 'push-simple-demo-notification-tag';
-	let icon = 'https://floridajs.com/images/logo.jpg';
+	if (!event.data) {
+		return;
+	}
 
-	event.waitUntil(self.registration.showNotification(title, { body, icon, tag }));
+	const data = event.data.json();
+
+	console.log('Push received:', data);
+
+	const options = {
+		body: data.body,
+		icon: '/icon.png',
+		badge: '/bell.svg',
+		// STORE DYNAMIC DATA HERE - this is the key!
+		data: {
+			id: data.id,
+			url: data.url || '/', // Dynamic URL from push payload
+			path: data.path, // Alternative: just the path
+			params: data.params // Query parameters as object
+		},
+		actions: [
+			{
+				action: 'view',
+				title: 'Открыть',
+				// icon: '/icons/eyes.svg'
+			},
+			{
+				action: 'dismiss',
+				title: 'Скрыть',
+				// icon: '/icons/eyes-closed.svg'
+			}
+		],
+		tag: 'notification-' + data.id,
+		requireInteraction: false
+	};
+
+	event.waitUntil(self.registration.showNotification(data.title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+	console.log('Notification clicked:', event.notification.tag);
+
+	// Close the notification
+	event.notification.close();
+
+	// DYNAMIC APPROACH 1: Use data passed from notification
+	// Store the target URL in notification.data when creating it
+	const targetUrl = event.notification.data?.url || '/';
+
+	// Handle different actions
+	if (event.action === 'view') {
+		// User clicked the "View" action button
+		event.waitUntil(clients.openWindow(targetUrl));
+	} else if (event.action === 'dismiss') {
+		// User clicked the "Dismiss" action button
+		console.log('Notification dismissed');
+	} else {
+		// User clicked the notification body (not an action button)
+		event.waitUntil(
+			clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+				// Check if there's already a window open
+				for (let client of clientList) {
+					if (client.url.includes(targetUrl) && 'focus' in client) {
+						return client.focus();
+					}
+				}
+				// If no window is open, open a new one with dynamic URL
+				if (clients.openWindow) {
+					return clients.openWindow(targetUrl);
+				}
+			})
+		);
+	}
 });

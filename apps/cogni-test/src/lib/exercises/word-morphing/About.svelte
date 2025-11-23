@@ -2,6 +2,8 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import { pushService } from '$lib/pushService';
 
+	import { v7 as uuid } from 'uuid';
+
 	async function ensurePermission() {
 		if (!('Notification' in window)) {
 			alert('Уведомления не поддерживаются в этом браузере.');
@@ -60,9 +62,9 @@
 					body: JSON.stringify({
 						endpoint: subscription.endpoint,
 						payload: {
+							id: `word-morphing-${uuid()}`,
 							title: 'Время вышло!',
-							body: 'Пора вспомнить сочетания.',
-							icon: '/icon.png'
+							body: 'Пора вспомнить сочетания.'
 						},
 						scheduledFor: timerEndsAt
 					})
@@ -114,14 +116,14 @@
 	полученные словосочетания.
 </p>
 
-<div class="mt-4 flex flex-col gap-4 hidden">
+<div class="mt-4 flex flex-col gap-4">
 	<Button onclick={sendLocalNotification} color="green">Отправить локальное уведомление</Button>
 	<Button onclick={sendServiceWorkerNotification} color="blue">
 		Отправить push-подобное уведомление (Service Worker)
 	</Button>
-	<div class="flex">
-		<Button onclick={subscribe} color="red">Подписаться</Button>
-		<Button onclick={unsubscribe} color="red">Отписаться</Button>
+	<div class="flex w-full justify-around grow gap-2">
+		<Button onclick={subscribe} color="sky" class="grow">Подписаться</Button>
+		<Button onclick={unsubscribe} color="rose" class="grow">Отписаться</Button>
 	</div>
-	<Button onclick={sendServerNotification} color="red">Отправить Web Push API уведомление</Button>
+	<Button onclick={sendServerNotification} color="yellow">Отправить Web Push API уведомление</Button>
 </div>

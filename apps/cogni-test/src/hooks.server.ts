@@ -5,6 +5,7 @@ import { db } from '$lib/server/db';
 import { scheduledPushNotifications, pushSubscriptions } from '$lib/server/db/schema';
 import { webpush } from '$lib/server/webpush';
 import { eq, and, lte } from 'drizzle-orm';
+import { formatDateLog } from '$lib/utils';
 
 export async function processScheduledNotifications() {
 	try {
@@ -137,8 +138,17 @@ export async function processScheduledNotifications() {
 let workerInterval: NodeJS.Timeout | null = null;
 let isProcessing = false;
 
+// Use globalThis to persist across HMR
+const WORKER_KEY = '__notification_worker__';
+
 // Worker function that runs every 3 seconds
 function startWorker() {
+	// Check if worker already exists globally
+	if (globalThis[WORKER_KEY]) {
+		console.log('Worker already running globally, restarting...');
+		stopWorker()
+	}
+
 	// Fix for terminal input issues
 	if (process.stdin.isTTY) {
 		process.stdin.setRawMode(true);
@@ -174,22 +184,27 @@ function startWorker() {
 		isProcessing = true;
 
 		try {
-			const timestamp = new Date().toISOString();
-			console.log(`[Worker] Running at ${timestamp}`);
+			console.log(`[Worker] Running at ${formatDateLog(new Date())}`);
 			await processScheduledNotifications();
 		} catch (error) {
 			console.error('[Worker] Error:', error);
 		} finally {
 			isProcessing = false;
 		}
-	}, 30000); // 3 seconds
+	}, 10000);
+
+	// Store globally
+	globalThis[WORKER_KEY] = workerInterval;
 }
 
 // Cleanup function
 function stopWorker() {
-	if (workerInterval) {
-		clearInterval(workerInterval);
+	const interval = globalThis[WORKER_KEY] || workerInterval;
+
+	if (interval) {
+		clearInterval(interval);
 		workerInterval = null;
+		globalThis[WORKER_KEY] = null;
 		console.log('Worker stopped');
 	}
 }

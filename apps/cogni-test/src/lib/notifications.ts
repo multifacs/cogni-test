@@ -41,14 +41,8 @@ async function showNotification(testSlug: string) {
 
 	registration.showNotification('Время для теста!', {
 		body: `Пора завершить тест "${testSlug}"`,
-		icon: '/icon.png',
-		badge: '/badge.png',
 		tag: `test-${testSlug}`,
-		requireInteraction: true,
-		actions: [
-			{ action: 'open', title: 'Открыть тест' },
-			{ action: 'dismiss', title: 'Позже' }
-		]
+		requireInteraction: true
 	});
 }
 

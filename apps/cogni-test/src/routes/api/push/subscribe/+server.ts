@@ -20,10 +20,8 @@ export async function POST({ request, cookies }) {
 
 		// Send welcome notification
 		const payload = JSON.stringify({
-			title: 'Welcome!',
-			body: 'You have successfully subscribed to notifications.',
-			icon: '/favicon.png',
-			badge: '/favicon.png',
+			title: 'Добро пожаловать!',
+			body: 'Вы подписались на пуш-уведомления.',
 			data: {
 				subscriptionId
 			}

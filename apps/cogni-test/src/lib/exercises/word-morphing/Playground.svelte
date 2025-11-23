@@ -11,6 +11,8 @@
 	import localforage from 'localforage';
 	import type { WordMorphingSession } from './types';
 
+	import { v7 as uuid } from 'uuid';
+
 	// Добавляем выбор категории
 	let category: 'words' | 'shapes' = $state('words');
 
@@ -285,9 +287,9 @@
 							body: JSON.stringify({
 								endpoint: subscription.endpoint,
 								payload: {
+									id: `word-morphing-${uuid()}`,
 									title: 'Время вышло!',
-									body: 'Пора вспомнить сочетания.',
-									icon: '/icon.png'
+									body: 'Пора вспомнить сочетания.'
 								},
 								scheduledFor: timerEndsAt
 							})

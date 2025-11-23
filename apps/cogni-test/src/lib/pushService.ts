@@ -18,6 +18,7 @@ export class PushService {
 		if (permission !== 'granted') {
 			throw new Error('Permission denied');
 		}
+		console.log(permission);
 		return permission;
 	}
 
@@ -35,34 +36,39 @@ export class PushService {
 	}
 
 	async subscribe() {
-        const registration = await navigator.serviceWorker.ready;
-        if (!registration) {
-            throw new Error('No service worker registration found');
-        }
+		try {
+			const registration = await navigator.serviceWorker.ready;
+			if (!registration) {
+				throw new Error('No service worker registration found');
+			}
 
-		await this.requestPermission();
+			await this.requestPermission();
 
-		const subscription = await registration.pushManager.subscribe({
-			userVisibleOnly: true,
-			applicationServerKey: this.urlBase64ToUint8Array(this.vapidPublicKey)
-		});
+			const subscription = await registration.pushManager.subscribe({
+				userVisibleOnly: true,
+				applicationServerKey: this.urlBase64ToUint8Array(this.vapidPublicKey)
+			});
 
-		// Send subscription to server
-		await fetch('/api/push/subscribe', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify(subscription)
-		});
+			// Send subscription to server
+			await fetch('/api/push/subscribe', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(subscription)
+			});
 
-		return subscription;
+			return subscription;
+		} catch (e) {
+			throw new Error(`${e}`);
+		}
+		return null;
 	}
 
 	async unsubscribe() {
 		if (!browser) return;
 
-        const registration = await navigator.serviceWorker.ready;
+		const registration = await navigator.serviceWorker.ready;
 
 		if (registration) {
 			const subscription = await registration.pushManager.getSubscription();
@@ -84,7 +90,7 @@ export class PushService {
 	}
 
 	async getSubscription() {
-        const registration = await navigator.serviceWorker.ready;
+		const registration = await navigator.serviceWorker.ready;
 		if (!browser) return null;
 
 		if (registration) {
