@@ -1,11 +1,13 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+
 	import { userManager } from '$lib/userStore';
 
 	import Button from '$lib/components/ui/Button.svelte';
 	import DateInput from '$lib/components/ui/login-form/DateInput.svelte';
 	import TextInput from '$lib/components/ui/login-form/TextInput.svelte';
-	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
+	import PasswordInput from '$lib/components/ui/login-form/PasswordInput.svelte';
 
 	let firstname = $state('');
 	let lastname = $state('');
@@ -92,7 +94,7 @@
 
 	<div>
 		<label for="password">🔑 Пароль</label>
-		<TextInput required name="password" bind:value={password} placeholder="Пароль" />
+		<PasswordInput required name="password" bind:value={password} placeholder="Пароль" />
 	</div>
 
 	<div class="flex items-center justify-between gap-2 text-sm">

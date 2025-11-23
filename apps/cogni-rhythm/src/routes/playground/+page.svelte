@@ -42,13 +42,9 @@
 	}
 </script>
 
-{#if Playground}
-	<Playground gameEnd={onGameEnd} sendResults={onSendResults}></Playground>
-	<div class="controls flex items-center justify-center gap-2.5">
-		{#if isGameEnd}
-			<Button color="blue" goto={`/results`}>Результаты</Button>
-		{/if}
-	</div>
-{:else}
-	<p>Загрузка логики теста...</p>
-{/if}
+<Playground gameEnd={onGameEnd} sendResults={onSendResults}></Playground>
+<div class="controls flex items-center justify-center gap-2.5">
+	{#if isGameEnd}
+		<Button color="blue" goto={`/results`}>Результаты</Button>
+	{/if}
+</div>

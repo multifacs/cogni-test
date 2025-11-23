@@ -1,27 +1,21 @@
 <script lang="ts">
-	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import About from '$lib/rhythm/About.svelte';
 </script>
 
-{#if About}
-	<div
-		class="scroll-container group max-xs:text-xs xs:text-base min-h-0 shrink grow-0 overflow-y-auto px-2"
-	>
-		<About></About>
-		<div class="scroll-fade"></div>
-	</div>
-	<div
-		class="	controls
+<div
+	class="scroll-container group max-xs:text-xs xs:text-base min-h-0 shrink grow-0 overflow-y-auto px-2"
+>
+	<About></About>
+	<div class="scroll-fade"></div>
+</div>
+<div
+	class="	controls
   flex items-center justify-center gap-2.5"
-	>
-		<Button color="blue" goto={`/results`}>История</Button>
-		<Button color="green" goto={`/playground`}>Начать</Button>
-	</div>
-{:else}
-	<Spinner></Spinner>
-	<p>Загрузка теста rhythm...</p>
-{/if}
+>
+	<Button color="blue" goto={`/results`}>История</Button>
+	<Button color="green" goto={`/playground`}>Начать</Button>
+</div>
 
 <style>
 	.scroll-fade {
