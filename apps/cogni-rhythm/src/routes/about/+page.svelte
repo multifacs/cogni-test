@@ -1,21 +1,14 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-
-	let Component: typeof import('svelte').SvelteComponent | null = $state(null);
-
-	onMount(async () => {
-		// await delay(300);
-		Component = (await import(`$lib/rhythm/About.svelte`)).default;
-	});
+    import About from '$lib/rhythm/About.svelte';
 </script>
 
-{#if Component}
+{#if About}
 	<div
 		class="scroll-container group max-xs:text-xs xs:text-base min-h-0 shrink grow-0 overflow-y-auto px-2"
 	>
-		<Component></Component>
+		<About></About>
 		<div class="scroll-fade"></div>
 	</div>
 	<div

@@ -1,22 +1,14 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
-	import type { MetaResult, RegularResult, TestResultMap } from '$lib/tests/types.js';
+    import Playground from '$lib/rhythm/Playground.svelte';
+	import type { RhythmResult } from '$lib/rhythm/types';
 	import localforage from 'localforage';
-	import { onMount, type SvelteComponent } from 'svelte';
-
-    let { data } = $props();
-	let Component: typeof SvelteComponent | null = $state(null);
 
 	// let componentRef: InstanceType<typeof SvelteComponent> | null = $state(null);
 
 	let isGameRunning = $state(true);
 	let isGameEnd = $state(false);
-	let childComponent: InstanceType<typeof SvelteComponent> | null = $state(null);
-
-	onMount(async () => {
-		Component = (await import(`$lib/rhythm/Playground.svelte`)).default;
-	});
 
 	// function handleStart() {
 	// 	isGameEnd = false;
@@ -45,16 +37,16 @@
 		goto(`/results`);
 	}
 
-	async function onSendResults<T extends keyof TestResultMap>(
-		results: RegularResult<T> | MetaResult<T>
+	async function onSendResults(
+		results: RhythmResult[]
 	) {
-      localforage.setItem('results', results);
+      await localforage.setItem('results', results);
 	}
 </script>
 
-{#if Component}
-	<Component bind:this={childComponent} gameEnd={onGameEnd} sendResults={onSendResults} {data}
-	></Component>
+{#if Playground}
+	<Playground gameEnd={onGameEnd} sendResults={onSendResults}
+	></Playground>
 	<div class="controls flex items-center justify-center gap-2.5">
 		{#if isGameEnd}
 			<Button color="blue" goto={`/results`}>Результаты</Button>
