@@ -1,15 +1,17 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { userManager } from '$lib/userStore';
 
 	import Button from '$lib/components/ui/Button.svelte';
 	import DateInput from '$lib/components/ui/login-form/DateInput.svelte';
 	import TextInput from '$lib/components/ui/login-form/TextInput.svelte';
+	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 
 	let firstname = $state('');
 	let lastname = $state('');
 	let birthdate = $state('31.01.2001');
 	let sex = $state<'male' | 'female'>('male');
-    let password = $state('');
+	let password = $state('');
 
 	let firstnameError = $state('');
 	let lastnameError = $state('');
@@ -28,13 +30,43 @@
 			!consentChecked
 		);
 	}
+
+	const hashedSecurePassword = 'ARST';
+
+	async function handleSubmit() {
+		const userId = crypto.randomUUID();
+		const user = {
+			id: userId,
+			firstname: firstname,
+			lastname: lastname,
+			birthdate: birthdate,
+			sex: sex
+		};
+
+		if (password !== hashedSecurePassword) {
+			alert('Неверный пароль');
+			return;
+		}
+
+		const success = await userManager.login(user);
+		if (success) {
+			goto('/about');
+		} else {
+			alert('Ошибка входа');
+		}
+	}
+
+	onMount(async () => {
+		const authed = await userManager.checkAuth();
+		if (authed) {
+			goto('/about');
+		}
+	});
 </script>
 
 <form
 	class="mx-auto flex w-full max-w-sm flex-col gap-4 rounded-3xl bg-gray-700 p-6 text-white shadow-xl"
-	method="POST"
-	action="?/login"
-	use:enhance
+	onsubmit={handleSubmit}
 >
 	<h1 class="mb-2 text-center text-2xl font-bold">Вход</h1>
 
@@ -50,12 +82,7 @@
 
 	<div class="flex flex-col gap-1">
 		<label for="lastname">🔠 Первые 2 буквы фамилии</label>
-		<TextInput
-			required
-			name="lastname"
-			bind:value={lastname}
-			bind:errorMessage={lastnameError}
-		/>
+		<TextInput required name="lastname" bind:value={lastname} bind:errorMessage={lastnameError} />
 	</div>
 
 	<div class="flex flex-col gap-1">
@@ -63,22 +90,16 @@
 		<DateInput required name="birthday" bind:value={birthdate} bind:errorMessage={dateError} />
 	</div>
 
-    <div>
-        <label for='password'>🔑 Пароль</label>
-        <TextInput
-            required
-            name='password'
-            bind:value={password}
-            placeholder="Пароль"
-        />
-    </div>
+	<div>
+		<label for="password">🔑 Пароль</label>
+		<TextInput required name="password" bind:value={password} placeholder="Пароль" />
+	</div>
 
 	<div class="flex items-center justify-between gap-2 text-sm">
 		<label for="sex">⚧️ Пол</label>
 		<label><input type="radio" name="sex" bind:group={sex} value="male" /> Мужской</label>
 		<label><input type="radio" name="sex" bind:group={sex} value="female" /> Женский</label>
 	</div>
-
 
 	<!-- чекбокс согласия -->
 	<div class="mt-3 flex items-center gap-2 text-sm">
@@ -98,6 +119,5 @@
 			</a>
 		</label>
 	</div>
-
 	<Button type="submit" color="green" disabled={isSubmitDisabled()}>Войти</Button>
 </form>
