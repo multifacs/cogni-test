@@ -20,7 +20,7 @@
 >
 	<div class="relative m-4 p-4 w-2/5 min-w-[25%] max-w-[25%] rounded-lg bg-gray-900 shadow-sm">
 		{@render header?.()}
-        <hr class="my-8 h-px bg-gray-900" />
+		<hr class="my-8 h-px bg-gray-900" />
 		{@render children?.()}
 	</div>
 </dialog>

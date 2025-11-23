@@ -1,6 +1,6 @@
 export type Result = {
-    x: number;
-    y: number;
-    stage: number;
-    isCorrect: boolean;
+	x: number;
+	y: number;
+	stage: number;
+	isCorrect: boolean;
 };

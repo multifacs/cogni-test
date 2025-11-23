@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-    import About from '$lib/rhythm/About.svelte';
+	import About from '$lib/rhythm/About.svelte';
 </script>
 
 {#if About}

@@ -5,7 +5,7 @@
 
 	import { dev } from '$app/environment';
 	import { onMount } from 'svelte';
-    import { userManager } from '$lib/userStore';
+	import { userManager } from '$lib/userStore';
 	import { goto } from '$app/navigation';
 
 	let { children } = $props();
@@ -19,10 +19,10 @@
 			type: dev ? 'module' : 'classic'
 		});
 
-        const auth = await userManager.checkAuth();
-        if (!auth) {
-            goto('/');
-        }
+		const auth = await userManager.checkAuth();
+		if (!auth) {
+			goto('/');
+		}
 	});
 </script>
 

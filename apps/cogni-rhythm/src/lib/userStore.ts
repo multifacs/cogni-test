@@ -3,11 +3,11 @@ import type { Writable } from 'svelte/store';
 import localforage from 'localforage';
 
 type User = {
-  id: string;
-  firstname: string;
-  lastname: string;
-  birthdate: string;
-  sex: 'male' | 'female';
+	id: string;
+	firstname: string;
+	lastname: string;
+	birthdate: string;
+	sex: 'male' | 'female';
 };
 
 export const user: Writable<User | null> = writable(null);
