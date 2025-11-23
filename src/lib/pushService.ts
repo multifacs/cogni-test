@@ -77,6 +77,8 @@ export class PushService {
 				});
 
 				await subscription.unsubscribe();
+			} else {
+				console.log('No subscription found to unsubscribe');
 			}
 		}
 	}

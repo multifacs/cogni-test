@@ -105,48 +105,12 @@ self.addEventListener('fetch', (event) => {
 	event.respondWith(respond());
 });
 
-import localforage from 'localforage';
+self.addEventListener('push', (event) => {
+	const data = event.data.json();
+	let title = data.title || 'a default message if nothing was passed to us';
+	let body = data.body || 'WOW! The things I learned at FloridaJS';
+	let tag = data.tag || 'push-simple-demo-notification-tag';
+	let icon = 'https://floridajs.com/images/logo.jpg';
 
-self.addEventListener('periodicsync', async (event) => {
-	if (event.tag === 'check-reminders') {
-		event.waitUntil(checkAllReminders());
-	}
-});
-
-async function checkAllReminders() {
-	const keys = await localforage.keys();
-	const reminderKeys = keys.filter((k) => k.startsWith('reminder-'));
-
-	await self.registration.showNotification('Время для теста!', {
-		body: `Пора завершить тест`,
-		requireInteraction: true
-	});
-
-	// for (const key of reminderKeys) {
-	// 	const reminder = await localforage.getItem(key);
-	// 	if (reminder && Date.now() >= reminder.scheduledFor) {
-	// 		await self.registration.showNotification('Время для теста!', {
-	// 			body: `Пора завершить тест "${reminder.testSlug}"`,
-	// 			icon: '/icon.png',
-	// 			requireInteraction: true
-	// 		});
-	// 		await localforage.removeItem(key);
-	// 	}
-	// }
-}
-
-// Handle notification clicks
-self.addEventListener('notificationclick', (event) => {
-	event.notification.close();
-
-	// Get URL from notification data, or use default
-	const url = event.notification.data?.url || 'https://cogni-test.ru';
-	
-	if (event.action === 'open') {
-		// const testSlug = event.notification.tag.replace('test-', '');
-		event.waitUntil(clients.openWindow(`/tests/stroop/playground`));
-	} else {
-		// Default action: open the URL from notification data
-		event.waitUntil(clients.openWindow(url));
-	}
+	event.waitUntil(self.registration.showNotification(title, { body, icon, tag }));
 });

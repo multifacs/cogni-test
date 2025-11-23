@@ -24,7 +24,7 @@
 		{ name: 'Быстрый (30 сек)', seconds: 30 },
 		{ name: 'Средний (10 мин)', seconds: 600 },
 		{ name: 'Долгий (1 час)', seconds: 3600 },
-		{ name: 'Кастомный', seconds: 0 } // Особый случай
+		{ name: 'Пользовательский', seconds: 0 } // Особый случай
 	];
 
 	let subscribed = $state(false);
