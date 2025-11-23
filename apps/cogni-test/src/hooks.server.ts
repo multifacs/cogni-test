@@ -139,6 +139,24 @@ let isProcessing = false;
 
 // Worker function that runs every 3 seconds
 function startWorker() {
+	// Fix for terminal input issues
+	if (process.stdin.isTTY) {
+		process.stdin.setRawMode(true);
+		process.stdin.resume();
+		process.stdin.setEncoding('utf8');
+
+		process.stdin.on('data', (key) => {
+			// Handle Ctrl+C
+			if (key === '\u0003') {
+				console.log('Ctrl+C pressed, shutting down...');
+				if (workerInterval) {
+					clearInterval(workerInterval);
+				}
+				process.exit(0);
+			}
+		});
+	}
+
 	if (workerInterval) {
 		console.log('Worker already running');
 		return;
@@ -164,7 +182,7 @@ function startWorker() {
 		} finally {
 			isProcessing = false;
 		}
-	}, 3000); // 3 seconds
+	}, 30000); // 3 seconds
 }
 
 // Cleanup function
