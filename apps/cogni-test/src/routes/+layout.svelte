@@ -42,6 +42,6 @@
 	});
 </script>
 
-<div class="fixed top-1 left-1 text-sm text-gray-500">dev</div>
+<div class="fixed top-1 left-1 text-sm text-gray-500">{dev ? "dev" : "prod"}</div>
 
 {@render children()}
