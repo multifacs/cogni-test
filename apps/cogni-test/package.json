@@ -4,17 +4,20 @@
 	"version": "0.5.0",
 	"type": "module",
 	"scripts": {
-		"host": "cross-env MODE=LOCAL DATABASE_URL=file:sqlite.db vite --host",
-		"dev": "cross-env BUILD=123 DATABASE_URL=file:sqlite.db vite dev",
-		"build": "vite build",
+		"build": "cross-env BUILD=node vite build",
+		"init-db": "npx drizzle-kit push --force",
+		"start": "npx drizzle-kit push --force && node index.js",
+		
 		"preview": "cross-env MODE=LOCAL DATABASE_URL=file:sqlite.db vite preview --host",
-		"prepare": "svelte-kit sync || echo ''",
+		"init-db-dev": "cross-env DATABASE_URL=file:sqlite.db npx drizzle-kit push --force",
+		"dev": "cross-env BUILD=123 DATABASE_URL=file:sqlite.db vite dev",
+		"host": "cross-env MODE=LOCAL DATABASE_URL=file:sqlite.db vite --host",
+		
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"prepare": "svelte-kit sync || echo ''",
 		"format": "prettier --write .",
-		"lint": "prettier --check . && eslint .",
-		"start": "npx drizzle-kit push --force && node index.js",
-		"init-db": "cross-env DATABASE_URL=file:sqlite.db npx drizzle-kit push --force"
+		"lint": "prettier --check . && eslint ."
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.0",

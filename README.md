@@ -15,28 +15,40 @@
 npm i
 ```
 
-**Initialize db**
+**Initialize db in prod**
 
 ```shell
-npm run init-db
+npm run init-db -w .\apps\cogni-test\
+```
+
+**Initialize db in dev**
+
+```shell
+npm run init-db-dev -w .\apps\cogni-test\
+```
+
+**Run dev**
+
+```shell
+npm run dev -w .\apps\cogni-test\
 ```
 
 **Run dev with --host**
 
 ```shell
-npm run host
+npm run host -w .\apps\cogni-test\
 ```
 
 **Build for prod**
 
 ```shell
-npm run build-prod
+npm run build -w .\apps\cogni-test\
 ```
 
 **Start prod app**
 
 ```shell
-npm run start
+npm run start -w .\apps\cogni-test\
 ```
 
 **Up Docker Compose**
