@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
 	import type { MetaResult, RegularResult, TestResultMap } from '$lib/tests/types.js';
+	import localforage from 'localforage';
 	import { onMount, type SvelteComponent } from 'svelte';
 
     let { data } = $props();
@@ -47,14 +48,7 @@
 	async function onSendResults<T extends keyof TestResultMap>(
 		results: RegularResult<T> | MetaResult<T>
 	) {
-		const response = await fetch(`/playground`, {
-			method: 'POST',
-			body: JSON.stringify({ results }),
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		});
-		console.log(response);
+      localforage.setItem('results', results);
 	}
 </script>
 

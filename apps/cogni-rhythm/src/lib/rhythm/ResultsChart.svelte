@@ -4,7 +4,7 @@
 	Chart.register(Colors);
 
 	import { onMount, onDestroy } from 'svelte';
-	import { getCSSVar } from '$lib/utils';
+	import { getCSSVar } from '$lib/utils/common';
 
 	import type { RhythmResult } from './types';
 

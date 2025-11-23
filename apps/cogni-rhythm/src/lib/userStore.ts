@@ -1,15 +1,23 @@
 import { writable } from 'svelte/store';
-import { browser } from '$app/environment';
+import type { Writable } from 'svelte/store';
 import localforage from 'localforage';
 
-export const user = writable(null);
+type User = {
+  id: string;
+  firstname: string;
+  lastname: string;
+  birthdate: string;
+  sex: 'male' | 'female';
+};
+
+export const user: Writable<User | null> = writable(null);
 
 export const isAuthenticated = writable(false);
 
 // User functions
 export const userManager = {
 	// Save user to IndexedDB
-	async login(userData) {
+	async login(userData: User) {
 		try {
 			await localforage.setItem('user', userData);
 			user.set(userData);
@@ -37,7 +45,7 @@ export const userManager = {
 	// Check if user is logged in (on app start)
 	async checkAuth() {
 		try {
-			const userData = await localforage.getItem('user');
+			const userData: User | null = await localforage.getItem('user');
 			if (userData) {
 				user.set(userData);
 				isAuthenticated.set(true);

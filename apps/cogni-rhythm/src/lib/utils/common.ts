@@ -14,3 +14,7 @@ export function formatUserLocalDate(dateString: string): string {
 
 	return `${day}.${month}.${year} ${hours}:${minutes}`;
 }
+
+export function getCSSVar(variable: string): string {
+	return window.getComputedStyle(document.body).getPropertyValue(variable);
+}
