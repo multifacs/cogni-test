@@ -1,3 +1,4 @@
+/* eslint-disable no-constant-condition */
 import localforage from 'localforage';
 import type { RhythmResult } from '$lib/rhythm/types';
 
@@ -15,7 +16,7 @@ export async function uploadResultsToDatabase() {
 		const resultsEasyUploaded: RhythmResult[] | null =
 			await localforage.getItem('results-easy-uploaded');
 
-		if (!resultsEasyUploaded) {
+		if (!resultsEasyUploaded || true) {
 			// Try to upload easy results
 			const resultsEasyLoaded: RhythmResult[] | null = await localforage.getItem('results-easy');
 			if (resultsEasyLoaded && resultsEasyLoaded.length > 0) {
@@ -47,7 +48,7 @@ export async function uploadResultsToDatabase() {
 		const resultsMediumUploaded: RhythmResult[] | null =
 			await localforage.getItem('results-medium-uploaded');
 
-		if (!resultsMediumUploaded) {
+		if (!resultsMediumUploaded || true) {
 			// Try to upload medium results
 			const resultsMediumLoaded: RhythmResult[] | null =
 				await localforage.getItem('results-medium');
@@ -80,7 +81,7 @@ export async function uploadResultsToDatabase() {
 		const resultsHardUploaded: RhythmResult[] | null =
 			await localforage.getItem('results-hard-uploaded');
 
-		if (!resultsHardUploaded) {
+		if (!resultsHardUploaded || true) {
 			// Try to upload hard results
 			const resultsHardLoaded: RhythmResult[] | null = await localforage.getItem('results-hard');
 			if (resultsHardLoaded && resultsHardLoaded.length > 0) {
