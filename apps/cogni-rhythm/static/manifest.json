@@ -1,15 +1,34 @@
 {
-    "name": "Cogni Test",
-    "short_name": "Cogni Test",
-    "start_url": "/",
-    "display": "standalone",
-    "theme_color": "#0c1452",
-    "background_color": "oklch(27.8% 0.033 256.848)",
-    "icons": [
-        {
-            "sizes": "512x512",
-            "src": "icon.png",
-            "type": "image/png"
-        }
-    ]
+	"name": "Cogni-Rhythm",
+	"short_name": "Cogni-Rhythm",
+	"start_url": "/",
+	"display": "standalone",
+	"theme_color": "#050e1c",
+	"background_color": "#050e1c",
+	"icons": [
+		{
+			"sizes": "512x512",
+			"type": "image/png",
+			"src": "icon.png"
+		}
+	],
+
+	"screenshots": [
+		{
+			"src": "install.png",
+			"sizes": "1080x1946",
+			"type": "image/png",
+			"form_factor": "narrow",
+			"label": "Install Cogni-Rhythm"
+		},
+		{
+			"src": "install2.png",
+			"sizes": "1074x604",
+			"type": "image/png",
+			"form_factor": "wide",
+			"label": "Install Cogni-Rhythm"
+		}
+	],
+
+	"description": "Приложение Cogni-Rhythm"
 }

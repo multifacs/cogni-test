@@ -20,8 +20,10 @@
 </script>
 
 <Playground difficulty="medium" gameEnd={onGameEnd} sendResults={onSendResults}></Playground>
-<div class="controls flex items-center justify-center gap-2.5">
+<div class="controls flex items-center justify-center gap-2.5 mt-4">
 	{#if isGameEnd}
 		<Button color="blue" goto={`/results`}>Результаты</Button>
+	{:else}
+		<Button color="red" goto={`/`}>Назад</Button>
 	{/if}
 </div>
