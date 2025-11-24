@@ -5,31 +5,8 @@
 	import type { RhythmResult } from '$lib/rhythm/types';
 	import localforage from 'localforage';
 
-	// let componentRef: InstanceType<typeof SvelteComponent> | null = $state(null);
-
 	let isGameRunning = $state(true);
 	let isGameEnd = $state(false);
-
-	// function handleStart() {
-	// 	isGameEnd = false;
-	// 	if (!isGameRunning) {
-	// 		childComponent?.resetGame();
-	// 		isGameRunning = true;
-	// 	} else {
-	// 		// Перезапуск
-	// 		childComponent?.stopGame();
-	// 		childComponent?.resetGame();
-	// 	}
-	// }
-
-	// function handleBackOrStop() {
-	// 	if (isGameRunning) {
-	// 		childComponent?.stopGame();
-	// 		isGameRunning = false;
-	// 	} else {
-	// 		goto('/tests/');
-	// 	}
-	// }
 
 	function onGameEnd() {
 		isGameRunning = false;
@@ -38,11 +15,11 @@
 	}
 
 	async function onSendResults(results: RhythmResult[]) {
-		await localforage.setItem('results', results);
+		await localforage.setItem('results-medium', results);
 	}
 </script>
 
-<Playground gameEnd={onGameEnd} sendResults={onSendResults}></Playground>
+<Playground difficulty="medium" gameEnd={onGameEnd} sendResults={onSendResults}></Playground>
 <div class="controls flex items-center justify-center gap-2.5">
 	{#if isGameEnd}
 		<Button color="blue" goto={`/results`}>Результаты</Button>

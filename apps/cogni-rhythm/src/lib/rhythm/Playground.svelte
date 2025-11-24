@@ -6,6 +6,8 @@
 	export let gameEnd: () => void;
 	export let sendResults: (results: RhythmResult[]) => void;
 
+	export let difficulty: 'easy' | 'medium' | 'hard' = 'easy';
+
 	// ===== Типы =====
 	type NoteType = 'ton' | 'pulton' | 'ctvrton';
 	type Note = { step: number; type: NoteType };
@@ -54,10 +56,36 @@
 	function generateMelody() {
 		melody = [];
 
-		// три основных тона в центре
-		melody.push({ step: 4, type: 'ton' });
-		melody.push({ step: 8, type: 'ton' });
-		melody.push({ step: 12, type: 'ton' });
+		function makeEasy() {
+			// три основных тона в центре
+			melody.push({ step: 4, type: 'ton' });
+			melody.push({ step: 8, type: 'ton' });
+			melody.push({ step: 12, type: 'ton' });
+		}
+
+		function makeMedium() {
+			// три основных тона в центре
+			melody.push({ step: 8, type: 'ton' });
+			melody.push({ step: 12, type: 'ton' });
+		}
+
+		function makeHard() {
+			// три основных тона в центре
+			melody.push({ step: 6, type: 'ton' });
+			melody.push({ step: 12, type: 'ton' });
+		}
+
+		switch (difficulty) {
+			case 'easy':
+				makeEasy();
+				break;
+			case 'medium':
+				makeMedium();
+				break;
+			case 'hard':
+				makeHard();
+				break;
+		}
 
 		melody.sort((a, b) => a.step - b.step);
 		console.log('Сгенерированная мелодия:', melody);
@@ -588,14 +616,22 @@
 		initCanvas();
 		drawIdle();
 
-		if (window) {
-			window.removeEventListener('resize', handleResize);
+		try {
+			if (window) {
+				window.removeEventListener('resize', handleResize);
+			}
+		} catch (e) {
+			console.log(e);
 		}
 	});
 
 	onDestroy(() => {
-		if (window) {
-			window.removeEventListener('resize', handleResize);
+		try {
+			if (window) {
+				window.removeEventListener('resize', handleResize);
+			}
+		} catch (e) {
+			console.log(e);
 		}
 
 		if (animationFrame !== null) cancelAnimationFrame(animationFrame);
@@ -606,8 +642,11 @@
 	<div class="rhythm-header">
 		<h2 class="title">Ритмический тест</h2>
 		<p class="subtitle">
-			Один шарик в центре. Дорожка с ритмом движется под ним. Сначала ритм показывается, затем вы
-			повторяете его.
+			Сложность ритма: {difficulty === 'easy'
+				? 'Лёгкий'
+				: difficulty === 'medium'
+					? 'Средний'
+					: 'Сложный'}
 		</p>
 	</div>
 
@@ -617,10 +656,6 @@
 			<div class="start-overlay">
 				<div class="overlay-card">
 					<div class="overlay-title">Нажмите, чтобы начать</div>
-					<div class="overlay-text">
-						Первые два прохода — эталон, нажатия не учитываются. Затем ориентируйтесь на ритм и
-						нажимайте в нужные моменты.
-					</div>
 				</div>
 			</div>
 		{/if}

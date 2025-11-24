@@ -7,6 +7,7 @@
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
+		"init-db-dev": "npx drizzle-kit push --force",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
@@ -49,7 +50,9 @@
 		"dotenv": "^17.2.3",
 		"gray-matter": "^4.0.3",
 		"localforage": "^1.10.0",
+		"short-uuid": "^5.2.0",
 		"uuid": "^13.0.0",
+		"vite-plugin-mkcert": "^1.17.9",
 		"web-push": "^3.6.7"
 	}
 }
