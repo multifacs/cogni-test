@@ -27,8 +27,7 @@
 	const sampleRepeats = 2;
 	const tapRepeatsWithGhosts = 2;
 	const tapRepeatsNoGhosts = 4;
-	const totalIntervals =
-		sampleRepeats + tapRepeatsWithGhosts + tapRepeatsNoGhosts; // 8
+	const totalIntervals = sampleRepeats + tapRepeatsWithGhosts + tapRepeatsNoGhosts; // 8
 
 	let melody: Note[] = [];
 	let bpm = 75;
@@ -93,8 +92,7 @@
 		if (audioContext) return;
 
 		try {
-			audioContext = new (window.AudioContext ||
-				(window as any).webkitAudioContext)();
+			audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
 		} catch (e) {
 			console.error('Web Audio API не поддерживается', e);
 			audioContext = null;
@@ -114,10 +112,7 @@
 		gainNode.connect(audioContext.destination);
 
 		gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
-		gainNode.gain.exponentialRampToValueAtTime(
-			0.01,
-			audioContext.currentTime + 0.1
-		);
+		gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
 
 		oscillator.start();
 		oscillator.stop(audioContext.currentTime + 0.1);
@@ -150,10 +145,7 @@
 		gainNode.connect(audioContext.destination);
 
 		gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
-		gainNode.gain.exponentialRampToValueAtTime(
-			0.01,
-			audioContext.currentTime + 0.2
-		);
+		gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
 
 		oscillator.start();
 		oscillator.stop(audioContext.currentTime + 0.2);
@@ -182,12 +174,10 @@
 		ctx.fillRect(0, 0, width, height);
 
 		ctx.fillStyle = '#e5e7eb';
-		ctx.font =
-			'600 24px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+		ctx.font = '600 24px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
 		ctx.textAlign = 'center';
 		ctx.fillText('Ритмический тест', width / 2, height / 2 - 10);
-		ctx.font =
-			'400 14px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+		ctx.font = '400 14px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
 		ctx.fillStyle = '#9ca3af';
 		ctx.fillText('Нажмите, чтобы начать', width / 2, height / 2 + 18);
 	}
@@ -200,7 +190,7 @@
 		initAudio();
 
 		// один дискретный шаг = четверть в темпе bpm
-		stepDuration = (60000 / bpm) / 4; // мс
+		stepDuration = 60000 / bpm / 4; // мс
 		intervalDuration = stepsPerInterval * stepDuration;
 
 		userAttempts = [];
@@ -254,8 +244,7 @@
 					triggeredNotes.add(key);
 
 					const isSampleInterval = interval < sampleRepeats;
-					const hasGhostsInterval =
-						interval < sampleRepeats + tapRepeatsWithGhosts;
+					const hasGhostsInterval = interval < sampleRepeats + tapRepeatsWithGhosts;
 
 					// Эталонный звук в первых 4 проходах
 					if (isSampleInterval || hasGhostsInterval) {
@@ -348,8 +337,7 @@
 				// сдвигаем i к ближайшей ноте
 				while (
 					i + 1 < notes.length &&
-					Math.abs(notes[i + 1] - tapTime) <=
-						Math.abs(notes[i] - tapTime)
+					Math.abs(notes[i + 1] - tapTime) <= Math.abs(notes[i] - tapTime)
 				) {
 					i++;
 				}
@@ -468,15 +456,13 @@
 			if (interval < 0 || interval >= totalIntervals) continue;
 
 			for (let stepIdx = 0; stepIdx <= stepsPerInterval; stepIdx++) {
-				const lineTimeRel =
-					interval * intervalDuration + stepIdx * stepDuration;
+				const lineTimeRel = interval * intervalDuration + stepIdx * stepDuration;
 				const x = centerX + (lineTimeRel - elapsedRel) * speedPxPerMs;
 
 				if (x < x0 || x > x1) continue;
 
 				const isMainBeat = stepIdx % 4 === 0;
-				const isHalfBeat =
-					stepIdx % 2 === 0 && !isMainBeat;
+				const isHalfBeat = stepIdx % 2 === 0 && !isMainBeat;
 
 				if (isMainBeat) {
 					ctx.strokeStyle = 'rgba(148,163,184,0.6)';
@@ -535,10 +521,10 @@
 				// interval == sampleRepeats - 1 — это конец демонстрации
 				// значит следующий интервал (interval+1) — первый с вводом
 				if (interval === sampleRepeats - 1) {
-					const text = "Начинайте кликать";
-					ctx.font = "600 16px system-ui";
-					ctx.fillStyle = "rgba(255,255,255,0.95)";
-					ctx.textAlign = "center";
+					const text = 'Начинайте кликать';
+					ctx.font = '600 16px system-ui';
+					ctx.fillStyle = 'rgba(255,255,255,0.95)';
+					ctx.textAlign = 'center';
 
 					// положение текста над флажком
 					ctx.fillText(text, flagX, laneY - 32);
@@ -557,34 +543,24 @@
 		) {
 			if (interval < 0 || interval >= totalIntervals) continue;
 
-			const hasGhosts =
-				interval < sampleRepeats + tapRepeatsWithGhosts; // 0–3
+			const hasGhosts = interval < sampleRepeats + tapRepeatsWithGhosts; // 0–3
 
 			if (!hasGhosts) continue;
 
 			for (const note of melody) {
-				const noteTimeRel =
-					interval * intervalDuration +
-					note.step * stepDuration;
-				const x =
-					centerX +
-					(noteTimeRel - elapsedRel) * speedPxPerMs;
+				const noteTimeRel = interval * intervalDuration + note.step * stepDuration;
+				const x = centerX + (noteTimeRel - elapsedRel) * speedPxPerMs;
 				if (x < x0 || x > x1) continue;
 
-				const isNow =
-					Math.abs(noteTimeRel - elapsedRel) < 80;
+				const isNow = Math.abs(noteTimeRel - elapsedRel) < 80;
 				const baseR = laneHeight * 0.16;
 				const rNote = isNow ? baseR * 1.15 : baseR;
 
 				ctx.save();
 				ctx.beginPath();
 				ctx.arc(x, laneCenterY, rNote, 0, Math.PI * 2);
-				ctx.fillStyle = isNow
-					? 'rgba(74,222,128,0.92)'
-					: 'rgba(148,163,184,0.8)';
-				ctx.shadowColor = isNow
-					? 'rgba(74,222,128,0.8)'
-					: 'rgba(148,163,184,0.35)';
+				ctx.fillStyle = isNow ? 'rgba(74,222,128,0.92)' : 'rgba(148,163,184,0.8)';
+				ctx.shadowColor = isNow ? 'rgba(74,222,128,0.8)' : 'rgba(148,163,184,0.35)';
 				ctx.shadowBlur = isNow ? 18 : 10;
 				ctx.fill();
 				ctx.restore();
@@ -596,19 +572,11 @@
 		ctx.fillStyle = '#60a5fa';
 		for (const tap of userAttempts) {
 			const tapTimeRel = tap.timeRel;
-			const x =
-				centerX +
-				(tapTimeRel - elapsedRel) * speedPxPerMs;
+			const x = centerX + (tapTimeRel - elapsedRel) * speedPxPerMs;
 			if (x < x0 || x > x1) continue;
 
 			ctx.beginPath();
-			ctx.arc(
-				x,
-				laneCenterY,
-				laneHeight * 0.14,
-				0,
-				Math.PI * 2
-			);
+			ctx.arc(x, laneCenterY, laneHeight * 0.14, 0, Math.PI * 2);
 			ctx.fill();
 		}
 		ctx.restore();
@@ -619,11 +587,17 @@
 		generateMelody();
 		initCanvas();
 		drawIdle();
-		window.addEventListener('resize', handleResize);
+
+		if (window) {
+			window.removeEventListener('resize', handleResize);
+		}
 	});
 
 	onDestroy(() => {
-		window.removeEventListener('resize', handleResize);
+		if (window) {
+			window.removeEventListener('resize', handleResize);
+		}
+
 		if (animationFrame !== null) cancelAnimationFrame(animationFrame);
 	});
 </script>
@@ -632,8 +606,8 @@
 	<div class="rhythm-header">
 		<h2 class="title">Ритмический тест</h2>
 		<p class="subtitle">
-			Один шарик в центре. Дорожка с ритмом движется под ним.
-			Сначала ритм показывается, затем вы повторяете его.
+			Один шарик в центре. Дорожка с ритмом движется под ним. Сначала ритм показывается, затем вы
+			повторяете его.
 		</p>
 	</div>
 
@@ -644,17 +618,15 @@
 				<div class="overlay-card">
 					<div class="overlay-title">Нажмите, чтобы начать</div>
 					<div class="overlay-text">
-						Первые два прохода — эталон, нажатия не учитываются.
-						Затем ориентируйтесь на ритм и нажимайте в нужные моменты.
+						Первые два прохода — эталон, нажатия не учитываются. Затем ориентируйтесь на ритм и
+						нажимайте в нужные моменты.
 					</div>
 				</div>
 			</div>
 		{/if}
 	</div>
 
-	<button class="tap-button" on:click={handleTapButton}>
-		Нажимайте в ритм
-	</button>
+	<button class="tap-button" on:click={handleTapButton}> Нажимайте в ритм </button>
 
 	<div class="legend">
 		<div class="legend-item">
@@ -727,11 +699,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: radial-gradient(
-			circle at center,
-			rgba(15, 23, 42, 0.7),
-			rgba(15, 23, 42, 0.95)
-		);
+		background: radial-gradient(circle at center, rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.95));
 	}
 
 	.overlay-card {

@@ -15,7 +15,7 @@ services:
 
   cogni-dev:
     build:
-      context: .
+      context: ./apps/cogni-test
     image: ghcr.io/multifacs/cogni-test/app-dev:latest
     profiles:
       - "dev"
@@ -37,7 +37,7 @@ services:
 
   cogni:
     build:
-      context: .
+      context: ./apps/cogni-test
     image: ghcr.io/multifacs/cogni-test/app:latest
     profiles:
       - "prod"
@@ -54,6 +54,50 @@ services:
       - PUBLIC_VAPID_KEY=${PUBLIC_VAPID_KEY}
       - PRIVATE_VAPID_KEY=${PRIVATE_VAPID_KEY}
       - ORIGIN=https://cogni-test.ru
+    stdin_open: true  # -i
+    tty: true         # -t
+
+  rhythm-dev:
+    build:
+      context: ./apps/cogni-rhythm
+    image: ghcr.io/multifacs/cogni-test/rhythm-dev:latest
+    profiles:
+      - "dev"
+    container_name: cogni-rhythm-dev
+    restart: always
+    networks:
+      - cogni-network  # ← All containers on same network
+    volumes:
+      - /root/cogni-test/data/:/app/data
+    environment:
+      - MODE=DEV
+      - DATABASE_URL=file:./data/dev.db
+      - PUBLIC_VAPID_SUBJECT=${PUBLIC_VAPID_SUBJECT}
+      - PUBLIC_VAPID_KEY=${PUBLIC_VAPID_KEY}
+      - PRIVATE_VAPID_KEY=${PRIVATE_VAPID_KEY}
+      - ORIGIN=https://dev.cogni-rhythm.ru
+    stdin_open: true  # -i
+    tty: true         # -t
+
+  rhythm:
+    build:
+      context: ./apps/cogni-rhythm
+    image: ghcr.io/multifacs/cogni-test/rhythm:latest
+    profiles:
+      - "prod"
+    container_name: cogni-rhythm
+    restart: always
+    networks:
+      - cogni-network  # ← All containers on same network
+    volumes:
+      - /root/cogni-test/data/:/app/data
+    environment:
+      - MODE=PROD
+      - DATABASE_URL=file:./data/cogni.db
+      - PUBLIC_VAPID_SUBJECT=${PUBLIC_VAPID_SUBJECT}
+      - PUBLIC_VAPID_KEY=${PUBLIC_VAPID_KEY}
+      - PRIVATE_VAPID_KEY=${PRIVATE_VAPID_KEY}
+      - ORIGIN=https://cogni-rhythm.ru
     stdin_open: true  # -i
     tty: true         # -t
 
