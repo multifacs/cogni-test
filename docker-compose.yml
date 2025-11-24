@@ -7,6 +7,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
+      - /root/cogni-test/certs:/etc/ssl/new-certs:ro
       - /etc/ssl/private/cogni-test.ru_private_key.pem:/etc/ssl/private/cogni-test.ru_private_key.pem:ro
       - /etc/ssl/certs/cogni-test.ru_cert.pem:/etc/ssl/certs/cogni-test.ru_cert.pem:ro
     networks:
@@ -14,7 +15,7 @@ services:
 
   cogni-dev:
     build:
-      context: .
+      context: ./apps/cogni-test
     image: ghcr.io/multifacs/cogni-test/app-dev:latest
     profiles:
       - "dev"
@@ -30,12 +31,13 @@ services:
       - PUBLIC_VAPID_SUBJECT=${PUBLIC_VAPID_SUBJECT}
       - PUBLIC_VAPID_KEY=${PUBLIC_VAPID_KEY}
       - PRIVATE_VAPID_KEY=${PRIVATE_VAPID_KEY}
+      - ORIGIN=https://dev2.cogni-test.ru
     stdin_open: true  # -i
     tty: true         # -t
 
   cogni:
     build:
-      context: .
+      context: ./apps/cogni-test
     image: ghcr.io/multifacs/cogni-test/app:latest
     profiles:
       - "prod"
@@ -51,6 +53,51 @@ services:
       - PUBLIC_VAPID_SUBJECT=${PUBLIC_VAPID_SUBJECT}
       - PUBLIC_VAPID_KEY=${PUBLIC_VAPID_KEY}
       - PRIVATE_VAPID_KEY=${PRIVATE_VAPID_KEY}
+      - ORIGIN=https://cogni-test.ru
+    stdin_open: true  # -i
+    tty: true         # -t
+
+  rhythm-dev:
+    build:
+      context: ./apps/cogni-rhythm
+    image: ghcr.io/multifacs/cogni-test/rhythm-dev:latest
+    profiles:
+      - "rhythm-dev"
+    container_name: cogni-rhythm-dev
+    restart: always
+    networks:
+      - cogni-network  # ← All containers on same network
+    volumes:
+      - /root/cogni-test/data/:/app/data
+    environment:
+      - MODE=DEV
+      - DATABASE_URL=file:./data/dev.db
+      - PUBLIC_VAPID_SUBJECT=${PUBLIC_VAPID_SUBJECT}
+      - PUBLIC_VAPID_KEY=${PUBLIC_VAPID_KEY}
+      - PRIVATE_VAPID_KEY=${PRIVATE_VAPID_KEY}
+      - ORIGIN=https://dev.cogni-rhythm.ru
+    stdin_open: true  # -i
+    tty: true         # -t
+
+  rhythm:
+    build:
+      context: ./apps/cogni-rhythm
+    image: ghcr.io/multifacs/cogni-test/rhythm:latest
+    profiles:
+      - "rhythm-prod"
+    container_name: cogni-rhythm
+    restart: always
+    networks:
+      - cogni-network  # ← All containers on same network
+    volumes:
+      - /root/cogni-test/data/:/app/data
+    environment:
+      - MODE=PROD
+      - DATABASE_URL=file:./data/cogni.db
+      - PUBLIC_VAPID_SUBJECT=${PUBLIC_VAPID_SUBJECT}
+      - PUBLIC_VAPID_KEY=${PUBLIC_VAPID_KEY}
+      - PRIVATE_VAPID_KEY=${PRIVATE_VAPID_KEY}
+      - ORIGIN=https://cogni-rhythm.ru
     stdin_open: true  # -i
     tty: true         # -t
 

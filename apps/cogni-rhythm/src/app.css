@@ -1,0 +1,88 @@
+@import 'tailwindcss';
+/* @plugin "@tailwindcss/typography"; */
+
+:root {
+	--main-bg-color: var(--color-gray-800);
+	--main-text-color: var(--color-gray-50);
+
+	--button-green: rgb(15, 132, 15);
+	--button-red: #bf3023;
+	--button-blue: #007acc;
+
+	/* campimetry */
+	--camp-black: #141414;
+	--camp-white: #eeeeee;
+	--camp-dark-magenta: #611963;
+	--camp-light-magenta: #da8ed9;
+	--camp-dark-blue: #0c1452;
+	--camp-light-blue: #6c6dbf;
+	--camp-dark-green: #0a4d3b;
+	--camp-light-green: #6ad3c2;
+	--camp-dark-red: #7b1f14;
+	--camp-light-red: #f09286;
+	--camp-dark-yellow: #7f6f00;
+	--camp-light-yellow: #feee7f;
+}
+
+/* @theme {
+	--breakpoint-xs: 340px;
+} */
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body,
+p,
+h1,
+h2,
+h3 {
+	margin: 0;
+	padding: 0;
+	/* Убираем отступы по умолчанию */
+}
+
+h1 {
+	font-size: var(--text-3xl);
+	--tw-font-weight: var(--font-weight-bold);
+	font-weight: var(--font-weight-bold);
+	text-shadow:
+		0px 1px 1px var(--tw-text-shadow-color, rgb(0 0 0 / 0.1)),
+		0px 1px 2px var(--tw-text-shadow-color, rgb(0 0 0 / 0.1)),
+		0px 2px 4px var(--tw-text-shadow-color, rgb(0 0 0 / 0.1));
+	text-align: center;
+}
+
+h2 {
+	font-size: var(--text-xl);
+	--tw-font-weight: var(--font-weight-bold);
+	font-weight: var(--font-weight-bold);
+	text-align: center;
+}
+
+html,
+body {
+	width: 100%;
+	height: 100dvh;
+	overflow: hidden;
+	margin: 0;
+}
+
+body {
+	font-family: 'Roboto', sans-serif;
+	background-color: var(--color-gray-800);
+	color: var(--color-gray-50);
+
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+/* input,
+button,
+textarea,
+select {
+	font: inherit;
+} */
