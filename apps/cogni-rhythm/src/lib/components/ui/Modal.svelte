@@ -11,16 +11,18 @@
 </script>
 
 <dialog
-	class="fixed inset-0 z-999 grid min-w-screen min-h-screen place-items-center bg-black/50 backdrop-blur-sm"
+	class="fixed inset-0 z-999 grid min-h-screen min-w-screen place-items-center bg-black/50 text-justify backdrop-blur-sm"
 	bind:this={dialog}
 	onclose={() => (showModal = false)}
 	onclick={(e) => {
 		if (e.target === dialog) dialog.close();
 	}}
 >
-	<div class="relative m-4 p-4 w-2/5 min-w-[25%] max-w-[25%] rounded-lg bg-gray-900 shadow-sm">
+	<div
+		class="relative m-4 w-full max-w-[90vw] rounded-lg bg-gray-900 p-4 shadow-sm md:w-2/5 md:max-w-[50%] md:min-w-[25%]"
+	>
 		{@render header?.()}
-		<hr class="my-8 h-px bg-gray-900" />
+		<hr class="my-4 h-px bg-gray-900" />
 		{@render children?.()}
 	</div>
 </dialog>

@@ -9,6 +9,8 @@
 	import TextInput from '$lib/components/ui/login-form/TextInput.svelte';
 	import PasswordInput from '$lib/components/ui/login-form/PasswordInput.svelte';
 
+	import { PUBLIC_PASSWORD } from '$env/static/public';
+
 	let firstname = $state('');
 	let lastname = $state('');
 	let birthdate = $state('31.01.2001');
@@ -24,23 +26,22 @@
 
 	function isSubmitDisabled() {
 		return (
-			!firstname ||
-			!lastname ||
-			firstnameError.length > 0 ||
-			lastnameError.length > 0 ||
-			dateError.length > 0 ||
-			!consentChecked
+			// !firstname ||
+			// !lastname ||
+			// firstnameError.length > 0 ||
+			// lastnameError.length > 0 ||
+			dateError.length > 0 || !consentChecked
 		);
 	}
 
-	const hashedSecurePassword = 'ARST';
+	const hashedSecurePassword = PUBLIC_PASSWORD || 241180;
 
 	async function handleSubmit() {
 		const userId = crypto.randomUUID();
 		const user = {
 			id: userId,
-			firstname: firstname,
-			lastname: lastname,
+			// firstname: firstname,
+			// lastname: lastname,
 			birthdate: birthdate,
 			sex: sex
 		};
@@ -81,7 +82,7 @@
 >
 	<h1 class="mb-2 text-center text-2xl font-bold">Вход</h1>
 
-	<div class="flex flex-col gap-1">
+	<!-- <div class="flex flex-col gap-1">
 		<label for="firstname">🧍 Имя</label>
 		<TextInput
 			required
@@ -94,22 +95,22 @@
 	<div class="flex flex-col gap-1">
 		<label for="lastname">🔠 Первые 2 буквы фамилии</label>
 		<TextInput required name="lastname" bind:value={lastname} bind:errorMessage={lastnameError} />
-	</div>
+	</div> -->
 
 	<div class="flex flex-col gap-1">
 		<label for="birthday">🎂 Дата рождения</label>
 		<DateInput required name="birthday" bind:value={birthdate} bind:errorMessage={dateError} />
 	</div>
 
-	<div>
-		<label for="password">🔑 Пароль</label>
-		<PasswordInput required name="password" bind:value={password} placeholder="Пароль" />
-	</div>
-
 	<div class="flex items-center justify-between gap-2 text-sm">
 		<label for="sex">👫 Пол</label>
 		<label><input type="radio" name="sex" bind:group={sex} value="male" /> Мужской</label>
 		<label><input type="radio" name="sex" bind:group={sex} value="female" /> Женский</label>
+	</div>
+
+	<div>
+		<label for="password">🔑 Код</label>
+		<PasswordInput required name="password" bind:value={password} placeholder="Код" />
 	</div>
 
 	<!-- чекбокс согласия -->

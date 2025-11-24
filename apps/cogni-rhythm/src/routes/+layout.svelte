@@ -12,11 +12,16 @@
 	import { pushService } from '$lib/pushService';
 	import { isSubscribed } from '$lib/utils/push';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Spinner from '$lib/components/ui/Spinner.svelte';
 
 	let { children } = $props();
 
 	let subscribed = $state(false);
 	let showModal = $state(false);
+
+	let loading = $state(false);
+	let loadingError = $state(false);
+	let loadingSuccess = $state(false);
 
 	onMount(async () => {
 		if (!('serviceWorker' in navigator)) {
@@ -44,12 +49,17 @@
 		}
 
 		try {
+			loading = true;
 			await pushService.subscribe();
 			subscribed = true;
 			showModal = false;
 			console.log('Subscribed successfully');
+			loadingSuccess = true;
 		} catch (error) {
+			loadingError = true;
 			console.error('Failed to subscribe:', error);
+		} finally {
+			loading = false;
 		}
 	}
 </script>
@@ -72,6 +82,17 @@
 				Вы всегда сможете подписаться или отписаться от push-уведомлений в любое время на странице
 				профиля.
 			</p>
+
+			<div class="w-full flex justify-center items-center text-sm text-white">
+				{#if loading}
+					<Spinner></Spinner>
+				{:else if loadingError}
+					Ошибка подключения. Попробуйте позже.
+				{:else if loadingSuccess}
+					уведомления подключены.
+				{/if}
+			</div>
+
 			<Button color="green" onclick={subscribe}>Подписаться</Button>
 			<Button color="red" onclick={() => (showModal = false)}>Нет, спасибо</Button>
 		</div>
