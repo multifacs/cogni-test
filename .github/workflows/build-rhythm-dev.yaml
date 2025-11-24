@@ -33,7 +33,7 @@ jobs:
           context: ./apps/cogni-rhythm
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/app-dev:latest
+            ghcr.io/${{ github.repository }}/rhythm-dev:latest
           build-args: |
             PUBLIC_VAPID_SUBJECT=${{ secrets.PUBLIC_VAPID_SUBJECT }}
             PUBLIC_VAPID_KEY=${{ secrets.PUBLIC_VAPID_KEY }}
