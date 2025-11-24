@@ -1,8 +1,8 @@
-name: Build and Push DEV
+name: Build and Push Cogni-Rhythm PROD
 
 on:
   push:
-    branches: [dev]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -30,13 +30,13 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: ./apps/cogni-test
+          context: ./apps/cogni-rhythm
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/app-dev:latest
+            ghcr.io/${{ github.repository }}/app:latest
           build-args: |
             PUBLIC_VAPID_SUBJECT=${{ secrets.PUBLIC_VAPID_SUBJECT }}
             PUBLIC_VAPID_KEY=${{ secrets.PUBLIC_VAPID_KEY }}
             PRIVATE_VAPID_KEY=${{ secrets.PRIVATE_VAPID_KEY }}
-            MODE=DEV
+            MODE=PROD
             BUILD=node

@@ -1,4 +1,4 @@
-name: Deploy DEV
+name: Deploy Cogni-Rhythm DEV
 
 on: workflow_dispatch
 
@@ -40,5 +40,5 @@ jobs:
           MODE: DEV
         run: |
           # Теперь все docker команды выполняются на удаленном сервере
-          docker compose --profile dev up -d --pull always --remove-orphans --force-recreate --wait --wait-timeout 30
+          docker compose --profile rhythm-dev up -d --pull always --remove-orphans --force-recreate --wait --wait-timeout 30
           docker image prune -f

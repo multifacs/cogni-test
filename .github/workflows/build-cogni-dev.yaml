@@ -1,8 +1,8 @@
-name: Build and Push PROD
+name: Build and Push Cogni-Test DEV
 
 on:
   push:
-    branches: [main]
+    branches: [dev]
   workflow_dispatch:
 
 jobs:
@@ -33,10 +33,10 @@ jobs:
           context: ./apps/cogni-test
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/app:latest
+            ghcr.io/${{ github.repository }}/app-dev:latest
           build-args: |
             PUBLIC_VAPID_SUBJECT=${{ secrets.PUBLIC_VAPID_SUBJECT }}
             PUBLIC_VAPID_KEY=${{ secrets.PUBLIC_VAPID_KEY }}
             PRIVATE_VAPID_KEY=${{ secrets.PRIVATE_VAPID_KEY }}
-            MODE=PROD
+            MODE=DEV
             BUILD=node

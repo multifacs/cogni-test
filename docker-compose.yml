@@ -62,7 +62,7 @@ services:
       context: ./apps/cogni-rhythm
     image: ghcr.io/multifacs/cogni-test/rhythm-dev:latest
     profiles:
-      - "dev"
+      - "rhythm-dev"
     container_name: cogni-rhythm-dev
     restart: always
     networks:
@@ -84,7 +84,7 @@ services:
       context: ./apps/cogni-rhythm
     image: ghcr.io/multifacs/cogni-test/rhythm:latest
     profiles:
-      - "prod"
+      - "rhythm-prod"
     container_name: cogni-rhythm
     restart: always
     networks:
