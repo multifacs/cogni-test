@@ -71,7 +71,7 @@
 	</div>
 
 	<div class="flex items-center justify-between gap-2 text-sm">
-		<label for="sex">⚧️ Пол</label>
+		<label for="sex">👫 Пол</label>
 		<label><input type="radio" name="sex" bind:group={sex} value="male" /> Мужской</label>
 		<label><input type="radio" name="sex" bind:group={sex} value="female" /> Женский</label>
 	</div>
