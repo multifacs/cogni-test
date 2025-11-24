@@ -1,0 +1,15 @@
+{
+    "name": "Cogni Test",
+    "short_name": "Cogni Test",
+    "start_url": "/",
+    "display": "standalone",
+    "theme_color": "#0c1452",
+    "background_color": "oklch(27.8% 0.033 256.848)",
+    "icons": [
+        {
+            "sizes": "512x512",
+            "src": "icon.png",
+            "type": "image/png"
+        }
+    ]
+}

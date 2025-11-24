@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 
 	import { userManager } from '$lib/userStore';
@@ -62,6 +62,15 @@
 		const authed = await userManager.checkAuth();
 		if (authed) {
 			goto('/about');
+		}
+
+		console.log(navigator.onLine);
+		if ('serviceWorker' in navigator && navigator.onLine) {
+			navigator.serviceWorker.ready.then((reg) => {
+				reg.active?.postMessage({
+					type: 'CACHE_PAGES'
+				});
+			});
 		}
 	});
 </script>
