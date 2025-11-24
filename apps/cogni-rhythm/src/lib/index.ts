@@ -4,6 +4,8 @@ import type { RhythmResult } from '$lib/rhythm/types';
 
 // place files you want to import through the `$lib` alias in this folder.
 export async function uploadResultsToDatabase() {
+	let errors = 0;
+
 	try {
 		// Get user ID from localforage
 		const user = await localforage.getItem('user');
@@ -12,6 +14,8 @@ export async function uploadResultsToDatabase() {
 			return;
 		}
 		const userId = user.id;
+
+		console.log('checkpoint');
 
 		const resultsEasyUploaded: RhythmResult[] | null =
 			await localforage.getItem('results-easy-uploaded');
@@ -33,14 +37,18 @@ export async function uploadResultsToDatabase() {
 						})
 					});
 
+					console.log(response);
+
 					if (response.ok) {
 						console.log('Easy results uploaded successfully');
 						await localforage.setItem('results-easy-uploaded', true);
 					} else {
 						console.error('Failed to upload easy results:', await response.text());
+						return false;
 					}
 				} catch (error) {
 					console.error('Error uploading easy results:', error);
+					return false;
 				}
 			}
 		}
@@ -71,9 +79,11 @@ export async function uploadResultsToDatabase() {
 						await localforage.setItem('results-medium-uploaded', true);
 					} else {
 						console.error('Failed to upload medium results:', await response.text());
+						return false;
 					}
 				} catch (error) {
 					console.error('Error uploading medium results:', error);
+					return false;
 				}
 			}
 		}
@@ -103,9 +113,11 @@ export async function uploadResultsToDatabase() {
 						await localforage.setItem('results-hard-uploaded', true);
 					} else {
 						console.error('Failed to upload hard results:', await response.text());
+						return false;
 					}
 				} catch (error) {
 					console.error('Error uploading hard results:', error);
+					return false;
 				}
 			}
 		}

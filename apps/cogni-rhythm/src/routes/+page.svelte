@@ -65,15 +65,6 @@
 		if (authed) {
 			goto('/about');
 		}
-
-		console.log(navigator.onLine);
-		if ('serviceWorker' in navigator && navigator.onLine) {
-			navigator.serviceWorker.ready.then((reg) => {
-				reg.active?.postMessage({
-					type: 'CACHE_PAGES'
-				});
-			});
-		}
 	});
 </script>
 

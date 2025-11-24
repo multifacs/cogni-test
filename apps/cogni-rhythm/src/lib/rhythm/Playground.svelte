@@ -76,6 +76,27 @@
 			melody.push({ step: 12, type: 'ton' });
 		}
 
+		// function makeEasy() {
+		// 	// три основных тона в центре
+		// 	melody.push({ step: 2, type: 'ton' });
+		// 	melody.push({ step: 4, type: 'ton' });
+		// 	melody.push({ step: 6, type: 'ton' });
+		// 	melody.push({ step: 8, type: 'ton' });
+		// }
+
+		// function makeMedium() {
+		// 	// три основных тона в центре
+		// 	melody.push({ step: 8, type: 'ton' });
+		// 	melody.push({ step: 12, type: 'ton' });
+		// }
+
+		// function makeHard() {
+		// 	// три основных тона в центре
+		// 	melody.push({ step: 4, type: 'ton' });
+		// 	melody.push({ step: 6, type: 'ton' });
+		// 	melody.push({ step: 12, type: 'ton' });
+		// }
+
 		switch (difficulty) {
 			case 'easy':
 				makeEasy();
@@ -551,22 +572,22 @@
 				// значит следующий интервал (interval+1) — первый с вводом
 				if (interval === sampleRepeats - 1) {
 					const text = 'Начинайте кликать после флажка';
-					ctx.font = '600 16px system-ui';
+					ctx.font = '600 14px system-ui';
 					ctx.fillStyle = 'rgba(255,255,255,0.95)';
 					ctx.textAlign = 'center';
 
 					// положение текста над флажком
-					ctx.fillText(text, flagX, laneY - 32);
+					ctx.fillText(text, flagX, laneY - 28);
 				}
 
 				if (interval === sampleRepeats + 1) {
 					const text = 'Теперь без помощи';
-					ctx.font = '600 16px system-ui';
+					ctx.font = '600 14px system-ui';
 					ctx.fillStyle = 'rgba(255,255,255,0.95)';
 					ctx.textAlign = 'center';
 
 					// положение текста над флажком
-					ctx.fillText(text, flagX, laneY - 32);
+					ctx.fillText(text, flagX, laneY - 28);
 				}
 
 				ctx.restore();
@@ -665,17 +686,19 @@
 		<canvas bind:this={canvas} on:click={handleCanvasClick}></canvas>
 		{#if !gameInitialized}
 			<div class="start-overlay">
-					<div class="text-6xl">↓</div>
+				<div class="text-6xl">↓</div>
 			</div>
 		{/if}
 	</div>
 
-	<button class="tap-button" on:click={handleTapButton}>{!gameInitialized ? "Начать" : "Нажимайте в ритм"}</button>
+	<button class="tap-button" on:click={handleTapButton}
+		>{!gameInitialized ? 'Начать' : 'Нажимайте в ритм'}</button
+	>
 
 	<div class="legend">
 		<div class="legend-item">
 			<span class="legend-dot ghost"></span>
-			<span>Призрачные шарики — эталонные удары (первые 4 прохода)</span>
+			<span>Подсказки</span>
 		</div>
 		<div class="legend-item">
 			<span class="legend-dot user"></span>
@@ -696,6 +719,8 @@
 		background: radial-gradient(circle at top, #111827 0, #020617 60%);
 		border-radius: 1.25rem;
 		box-shadow: 0 20px 35px rgba(15, 23, 42, 0.6);
+
+		width: 100%;
 	}
 
 	.rhythm-header {
@@ -774,7 +799,7 @@
 		padding: 0.6rem 1.5rem;
 		border-radius: 999px;
 		border: none;
-		font-size: 0.95rem;
+		font-size: 1.7rem;
 		font-weight: 500;
 		background: radial-gradient(circle at top, #3b82f6, #1d4ed8);
 		color: white;
