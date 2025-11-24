@@ -550,7 +550,7 @@
 				// interval == sampleRepeats - 1 — это конец демонстрации
 				// значит следующий интервал (interval+1) — первый с вводом
 				if (interval === sampleRepeats - 1) {
-					const text = 'Начинайте кликать';
+					const text = 'Начинайте кликать после флажка';
 					ctx.font = '600 16px system-ui';
 					ctx.fillStyle = 'rgba(255,255,255,0.95)';
 					ctx.textAlign = 'center';
