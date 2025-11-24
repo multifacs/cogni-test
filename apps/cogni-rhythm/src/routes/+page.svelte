@@ -34,7 +34,7 @@
 		);
 	}
 
-	const hashedSecurePassword = PUBLIC_PASSWORD || 241180;
+	const hashedSecurePassword = PUBLIC_PASSWORD || 261180;
 
 	async function handleSubmit() {
 		const userId = crypto.randomUUID();
@@ -46,8 +46,9 @@
 			sex: sex
 		};
 
-		if (password !== hashedSecurePassword) {
+		if (password != hashedSecurePassword) {
 			alert('Неверный пароль');
+			console.log(hashedSecurePassword)
 			return;
 		}
 
