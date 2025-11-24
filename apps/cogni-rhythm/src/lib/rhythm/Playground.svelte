@@ -71,6 +71,7 @@
 
 		function makeHard() {
 			// три основных тона в центре
+			melody.push({ step: 4, type: 'ton' });
 			melody.push({ step: 6, type: 'ton' });
 			melody.push({ step: 12, type: 'ton' });
 		}

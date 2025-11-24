@@ -8,10 +8,6 @@
 	import DateInput from '$lib/components/ui/login-form/DateInput.svelte';
 	import TextInput from '$lib/components/ui/login-form/TextInput.svelte';
 	import PasswordInput from '$lib/components/ui/login-form/PasswordInput.svelte';
-	import Modal from '$lib/components/ui/Modal.svelte';
-
-	import { pushService } from '$lib/pushService';
-	import { isSubscribed } from '$lib/utils/push';
 
 	let firstname = $state('');
 	let lastname = $state('');
@@ -25,9 +21,6 @@
 
 	// по умолчанию галочка стоит
 	let consentChecked = $state(true);
-
-	let subscribed = $state(false);
-	let showModal = $state(false);
 
 	function isSubmitDisabled() {
 		return (
@@ -71,10 +64,6 @@
 			goto('/about');
 		}
 
-		// Проверям подписку на пуш
-		subscribed = await isSubscribed();
-		showModal = !subscribed;
-
 		console.log(navigator.onLine);
 		if ('serviceWorker' in navigator && navigator.onLine) {
 			navigator.serviceWorker.ready.then((reg) => {
@@ -84,43 +73,7 @@
 			});
 		}
 	});
-
-	async function subscribe() {
-		if (!pushService) {
-			console.error('Push service not initialized');
-			return;
-		}
-
-		try {
-			await pushService.subscribe();
-			subscribed = true;
-			showModal = false;
-			console.log('Subscribed successfully');
-		} catch (error) {
-			console.error('Failed to subscribe:', error);
-		}
-	}
 </script>
-
-{#if showModal}
-	<Modal bind:showModal>
-		{#snippet header()}
-			<h2 class="text-2xl text-white">Подпишитесь на пуш-уведомления</h2>
-		{/snippet}
-		<div class="flex flex-col gap-4">
-			<p class="text-white">
-				Для корректной работы загрузки результатов тестирования требуется подписка на уведомления.
-			</p>
-			<p class="text-white">Для подписки достаточно нажать зелёную кнопочку.</p>
-			<p class="text-white">
-				Вы всегда сможете подписаться или отписаться от push-уведомлений в любое время на странице
-				профиля.
-			</p>
-			<Button color="green" onclick={subscribe}>Подписаться</Button>
-			<Button color="red" onclick={() => (showModal = false)}>Нет, спасибо</Button>
-		</div>
-	</Modal>
-{/if}
 
 <form
 	class="mx-auto flex w-full max-w-sm flex-col gap-4 rounded-3xl bg-gray-700 p-6 text-white shadow-xl"

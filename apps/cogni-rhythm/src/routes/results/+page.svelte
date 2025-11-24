@@ -5,10 +5,13 @@
 	import type { RhythmResult } from '$lib/rhythm/types';
 	import localforage from 'localforage';
 	import ResultsChart from '$lib/rhythm/ResultsChart.svelte';
+	import { uploadResultsToDatabase } from '$lib';
 
 	let resultsEasy: RhythmResult[] | null = $state(null);
 	let resultsMedium: RhythmResult[] | null = $state(null);
 	let resultsHard: RhythmResult[] | null = $state(null);
+
+	let message = $state('');
 
 	onMount(async () => {
 		const resultsEasyLoaded: RhythmResult[] | null = await localforage.getItem('results-easy');
@@ -27,6 +30,15 @@
 		if (resultsHardLoaded) {
 			console.log(resultsHard);
 			resultsHard = resultsHardLoaded;
+		}
+
+		try {
+			setTimeout(async () => {
+				const uploadMessage = await uploadResultsToDatabase();
+				if (uploadMessage) message = uploadMessage.replaceAll('_', '\n');
+			}, 2000);
+		} catch (error) {
+			console.error('Error uploading results on mount:', error);
 		}
 	});
 
@@ -78,7 +90,12 @@
 <div class="controls flex items-center justify-center gap-2.5 mt-4">
 	<Button color="purple" goto={`/about`}>Заново</Button>
 
-	<Button color="red" onclick={uploadResults}>Загрузить результаты онлайн</Button>
+	<!-- <Button color="red" onclick={uploadResults}>Загрузить результаты онлайн</Button> -->
+</div>
+
+<div class="mt-4 flex flex-col items-center text-center whitespace-pre-wrap gap-2">
+	<span>{message}</span>
+	<span>Для повторной загрузки обновите страницу...</span>
 </div>
 
 <style>

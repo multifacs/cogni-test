@@ -51,6 +51,7 @@
 		"gray-matter": "^4.0.3",
 		"localforage": "^1.10.0",
 		"short-uuid": "^5.2.0",
+		"svelte-toast": "^1.0.0",
 		"uuid": "^13.0.0",
 		"vite-plugin-mkcert": "^1.17.9",
 		"web-push": "^3.6.7"

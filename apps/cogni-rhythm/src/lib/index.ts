@@ -12,83 +12,104 @@ export async function uploadResultsToDatabase() {
 		}
 		const userId = user.id;
 
-		// Try to upload easy results
-		const resultsEasyLoaded: RhythmResult[] | null = await localforage.getItem('results-easy');
-		if (resultsEasyLoaded && resultsEasyLoaded.length > 0) {
-			try {
-				const response = await fetch('/api/rhythm/results', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify({
-						userId,
-						difficulty: 'easy',
-						results: resultsEasyLoaded
-					})
-				});
+		const resultsEasyUploaded: RhythmResult[] | null =
+			await localforage.getItem('results-easy-uploaded');
 
-				if (response.ok) {
-					console.log('Easy results uploaded successfully');
-				} else {
-					console.error('Failed to upload easy results:', await response.text());
+		if (!resultsEasyUploaded) {
+			// Try to upload easy results
+			const resultsEasyLoaded: RhythmResult[] | null = await localforage.getItem('results-easy');
+			if (resultsEasyLoaded && resultsEasyLoaded.length > 0) {
+				try {
+					const response = await fetch('/api/rhythm/results', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({
+							userId,
+							difficulty: 'easy',
+							results: resultsEasyLoaded
+						})
+					});
+
+					if (response.ok) {
+						console.log('Easy results uploaded successfully');
+						await localforage.setItem('results-easy-uploaded', true);
+					} else {
+						console.error('Failed to upload easy results:', await response.text());
+					}
+				} catch (error) {
+					console.error('Error uploading easy results:', error);
 				}
-			} catch (error) {
-				console.error('Error uploading easy results:', error);
 			}
 		}
 
-		// Try to upload medium results
-		const resultsMediumLoaded: RhythmResult[] | null = await localforage.getItem('results-medium');
-		if (resultsMediumLoaded && resultsMediumLoaded.length > 0) {
-			try {
-				const response = await fetch('/api/rhythm/results', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify({
-						userId,
-						difficulty: 'medium',
-						results: resultsMediumLoaded
-					})
-				});
+		const resultsMediumUploaded: RhythmResult[] | null =
+			await localforage.getItem('results-medium-uploaded');
 
-				if (response.ok) {
-					console.log('Medium results uploaded successfully');
-				} else {
-					console.error('Failed to upload medium results:', await response.text());
+		if (!resultsMediumUploaded) {
+			// Try to upload medium results
+			const resultsMediumLoaded: RhythmResult[] | null =
+				await localforage.getItem('results-medium');
+			if (resultsMediumLoaded && resultsMediumLoaded.length > 0) {
+				try {
+					const response = await fetch('/api/rhythm/results', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({
+							userId,
+							difficulty: 'medium',
+							results: resultsMediumLoaded
+						})
+					});
+
+					if (response.ok) {
+						console.log('Medium results uploaded successfully');
+						await localforage.setItem('results-medium-uploaded', true);
+					} else {
+						console.error('Failed to upload medium results:', await response.text());
+					}
+				} catch (error) {
+					console.error('Error uploading medium results:', error);
 				}
-			} catch (error) {
-				console.error('Error uploading medium results:', error);
 			}
 		}
 
-		// Try to upload hard results
-		const resultsHardLoaded: RhythmResult[] | null = await localforage.getItem('results-hard');
-		if (resultsHardLoaded && resultsHardLoaded.length > 0) {
-			try {
-				const response = await fetch('/api/rhythm/results', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify({
-						userId,
-						difficulty: 'hard',
-						results: resultsHardLoaded
-					})
-				});
+		const resultsHardUploaded: RhythmResult[] | null =
+			await localforage.getItem('results-hard-uploaded');
 
-				if (response.ok) {
-					console.log('Hard results uploaded successfully');
-				} else {
-					console.error('Failed to upload hard results:', await response.text());
+		if (!resultsHardUploaded) {
+			// Try to upload hard results
+			const resultsHardLoaded: RhythmResult[] | null = await localforage.getItem('results-hard');
+			if (resultsHardLoaded && resultsHardLoaded.length > 0) {
+				try {
+					const response = await fetch('/api/rhythm/results', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({
+							userId,
+							difficulty: 'hard',
+							results: resultsHardLoaded
+						})
+					});
+
+					if (response.ok) {
+						console.log('Hard results uploaded successfully');
+						await localforage.setItem('results-hard-uploaded', true);
+					} else {
+						console.error('Failed to upload hard results:', await response.text());
+					}
+				} catch (error) {
+					console.error('Error uploading hard results:', error);
 				}
-			} catch (error) {
-				console.error('Error uploading hard results:', error);
 			}
 		}
+
+		return `Результаты легкого уровня загружены: ${resultsEasyUploaded ? 'да' : 'нет'}_Результаты среднего уровня загружены: ${resultsMediumUploaded ? 'да' : 'нет'}_Результаты сложного уровня загружены: ${resultsHardUploaded ? 'да' : 'нет'}`;
 	} catch (error) {
 		console.error('Error in uploadResultsToDatabase:', error);
 	}
