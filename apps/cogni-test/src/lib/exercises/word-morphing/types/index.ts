@@ -11,3 +11,14 @@ export type WordMorphingSession = {
 	expectedCombos: string[];
 	category: 'words' | 'shapes';
 };
+
+// Данные для фигур и цветов
+export type Shape = {
+	name: string;
+	render: (color: string) => string;
+};
+
+export type Color = {
+	name: string;
+	value: string;
+};
