@@ -15,7 +15,7 @@
 
 	Chart.defaults.color = 'white';
 
-	const TRACKS = 8; // фиксированное число дорожек
+	const TRACKS = 6; // фиксированное число дорожек
 
 	// нормализация значения в [0,1]
 	function normalize(value: number, max: number) {
@@ -105,7 +105,7 @@
 				maintainAspectRatio: false,
 				plugins: {
 					legend: {
-						display: true,
+						display: false,
 						labels: {
 							color: getCSSVar('--color-white') || '#ffffff'
 						}
@@ -125,7 +125,7 @@
 						type: 'linear',
 						title: {
 							display: true,
-							text: 'Попытка'
+							text: 'Нажатие'
 						},
 						ticks: {
 							stepSize: 1

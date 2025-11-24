@@ -56,32 +56,11 @@
 	function generateMelody() {
 		melody = [];
 
-		function makeEasy() {
-			// три основных тона в центре
-			melody.push({ step: 4, type: 'ton' });
-			melody.push({ step: 8, type: 'ton' });
-			melody.push({ step: 12, type: 'ton' });
-		}
-
-		function makeMedium() {
-			// три основных тона в центре
-			melody.push({ step: 8, type: 'ton' });
-			melody.push({ step: 12, type: 'ton' });
-		}
-
-		function makeHard() {
-			// три основных тона в центре
-			melody.push({ step: 4, type: 'ton' });
-			melody.push({ step: 6, type: 'ton' });
-			melody.push({ step: 12, type: 'ton' });
-		}
-
 		// function makeEasy() {
 		// 	// три основных тона в центре
-		// 	melody.push({ step: 2, type: 'ton' });
 		// 	melody.push({ step: 4, type: 'ton' });
-		// 	melody.push({ step: 6, type: 'ton' });
 		// 	melody.push({ step: 8, type: 'ton' });
+		// 	melody.push({ step: 12, type: 'ton' });
 		// }
 
 		// function makeMedium() {
@@ -96,6 +75,27 @@
 		// 	melody.push({ step: 6, type: 'ton' });
 		// 	melody.push({ step: 12, type: 'ton' });
 		// }
+
+		function makeEasy() {
+			melody.push({ step: 4, type: 'ton' });
+			melody.push({ step: 8, type: 'ton' });
+			melody.push({ step: 12, type: 'ton' });
+		}
+
+		function makeMedium() {
+			melody.push({ step: 2, type: 'pulton' });
+			melody.push({ step: 4, type: 'ton' });
+			melody.push({ step: 8, type: 'ton' });
+			melody.push({ step: 10, type: 'pulton' });
+			melody.push({ step: 14, type: 'pulton' });
+		}
+
+		function makeHard() {
+			melody.push({ step: 4, type: 'ton' });
+			melody.push({ step: 6, type: 'pulton' });
+			melody.push({ step: 8, type: 'ton' });
+			melody.push({ step: 14, type: 'pulton' });
+		}
 
 		switch (difficulty) {
 			case 'easy':
