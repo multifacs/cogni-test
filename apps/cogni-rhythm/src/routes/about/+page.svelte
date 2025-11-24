@@ -50,15 +50,15 @@
 		<div class="mt-4 flex flex-col gap-4 items-center">
 			<div class="flex gap-4 justify-center items-center">
 				<Button class="w-28" color="green" goto={'/easy'}>Легкий</Button>
-				<span>{resultsEasy ? 'пройден' : 'не пройден'}</span>
+				<span>{resultsEasy ? '✅' : '👀'}</span>
 			</div>
 			<div class="flex gap-4 justify-center items-center">
 				<Button class="w-28" color="yellow" goto={'/medium'}>Средний</Button>
-				<span>{resultsMedium ? 'пройден' : 'не пройден'}</span>
+				<span>{resultsMedium ? '✅' : '👀'}</span>
 			</div>
 			<div class="flex gap-4 justify-center items-center">
 				<Button class="w-28" color="red" goto={'/hard'}>Сложный</Button>
-				<span>{resultsHard ? 'пройден' : 'не пройден'}</span>
+				<span>{resultsHard ? '✅' : '👀'}</span>
 			</div>
 		</div>
 	</div>

@@ -559,6 +559,16 @@
 					ctx.fillText(text, flagX, laneY - 32);
 				}
 
+				if (interval === sampleRepeats + 1) {
+					const text = 'Теперь без помощи';
+					ctx.font = '600 16px system-ui';
+					ctx.fillStyle = 'rgba(255,255,255,0.95)';
+					ctx.textAlign = 'center';
+
+					// положение текста над флажком
+					ctx.fillText(text, flagX, laneY - 32);
+				}
+
 				ctx.restore();
 			}
 		}
@@ -655,14 +665,12 @@
 		<canvas bind:this={canvas} on:click={handleCanvasClick}></canvas>
 		{#if !gameInitialized}
 			<div class="start-overlay">
-				<div class="overlay-card">
-					<div class="overlay-title">Нажмите, чтобы начать</div>
-				</div>
+					<div class="text-6xl">↓</div>
 			</div>
 		{/if}
 	</div>
 
-	<button class="tap-button" on:click={handleTapButton}> Нажимайте в ритм </button>
+	<button class="tap-button" on:click={handleTapButton}>{!gameInitialized ? "Начать" : "Нажимайте в ритм"}</button>
 
 	<div class="legend">
 		<div class="legend-item">

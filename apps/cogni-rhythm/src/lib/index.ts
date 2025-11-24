@@ -110,8 +110,10 @@ export async function uploadResultsToDatabase() {
 			}
 		}
 
-		return `Результаты легкого уровня загружены: ${resultsEasyUploaded ? 'да' : 'нет'}_Результаты среднего уровня загружены: ${resultsMediumUploaded ? 'да' : 'нет'}_Результаты сложного уровня загружены: ${resultsHardUploaded ? 'да' : 'нет'}`;
+		// return `Результаты легкого уровня загружены: ${resultsEasyUploaded ? 'да' : 'нет'}_Результаты среднего уровня загружены: ${resultsMediumUploaded ? 'да' : 'нет'}_Результаты сложного уровня загружены: ${resultsHardUploaded ? 'да' : 'нет'}`;
+		return true;
 	} catch (error) {
 		console.error('Error in uploadResultsToDatabase:', error);
+		return false;
 	}
 }

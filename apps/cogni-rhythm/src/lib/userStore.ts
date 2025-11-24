@@ -4,8 +4,8 @@ import localforage from 'localforage';
 
 type User = {
 	id: string;
-	firstname: string;
-	lastname: string;
+	firstname?: string;
+	lastname?: string;
 	birthdate: string;
 	sex: 'male' | 'female';
 };
