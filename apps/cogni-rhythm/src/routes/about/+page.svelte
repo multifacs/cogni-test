@@ -111,33 +111,6 @@
 		color: #cbd5f5;
 	}
 
-	.canvas-shell {
-		position: relative;
-		width: min(700px, 100%);
-		aspect-ratio: 16 / 7;
-		border-radius: 1rem;
-		overflow: hidden;
-		background: #020617;
-		border: 1px solid rgba(148, 163, 184, 0.4);
-		box-shadow: inset 0 0 40px rgba(15, 23, 42, 0.9);
-	}
-
-	canvas {
-		display: block;
-		width: 100%;
-		height: 100%;
-		cursor: pointer;
-	}
-
-	.start-overlay {
-		position: absolute;
-		inset: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: radial-gradient(circle at center, rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.95));
-	}
-
 	.overlay-card {
 		max-width: 360px;
 		padding: 1rem 1.25rem;
@@ -147,42 +120,10 @@
 		box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
 	}
 
-	.overlay-title {
-		font-size: 1rem;
-		font-weight: 600;
-		color: #e5e7eb;
-		margin-bottom: 0.25rem;
-		text-align: center;
-	}
-
 	.overlay-text {
 		font-size: 0.85rem;
 		color: #cbd5f5;
 		text-align: center;
-	}
-
-	.tap-button {
-		margin-top: 0.25rem;
-		padding: 0.6rem 1.5rem;
-		border-radius: 999px;
-		border: none;
-		font-size: 0.95rem;
-		font-weight: 500;
-		background: radial-gradient(circle at top, #3b82f6, #1d4ed8);
-		color: white;
-		cursor: pointer;
-		box-shadow: 0 10px 25px rgba(37, 99, 235, 0.45);
-		transform: translateY(0);
-		transition:
-			transform 0.12s ease,
-			box-shadow 0.12s ease,
-			filter 0.12s ease;
-	}
-
-	.tap-button:active {
-		transform: translateY(1px) scale(0.98);
-		box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
-		filter: brightness(0.98);
 	}
 
 	.legend {

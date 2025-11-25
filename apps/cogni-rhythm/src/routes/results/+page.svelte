@@ -60,50 +60,46 @@
 	}
 </script>
 
-<h2>Последние результаты</h2>
-<div class="overflow-auto w-full flex flex-col items-center gap-6 p-2">
-	{#if resultsEasy}
-		<div class="test-container flex max-h-52 w-full max-w-2xl flex-col items-center rounded-2x">
-			<ResultsChart title="Легкий уровень" results={resultsEasy} />
-		</div>
-	{:else}
-		<span class="text-sm font-bold">Легкий уровень не пройден</span>
-	{/if}
+<div class="w-full flex flex-col items-center gap-1">
+	<h2>Последние результаты</h2>
 
-	{#if resultsMedium}
-		<div class="test-container flex max-h-52 w-full max-w-2xl flex-col items-center rounded-2x">
-			<ResultsChart title="Средний уровень" results={resultsMedium} />
-		</div>
-	{:else}
-		<span class="text-sm font-bold">Средний уровень не пройден</span>
-	{/if}
+	<div class="overflow-auto w-full flex flex-col items-center gap-6 p-2">
+		{#if resultsEasy}
+			<div class="test-container flex max-h-52 w-full max-w-2xl flex-col items-center rounded-2x">
+				<ResultsChart title="Легкий уровень" results={resultsEasy} />
+			</div>
+		{:else}
+			<span class="text-sm font-bold">Легкий уровень не пройден</span>
+		{/if}
 
-	{#if resultsHard}
-		<div class="test-container flex max-h-52 w-full max-w-2xl flex-col items-center rounded-2x">
-			<ResultsChart title="Сложный уровень" results={resultsHard} />
-		</div>
-	{:else}
-		<span class="text-sm font-bold">Сложный уровень не пройден</span>
-	{/if}
-</div>
+		{#if resultsMedium}
+			<div class="test-container flex max-h-52 w-full max-w-2xl flex-col items-center rounded-2x">
+				<ResultsChart title="Средний уровень" results={resultsMedium} />
+			</div>
+		{:else}
+			<span class="text-sm font-bold">Средний уровень не пройден</span>
+		{/if}
 
-<div class="controls flex items-center justify-center gap-2.5 mt-4">
-	<Button color="purple" goto={`/about`}>К тестам</Button>
+		{#if resultsHard}
+			<div class="test-container flex max-h-52 w-full max-w-2xl flex-col items-center rounded-2x">
+				<ResultsChart title="Сложный уровень" results={resultsHard} />
+			</div>
+		{:else}
+			<span class="text-sm font-bold">Сложный уровень не пройден</span>
+		{/if}
+	</div>
 
-	<!-- <Button color="red" onclick={uploadResults}>Загрузить результаты онлайн</Button> -->
-</div>
+	<div class="flex flex-col items-center justify-center gap-2.5">
+		<Button color="purple" goto={`/about`}>К тестам</Button>
 
-<div class="mt-4 flex flex-col items-center text-center whitespace-pre-wrap gap-2">
-	<!-- <span>{message}</span> -->
-	{#if message == null}
-		<Spinner></Spinner>
-	{:else if message == true}
-		<span class="text-sm">Результаты сохранены на сервер.</span>
-	{:else if message == false}
-		<span class="text-sm">Ошибка сохранения на сервер. Повторите попытку позднее.</span>
-	{/if}
-
-	<!-- <span class="text-sm">Для повторной загрузки обновите страницу...</span> -->
+		{#if message == null}
+			<Spinner></Spinner>
+		{:else if message == true}
+			<span class="text-sm">Результаты сохранены на сервер.</span>
+		{:else if message == false}
+			<span class="text-sm">Ошибка сохранения на сервер. Повторите попытку позднее.</span>
+		{/if}
+	</div>
 </div>
 
 <style>
