@@ -25,7 +25,7 @@
 	w-full
     rounded-lg
 	border
-    bg-gray-700
+    bg-gray-800
     text-white
     placeholder-gray-400
     outline-0
