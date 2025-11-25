@@ -97,7 +97,7 @@
 		{:else if message == true}
 			<span class="text-sm">Результаты сохранены на сервер.</span>
 		{:else if message == false}
-			<span class="text-sm">Ошибка сохранения на сервер. Повторите попытку позднее.</span>
+			<span class="text-sm text-wrap">Ошибка сохранения на сервер. Повторите попытку позднее.</span>
 		{/if}
 	</div>
 </div>

@@ -14,6 +14,8 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 
+	import UpdateBanner from '$lib/components/ui/UpdateBanner.svelte';
+
 	let { children } = $props();
 
 	let subscribed = $state(false);
@@ -107,5 +109,7 @@
 		</div>
 	</Modal>
 {/if}
+
+<UpdateBanner />
 
 {@render children()}

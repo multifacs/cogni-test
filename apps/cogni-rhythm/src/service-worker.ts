@@ -122,7 +122,7 @@ import { uploadResultsToDatabase } from './lib';
 
 self.addEventListener('message', (event) => {
 	// if (event.data?.type === 'CACHE_PAGES') {
-	// 	cachePages();
+	// 	cachePages(); 123
 	// }
 
 	if (event.data?.type === 'UPLOAD_RESULTS') {
