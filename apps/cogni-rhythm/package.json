@@ -36,24 +36,28 @@
 		"tailwindcss": "^4.1.17",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.47.0",
-		"vite": "^7.2.2"
+		"vite": "^7.2.2",
+		"workbox-cacheable-response": "^7.4.0",
+		"workbox-precaching": "^7.4.0",
+		"workbox-routing": "^7.4.0",
+		"workbox-strategies": "^7.4.0"
 	},
 	"dependencies": {
 		"@fontsource/comic-neue": "^5.2.7",
 		"@fontsource/fira-code": "^5.2.7",
+		"@libsql/client": "^0.15.15",
 		"@types/web-push": "^3.6.4",
 		"chart.js": "^4.5.1",
 		"chartjs-plugin-annotation": "^3.1.0",
 		"dotenv": "^17.2.3",
+		"drizzle-kit": "^0.31.7",
+		"drizzle-orm": "^0.44.7",
 		"gray-matter": "^4.0.3",
 		"localforage": "^1.10.0",
 		"short-uuid": "^5.2.0",
 		"svelte-toast": "^1.0.0",
 		"uuid": "^13.0.0",
 		"vite-plugin-mkcert": "^1.17.9",
-		"web-push": "^3.6.7",
-		"drizzle-kit": "^0.31.7",
-		"drizzle-orm": "^0.44.7",
-		"@libsql/client": "^0.15.15"
+		"web-push": "^3.6.7"
 	}
 }
