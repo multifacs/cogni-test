@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import type { RhythmResult } from './types';
+	import localforage from 'localforage';
 
 	// props
 	export let gameEnd: () => void;
@@ -348,7 +349,7 @@
 	}
 
 	// ===== Завершение и расчёт результатов =====
-	function finishGame() {
+	async function finishGame() {
 		isPlaying = false;
 		if (animationFrame !== null) {
 			cancelAnimationFrame(animationFrame);
@@ -404,6 +405,9 @@
 		}
 
 		console.log('Rhythm results (per tap):', results);
+
+		await localforage.setItem(`results-${difficulty}-uploaded`, false);
+		// console.log("set", difficulty, "false")
 
 		gameEnd();
 		sendResults(results);
@@ -691,7 +695,7 @@
 		{/if}
 	</div>
 
-	<button class="tap-button" on:click={handleTapButton}
+	<button class="tap-button hover:brightness-110" on:click={handleTapButton}
 		>{!gameInitialized ? 'Начать' : 'Нажимайте в ритм'}</button
 	>
 
@@ -716,7 +720,8 @@
 		justify-content: center;
 		padding: 1.5rem;
 		box-sizing: border-box;
-		background: radial-gradient(circle at top, #111827 0, #020617 60%);
+		/* background: radial-gradient(circle at top, #111827 0, #020617 60%); */
+		background: transparent;
 		border-radius: 1.25rem;
 		box-shadow: 0 20px 35px rgba(15, 23, 42, 0.6);
 

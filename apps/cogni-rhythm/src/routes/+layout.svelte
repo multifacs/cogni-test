@@ -14,6 +14,8 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 
+	import UpdateBanner from '$lib/components/ui/UpdateBanner.svelte';
+
 	let { children } = $props();
 
 	let subscribed = $state(false);
@@ -41,14 +43,14 @@
 		subscribed = await isSubscribed();
 		showModal = !subscribed;
 
-		console.log('is Online:', navigator.onLine);
-		if ('serviceWorker' in navigator && navigator.onLine) {
-			navigator.serviceWorker.ready.then((reg) => {
-				reg.active?.postMessage({
-					type: 'CACHE_PAGES'
-				});
-			});
-		}
+		// console.log('is Online:', navigator.onLine);
+		// if ('serviceWorker' in navigator && navigator.onLine) {
+		// 	navigator.serviceWorker.ready.then((reg) => {
+		// 		reg.active?.postMessage({
+		// 			type: 'CACHE_PAGES'
+		// 		});
+		// 	});
+		// }
 	});
 
 	async function subscribe() {
@@ -107,5 +109,7 @@
 		</div>
 	</Modal>
 {/if}
+
+<UpdateBanner />
 
 {@render children()}

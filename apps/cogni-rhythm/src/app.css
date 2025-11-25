@@ -71,7 +71,7 @@ body {
 
 body {
 	font-family: 'Roboto', sans-serif;
-	background-color: var(--color-gray-800);
+	background: radial-gradient(circle at top, #111827 0, #020617 60%);
 	color: var(--color-gray-50);
 
 	display: flex;

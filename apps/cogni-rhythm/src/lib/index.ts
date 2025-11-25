@@ -20,7 +20,7 @@ export async function uploadResultsToDatabase() {
 		const resultsEasyUploaded: RhythmResult[] | null =
 			await localforage.getItem('results-easy-uploaded');
 
-		if (!resultsEasyUploaded || true) {
+		if (!resultsEasyUploaded) {
 			// Try to upload easy results
 			const resultsEasyLoaded: RhythmResult[] | null = await localforage.getItem('results-easy');
 			if (resultsEasyLoaded && resultsEasyLoaded.length > 0) {
@@ -56,7 +56,7 @@ export async function uploadResultsToDatabase() {
 		const resultsMediumUploaded: RhythmResult[] | null =
 			await localforage.getItem('results-medium-uploaded');
 
-		if (!resultsMediumUploaded || true) {
+		if (!resultsMediumUploaded) {
 			// Try to upload medium results
 			const resultsMediumLoaded: RhythmResult[] | null =
 				await localforage.getItem('results-medium');
@@ -91,7 +91,7 @@ export async function uploadResultsToDatabase() {
 		const resultsHardUploaded: RhythmResult[] | null =
 			await localforage.getItem('results-hard-uploaded');
 
-		if (!resultsHardUploaded || true) {
+		if (!resultsHardUploaded) {
 			// Try to upload hard results
 			const resultsHardLoaded: RhythmResult[] | null = await localforage.getItem('results-hard');
 			if (resultsHardLoaded && resultsHardLoaded.length > 0) {
