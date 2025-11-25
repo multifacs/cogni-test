@@ -41,25 +41,33 @@
 
 	<div class="overlay-card">
 		<div class="overlay-text">
-			Первые два прохода — эталон, нажатия не учитываются. Затем ориентируйтесь на ритм и нажимайте
-			в нужные моменты.
+			Первые два прохода — эталон, <b>нажатия не учитываются</b>. Затем нужно ориентироваться на <b>подсказки</b>
+			и нажимать в нужный момент, а после ориентироваться только на ритм и нажимать без <b>подсказок</b>.
 		</div>
 
 		<div class="overlay-text mt-2 font-bold text-3xl underline">Пройдите все уровни сложности:</div>
 
-		<div class="mt-4 flex flex-col gap-4 items-center">
-			<div class="flex gap-4 justify-center items-center">
-				<Button class="w-28" color="green" goto={'/easy'}>Легкий</Button>
-				<span>{resultsEasy ? '✅' : '⬜'}</span>
+		<div class="mt-4 flex gap-2 items-center">
+			<div class="flex flex-col gap-2 justify-center items-center">
+				<Button class="w-26" color="green" goto={'/easy'}>Легкий</Button>
+				<span class="text-[10px]">{resultsEasy ? 'Пройдено!' : 'Не пройдено'}</span>
+				<!-- <span>{resultsEasy ? '✅' : '⬜'}</span> -->
 			</div>
-			<div class="flex gap-4 justify-center items-center">
-				<Button class="w-28" color="yellow" goto={'/medium'}>Средний</Button>
-				<span>{resultsMedium ? '✅' : '⬜'}</span>
+			<div class="flex flex-col gap-2 justify-center items-center">
+				<Button color="yellow" goto={'/medium'}>Средний</Button>
+
+				<span class="text-[10px]">{resultsMedium ? 'Пройдено!' : 'Не пройдено'}</span>
+				<!-- <span>{resultsMedium ? '✅' : '⬜'}</span> -->
 			</div>
-			<div class="flex gap-4 justify-center items-center">
-				<Button class="w-28" color="red" goto={'/hard'}>Сложный</Button>
-				<span>{resultsHard ? '✅' : '⬜'}</span>
+			<div class="flex flex-col gap-2 justify-center items-center">
+				<Button class="w-26" color="red" goto={'/hard'}>Сложный</Button>
+				<span class="text-[10px]">{resultsHard ? 'Пройдено!' : 'Не пройдено'}</span>
+				<!-- <span>{resultsHard ? '✅' : '⬜'}</span> -->
 			</div>
+		</div>
+
+		<div class="text-center text-gray-500 text-[10px] mt-2">
+			Уровни можно проходить многократно.
 		</div>
 	</div>
 
