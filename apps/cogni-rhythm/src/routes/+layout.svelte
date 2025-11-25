@@ -41,14 +41,14 @@
 		subscribed = await isSubscribed();
 		showModal = !subscribed;
 
-		console.log('is Online:', navigator.onLine);
-		if ('serviceWorker' in navigator && navigator.onLine) {
-			navigator.serviceWorker.ready.then((reg) => {
-				reg.active?.postMessage({
-					type: 'CACHE_PAGES'
-				});
-			});
-		}
+		// console.log('is Online:', navigator.onLine);
+		// if ('serviceWorker' in navigator && navigator.onLine) {
+		// 	navigator.serviceWorker.ready.then((reg) => {
+		// 		reg.active?.postMessage({
+		// 			type: 'CACHE_PAGES'
+		// 		});
+		// 	});
+		// }
 	});
 
 	async function subscribe() {

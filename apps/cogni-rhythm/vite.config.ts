@@ -4,5 +4,8 @@ import { defineConfig } from 'vite';
 import mkcert from 'vite-plugin-mkcert';
 
 export default defineConfig({
-	plugins: [tailwindcss(), sveltekit(), mkcert()]
+	plugins: [tailwindcss(), sveltekit(), mkcert()],
+	define: {
+		'process.env.NODE_ENV': '"production"',
+	}
 });

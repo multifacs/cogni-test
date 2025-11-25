@@ -10,100 +10,42 @@
 // Only necessary if you have an import from `$env/static/public`
 /// <reference types="../.svelte-kit/ambient.d.ts" />
 
-import { build, files, version } from '$service-worker';
+import { build, files, version, prerendered } from '$service-worker';
+import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
+import { registerRoute, NavigationRoute } from 'workbox-routing';
+import { CacheFirst, NetworkFirst } from 'workbox-strategies';
+import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 
-// import localforage from 'localforage';
-// console.log(await localforage.getItem('TG_GROUP_LINK'));
+const precache_list = [...build, ...files, ...prerendered].map((s) => ({
+	url: s,
+	revision: version,
+}));
 
-// This gives `self` the correct types
-const self = globalThis.self as unknown as ServiceWorkerGlobalScope;
+cleanupOutdatedCaches();
+precacheAndRoute(precache_list);
 
-// Create a unique cache name for this deployment
-const CACHE = `cache-${version}`;
+// Assets (build/files) - CacheFirst strategy
+const ASSETS = new Set(build.concat(files).concat(prerendered));
 
-const ASSETS = [
-	...build, // the app itself
-	...files // everything in `static`
-];
+registerRoute(
+	({ url }) => ASSETS.has(url.pathname),
+	new CacheFirst({
+		cacheName: 'assets-cache',
+	})
+);
 
-self.addEventListener('install', (event) => {
-	console.log('[SW] Installing service worker version:', version);
-
-	// Create a new cache and add all files to it
-	async function addFilesToCache() {
-		const cache = await caches.open(CACHE);
-		await cache.addAll(ASSETS);
-	}
-
-	event.waitUntil(addFilesToCache());
-});
-
-self.addEventListener('activate', (event) => {
-	// Remove previous cached data from disk
-	async function deleteOldCaches() {
-		for (const key of await caches.keys()) {
-			if (key !== CACHE) await caches.delete(key);
-		}
-	}
-
-	event.waitUntil(deleteOldCaches());
-});
-
-self.addEventListener('fetch', (event) => {
-	// ignore POST requests etc
-	if (event.request.method !== 'GET') return;
-
-	// Filter out chrome-extension protocol requests
-	if (event.request.url.includes('chrome-extension:')) {
-		// Option 1: Let the request proceed normally
-		console.log('[SW] Ignoring chrome-extension request:', event.request.url);
-		return;
-	}
-
-	async function respond() {
-		const url = new URL(event.request.url);
-		const cache = await caches.open(CACHE);
-
-		// `build`/`files` can always be served from the cache
-		if (ASSETS.includes(url.pathname)) {
-			const response = await cache.match(url.pathname);
-
-			if (response) {
-				return response;
-			}
-		}
-
-		// for everything else, try the network first, but
-		// fall back to the cache if we're offline
-		try {
-			const response = await fetch(event.request);
-
-			// if we're offline, fetch can return a value that is not a Response
-			// instead of throwing - and we can't pass this non-Response to respondWith
-			if (!(response instanceof Response)) {
-				throw new Error('invalid response from fetch');
-			}
-
-			if (response.status === 200) {
-				cache.put(event.request, response.clone());
-			}
-
-			return response;
-		} catch (err) {
-			const response = await cache.match(event.request);
-
-			if (response) {
-				return response;
-			}
-
-			// if there's no cache, then just error out
-			// as there is nothing we can do to respond to this request
-			throw err;
-		}
-	}
-
-	event.respondWith(respond());
-});
+// Everything else - NetworkFirst with fallback to cache
+registerRoute(
+	({ request }) => request.method === 'GET' && !request.url.includes('chrome-extension:'),
+	new NetworkFirst({
+		cacheName: 'runtime-cache',
+		plugins: [
+			new CacheableResponsePlugin({
+				statuses: [200],
+			}),
+		],
+	})
+);
 
 self.addEventListener('push', (event) => {
 	if (!event.data) {
@@ -175,15 +117,13 @@ self.addEventListener('notificationclick', (event) => {
 	}
 });
 
-const PAGES_TO_CACHE = ['/', '/about', '/easy', '/medium', '/hard', '/results', '/consent'];
-
 import localforage from 'localforage';
 import { uploadResultsToDatabase } from './lib';
 
 self.addEventListener('message', (event) => {
-	if (event.data?.type === 'CACHE_PAGES') {
-		cachePages();
-	}
+	// if (event.data?.type === 'CACHE_PAGES') {
+	// 	cachePages();
+	// }
 
 	if (event.data?.type === 'UPLOAD_RESULTS') {
 		localforage.getItem('results-easy').then((r) => {
@@ -193,19 +133,3 @@ self.addEventListener('message', (event) => {
 		uploadResultsToDatabase();
 	}
 });
-
-async function cachePages() {
-	const cache = await caches.open(CACHE);
-
-	for (const page of PAGES_TO_CACHE) {
-		try {
-			const response = await fetch(page);
-			if (response.ok) {
-				console.log('Pre-caching page:', page);
-				cache.put(page, response.clone());
-			}
-		} catch (err) {
-			console.log('Failed to pre-cache page:', page, 'OFFLINE');
-		}
-	}
-}

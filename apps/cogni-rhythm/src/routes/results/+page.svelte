@@ -60,36 +60,30 @@
 	}
 </script>
 
+<h2>Последние результаты</h2>
 <div class="overflow-auto w-full flex flex-col items-center gap-6 p-2">
 	{#if resultsEasy}
 		<div class="test-container flex max-h-52 w-full max-w-2xl flex-col items-center rounded-2x">
-			<h2 class="text-2xl font-bold text-white">Легкий уровень</h2>
-			<ResultsChart results={resultsEasy} />
+			<ResultsChart title="Легкий уровень" results={resultsEasy} />
 		</div>
 	{:else}
-		<h2>Легкий уровень не пройден</h2>
+		<span class="text-sm font-bold">Легкий уровень не пройден</span>
 	{/if}
-
-	<hr />
 
 	{#if resultsMedium}
 		<div class="test-container flex max-h-52 w-full max-w-2xl flex-col items-center rounded-2x">
-			<h2 class="text-2xl font-bold text-white">Средний уровень</h2>
-			<ResultsChart results={resultsMedium} />
+			<ResultsChart title="Средний уровень" results={resultsMedium} />
 		</div>
 	{:else}
-		<h2>Средний уровень не пройден</h2>
+		<span class="text-sm font-bold">Средний уровень не пройден</span>
 	{/if}
-
-	<hr />
 
 	{#if resultsHard}
 		<div class="test-container flex max-h-52 w-full max-w-2xl flex-col items-center rounded-2x">
-			<h2 class="text-2xl font-bold text-white">Сложный уровень</h2>
-			<ResultsChart results={resultsHard} />
+			<ResultsChart title="Сложный уровень" results={resultsHard} />
 		</div>
 	{:else}
-		<h2>Сложный уровень не пройден</h2>
+		<span class="text-sm font-bold">Сложный уровень не пройден</span>
 	{/if}
 </div>
 
@@ -114,6 +108,9 @@
 
 <style>
 	.test-container {
-		scrollbar-width: none;
+		/* scrollbar-width: none; */
+		background: radial-gradient(circle at top, #111827 0, #020617 60%);
+		border-radius: 1.25rem;
+		box-shadow: 0 10px 25px rgba(15, 23, 42, 0.6);
 	}
 </style>
