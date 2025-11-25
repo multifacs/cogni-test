@@ -32,7 +32,8 @@
 		goto = undefined,
 		disabled = false,
 		type = null,
-		class: className = ''
+		class: className = '',
+		sub = ''
 	}: {
 		kind?: string;
 		color: ButtonColor;
@@ -42,6 +43,7 @@
 		disabled?: boolean;
 		type?: TypeType;
 		class?: string;
+		sub: string;
 	} = $props();
 
 	if (goto) {
@@ -220,10 +222,12 @@
 	focus:outline-none
 	${colorClasses[color].shadow}
 	${className}
+	flex flex-col
 	`}
 	{onclick}
 	{disabled}
 	{type}
 >
 	{@render children()}
+	<!-- <span class="text-[10px] m-0">{sub}</span> -->
 </button>
