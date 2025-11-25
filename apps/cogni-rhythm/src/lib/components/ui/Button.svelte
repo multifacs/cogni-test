@@ -32,8 +32,7 @@
 		goto = undefined,
 		disabled = false,
 		type = null,
-		class: className = '',
-		sub = ''
+		class: className = ''
 	}: {
 		kind?: string;
 		color: ButtonColor;
@@ -43,7 +42,6 @@
 		disabled?: boolean;
 		type?: TypeType;
 		class?: string;
-		sub: string;
 	} = $props();
 
 	if (goto) {
@@ -222,7 +220,6 @@
 	focus:outline-none
 	${colorClasses[color].shadow}
 	${className}
-	flex flex-col
 	`}
 	{onclick}
 	{disabled}

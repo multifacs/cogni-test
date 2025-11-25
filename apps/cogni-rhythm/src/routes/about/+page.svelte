@@ -65,6 +65,10 @@
 				<!-- <span>{resultsHard ? '✅' : '⬜'}</span> -->
 			</div>
 		</div>
+
+		<div class="text-center text-gray-500 text-[10px] mt-2">
+			Уровни можно проходить многократно.
+		</div>
 	</div>
 
 	<div class="legend">
