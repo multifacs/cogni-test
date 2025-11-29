@@ -8,6 +8,7 @@ export type BirdTask = {
 };
 
 export interface SwallowResult extends BirdTask {
+    type: 'swallow';
     // stage: number;
 	attempt: number;
 	time: number;

@@ -11,5 +11,6 @@ export type Word = {
 export type Selection = { row: number; fromCol: number; toCol: number };
 
 export interface MunsterbergResult extends Omit<Word, 'value'> {
+    type: 'munsterberg';
 	word: string;
 }

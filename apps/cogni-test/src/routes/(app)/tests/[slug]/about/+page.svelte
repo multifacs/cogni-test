@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
-	import { delay } from '$lib/utils/common.js';
 	import Button from '$lib/components/ui/Button.svelte';
 
 	const { data } = $props();

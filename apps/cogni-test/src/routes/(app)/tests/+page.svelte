@@ -17,7 +17,7 @@
 	<div class="w-full rounded-3xl bg-blue-100 p-4 text-center text-blue-900 shadow">
 		<p class="text-lg font-medium">🧠 Когнитивный возраст</p>
 		<p class="mt-1 text-3xl font-bold">
-			{#if data.predictedAge !== null}
+			{#if data.predictedAge !== null && data.predictedAge !== undefined}
 				{Math.round(data.predictedAge)} лет
 			{:else}
 				<span title="Пройдите хотя бы один раз каждый тест">??</span>

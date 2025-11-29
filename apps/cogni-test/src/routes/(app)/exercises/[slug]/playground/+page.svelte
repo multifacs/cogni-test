@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
-	import type { MetaResult, RegularResult, TestResultMap } from '$lib/tests/types.js';
-	import type { Result } from '$lib/types/index.js';
-	import { delay } from '$lib/utils/common.js';
+	// import type { MetaResult, RegularResult, TestResultMap } from '$lib/tests/types.js';
+	// import type { Result } from '$lib/types/index.js';
+	// import { delay } from '$lib/utils/common.js';
 	import { onMount, type SvelteComponent } from 'svelte';
 
 	const { data } = $props();

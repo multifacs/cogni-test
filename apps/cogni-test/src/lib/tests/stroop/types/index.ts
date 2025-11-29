@@ -10,6 +10,7 @@ export type Task = {
 };
 
 export interface StroopResult extends Task {
+    type: 'stroop';
 	attempt: number;
 	time: number;
 	userAnswer: Color | null;

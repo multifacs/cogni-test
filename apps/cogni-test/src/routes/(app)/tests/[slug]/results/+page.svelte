@@ -3,26 +3,28 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import type { TestResultMap } from '$lib/tests/types.js';
 	import { formatUserLocalDate } from '$lib/utils/index.js';
-	import { onMount, type SvelteComponent } from 'svelte';
+	import { onMount, type Component } from 'svelte';
 
 	const { data } = $props();
 	const slug = data.slug;
 	const results = data.results;
 	console.log(slug, results);
 
-	let Component: typeof SvelteComponent | null = $state(null);
+	let Comp: Component | null = $state(null);
 
 	onMount(async () => {
 		let customResultsChart;
 		try {
 			customResultsChart = (await import(`$lib/tests/${slug}/ResultsChart.svelte`)).default;
-			Component = customResultsChart;
+			Comp = customResultsChart;
 		} catch (err) {
 			console.log(err);
 		}
-		if (Component) return;
+		if (Comp) return;
 		const resultsChart = (await import(`$lib/components/charts/ResultsChart.svelte`)).default;
-		Component = resultsChart;
+
+        // love ts very much
+		Comp = resultsChart as Component;
 	});
 
 	// Открытый элемент (по умолчанию первый)
@@ -68,9 +70,9 @@
 					</svg>
 				</button>
 
-				{#if openedSessionId === result.sessionId && Component}
+				{#if openedSessionId === result.sessionId && Comp}
 					<div class="box-border flex flex-col items-center border-t p-2">
-						<Component
+						<Comp
 							testType={slug as keyof TestResultMap}
 							results={result.attempts}
 							meta={'meta' in result ? result['meta'] : undefined}

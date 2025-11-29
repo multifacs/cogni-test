@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
-	import type { MetaResult, RegularResult, TestResultMap } from '$lib/tests/types.js';
-	import type { Result } from '$lib/types/index.js';
-	import { delay } from '$lib/utils/common.js';
+	import type { MetaResult, RegularResults, TestResultMap } from '$lib/tests/types.js';
+	// import type { Result } from '$lib/types/index.js';
+	// import { delay } from '$lib/utils/common.js';
 	import { onMount, type SvelteComponent } from 'svelte';
 
 	const { data } = $props();
@@ -48,8 +48,8 @@
 		goto(`/tests/${slug}/results`);
 	}
 
-	async function onSendResults<T extends keyof TestResultMap>(
-		results: RegularResult<T> | MetaResult<T>
+	async function onSendResults(
+		results: RegularResults | MetaResult
 	) {
 		const response = await fetch(`/tests/${slug}/playground`, {
 			method: 'POST',
