@@ -78,4 +78,4 @@ Client side tests expected to be in `src/**/*.svelte.{test,spec}.{js,ts}`
 files. Server side tests expected to be in `src/**/*.{test,spec}.{js,ts}` files.
 
 There is an example of a client side test in
-[`apps/congi-test/src/routes/page.svelte.spec.ts`](/apps/cogni-test/src/routes/page.svelte.spec.ts).
+[`/apps/cogni-test/src/lib/exercises/word-morphing/components/Result.svelte.spec.ts`](/apps/cogni-test/src/lib/exercises/word-morphing/components/Result.svelte.spec.ts).
