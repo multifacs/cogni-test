@@ -10,14 +10,20 @@
 	import { translate } from '../../utils/common';
 	import { onDestroy, onMount } from 'svelte';
 	import { getCSSVar } from '$lib/utils';
-	import type { TestResultMap } from '$lib/tests/types';
+	import type { RegularResults, TestResultMap, TestType } from '$lib/tests/types';
+	import type { StroopResult } from '$lib/tests/stroop/types';
+	import type { MathResult } from '$lib/tests/math/types';
+	import type { SwallowResult } from '$lib/tests/swallow/types';
+	import type { MemoryResult } from '$lib/tests/memory/types';
+	import type { MunsterbergResult } from '$lib/tests/munsterberg/types';
+	import type { CampimetryResult } from '$lib/tests/campimetry/types';
 
 	let {
 		testType,
 		results
 	}: {
 		testType: keyof TestResultMap;
-		results: TestResultMap[typeof testType][];
+		results: RegularResults;
 	} = $props();
 
 	type EvalType = 'correctness' | 'value';
@@ -45,7 +51,14 @@
 	let canvas: HTMLCanvasElement = $state(Object());
 	let chart = $state(Object());
 
-	let maxStage = Math.max(...results.map((item) => item.stage));
+	let maxStage: number = Math.max(
+		...results.map((item) => {
+			if ('stage' in item) {
+				return item.stage;
+			}
+			return 0;
+		})
+	);
 	if (!maxStage || maxStage == 1) maxStage = 0;
 
 	if (testType == 'campimetry') maxStage = 0;
@@ -59,12 +72,12 @@
 	}
 
 	function getResults(
-		testType: keyof TestResultMap,
-		results: TestResultMap[typeof testType][]
+		testType: TestType,
+		results: RegularResults
 	): Result[] {
 		console.log(results);
 		if (testType == 'stroop') {
-			return results.map((result) => {
+			return (results as StroopResult[]).map((result) => {
 				return {
 					x: result.attempt + 1,
 					y: result.time,
@@ -75,7 +88,7 @@
 			});
 		}
 		if (testType == 'math' || testType == 'swallow' || testType == 'memory') {
-			return results.map((result) => {
+			return (results as MathResult[] | SwallowResult[] | MemoryResult[]).map((result) => {
 				return {
 					x: result.attempt + 1,
 					y: result.time,
@@ -86,7 +99,7 @@
 			});
 		}
 		if (testType == 'munsterberg') {
-			return results.map((result) => {
+			return (results as MunsterbergResult[]).map((result) => {
 				return {
 					x: result.attempt + 1,
 					y: result.time,
@@ -98,7 +111,7 @@
 		}
 
 		if (testType == 'campimetry') {
-			return results
+			return (results as CampimetryResult[])
 				.filter((x) => x.stage == 2)
 				.map((result) => {
 					return {
@@ -137,7 +150,9 @@
 						data,
 						borderWidth: 1,
 						pointBackgroundColor:
-							testType == 'campimetry' ? evalFuncs['value'] : evalFuncs['correctness'],
+							testType == 'campimetry'
+								? evalFuncs['value']
+								: evalFuncs['correctness'],
 						pointRadius: 5,
 						tension: 0.4
 					};
@@ -145,6 +160,7 @@
 			},
 			options: {
 				onHover: function (event, chartElements) {
+                    // @ts-ignore
 					const target = event.native ? event.native.target : event.chart.canvas;
 					target.style.cursor = chartElements.length ? 'pointer' : 'default';
 				},
@@ -157,24 +173,23 @@
 					tooltip: {
 						callbacks: {
 							title: (context) => {
-								const value = context[0].raw;
+								const value = context[0].raw as Result;
 								const raw = value.raw;
-								if (testType == 'math') {
+								if (raw.type == 'math') {
 									return `${raw.left} ${raw.sign} ${raw.right}`;
 								}
 								return `Попытка ${value.x}`;
 							},
 							afterTitle: (context) => {
-								const value = context[0].raw;
+								const value = context[0].raw as Result;
 								const raw = value.raw;
-								if (testType == 'math') {
+								if (raw.type == 'math') {
 									return `Ответ: ${raw.userAnswer ? 'да' : 'нет'}`;
 								}
 								return '';
 							},
 							label: function (context) {
-								const value = context.raw;
-								const raw = value.raw;
+								const value = context.raw as Result;
 								const isCorrect = value.isCorrect;
 								const status = isCorrect ? 'Верно' : 'Неверно';
 								return `Реакция: ${value.y} мс (${status})`;
@@ -185,9 +200,13 @@
 					legend: {
 						labels: {
 							usePointStyle: true,
+                            // @ts-ignore
 							generateLabels: (chart) => {
-								const original = Chart.defaults.plugins.legend.labels.generateLabels(chart);
-								console.log(Chart.defaults.plugins.legend.labels.generateLabels(chart));
+								const original =
+									Chart.defaults.plugins.legend.labels.generateLabels(chart);
+								console.log(
+									Chart.defaults.plugins.legend.labels.generateLabels(chart)
+								);
 								const fontColor = original[0]['fontColor'];
 								const strokeStyle = original[0]['strokeStyle'];
 								const newLabels = [];

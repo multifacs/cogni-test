@@ -62,7 +62,6 @@ export class PushService {
 		} catch (e) {
 			throw new Error(`${e}`);
 		}
-		return null;
 	}
 
 	async unsubscribe() {

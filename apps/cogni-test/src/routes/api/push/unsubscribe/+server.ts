@@ -1,10 +1,11 @@
 // src/routes/api/push/unsubscribe/+server.js
 import { json } from '@sveltejs/kit';
 import { PushSubscriptionService } from '$lib/server/pushSubscriptionService.js';
+import type { RequestHandler } from './$types';
 
 const subscriptionService = new PushSubscriptionService();
 
-export async function POST({ request }) {
+export const POST: RequestHandler = async ({ request }) => {
 	try {
 		const { endpoint } = await request.json();
 

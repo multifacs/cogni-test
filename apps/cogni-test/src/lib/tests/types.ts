@@ -19,15 +19,40 @@ export type TestResultMap = {
 	// можно добавлять дальше
 };
 
-export type ResultInfo<T extends keyof TestResultMap> = {
+export type TestType =
+	| 'math'
+	| 'stroop'
+	| 'munsterberg'
+	| 'memory'
+	| 'swallow'
+	| 'campimetry'
+	| 'rhythm';
+
+export type RegularResult =
+	| StroopResult
+	| MathResult
+	| MunsterbergResult
+	| MemoryResult
+	| SwallowResult
+	| CampimetryResult
+	| RhythmResult;
+
+export type RegularResults =
+	| StroopResult[]
+	| MathResult[]
+	| MunsterbergResult[]
+	| MemoryResult[]
+	| SwallowResult[]
+	| CampimetryResult[];
+
+export type ResultInfo = {
 	sessionId: string;
 	createdAt: string;
-	attempts: TestResultMap[T][];
+	attempts: RegularResults;
 };
 
-export type RegularResult<T extends keyof TestResultMap> = TestResultMap[T][];
-export interface MetaResult<T extends keyof TestResultMap> {
-	results: TestResultMap[T][];
+export interface MetaResult {
+	results: RegularResults;
 	meta: string[];
 }
 
