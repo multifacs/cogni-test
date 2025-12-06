@@ -56,3 +56,26 @@ npm run start -w .\apps\cogni-test\
 ```shell
 docker compose up -d --build
 ```
+
+## Testing
+
+For now available only in apps/cogni-test
+
+**Install deps**
+
+```shell
+npm i
+npx playwright install --with-deps # install playwright deps for browser tests
+```
+
+**Run tests**
+
+```shell
+npm run test -w .\apps\cogni-test\
+```
+
+Client side tests expected to be in `src/**/*.svelte.{test,spec}.{js,ts}`
+files. Server side tests expected to be in `src/**/*.{test,spec}.{js,ts}` files.
+
+There is an example of a client side test in
+[`/apps/cogni-test/src/lib/exercises/word-morphing/components/Result.svelte.spec.ts`](/apps/cogni-test/src/lib/exercises/word-morphing/components/Result.svelte.spec.ts).
