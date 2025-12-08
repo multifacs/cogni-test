@@ -13,7 +13,7 @@ export interface CampimetryTask extends CampimetryCommon {
 }
 
 export interface CampimetryResult extends CampimetryCommon {
-    type: 'campimetry';
+    type?: 'campimetry';
 	color: string;
 	delta: number;
 	time: number;
