@@ -17,7 +17,7 @@
 </script>
 
 <div class="flex flex-col justify-center items-center gap-4">
-	<h2>Send push</h2>
+	<h2>Send push (to yourself)</h2>
 	<Input id="title" type="text" name="title" placeholder="title" bind:value={payload.title} />
 
 	<Textarea
@@ -28,6 +28,7 @@
 		bind:value={payload.body}
 	/>
 
+    <label for="delay">Delay (seconds)</label>
 	<Input type="number" name="delay" placeholder="Delay (seconds)" bind:value={delay} />
 	<Button color="green" onclick={() => sendNotification(payload, delay)}>Send</Button>
 </div>
