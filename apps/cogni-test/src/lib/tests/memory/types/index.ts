@@ -4,6 +4,7 @@ export type Word = {
 };
 
 export type MemoryResult = {
+    type: 'memory';
 	attempt: number;
 	time: number;
 	word: string;

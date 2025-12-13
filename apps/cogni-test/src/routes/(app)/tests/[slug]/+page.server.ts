@@ -1,6 +1,7 @@
 import { redirect } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
 
-export function load({ params }) {
+export const load: PageServerLoad = ({ params }) => {
 	const slug: string = params.slug;
 	console.log(slug);
 	redirect(303, `/tests/${slug}/about`);

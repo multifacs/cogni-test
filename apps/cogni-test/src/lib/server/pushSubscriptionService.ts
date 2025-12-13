@@ -2,9 +2,14 @@
 import { db } from '$lib/server/db';
 import { pushSubscriptions } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
+import type { PushSubscription } from 'web-push';
 
 export class PushSubscriptionService {
-	async saveSubscription(subscriptionData, userId = null, userAgent = null) {
+	async saveSubscription(
+		subscriptionData: PushSubscription,
+		userId: string | null = null,
+		userAgent: string | null = null
+	) {
 		try {
 			// Extract keys from subscription
 			const { endpoint, keys } = subscriptionData;
@@ -51,7 +56,7 @@ export class PushSubscriptionService {
 		}
 	}
 
-	async getSubscriptionByEndpoint(endpoint) {
+	async getSubscriptionByEndpoint(endpoint: string) {
 		try {
 			const result = await db
 				.select()
@@ -92,7 +97,7 @@ export class PushSubscriptionService {
 		}
 	}
 
-	async deactivateSubscription(endpoint) {
+	async deactivateSubscription(endpoint: string) {
 		try {
 			await db
 				.update(pushSubscriptions)
