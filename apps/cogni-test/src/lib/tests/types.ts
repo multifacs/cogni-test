@@ -4,7 +4,6 @@ import type { MunsterbergResult } from './munsterberg/types';
 import type { MemoryResult } from './memory/types';
 import type { SwallowResult } from './swallow/types';
 import type { CampimetryResult } from './campimetry/types';
-import type { RhythmResult } from './rhythm/types';
 
 export { type TestData } from './index';
 
@@ -15,7 +14,6 @@ export type TestResultMap = {
 	memory: MemoryResult;
 	swallow: SwallowResult;
 	campimetry: CampimetryResult;
-	rhythm: RhythmResult;
 	// можно добавлять дальше
 };
 
@@ -26,7 +24,6 @@ export type TestType =
 	| 'memory'
 	| 'swallow'
 	| 'campimetry'
-	| 'rhythm';
 
 export type RegularResult =
 	| StroopResult
@@ -35,7 +32,6 @@ export type RegularResult =
 	| MemoryResult
 	| SwallowResult
 	| CampimetryResult
-	| RhythmResult;
 
 export type RegularResults =
 	| StroopResult[]
