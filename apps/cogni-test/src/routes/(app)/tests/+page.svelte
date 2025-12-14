@@ -1,12 +1,46 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import Button from '$lib/components/ui/Button.svelte';
 	import { userStore } from '$lib/stores/user.js';
+	import localforage from 'localforage';
 	import { onMount } from 'svelte';
 
 	let { data } = $props();
 
-	onMount(() => {
+	let testSessionCounts: Record<string, number> = $state({});
+
+	onMount(async () => {
+		console.log(data);
 		userStore.set(data.user || '');
+
+		if (data.testSessionCounts) {
+			testSessionCounts = data.testSessionCounts;
+
+			console.log(Object.keys(testSessionCounts).length == data.tests.length);
+			if (Object.keys(testSessionCounts).length == data.tests.length) {
+				localforage.setItem('runAllMode', false);
+			}
+		}
+
+		if (await localforage.getItem('runAllMode')) {
+			// Redirect to the first uncompleted test
+			const uncompletedTest = data.tests.find((test) => !testSessionCounts[test.name]);
+			console.log('Redirecting to uncompleted test:', uncompletedTest);
+			if (uncompletedTest) {
+				goto(uncompletedTest.path);
+			}
+		}
 	});
+
+	function runAll() {
+		localforage.setItem('runAllMode', true);
+
+		const uncompletedTest = data.tests.find((test) => !testSessionCounts[test.name]);
+		console.log('Redirecting to uncompleted test:', uncompletedTest);
+		if (uncompletedTest) {
+			goto(uncompletedTest.path);
+		}
+	}
 </script>
 
 <main
@@ -26,13 +60,32 @@
 		<p class="text-xs opacity-70">⚠️ Я только учусь, и я могу ошибаться ⚠️</p>
 	</div>
 
+	{#if Object.keys(testSessionCounts).length < data.tests.length}
+		<div class="w-full rounded-3xl bg-red-200 p-4 flex flex-col gap-2 text-center text-blue-900 shadow">
+			<p class="mt-2 text-xl font-semibold">У вас есть непройденные тесты</p>
+
+			<p class="mt-1 text-sm opacity-80">Запустить потоковое прохождение?</p>
+
+			<Button color="red" onclick={runAll}>Начать</Button>
+		</div>
+	{/if}
+
 	<div class="flex w-full flex-col gap-3">
 		{#each data.tests as { name, title, path, img }}
 			<a
 				href={path}
 				class="flex items-center justify-between rounded-2xl bg-gray-600 p-3 shadow transition hover:bg-gray-100 hover:text-black"
 			>
-				<span class="text-lg">{title}</span>
+				<div class="flex flex-col gap-1">
+					<span class="text-lg">{title}</span>
+					{#if testSessionCounts[name]}
+						<span class="text-sm font-medium text-lime-200">
+							Пройдено: {testSessionCounts[name]}
+						</span>
+					{:else}
+						<span class="text-sm text-orange-400"> Не пройдено </span>
+					{/if}
+				</div>
 				<img src={img} alt={name} class="h-14 w-14 rounded-xl bg-white" />
 			</a>
 		{/each}
