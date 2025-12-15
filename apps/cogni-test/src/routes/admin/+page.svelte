@@ -11,13 +11,13 @@
 		<h1>Admin page</h1>
 	</div>
 	<div class="flex h-auto w-auto flex-col gap-4 lg:flex-row">
-		<div class="rounded-lg border-1 border-blue-900 p-3">
+		<div class="rounded-lg border border-blue-900 p-3">
 			<SendNotification />
 		</div>
-		<div class="rounded-lg border-1 border-blue-900 p-3">
+		<div class="rounded-lg border border-blue-900 p-3">
 			<SendToAll />
 		</div>
-		<div class="rounded-lg border-1 border-blue-900 p-3">
+		<div class="rounded-lg border border-blue-900 p-3">
 			<ScheduleToAll />
 		</div>
 	</div>
