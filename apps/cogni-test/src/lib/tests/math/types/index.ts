@@ -8,7 +8,6 @@ export type Inequality = {
 };
 
 export type MathResult = {
-    type: 'math';
 	stage: number;
 	attempt: number;
 	time: number;

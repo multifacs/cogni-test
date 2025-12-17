@@ -1,10 +1,16 @@
-export const colors = {
-	black: {
+type Color = {
+	l: number;
+	a: number;
+	b: number;
+};
+
+export const colors: Record<string, Color> = {
+	'black': {
 		l: 5,
 		a: 0,
 		b: 0
 	},
-	white: {
+	'white': {
 		l: 94,
 		a: 0,
 		b: 0

@@ -112,7 +112,7 @@ export class PushSubscriptionService {
 		}
 	}
 
-	async removeSubscription(endpoint) {
+	async removeSubscription(endpoint: string) {
 		try {
 			await db.delete(pushSubscriptions).where(eq(pushSubscriptions.endpoint, endpoint));
 		} catch (error) {

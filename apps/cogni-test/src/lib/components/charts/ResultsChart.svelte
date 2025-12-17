@@ -175,16 +175,18 @@
 							title: (context) => {
 								const value = context[0].raw as Result;
 								const raw = value.raw;
-								if (raw.type == 'math') {
-									return `${raw.left} ${raw.sign} ${raw.right}`;
+								if (testType == 'math') {
+                                    const mathResult = raw as MathResult;
+									return `${mathResult.left} ${mathResult.sign} ${mathResult.right}`;
 								}
 								return `Попытка ${value.x}`;
 							},
 							afterTitle: (context) => {
 								const value = context[0].raw as Result;
 								const raw = value.raw;
-								if (raw.type == 'math') {
-									return `Ответ: ${raw.userAnswer ? 'да' : 'нет'}`;
+								if (testType == 'math') {
+                                    const mathResult = raw as MathResult;
+									return `Ответ: ${mathResult.userAnswer ? 'да' : 'нет'}`;
 								}
 								return '';
 							},
