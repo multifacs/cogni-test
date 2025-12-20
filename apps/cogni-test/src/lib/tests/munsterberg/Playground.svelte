@@ -97,9 +97,12 @@
 
 		sendResults({
 			results: generatedWords.map((x) => {
-				const y = { ...x } as MunsterbergResult;
-				y.word = x.value;
-				return y;
+				const {value, ...rest} = x;
+                const result: MunsterbergResult = {
+                    ...rest,
+                    word: value
+                }
+				return result;
 			}),
 			meta: generatedWords.map((x) => x.value)
 		});
