@@ -15,7 +15,7 @@
 	{name}
 	type="password"
 	bind:value
-    placeholder={placeholder}
+	{placeholder}
 	{...restProps}
 	class={`
 	max-xs:text-base

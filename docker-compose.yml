@@ -32,6 +32,7 @@ services:
       - PUBLIC_VAPID_KEY=${PUBLIC_VAPID_KEY}
       - PRIVATE_VAPID_KEY=${PRIVATE_VAPID_KEY}
       - ORIGIN=https://dev2.cogni-test.ru
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     stdin_open: true  # -i
     tty: true         # -t
 
@@ -54,6 +55,7 @@ services:
       - PUBLIC_VAPID_KEY=${PUBLIC_VAPID_KEY}
       - PRIVATE_VAPID_KEY=${PRIVATE_VAPID_KEY}
       - ORIGIN=https://cogni-test.ru
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     stdin_open: true  # -i
     tty: true         # -t
 

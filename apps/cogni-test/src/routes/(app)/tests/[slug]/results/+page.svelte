@@ -4,6 +4,7 @@
 	import type { TestResultMap } from '$lib/tests/types.js';
 	import { formatUserLocalDate } from '$lib/utils/index.js';
 	import { onMount, type Component } from 'svelte';
+    import localforage from 'localforage';
 
 	const { data } = $props();
 	const slug = data.slug;
@@ -12,7 +13,12 @@
 
 	let Comp: Component | null = $state(null);
 
+	let runAllMode = $state(false);
+
 	onMount(async () => {
+		runAllMode = (await localforage.getItem('runAllMode')) || false;
+		console.log('runAllMode', runAllMode);
+
 		let customResultsChart;
 		try {
 			customResultsChart = (await import(`$lib/tests/${slug}/ResultsChart.svelte`)).default;
@@ -86,7 +92,7 @@
 
 <div class="controls flex items-center justify-center gap-2.5">
 	<Button color="blue" goto={`/tests/${slug}`}>Заново</Button>
-	<Button color="red" goto="/tests">К тестам</Button>
+	<Button color="red" goto="/tests">{runAllMode ? "К следующему" : "К тестам"}</Button>
 </div>
 
 <style>

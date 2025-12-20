@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import type { RhythmResult } from './types';
+	import localforage from 'localforage';
 
 	// props
 	export let gameEnd: () => void;
@@ -223,13 +224,13 @@
 		ctx.fillStyle = gradient;
 		ctx.fillRect(0, 0, width, height);
 
-		ctx.fillStyle = '#e5e7eb';
-		ctx.font = '600 24px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
-		ctx.textAlign = 'center';
-		ctx.fillText('Ритмический тест', width / 2, height / 2 - 10);
-		ctx.font = '400 14px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
-		ctx.fillStyle = '#9ca3af';
-		ctx.fillText('Нажмите, чтобы начать', width / 2, height / 2 + 18);
+		// ctx.fillStyle = '#e5e7eb';
+		// ctx.font = '600 24px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+		// ctx.textAlign = 'center';
+		// ctx.fillText('Ритмический тест', width / 2, height / 2 - 10);
+		// ctx.font = '400 14px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+		// ctx.fillStyle = '#9ca3af';
+		// ctx.fillText('Нажмите, чтобы начать', width / 2, height / 2 + 18);
 	}
 
 	// ===== Инициализация игры =====
@@ -348,7 +349,7 @@
 	}
 
 	// ===== Завершение и расчёт результатов =====
-	function finishGame() {
+	async function finishGame() {
 		isPlaying = false;
 		if (animationFrame !== null) {
 			cancelAnimationFrame(animationFrame);
@@ -404,6 +405,9 @@
 		}
 
 		console.log('Rhythm results (per tap):', results);
+
+		await localforage.setItem(`results-${difficulty}-uploaded`, false);
+		// console.log("set", difficulty, "false")
 
 		gameEnd();
 		sendResults(results);
@@ -685,13 +689,19 @@
 	<div class="canvas-shell">
 		<canvas bind:this={canvas} on:click={handleCanvasClick}></canvas>
 		{#if !gameInitialized}
-			<div class="start-overlay">
-				<div class="text-6xl">↓</div>
+			<div class="start-overlay flex flex-col">
+				<div class="overlay-text text-lg font-bold flex flex-col whitespace-pre-line">
+					1. Запоминайте ритм
+					2. Повторяйте ритм с подсказками
+					3. Повторяйте ритм без подсказок
+
+					Для старта нажмите кнопку "Начать"
+				</div>
 			</div>
 		{/if}
 	</div>
 
-	<button class="tap-button" on:click={handleTapButton}
+	<button class="tap-button hover:brightness-110" on:click={handleTapButton}
 		>{!gameInitialized ? 'Начать' : 'Нажимайте в ритм'}</button
 	>
 
@@ -716,7 +726,8 @@
 		justify-content: center;
 		padding: 1.5rem;
 		box-sizing: border-box;
-		background: radial-gradient(circle at top, #111827 0, #020617 60%);
+		/* background: radial-gradient(circle at top, #111827 0, #020617 60%); */
+		background: transparent;
 		border-radius: 1.25rem;
 		box-shadow: 0 20px 35px rgba(15, 23, 42, 0.6);
 

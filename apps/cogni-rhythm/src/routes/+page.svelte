@@ -48,7 +48,7 @@
 
 		if (password != hashedSecurePassword) {
 			alert('Неверный пароль');
-			console.log(hashedSecurePassword)
+			console.log(hashedSecurePassword);
 			return;
 		}
 
@@ -69,7 +69,7 @@
 </script>
 
 <form
-	class="mx-auto flex w-full max-w-sm flex-col gap-4 rounded-3xl bg-gray-700 p-6 text-white shadow-xl"
+	class="mx-auto flex w-full max-w-sm flex-col gap-4 rounded-xl bg-slate-900/95 border border-slate-400/60 shadow-[0_12px_30px_rgba(0,0,0,0.7)] text-white p-6"
 	onsubmit={handleSubmit}
 >
 	<h1 class="mb-2 text-center text-2xl font-bold">Вход</h1>
@@ -100,7 +100,7 @@
 		<label><input type="radio" name="sex" bind:group={sex} value="female" /> Женский</label>
 	</div>
 
-	<div>
+	<div class="flex flex-col gap-1">
 		<label for="password">🔑 Код</label>
 		<PasswordInput required name="password" bind:value={password} placeholder="Код" />
 	</div>

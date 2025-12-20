@@ -8,7 +8,7 @@
 
 	import type { RhythmResult } from './types';
 
-	let { results }: { results: RhythmResult[] } = $props();
+	let { results, title = "Последний результат" }: { results: RhythmResult[], title: string } = $props();
 
 	let canvas: HTMLCanvasElement;
 	let chart: Chart | null = null;
@@ -118,6 +118,10 @@
 								return v.raw.attempt === -1 ? 'Промах' : `Отклонение: ${v.y} мс`;
 							}
 						}
+					},
+					title: {
+						display: true,
+						text: title
 					}
 				},
 				scales: {
