@@ -18,14 +18,6 @@ export const exercises: TestData[] = [
 		path: '/exercises/campimetry/about',
 		img: '/tests/campimetry.svg'
 	},
-    /* видимо пока скипаем, wip так сказать
-	{
-		name: 'flash-campimetry',
-		title: 'Мигающая кампиметрия',
-		path: '/exercises/flash-campimetry/about',
-		img: '/tests/campimetry.svg'
-	},
-    */
 	{
 		name: 'memory-match',
 		title: 'Совпадения',
