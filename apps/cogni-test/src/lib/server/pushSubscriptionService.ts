@@ -85,6 +85,7 @@ export class PushSubscriptionService {
 				.where(and(...conditions));
 
 			return result.map((sub) => ({
+                userId: sub.userId,
 				endpoint: sub.endpoint,
 				keys: {
 					p256dh: sub.p256dh,

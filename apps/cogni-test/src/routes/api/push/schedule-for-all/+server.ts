@@ -20,8 +20,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
             // Store subscription keys in payload for the notifier
             const payloadWithKeys = {
                 ...payload,
-                p256dh: subscription.p256dh,
-                auth: subscription.auth
+                p256dh: subscription.keys.p256dh,
+                auth: subscription.keys.auth
             };
 
             // Create scheduled notification
