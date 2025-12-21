@@ -158,14 +158,14 @@ self.addEventListener('notificationclick', (event) => {
 	// Handle different actions
 	if (event.action === 'view') {
 		// User clicked the "View" action button
-		event.waitUntil(clients.openWindow(targetUrl));
+		event.waitUntil(self.clients.openWindow(targetUrl));
 	} else if (event.action === 'dismiss') {
 		// User clicked the "Dismiss" action button
 		console.log('Notification dismissed');
 	} else {
 		// User clicked the notification body (not an action button)
 		event.waitUntil(
-			clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+			self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
 				// Check if there's already a window open
 				for (let client of clientList) {
 					if (client.url.includes(targetUrl) && 'focus' in client) {
@@ -173,8 +173,8 @@ self.addEventListener('notificationclick', (event) => {
 					}
 				}
 				// If no window is open, open a new one with dynamic URL
-				if (clients.openWindow) {
-					return clients.openWindow(targetUrl);
+				if (self.clients.openWindow) {
+					return self.clients.openWindow(targetUrl);
 				}
 			})
 		);

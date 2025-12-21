@@ -1,10 +1,13 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import type { LayoutData } from './$types';
+	import type { LayoutProps } from './$types';
+	import type { TestData } from '$lib/exercises';
 
-	let { data, children }: { data: LayoutData; children: Snippet } = $props();
+	let { data, children }: LayoutProps = $props();
 	// console.log(data);
-	const found = data.exercises.find((x) => x.name == data.slug);
+
+    const exercises: TestData[] = data.exercises;
+	const found = exercises.find((x) => x.name == data.slug);
 	let title: string = $state('');
 	if (found) title = found.title;
 </script>

@@ -4,12 +4,12 @@ import { tests } from '$lib/tests';
 // Import age-related helpers
 import { getFeaturesFromDB } from '$lib/server/age/getFeaturesFromDB';
 import { runAgeModel } from '$lib/server/age/runAgeModel';
+import type { PageServerLoad } from './$types';
 
 // Import the session-count query
 import { getTestSessionCounts } from '$lib/server/db/controllers/test';
 
-// Server-side load function
-export async function load({ cookies }) {
+export const load: PageServerLoad = async ({ cookies }) => {
 	// Read the user ID from cookies
 	const userId = cookies.get('user_id');
 
@@ -43,5 +43,4 @@ export async function load({ cookies }) {
 		predictedAge,
 		testSessionCounts
 	};
-}
-
+};

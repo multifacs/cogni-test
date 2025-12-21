@@ -80,6 +80,7 @@
 			},
 			options: {
 				onHover: function (event, chartElements) {
+                    // @ts-ignore
 					const target = event.native ? event.native.target : event.chart.canvas;
 					target.style.cursor = chartElements.length ? 'pointer' : 'default';
 				},
@@ -88,12 +89,12 @@
 					tooltip: {
 						callbacks: {
 							title: (context) => {
-								const value = context[0].raw;
+								const value = context[0].raw as Result;
 								const raw = value.raw;
 								return `Попытка ${value.x}`;
 							},
 							label: function (context) {
-								const value = context.raw;
+								const value = context.raw as Result;
 								const raw = value.raw;
 								const isCorrect = value.isCorrect;
 								const status = isCorrect ? 'Верно' : 'Неверно';
@@ -105,6 +106,7 @@
 					legend: {
 						labels: {
 							usePointStyle: true,
+                            // @ts-ignore
 							generateLabels: (chart) => {
 								const original = Chart.defaults.plugins.legend.labels.generateLabels(chart);
 								console.log(Chart.defaults.plugins.legend.labels.generateLabels(chart));
@@ -171,14 +173,14 @@
 							maxRotation: 0,
 							minRotation: 0,
 							callback: (idx) => {
-								const direction = parsedResults[idx].raw.direction;
+								const direction = (parsedResults[idx as number].raw as SwallowResult).direction;
 								if (direction == 'up') return '▲';
 								if (direction == 'down') return '▼';
 								if (direction == 'left') return '◄';
 								if (direction == 'right') return '►';
 							},
 							color: (ctx) => {
-								const color = parsedResults[ctx.index].raw.background == 'blue'
+								const color = (parsedResults[ctx.index].raw as SwallowResult).background == 'blue'
 									? '--color-blue-500'
 									: '--color-red-500';
 								return getCSSVar(color);
