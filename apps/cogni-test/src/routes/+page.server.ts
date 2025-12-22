@@ -30,7 +30,7 @@ export const actions = {
 		}
 
 		if (id) {
-			cookies.set('user_id', id, { path: '/', secure: true });
+			cookies.set('user_id', id, { path: '/', secure: true, maxAge: 60 * 60 * 24 * 30 });
 			redirect(307, '/home');
 		}
 	},
