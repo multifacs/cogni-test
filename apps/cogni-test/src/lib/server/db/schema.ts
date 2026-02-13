@@ -3,6 +3,8 @@ import { sqliteTable, integer, text, check } from 'drizzle-orm/sqlite-core';
 import short from 'short-uuid';
 export * from './models/tests';
 
+import type { GtoProfile } from '$lib/gto-m/types';
+
 export function enumCheck(column: any, values: string[]) {
 	const joined = values.map((v) => `'${v}'`).join(', ');
 	return sql`${column} in (${sql.raw(joined)})`;
@@ -15,7 +17,7 @@ export const user = sqliteTable(
 		firstname: text('first_name').notNull(),
 		lastname: text('last_name').notNull(),
 		birthday: integer('birthday', { mode: 'timestamp' }).notNull(),
-		sex: text('sex').notNull(),
+		sex: text('sex').$type<'male' | 'female'>().notNull(),
 		createdAt: text('created_at')
 			.default(sql`CURRENT_TIMESTAMP`)
 			.notNull()
@@ -46,7 +48,6 @@ export const scheduledPushNotifications = sqliteTable('scheduled_push_notificati
 		.$defaultFn(() => new Date())
 });
 
-
 export const pushSubscriptions = sqliteTable('push_subscriptions', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
 	userId: text('user_id'), // Optional: link to user accounts
@@ -61,4 +62,22 @@ export const pushSubscriptions = sqliteTable('push_subscriptions', {
 		.notNull()
 		.$defaultFn(() => new Date()),
 	isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true)
+});
+
+export const gtoMSessions = sqliteTable('gto_m_sessions', {
+	id: text('id').primaryKey().$defaultFn(short.generate),
+	profile: text('profile').notNull().$type<GtoProfile>(),
+	userId: text('user_id')
+		.notNull()
+		.references(() => user.id),
+	adminId: text('admin_id')
+		.notNull()
+		.references(() => user.id),
+	tests: text('tests', { mode: 'json' }).$type<string[]>().notNull(),
+	createdAt: integer('created_at', { mode: 'timestamp' })
+		.notNull()
+		.$defaultFn(() => new Date()),
+	updatedAt: integer('updated_at', { mode: 'timestamp' })
+		.notNull()
+		.$defaultFn(() => new Date()),
 });

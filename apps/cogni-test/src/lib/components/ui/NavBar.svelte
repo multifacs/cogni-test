@@ -22,6 +22,11 @@
 			icon: '📚',
 			text: 'Долголетие'
 		},
+        {
+            href: 'gto-m',
+            icon: '📚',
+            text: 'ГТО-М'
+        },
 		{
 			href: '/profile',
 			icon: '⚙️',

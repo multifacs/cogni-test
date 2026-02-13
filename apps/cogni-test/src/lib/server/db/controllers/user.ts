@@ -55,3 +55,8 @@ export async function getUserById(id: string): Promise<User | null> {
 	const [found] = await db.select().from(user).where(eq(user.id, id));
 	return found ?? null;
 }
+
+export async function getAllUsers(): Promise<User[]> {
+    const users = await db.select().from(user);
+    return users;
+}

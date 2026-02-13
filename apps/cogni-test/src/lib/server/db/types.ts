@@ -4,7 +4,7 @@ export type StroopRecord = {
 };
 
 export type User = {
-	id: string | null;
+	id: string;
 	firstname: string;
 	lastname: string;
 	birthday: Date;
