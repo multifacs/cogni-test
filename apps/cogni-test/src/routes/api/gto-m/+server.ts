@@ -16,5 +16,9 @@ export const POST: RequestHandler = async ({ request }) => {
 
     const sessionId = await createGtoSession(userId, adminId, profile);
 
+    if (!sessionId) {
+        return json({ error: 'Failed to create session' }, { status: 500 });
+    }
+
 	return json({ success: true, sessionId });
 };

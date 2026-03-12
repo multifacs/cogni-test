@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { formatDateLog } from '$lib/utils';
+    import { goto } from '$app/navigation';
 	import type { GtoSession } from '$lib/gto-m/types';
 
 	type DbGtoSession = GtoSession & {
@@ -37,7 +38,7 @@
 		</thead>
 		<tbody class="divide-y divide-gray-700 bg-gray-800">
 			{#each sessions as session}
-				<tr class="hover:bg-gray-700">
+				<tr onclick={() => goto(`/gto-m/${session.id}`)} class="hover:bg-gray-700">
 					<td class="px-6 py-4 whitespace-nowrap">
 						<div class="text-sm font-medium text-white">
 							{session.profile}

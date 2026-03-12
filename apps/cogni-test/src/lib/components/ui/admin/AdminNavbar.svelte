@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 
+	// TODO: add icons
 	const paths = [
 		{
 			href: '/home',
@@ -8,29 +9,19 @@
 			text: 'Главная'
 		},
 		{
-			href: '/tests',
-			icon: '🧪',
-			text: 'Возраст'
-		},
-		{
-			href: '/exercises',
-			icon: '📊',
-			text: 'Тренажер'
-		},
-		{
-			href: '/materials',
+			href: '/admin/gto-m',
 			icon: '📚',
-			text: 'Долголетие'
+			text: 'ГТО-М'
 		},
-        {
-            href: '/gto-m',
-            icon: '📚',
-            text: 'ГТО-М'
-        },
 		{
-			href: '/profile',
-			icon: '⚙️',
-			text: 'Профиль'
+			href: '/admin/mypatients',
+			icon: '📚',
+			text: 'Мои пациенты'
+		},
+		{
+			href: '/admin',
+			icon: '📚',
+			text: 'Уведомления'
 		}
 	];
 </script>
@@ -41,7 +32,7 @@
 	{#each paths as path}
 		<a
 			href={path.href}
-			class="flex flex-col items-center text-sm transition-colors duration-200 max-xs:text-xs"
+			class="max-xs:text-xs flex flex-col items-center text-sm transition-colors duration-200"
 			class:text-blue-400={page.url.pathname.startsWith(path.href)}
 		>
 			<span>{path.icon}</span>

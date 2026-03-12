@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { sqliteTable, integer, text, check } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, integer, text, check, primaryKey } from 'drizzle-orm/sqlite-core';
 import short from 'short-uuid';
 export * from './models/tests';
 
@@ -23,6 +23,31 @@ export const user = sqliteTable(
 			.notNull()
 	},
 	(table) => [check('sex_check', enumCheck(table.sex, ['male', 'female']))]
+);
+
+// TODO: maybe should not have this much info about admins (why the fuck am I even copying this from user table???)
+export const admins = sqliteTable(
+	'admins',
+	{
+		id: text('id').primaryKey().$defaultFn(short.generate),
+		// password: text('password').notNull(), // TODO: figure out registation and hashing
+		createdAt: text('created_at')
+			.default(sql`CURRENT_TIMESTAMP`)
+			.notNull()
+	},
+);
+
+export const userAdmins = sqliteTable(
+	'user_admins',
+	{
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id),
+		adminId: text('admin_id')
+			.notNull()
+			.references(() => admins.id)
+	},
+	(table) => [primaryKey({ columns: [table.userId, table.adminId] })]
 );
 
 export const session = sqliteTable('session', {
@@ -79,5 +104,5 @@ export const gtoMSessions = sqliteTable('gto_m_sessions', {
 		.$defaultFn(() => new Date()),
 	updatedAt: integer('updated_at', { mode: 'timestamp' })
 		.notNull()
-		.$defaultFn(() => new Date()),
+		.$defaultFn(() => new Date())
 });

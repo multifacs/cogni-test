@@ -7,25 +7,42 @@ import type { GtoProfile } from '$lib/gto-m/types';
 
 export async function createGtoSession(userId: string, adminId: string, profile: GtoProfile) {
 	const session = newGtoSession(userId, adminId, profile);
-	const insertResult = await db
-		.insert(gtoMSessions)
-		.values(session)
-		.returning({ sessionId: gtoMSessions.id });
-	const sessionId = insertResult[0].sessionId;
+	try {
+		const insertResult = await db
+			.insert(gtoMSessions)
+			.values(session)
+			.returning({ sessionId: gtoMSessions.id });
+		const sessionId = insertResult[0].sessionId;
 
-	return sessionId;
+		return sessionId;
+	} catch (error) {
+		return null;
+	}
 }
 
 export async function getGtoSessionsByUserId(userId: string) {
 	const sessions = await db
 		.select({
-            adminName: user.firstname,
-            adminSurname: user.lastname,
-            ...getTableColumns(gtoMSessions)
-        })
+			adminName: user.firstname,
+			adminSurname: user.lastname,
+			...getTableColumns(gtoMSessions)
+		})
 		.from(gtoMSessions)
 		.innerJoin(user, eq(gtoMSessions.adminId, user.id))
 		.where(eq(gtoMSessions.userId, userId));
 
 	return sessions;
+}
+
+export async function getSessionById(sessionId: string) {
+	try {
+		const [session] = await db
+			.select()
+			.from(gtoMSessions)
+			.where(eq(gtoMSessions.id, sessionId));
+
+		return session;
+	} catch (error) {
+		return null;
+	}
 }

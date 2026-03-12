@@ -1,14 +1,19 @@
 import { redirect } from '@sveltejs/kit';
-import { getAllUsers } from '$lib/server/db';
 import type { PageServerLoad } from '../../$types';
+import { getUsersByAdminId } from '$lib/server/db/controllers/user-admins';
 
 export const load: PageServerLoad = async ({ cookies }) => {
 	const userId = cookies.get('user_id');
-	const users = await getAllUsers();
 
     if (!userId) {
 		redirect(307, '/');
     }
 
-	return { users, userId };
+    try {
+        const users = await getUsersByAdminId(userId);
+        return { users, userId };
+
+    } catch (error) {
+        redirect(307, '/admin');
+    }
 };
