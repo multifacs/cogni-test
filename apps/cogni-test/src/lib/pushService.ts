@@ -1,12 +1,17 @@
 // src/lib/pushService.js
 import { browser } from '$app/environment';
-import { PUBLIC_VAPID_KEY } from '$env/static/public';
 
 export class PushService {
 	private vapidPublicKey: string;
 
 	constructor() {
-		this.vapidPublicKey = PUBLIC_VAPID_KEY;
+		import('$env/dynamic/public')
+			.then(({ PUBLIC_VAPID_KEY }) => {
+				this.vapidPublicKey = PUBLIC_VAPID_KEY;
+			})
+			.catch((e) => {
+				throw new Error(`Failed to load VAPID public key: ${e}`);
+			});
 	}
 
 	async requestPermission() {

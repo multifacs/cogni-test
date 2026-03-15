@@ -3,15 +3,6 @@ export * from './controllers/user';
 import { drizzle } from 'drizzle-orm/libsql';
 import { createClient, type Client } from '@libsql/client';
 import * as schema from './schema';
-import { env } from '$env/dynamic/private';
-
-// export const db = env.DATABASE_URL
-// 	? drizzle(createClient({ url: env.DATABASE_URL }), { schema })
-// 	: null;
-
-// if (!env.DATABASE_URL) {
-// 	throw new Error('DATABASE_URL is not set');
-// }
 
 /**
  * Включает WAL для SQLite и логирует результат
@@ -35,10 +26,12 @@ async function enableWAL(client: Client) {
 	}
 }
 
-export let db;
+export let db: ReturnType<typeof drizzle>;
 
-if (env.DATABASE_URL) {
-	const client = createClient({ url: env.DATABASE_URL ? env.DATABASE_URL : '' });
+const { DATABASE_URL } = await import('$env/dynamic/private');
+
+if (DATABASE_URL) {
+	const client = createClient({ url: DATABASE_URL });
 	await enableWAL(client);
-	db = env.DATABASE_URL ? drizzle(client, { schema }) : '';
+	db = drizzle(client, { schema });
 }

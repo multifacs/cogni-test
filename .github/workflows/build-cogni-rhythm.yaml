@@ -45,8 +45,4 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}/cogni-rhythm:${{ env.TAG }}
           build-args: |
-            PUBLIC_VAPID_SUBJECT=${{ secrets.PUBLIC_VAPID_SUBJECT }}
-            PUBLIC_VAPID_KEY=${{ secrets.PUBLIC_VAPID_KEY }}
-            PRIVATE_VAPID_KEY=${{ secrets.PRIVATE_VAPID_KEY }}
             MODE=${{ env.MODE }}
-            BUILD=node

@@ -9,8 +9,6 @@
 	import TextInput from '$lib/components/ui/login-form/TextInput.svelte';
 	import PasswordInput from '$lib/components/ui/login-form/PasswordInput.svelte';
 
-	import { PUBLIC_PASSWORD } from '$env/static/public';
-
 	let firstname = $state('');
 	let lastname = $state('');
 	let birthdate = $state('31.01.2001');
@@ -34,7 +32,15 @@
 		);
 	}
 
-	const hashedSecurePassword = PUBLIC_PASSWORD || 261180;
+	// const { PUBLIC_PASSWORD } = await ;
+	let hashedSecurePassword = 261180;
+	import('$env/dynamic/public')
+		.then(({ PUBLIC_PASSWORD }) => {
+			hashedSecurePassword = parseInt(PUBLIC_PASSWORD);
+		})
+		.catch((err) => {
+			console.error('Ошибка загрузки PUBLIC_PASSWORD:', err);
+		});
 
 	async function handleSubmit() {
 		const userId = crypto.randomUUID();

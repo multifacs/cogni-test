@@ -3,7 +3,7 @@ import adapterNode from '@sveltejs/adapter-node';
 import adapterVercel from '@sveltejs/adapter-vercel';
 import adapterAuto from '@sveltejs/adapter-auto';
 
-const buildTarget = process.env.BUILD; // 'node', 'vercel', etc.
+const buildTarget = process.env.BUILD || 'node'; // 'node', 'vercel', etc.
 
 let adapter;
 
