@@ -4,7 +4,7 @@
 	"version": "0.5.0",
 	"type": "module",
 	"scripts": {
-		"build": "cross-env BUILD=node vite build",
+		"build": "cross-env DATABASE_URL=file:./data/dev.db BUILD=node vite build",
 		"init-db": "npx drizzle-kit push --force",
 		"start": "npx drizzle-kit push --force && node index.js",
 		"preview": "cross-env MODE=LOCAL DATABASE_URL=file:sqlite.db vite preview --host",
