@@ -78,7 +78,7 @@
 	>
 </div>
 {#if gameState.getState().isGameRunning}
-	<div>Осталось времени: {gameState.getState().timeLeft} сек</div>
+	<p class="sm:text-xl">Осталось времени: {gameState.getState().timeLeft} сек</p>
 {/if}
 
 <style>

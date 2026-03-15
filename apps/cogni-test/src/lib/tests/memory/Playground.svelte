@@ -54,7 +54,7 @@
 
 	function startWaitingPhase() {
 		phase = 'waiting';
-		timeLeft = 3;
+		timeLeft = 5;
 		timer = setInterval(() => {
 			timeLeft--;
 			if (timeLeft <= 0) {
@@ -90,7 +90,7 @@
 
 		game.startNextTask();
 		currentWord = game.getCurrentTask().value;
-		timeLeft = 3;
+		timeLeft = 5;
 
 		if (timer) clearInterval(timer);
 		timer = setInterval(() => {
@@ -129,9 +129,9 @@
 </script>
 
 {#if phase === 'waiting'}
-	<p>Слова появятся через {timeLeft} секунд...</p>
+	<p class="sm:text-2xl">Слова появятся через {timeLeft} секунд...</p>
 {:else if phase === 'memorize'}
-	<h2>Запомните слова:</h2>
+	<p class="sm:text-2xl">Запомните слова:</p>
 	<div class="flex flex-col gap-2">
 		<div class="mem-grid">
 			{#each memorizationWords.slice(0, 3) as word}
@@ -144,15 +144,15 @@
 			{/each}
 		</div>
 	</div>
-	<p>Осталось времени: {timeLeft} сек</p>
+	<p class="sm:text-2xl">Осталось времени: {timeLeft} сек</p>
 {:else if phase === 'task'}
-	<h2>Было ли это слово?</h2>
+	<p class="sm:text-2xl">Было ли это слово?</p>
 	<h1>{currentWord}</h1>
 	<div class="color-grid">
 		<Button kind="big" color="green" onclick={() => handleAnswer(true)}>ДА</Button>
 		<Button kind="big" color="red" onclick={() => handleAnswer(false)}>НЕТ</Button>
 	</div>
-	<div>Осталось времени: {timeLeft} сек</div>
+	<p class="sm:text-2xl">Осталось времени: {timeLeft} сек</p>
 {:else}
 	<h1>Конец теста</h1>
 {/if}
