@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
+	import Button from './components/Button.svelte';
 	import { onDestroy, onMount } from 'svelte';
 
 	// import { tick } from 'svelte';
@@ -121,13 +121,13 @@ rounded-full
 	/>
 </div>
 
-<div class="controls grid w-40 grid-cols-3 grid-rows-2 gap-4">
+<div class="controls grid grid-cols-3 grid-rows-2 gap-4">
 	<div></div>
-	<Button color="blue" style="padding: 20px 40px !important; margin: 0;" disabled={isGameOver} onclick={() => handleAnswer('up')}>▲</Button>
+	<Button disabled={isGameOver} onclick={() => handleAnswer('up')}>▲</Button>
 	<div></div>
-	<Button color="blue" style="padding: 20px 40px !important; margin: 0;" disabled={isGameOver} onclick={() => handleAnswer('left')}>◄</Button>
-	<Button color="blue" style="padding: 20px 40px !important; margin: 0;" disabled={isGameOver} onclick={() => handleAnswer('down')}>▼</Button>
-	<Button color="blue" style="padding: 20px 40px !important; margin: 0;" disabled={isGameOver} onclick={() => handleAnswer('right')}>►</Button>
+	<Button disabled={isGameOver} onclick={() => handleAnswer('left')}>◄</Button>
+	<Button disabled={isGameOver} onclick={() => handleAnswer('down')}>▼</Button>
+	<Button disabled={isGameOver} onclick={() => handleAnswer('right')}>►</Button>
 </div>
 
 <style>
