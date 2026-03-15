@@ -31,8 +31,10 @@ jobs:
         run: |
           if [[ "${{ github.ref_name }}" == "main" ]]; then
             echo "MODE=PROD" >> $GITHUB_ENV
+            echo "TAG=latest" >> $GITHUB_ENV
           else
             echo "MODE=DEV" >> $GITHUB_ENV
+            echo "TAG=dev" >> $GITHUB_ENV
           fi
       
       - name: Build and push
@@ -41,6 +43,6 @@ jobs:
           context: ./apps/cogni-test
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/app-dev:latest
+            ghcr.io/${{ github.repository }}/cogni-test:${{ env.TAG }}
           build-args: |
             MODE=${{ env.MODE }}
