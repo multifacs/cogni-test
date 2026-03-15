@@ -9,14 +9,14 @@ import { env } from '$env/dynamic/private';
 // 	? drizzle(createClient({ url: env.DATABASE_URL }), { schema })
 // 	: null;
 
-if (!env.DATABASE_URL) {
-	throw new Error('DATABASE_URL is not set');
-}
+// if (!env.DATABASE_URL) {
+// 	throw new Error('DATABASE_URL is not set');
+// }
 
-const client = createClient({ url: env.DATABASE_URL });
+const client = createClient({ url: env.DATABASE_URL ? env.DATABASE_URL : "" });
 await enableWAL(client);
 
-export const db = drizzle(client, { schema });
+export const db = env.DATABASE_URL ? drizzle(client, { schema }) : "";
 
 /**
  * Включает WAL для SQLite и логирует результат

@@ -13,7 +13,7 @@ import { env } from '$env/dynamic/private';
 // 	throw new Error('DATABASE_URL is not set');
 // }
 
-const client = createClient({ url: env.DATABASE_URL });
+const client = createClient({ url: env.DATABASE_URL ? env.DATABASE_URL : "" });
 await enableWAL(client);
 
 export const db = env.DATABASE_URL ? drizzle(client, { schema }) : "";
