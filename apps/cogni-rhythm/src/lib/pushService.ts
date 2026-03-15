@@ -3,13 +3,11 @@ import { browser } from '$app/environment';
 import { env } from '$env/dynamic/public'; 
 
 export class PushService {
-	private vapidPublicKey: string;
+	private vapidPublicKey: string = "";
 
 	constructor() {
 		if (env.PUBLIC_VAPID_KEY) {
 			this.vapidPublicKey = env.PUBLIC_VAPID_KEY;
-		} else {
-			throw new Error('VAPID public key not found in environment variables');
 		}
 	}
 
