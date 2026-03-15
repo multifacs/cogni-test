@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Sign } from '../logic/math-game';
+	import type { Sign } from '../types';
 
 	let {
 		sign = '!='

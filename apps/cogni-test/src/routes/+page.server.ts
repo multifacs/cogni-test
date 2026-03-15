@@ -2,8 +2,10 @@ import { redirect } from '@sveltejs/kit';
 import { createUser, getUserById } from '$lib/server/db';
 import { checkFormData, formDataToUser } from '$lib/utils';
 import type { User } from '$lib/server/db/types';
+import type { Actions } from './$types';
+import type { PageServerLoad } from './$types';
 
-export const load = async ({ cookies }) => {
+export const load: PageServerLoad = async ({ cookies }) => {
 	const userId = cookies.get('user_id');
 	if (!userId) return;
 	const user: User | null = await getUserById(userId);
@@ -39,4 +41,4 @@ export const actions = {
 		cookies.delete('user_id', { path: '/', secure: true });
 		redirect(307, '/');
 	}
-};
+} satisfies Actions;

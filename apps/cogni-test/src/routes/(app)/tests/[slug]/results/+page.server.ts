@@ -1,8 +1,9 @@
 import { getResults } from '$lib/server/db/controllers/result.js';
 import type { TestResultMap } from '$lib/tests/types';
+import type { PageServerLoad } from './$types';
 // import { error } from '@sveltejs/kit';
 
-export async function load({ params, cookies }) {
+export const load: PageServerLoad = async ({ params, cookies }) => {
 	const slug = params.slug as keyof TestResultMap;
 	console.log(slug);
 	const userId = cookies.get('user_id') as string;
@@ -17,4 +18,4 @@ export async function load({ params, cookies }) {
 	// }
 
 	return { results };
-}
+};

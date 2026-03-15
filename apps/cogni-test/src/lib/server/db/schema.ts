@@ -15,7 +15,7 @@ export const user = sqliteTable(
 		firstname: text('first_name').notNull(),
 		lastname: text('last_name').notNull(),
 		birthday: integer('birthday', { mode: 'timestamp' }).notNull(),
-		sex: text('sex').notNull(),
+		sex: text('sex').$type<'male' | 'female'>().notNull(),
 		createdAt: text('created_at')
 			.default(sql`CURRENT_TIMESTAMP`)
 			.notNull()

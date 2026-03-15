@@ -121,6 +121,7 @@
 			},
 			options: {
 				onHover: function (event, chartElements) {
+                    // @ts-ignore
 					const target = event.native ? event.native.target : event.chart.canvas;
 					target.style.cursor = chartElements.length ? 'pointer' : 'default';
 				},
@@ -129,13 +130,11 @@
 					tooltip: {
 						callbacks: {
 							title: (context) => {
-								const value = context[0].raw;
-								const raw = value.raw;
+								const value = context[0].raw as Result;
 								return `Цвет ${value.x}`;
 							},
 							label: function (context) {
-								const value = context.raw;
-								const raw = value.raw;
+								const value = context.raw as Result;
 								return `Отклонение: ${value.y}`;
 							}
 						}
@@ -144,6 +143,7 @@
 					legend: {
 						labels: {
 							usePointStyle: true,
+                            // @ts-ignore
 							generateLabels: (chart) => {
 								const original = Chart.defaults.plugins.legend.labels.generateLabels(chart);
 								console.log(Chart.defaults.plugins.legend.labels.generateLabels(chart));
@@ -195,9 +195,9 @@
 						ticks: {
 							maxRotation: 90,
 							minRotation: 0,
-							callback: (ctx) => translate(parsedResults[ctx].raw.color),
+							callback: (ctx) => translate((parsedResults[ctx as number].raw as CampimetryResult).color),
 							color: (ctx) => {
-								const color = parsedResults[ctx.index].raw.color;
+								const color = (parsedResults[ctx.index].raw as CampimetryResult).color;
 								return getCSSVar(`--camp-${color}`);
 							},
 							font: {
