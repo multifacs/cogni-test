@@ -1,12 +1,14 @@
 // src/lib/pushService.js
 import { browser } from '$app/environment';
-import { PUBLIC_VAPID_KEY } from '$env/static/public';
+import { env } from '$env/dynamic/public'; 
 
 export class PushService {
-	private vapidPublicKey: string;
+	private vapidPublicKey: string = "";
 
 	constructor() {
-		this.vapidPublicKey = PUBLIC_VAPID_KEY;
+		if (env.PUBLIC_VAPID_KEY) {
+			this.vapidPublicKey = env.PUBLIC_VAPID_KEY;
+		}
 	}
 
 	async requestPermission() {

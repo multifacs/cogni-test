@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { userStore } from '$lib/stores/user';
+    import { user as userStore } from "$lib/userStore";
 	import { derived } from 'svelte/store';
 
 	const userName = derived(userStore, ($userStore) => {

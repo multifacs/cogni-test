@@ -1,8 +1,8 @@
-name: Build and Push Cogni-Test DEV
+name: Build and Push Cogni-Test
 
 on:
   push:
-    branches: [dev]
+    branches: [main, dev]
   workflow_dispatch:
 
 jobs:
@@ -26,6 +26,16 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set environment
+        run: |
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            echo "MODE=PROD" >> $GITHUB_ENV
+            echo "TAG=latest" >> $GITHUB_ENV
+          else
+            echo "MODE=DEV" >> $GITHUB_ENV
+            echo "TAG=dev" >> $GITHUB_ENV
+          fi
       
       - name: Build and push
         uses: docker/build-push-action@v5
@@ -33,10 +43,6 @@ jobs:
           context: ./apps/cogni-test
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/app-dev:latest
+            ghcr.io/${{ github.repository }}/cogni-test:${{ env.TAG }}
           build-args: |
-            PUBLIC_VAPID_SUBJECT=${{ secrets.PUBLIC_VAPID_SUBJECT }}
-            PUBLIC_VAPID_KEY=${{ secrets.PUBLIC_VAPID_KEY }}
-            PRIVATE_VAPID_KEY=${{ secrets.PRIVATE_VAPID_KEY }}
-            MODE=DEV
-            BUILD=node
+            MODE=${{ env.MODE }}

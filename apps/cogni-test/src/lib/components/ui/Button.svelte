@@ -14,7 +14,8 @@
 		goto = undefined,
 		disabled = false,
 		type = null,
-		class: className = ''
+		class: className = '',
+		style: styleName = '',
 	}: {
 		kind?: string;
 		color: ButtonColor;
@@ -24,6 +25,7 @@
 		disabled?: boolean;
 		type?: TypeType;
 		class?: string;
+		style?: string;
 	} = $props();
 
 	if (goto) {
@@ -154,6 +156,7 @@
 </script>
 
 <button
+	style={`${styleName}`}
 	class={`
 	cursor-pointer
 	rounded-full
@@ -164,6 +167,10 @@
 	max-xs:text-xs
 	xs:text-base
 	xs:max-lg:landscape:text-xs
+	xs:max-lg:portrait:text-2xl
+	xs:max-lg:portrait:px-4
+	xs:max-lg:portrait:py-3
+	xs:max-lg:portrait:mx-2
 	touch-none
 	px-4
 	py-2

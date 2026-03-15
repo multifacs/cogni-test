@@ -81,6 +81,8 @@
 			},
 			options: {
 				onHover: function (event, chartElements) {
+                    // i actually don't know what is going on here
+                    // @ts-ignore
 					const target = event.native ? event.native.target : event.chart.canvas;
 					target.style.cursor = chartElements.length ? 'pointer' : 'default';
 				},
@@ -93,13 +95,13 @@
 					tooltip: {
 						callbacks: {
 							title: (context) => {
-								const value = context[0].raw;
+								const value = context[0].raw as Result;
 								const raw = value.raw;
 								return `Задание ${value.x}`;
 							},
 							afterTitle: (context) => {
-								const value = context[0].raw;
-								const raw = value.raw;
+								const value = context[0].raw as Result;
+								const raw = value.raw as StroopResult;
 								return raw.task == 'both'
 									? 'По цвету и смыслу'
 									: raw.task == 'meaning'
@@ -107,8 +109,8 @@
 										: 'По цвету';
 							},
 							label: function (context) {
-								const value = context.raw;
-								const raw = value.raw;
+								const value = context.raw as Result;
+								const raw = value.raw as StroopResult;
 								const isCorrect = value.isCorrect;
 								const status = isCorrect ? 'Верно' : 'Неверно';
 								return `Реакция: ${value.y} мс (${status})`;
@@ -116,8 +118,8 @@
 						},
 						titleColor: (context) => {
 							if (context.tooltipItems.length) {
-								const value = context.tooltipItems[0].raw;
-								const raw = value.raw;
+								const value = context.tooltipItems[0].raw as Result;
+								const raw = value.raw as StroopResult;
 								return raw.color;
 							}
 							return 'white';
@@ -205,7 +207,7 @@
 							minRotation: 0,
 							callback: () => '◼',
 							color: (ctx) => {
-								const color = parsedResults[ctx.index].raw.color;
+								const color = (parsedResults[ctx.index].raw as StroopResult).color;
 								return color;
 							},
 							font: {
