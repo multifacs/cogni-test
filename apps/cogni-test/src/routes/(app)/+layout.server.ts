@@ -1,7 +1,6 @@
 import { getUserById } from '$lib/server/db';
 import type { User } from '$lib/types/index.js';
 import { redirect } from '@sveltejs/kit';
-import { MODE } from '$env/static/private';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ cookies }) => {
@@ -18,6 +17,5 @@ export const load: LayoutServerLoad = async ({ cookies }) => {
 
 	return {
 		user,
-		MODE
 	};
 };

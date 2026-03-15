@@ -2,7 +2,7 @@ name: Build and Push Nginx
 
 on:
   push:
-    branches: [dev]
+    branches: [main, dev]
   workflow_dispatch:
 
 jobs:

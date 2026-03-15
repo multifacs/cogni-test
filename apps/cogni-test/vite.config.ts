@@ -10,7 +10,6 @@ export default defineConfig({
 		drop: process.env.MODE == 'PROD' ? ['console', 'debugger'] : []
 	},
 	plugins: [sveltekit(), tailwindcss(), mkcert(), devtoolsJson()],
-	define: { 'process.env.NODE_ENV': '"production"' },
 	test: {
 		expect: { requireAssertions: true },
 		projects: [
