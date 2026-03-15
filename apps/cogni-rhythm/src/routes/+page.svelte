@@ -32,15 +32,14 @@
 		);
 	}
 
+	import { env } from '$env/dynamic/public'; 
 	// const { PUBLIC_PASSWORD } = await ;
 	let hashedSecurePassword = 261180;
-	import('$env/dynamic/public')
-		.then(({ PUBLIC_PASSWORD }) => {
-			hashedSecurePassword = parseInt(PUBLIC_PASSWORD);
-		})
-		.catch((err) => {
-			console.error('Ошибка загрузки PUBLIC_PASSWORD:', err);
-		});
+	if (env.PUBLIC_PASSWORD) {
+		hashedSecurePassword = parseInt(env.PUBLIC_PASSWORD);
+	} else {
+		console.error('PUBLIC_PASSWORD not found in environment variables');
+	}
 
 	async function handleSubmit() {
 		const userId = crypto.randomUUID();

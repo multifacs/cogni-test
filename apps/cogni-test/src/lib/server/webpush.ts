@@ -1,12 +1,11 @@
 // src/lib/server/webpush.js
 import webpush from 'web-push';
 
-const { PRIVATE_VAPID_KEY } = await import('$env/dynamic/private');
-const { PUBLIC_VAPID_KEY } = await import('$env/dynamic/public');
-const { PUBLIC_VAPID_SUBJECT } = await import('$env/dynamic/public');
+import { env as publicEnv } from '$env/dynamic/public';
+import { env as privateEnv } from '$env/dynamic/private'; 
 
-if (PRIVATE_VAPID_KEY && PUBLIC_VAPID_KEY && PUBLIC_VAPID_SUBJECT) {
-    webpush.setVapidDetails(PUBLIC_VAPID_SUBJECT, PUBLIC_VAPID_KEY, PRIVATE_VAPID_KEY);
+if (privateEnv.PRIVATE_VAPID_KEY && publicEnv.PUBLIC_VAPID_KEY && publicEnv.PUBLIC_VAPID_SUBJECT) {
+    webpush.setVapidDetails(publicEnv.PUBLIC_VAPID_SUBJECT, publicEnv.PUBLIC_VAPID_KEY, privateEnv.PRIVATE_VAPID_KEY);
 }
 
 export { webpush };

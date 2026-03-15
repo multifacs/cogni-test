@@ -28,10 +28,10 @@ async function enableWAL(client: Client) {
 
 export let db: ReturnType<typeof drizzle>;
 
-const { DATABASE_URL } = await import('$env/dynamic/private');
+import { env } from '$env/dynamic/private';
 
-if (DATABASE_URL) {
-	const client = createClient({ url: DATABASE_URL });
+if (env.DATABASE_URL) {
+	const client = createClient({ url: env.DATABASE_URL });
 	await enableWAL(client);
 	db = drizzle(client, { schema });
 }

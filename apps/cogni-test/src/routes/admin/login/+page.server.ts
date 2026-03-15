@@ -8,10 +8,14 @@ export const load: PageServerLoad = async ({ cookies }) => {
 	}
 };
 
+import { env } from '$env/dynamic/private'; 
+
 export const actions = {
 	login: async ({ request, cookies }) => {
-		const { ADMIN_PASSWORD } = await import('$env/dynamic/private');
-		if (!ADMIN_PASSWORD) {
+		let ADMIN_PASSWORD;
+		if (env.ADMIN_PASSWORD) {
+			ADMIN_PASSWORD = env.ADMIN_PASSWORD;
+		} else {
 			return fail(401, { incorrect: true });
 		}
 

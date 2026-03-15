@@ -1,17 +1,16 @@
 // src/lib/pushService.js
 import { browser } from '$app/environment';
+import { env } from '$env/dynamic/public'; 
 
 export class PushService {
 	private vapidPublicKey: string;
 
 	constructor() {
-		import('$env/dynamic/public')
-			.then(({ PUBLIC_VAPID_KEY }) => {
-				this.vapidPublicKey = PUBLIC_VAPID_KEY;
-			})
-			.catch((e) => {
-				throw new Error(`Failed to load VAPID public key: ${e}`);
-			});
+		if (env.PUBLIC_VAPID_KEY) {
+			this.vapidPublicKey = env.PUBLIC_VAPID_KEY;
+		} else {
+			throw new Error('VAPID public key not found in environment variables');
+		}
 	}
 
 	async requestPermission() {
