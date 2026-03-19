@@ -3,9 +3,10 @@
 	export let data;
 </script>
 
-<main class="flex flex-col h-full items-center justify-center gap-6 p-8 text-white">
-	<h1 class="text-2xl font-bold">Информационные материалы</h1>
-
+<section class="banner">
+	<h1 class="text-3xl font-bold">Информационные материалы</h1>
+</section>
+<main class="main" style="display: flex; flex-direction: column; gap: 15px">
 	<div class="flex w-full max-w-md flex-col gap-4">
 		{#each data.articles as article}
 			<Button color="blue" goto={`/materials/${article.slug}`}>
@@ -15,3 +16,4 @@
 		{/each}
 	</div>
 </main>
+<section class="low-content gap-5"></section>

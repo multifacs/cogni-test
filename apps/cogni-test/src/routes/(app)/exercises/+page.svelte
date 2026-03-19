@@ -9,14 +9,10 @@
 	});
 </script>
 
-<main
-	class="flex h-full w-full max-w-md grow flex-col items-center gap-6 overflow-y-auto p-4 text-white"
->
-	<h1 class="text-2xl font-bold">Когнитивный тренажёр</h1>
-	<div class="w-full rounded-2xl bg-blue-100 p-4 text-center text-blue-900 shadow">
-		<p class="text-xs opacity-70">👼 Это только начало, следи за моим ростом 👼</p>
-	</div>
-
+<section class="banner">
+	<h1 class="text-3xl font-bold">Когнитивный тренажёр</h1>
+</section>
+<main class="main" style="display: flex; flex-direction: column; gap: 15px">
 	<div class="flex w-full flex-col gap-3">
 		{#each data.exercises as { name, title, path, img }}
 			<a
@@ -29,3 +25,6 @@
 		{/each}
 	</div>
 </main>
+<section class="low-content gap-5">
+	<p class="text-lg font-medium">👼 Это только начало, следи за моим ростом 👼</p>
+</section>

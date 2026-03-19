@@ -12,7 +12,7 @@
 	let subscribed = $state(false);
 	let showModal = $state(false);
 
-	let { data, children }: { data: LayoutData; children: Snippet } = $props();
+	let { data, children, leftAside }: { data: LayoutData; children: Snippet; leftAside: Snippet } = $props();
 
 	onMount(async () => {
 		userStore.set(data.user);
@@ -96,20 +96,26 @@
 
 		.header {
 			grid-area: header;
-			background-color: #f4b400;
+			background-color: #f4b30081;
 			padding: 1.25rem;
 			text-align: center;
+			display: flex;
+			justify-content: center;
+			align-items: center;
 		}
 
 		.left-aside {
 			grid-area: left-aside;
-			background-color: #0f9d58;
+			background-color: #0f9d5880;
 			padding: 1.25rem;
+			display: flex;
+			justify-content: center;
+			align-items: center;
 		}
 
 		.main {
 			grid-area: main;
-			background-color: #4285f4;
+			background-color: #4286f46d;
 			padding: 1.25rem;
 			display: flex;
 			justify-content: center;
@@ -120,27 +126,36 @@
 
 		.banner {
 			grid-area: banner;
-			background-color: #db4437;
+			background-color: #db453774;
 			padding: 1.25rem;
 			text-align: center;
+			display: flex;
+			justify-content: center;
+			align-items: center;
 		}
 
 		.right-aside {
 			grid-area: right-aside;
-			background-color: #f4b400;
+			background-color: #f4b30076;
 			padding: 1.25rem;
+			display: flex;
+			justify-content: center;
+			align-items: center;
 		}
 
 		.low-content {
 			grid-area: low-content;
-			background-color: #0f9d58;
+			background-color: #0f9d586d;
 			padding: 1.25rem;
+			display: flex;
+			justify-content: center;
+			align-items: center;
 		}
 
 		.footer {
 			grid-area: footer;
-			background-color: #4285f4;
-			/* padding: 1.25rem; */
+			background-color: #4286f479;
+			padding: 1.25rem;
 			text-align: center;
 			align-items: center;
 			display: flex;

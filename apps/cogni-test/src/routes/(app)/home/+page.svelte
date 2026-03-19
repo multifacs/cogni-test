@@ -62,15 +62,19 @@
 	};
 </script>
 
+<section class="banner">
+	<h1 class="text-3xl font-bold">Добро пожаловать!</h1>
+</section>
 <main class="main" style="display: flex; flex-direction: column; gap: 15px">
+	<p class="max-w-md text-center text-lg">Выберите, с чего начать:</p>
 	<div class="flex w-full max-w-xs flex-col gap-4">
 		<Button color="green" goto="/tests">🧪 Когнитивный возраст</Button>
 		<Button color="gray" goto="/exercises">📊 Когнитивный тренажёр</Button>
 		<Button color="blue" goto="/materials">📚 Когнитивное долголетие</Button>
 	</div>
 </main>
-<section class="banner">
-	<h1 class="text-3xl font-bold">Добро пожаловать!</h1>
-	<p class="max-w-md text-center text-lg">Выберите, с чего начать:</p>
-</section>
 <section class="low-content">Low Content</section>
+
+<style>
+
+</style>
