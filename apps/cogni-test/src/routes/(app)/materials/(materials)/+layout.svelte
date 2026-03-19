@@ -9,3 +9,4 @@
 <section class="low-content flex justify-center align-middle">
 	<Button color="red" goto="/materials">Назад</Button>
 </section>
+

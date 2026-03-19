@@ -162,7 +162,7 @@
 		/* ✅ Better breakpoint */
 		@media (max-width: 768px) {
 			.container {
-				grid-template-rows: 3rem 3rem 3rem 1fr 3rem 3rem 3rem;
+				grid-template-rows: 2.5rem 2rem 3rem 1fr 3rem 2rem 3rem;
 				grid-template-columns: 1fr;
 				grid-template-areas:
 					'header'

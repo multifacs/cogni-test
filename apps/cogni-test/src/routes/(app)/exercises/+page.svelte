@@ -25,6 +25,6 @@
 		{/each}
 	</div>
 </main>
-<section class="low-content gap-5">
-	<p class="text-lg font-medium">👼 Это только начало, следи за моим ростом 👼</p>
+<section class="low-content flex justify-center items-center text-center">
+	<p class="text-sm">👼 Это только начало, следи за моим ростом 👼</p>
 </section>
