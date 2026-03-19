@@ -39,34 +39,135 @@
 </script>
 
 <div>
-{#if showModal}
-	<Modal bind:showModal>
-		{#snippet header()}
-			<h2 class="text-2xl text-white">Подпишитесь на пуш-уведомления</h2>
-		{/snippet}
-		<div class="flex flex-col gap-4">
-			<p class="text-white">
-				Для корректной работы некоторых функций требуется подписка на уведомления. Например,
-				мы сможем отправлять вам напоминания о прохождении тестов.
-			</p>
-			<p class="text-white">Для подписки достаточно нажать зелёную кнопочку.</p>
-			<p class="text-white">
-				Вы всегда сможете подписаться или отписаться от push-уведомлений в любое время на
-				странице профиля.
-			</p>
-			<Button color="green" onclick={subscribe}>Подписаться</Button>
-			<Button color="red" onclick={() => (showModal = false)}>Нет, спасибо</Button>
-		</div>
-	</Modal>
-{/if}
+	{#if showModal}
+		<Modal bind:showModal>
+			{#snippet header()}
+				<h2 class="text-2xl text-white">Подпишитесь на пуш-уведомления</h2>
+			{/snippet}
+			<div class="flex flex-col gap-4">
+				<p class="text-white">
+					Для корректной работы некоторых функций требуется подписка на уведомления.
+					Например, мы сможем отправлять вам напоминания о прохождении тестов.
+				</p>
+				<p class="text-white">Для подписки достаточно нажать зелёную кнопочку.</p>
+				<p class="text-white">
+					Вы всегда сможете подписаться или отписаться от push-уведомлений в любое время
+					на странице профиля.
+				</p>
+				<Button color="green" onclick={subscribe}>Подписаться</Button>
+				<Button color="red" onclick={() => (showModal = false)}>Нет, спасибо</Button>
+			</div>
+		</Modal>
+	{/if}
 </div>
 
-<div class="flex h-dvh w-full flex-col items-center sm:w-2xl">
-	<div
-		class="flex w-full flex-col items-center overflow-auto"
-		style="height: calc(100dvh - 56.8px);"
-	>
-		{@render children()}
-	</div>
-	<NavBar />
+<div class="container">
+	<header class="header">Header</header>
+	<aside class="left-aside">Left Aside</aside>
+	{@render children()}
+	<aside class="right-aside">Right Aside</aside>
+	<footer class="footer"><NavBar /></footer>
 </div>
+
+<style>
+	:global {
+		* {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+
+		.container {
+			display: grid;
+			grid-template-rows: 5rem auto 1fr auto 3rem;
+			grid-template-columns: 1fr 4fr 1fr;
+			height: 100dvh;
+			grid-template-areas:
+				'header header header'
+				'left-aside banner right-aside'
+				'left-aside main right-aside'
+				'left-aside low-content right-aside'
+				'footer footer footer';
+			gap: 0.625rem;
+			padding: 0.625rem;
+			font-weight: 600;
+			font-size: 1.25rem;
+		}
+
+		.header {
+			grid-area: header;
+			background-color: #f4b400;
+			padding: 1.25rem;
+			text-align: center;
+		}
+
+		.left-aside {
+			grid-area: left-aside;
+			background-color: #0f9d58;
+			padding: 1.25rem;
+		}
+
+		.main {
+			grid-area: main;
+			background-color: #4285f4;
+			padding: 1.25rem;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			flex-direction: column;
+			gap: 1rem;
+		}
+
+		.banner {
+			grid-area: banner;
+			background-color: #db4437;
+			padding: 1.25rem;
+			text-align: center;
+		}
+
+		.right-aside {
+			grid-area: right-aside;
+			background-color: #f4b400;
+			padding: 1.25rem;
+		}
+
+		.low-content {
+			grid-area: low-content;
+			background-color: #0f9d58;
+			padding: 1.25rem;
+		}
+
+		.footer {
+			grid-area: footer;
+			background-color: #4285f4;
+			/* padding: 1.25rem; */
+			text-align: center;
+			align-items: center;
+			display: flex;
+		}
+
+		/* ✅ Better breakpoint */
+		@media (max-width: 768px) {
+			.container {
+				grid-template-rows: 3rem 3rem 3rem 1fr 3rem 3rem 3rem;
+				grid-template-columns: 1fr;
+				grid-template-areas:
+					'header'
+					'banner'
+					'banner'
+					'main'
+					'low-content'
+					'low-content'
+					'footer';
+			}
+
+			.left-aside {
+				display: none;
+			}
+
+			.right-aside {
+				display: none;
+			}
+		}
+	}
+</style>

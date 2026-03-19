@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-@plugin "@tailwindcss/typography";
 
 :root {
 	--main-bg-color: var(--color-gray-800);
@@ -22,10 +21,6 @@
 	--camp-light-red: #f09286;
 	--camp-dark-yellow: #7f6f00;
 	--camp-light-yellow: #feee7f;
-}
-
-@theme {
-	--breakpoint-xs: 340px;
 }
 
 * {
