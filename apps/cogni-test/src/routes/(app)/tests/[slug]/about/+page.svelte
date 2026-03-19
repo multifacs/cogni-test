@@ -19,18 +19,20 @@
 		<!-- <div class="scroll-fade"></div> -->
 	</main>
 
-	<section class="low-content flex justify-center gap-2 align-middle">
-		<Button color="blue" goto={`/tests/${slug}/results`}>История</Button>
-		<Button color="green" goto={`/tests/${slug}/playground`}>Начать</Button>
+	<section class="low-content grid grid-cols-3 gap-4">
 		<Button color="red" goto="/tests">Назад</Button>
+		<Button color="green" goto={`/tests/${slug}/playground`}>Начать</Button>
+		<Button color="blue" goto={`/tests/${slug}/results`}>История</Button>
 	</section>
 {:else}
-	<main class="main flex items-center justify-center flex-col gap-4">
+	<main class="main flex flex-col items-center justify-center gap-4">
 		<Spinner></Spinner>
 		<p>Загрузка теста {slug}...</p>
 	</main>
 
-	<section class="low-content flex justify-center gap-2 align-middle"></section>
+	<section class="low-content flex justify-center gap-2 align-middle">
+		<Button color="red" goto="/tests">Назад</Button>
+	</section>
 {/if}
 
 <style>

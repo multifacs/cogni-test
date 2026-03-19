@@ -10,6 +10,6 @@
 </script>
 
 <section class="banner">
-	<h1 class="text-3xl font-bold">{title}</h1>
+	<h1>{title}</h1>
 </section>
 {@render children()}

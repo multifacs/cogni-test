@@ -94,9 +94,9 @@
 	{/if}
 </main>
 
-<section class="low-content flex justify-center gap-2 align-middle">
-	<Button color="blue" goto={`/tests/${slug}`}>Заново</Button>
+<section class="low-content grid grid-cols-2 gap-4">
 	<Button color="red" goto="/tests">{runAllMode ? 'К следующему' : 'К тестам'}</Button>
+	<Button color="blue" goto={`/tests/${slug}`}>Заново</Button>
 </section>
 
 <style>

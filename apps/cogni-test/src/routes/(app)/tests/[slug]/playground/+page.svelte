@@ -67,17 +67,27 @@
 		></Component>
 	</main>
 
-	<section class="low-content flex justify-center gap-2 align-middle">
-		{#if isGameEnd}
+	{#if isGameEnd}
+		<section class="low-content grid grid-cols-2 gap-4">
+			<Button color="red" goto={`/tests/${slug}`}>Назад</Button>
 			<Button color="blue" goto={`/tests/${slug}/results`}>Результаты</Button>
-		{/if}
-		<Button color="red" goto={`/tests/${slug}`}>Назад</Button>
-	</section>
+		</section>
+	{:else}
+		<section class="low-content grid grid-cols-3 gap-4">
+			<div></div>
+			<Button color="red" goto={`/tests/${slug}`}>Назад</Button>
+			<div></div>
+		</section>
+	{/if}
 {:else}
 	<main class="main flex flex-col items-center justify-center gap-4">
 		<Spinner></Spinner>
 		<p>Загрузка теста {slug}...</p>
 	</main>
 
-	<section class="low-content flex justify-center gap-2 align-middle"></section>
+	<section class="low-content grid grid-cols-3 gap-4">
+		<div></div>
+		<Button color="red" goto={`/tests/${slug}`}>Назад</Button>
+		<div></div>
+	</section>
 {/if}

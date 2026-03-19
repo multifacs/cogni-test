@@ -67,7 +67,11 @@
 	<aside class="left-aside">Left Aside</aside>
 	{@render children()}
 	<aside class="right-aside">Right Aside</aside>
-	<footer class="footer"><NavBar /></footer>
+	<footer class="footer flex justify-center">
+		<div class="w-2/3 max-md:w-full">
+			<NavBar />
+		</div>
+	</footer>
 </div>
 
 <style>
