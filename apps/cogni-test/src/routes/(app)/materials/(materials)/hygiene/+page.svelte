@@ -1,9 +1,9 @@
-<main class="prose prose-invert mx-auto max-w-2xl overflow-scroll p-6">
-	<h1 class="code-line" data-line-start="0" data-line-end="1">
-		<a id="________0"></a>Цифровая гигиена: как сохранить здоровье в эпоху гаджетов
-	</h1>
+<section class="banner">
+	<h1 class="text-3xl font-bold">Цифровая гигиена: как сохранить здоровье в эпоху гаджетов</h1>
+</section>
+<main class="main">
 	<h2 class="code-line" data-line-start="2" data-line-end="3">
-		<a id="____2"></a>⚠️ Риски цифровых технологий
+		⚠️ Риски цифровых технологий
 	</h2>
 	<p class="has-line-data" data-line-start="4" data-line-end="5">
 		Современные устройства несут угрозы для:

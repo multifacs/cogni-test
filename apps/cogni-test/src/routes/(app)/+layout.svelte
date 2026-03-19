@@ -12,7 +12,8 @@
 	let subscribed = $state(false);
 	let showModal = $state(false);
 
-	let { data, children, leftAside }: { data: LayoutData; children: Snippet; leftAside: Snippet } = $props();
+	let { data, children, leftAside }: { data: LayoutData; children: Snippet; leftAside: Snippet } =
+		$props();
 
 	onMount(async () => {
 		userStore.set(data.user);
@@ -71,12 +72,6 @@
 
 <style>
 	:global {
-		* {
-			box-sizing: border-box;
-			margin: 0;
-			padding: 0;
-		}
-
 		.container {
 			display: grid;
 			grid-template-rows: 5rem auto 1fr auto 3rem;
@@ -117,11 +112,14 @@
 			grid-area: main;
 			background-color: #4286f46d;
 			padding: 1.25rem;
-			display: flex;
+			/* display: flex;
 			justify-content: center;
 			align-items: center;
 			flex-direction: column;
-			gap: 1rem;
+			gap: 1rem; */
+			overflow-x: auto; /* Enable horizontal scrolling */
+			overflow-y: auto; /* Optional: enable vertical scrolling too */
+			min-width: 0; /* Critical: allows flex children to shrink below content size */
 		}
 
 		.banner {
@@ -147,9 +145,9 @@
 			grid-area: low-content;
 			background-color: #0f9d586d;
 			padding: 1.25rem;
-			display: flex;
+			/* display: flex;
 			justify-content: center;
-			align-items: center;
+			align-items: center; */
 		}
 
 		.footer {

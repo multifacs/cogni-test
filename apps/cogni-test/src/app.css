@@ -39,7 +39,7 @@ h3 {
 }
 
 h1 {
-	font-size: var(--text-3xl);
+	font-size: var(--text-2xl);
 	--tw-font-weight: var(--font-weight-bold);
 	font-weight: var(--font-weight-bold);
 	text-shadow:

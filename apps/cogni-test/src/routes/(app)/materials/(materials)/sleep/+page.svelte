@@ -1,7 +1,7 @@
-<main class="prose prose-invert mx-auto max-w-2xl overflow-scroll p-6">
-	<h1 class="code-line" data-line-start="0" data-line-end="1">
-		Сон: зачем он нужен и как его улучшить
-	</h1>
+<section class="banner">
+	<h1 class="text-3xl font-bold">Сон: зачем он нужен и как его улучшить</h1>
+</section>
+<main class="main">
 	<blockquote>
 		<p class="has-line-data" data-line-start="2" data-line-end="3">
 			<em

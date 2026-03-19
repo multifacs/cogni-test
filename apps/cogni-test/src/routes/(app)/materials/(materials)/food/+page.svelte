@@ -1,7 +1,7 @@
 <section class="banner">
 	<h1 class="text-3xl font-bold">Питание и здоровье мозга: научный подход</h1>
 </section>
-<main class="main overflow-y-scroll">
+<main class="main">
 	<h2 class="code-line" data-line-start="7" data-line-end="8">🔍 Основные выводы исследований</h2>
 	<ul>
 		<li class="has-line-data" data-line-start="9" data-line-end="10">

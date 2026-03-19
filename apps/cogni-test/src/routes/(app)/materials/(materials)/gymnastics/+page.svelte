@@ -10,8 +10,10 @@
 	});
 </script>
 
-<main class="prose prose-invert mx-auto max-w-2xl overflow-scroll p-6">
-	<h1 class="code-line" data-line-start="0" data-line-end="1">Гимнастика для шейного отдела</h1>
+<section class="banner">
+	<h1 class="text-3xl font-bold">Гимнастика для шейного отдела</h1>
+</section>
+<main class="main">
 	<p class="has-line-data" data-line-start="2" data-line-end="3">
 		Регулярная зарядка (не профессиональный спорт) улучшает когнитивные функции за счет:
 	</p>
