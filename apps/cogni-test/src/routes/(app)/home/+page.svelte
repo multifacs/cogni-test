@@ -66,14 +66,15 @@
 	<h1 class="text-3xl font-bold">Добро пожаловать!</h1>
 </section>
 <main class="main flex flex-col items-center justify-center gap-4">
-	<p class="max-w-md text-center text-lg">Выберите, с чего начать:</p>
 	<div class="flex w-full max-w-xs flex-col gap-4">
 		<Button color="green" goto="/tests">🧪 Когнитивный возраст</Button>
 		<Button color="gray" goto="/exercises">📊 Когнитивный тренажёр</Button>
 		<Button color="blue" goto="/materials">📚 Когнитивное долголетие</Button>
 	</div>
 </main>
-<section class="low-content">Low Content</section>
+<section class="low-content flex items-center justify-center">
+	<p class="max-w-md text-center text-lg">Выберите, с чего начать.</p>
+</section>
 
 <style>
 </style>

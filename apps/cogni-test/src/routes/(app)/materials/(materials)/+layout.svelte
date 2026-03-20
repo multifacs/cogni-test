@@ -6,7 +6,8 @@
 </script>
 
 {@render children()}
-<section class="low-content flex justify-center align-middle">
+<section class="low-content grid grid-cols-3 gap-4">
+	<div></div>
 	<Button color="red" goto="/materials">Назад</Button>
+	<div></div>
 </section>
-

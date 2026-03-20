@@ -78,7 +78,7 @@
 	:global {
 		.container {
 			display: grid;
-			grid-template-rows: 5rem auto 1fr auto 3rem;
+			grid-template-rows: 3rem auto 1fr auto 3rem;
 			grid-template-columns: 1fr 4fr 1fr;
 			height: 100dvh;
 			grid-template-areas:
@@ -87,8 +87,8 @@
 				'left-aside main right-aside'
 				'left-aside low-content right-aside'
 				'footer footer footer';
-			gap: 0.625rem;
-			padding: 0.625rem;
+			gap: 0.5rem;
+			padding: 0.5rem;
 			font-weight: 600;
 			font-size: 1.25rem;
 		}
@@ -96,7 +96,7 @@
 		.header {
 			grid-area: header;
 			background-color: #f4b30081;
-			padding: 1.25rem;
+			padding: 1rem;
 			text-align: center;
 			display: flex;
 			justify-content: center;
@@ -106,7 +106,7 @@
 		.left-aside {
 			grid-area: left-aside;
 			background-color: #0f9d5880;
-			padding: 1.25rem;
+			padding: 1rem;
 			display: flex;
 			justify-content: center;
 			align-items: center;
@@ -115,7 +115,7 @@
 		.main {
 			grid-area: main;
 			background-color: #4286f46d;
-			padding: 1.25rem;
+			padding: 1rem;
 			/* display: flex;
 			justify-content: center;
 			align-items: center;
@@ -129,7 +129,7 @@
 		.banner {
 			grid-area: banner;
 			background-color: #db453774;
-			padding: 1.25rem;
+			padding: 1rem;
 			text-align: center;
 			display: flex;
 			justify-content: center;
@@ -139,7 +139,7 @@
 		.right-aside {
 			grid-area: right-aside;
 			background-color: #f4b30076;
-			padding: 1.25rem;
+			padding: 1rem;
 			display: flex;
 			justify-content: center;
 			align-items: center;
@@ -148,7 +148,7 @@
 		.low-content {
 			grid-area: low-content;
 			background-color: #0f9d586d;
-			padding: 1.25rem;
+			padding: 0.5rem;
 			/* display: flex;
 			justify-content: center;
 			align-items: center; */
@@ -157,7 +157,7 @@
 		.footer {
 			grid-area: footer;
 			background-color: #4286f479;
-			padding: 1.25rem;
+			padding: 0.5rem;
 			text-align: center;
 			align-items: center;
 			display: flex;
@@ -166,16 +166,22 @@
 		/* ✅ Better breakpoint */
 		@media (max-width: 768px) {
 			.container {
-				grid-template-rows: 2.5rem 2rem 3rem 1fr 3rem 2rem 3rem;
+				grid-template-rows: 2.5rem 2rem 2rem 1fr 2rem 2rem 3rem;
 				grid-template-columns: 1fr;
 				grid-template-areas:
-					'header'
 					'banner'
 					'banner'
+					'main'
 					'main'
 					'low-content'
 					'low-content'
 					'footer';
+				gap: 0.3rem;
+				padding: 0.3rem;
+			}
+
+			.header {
+				display: none;
 			}
 
 			.left-aside {

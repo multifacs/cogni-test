@@ -56,48 +56,53 @@
 	}
 </script>
 
-<main class="main" style="display: flex; flex-direction: column; gap: 15px">
-	{#await $user}
-		<p>Загрузка...</p>
-	{:then u}
-		{#if u && u.id}
-			<div>
-				<p><b>ID:</b> {u.id}</p>
-				<p><b>Имя:</b> {u.firstname}</p>
-				<p><b>Фамилия:</b> {u.lastname}</p>
-				<p><b>Дата рождения:</b> {formatDate(u.birthday)}</p>
-				<p><b>Пол:</b> {formatSex(u.sex)}</p>
-				<hr class="my-2 border-gray-600" />
+<main class="main grid">
+	<div class="flex flex-col items-center justify-center">
+		{#await $user}
+			<p>Загрузка...</p>
+		{:then u}
+			{#if u && u.id}
+				<div>
+					<p><b>ID:</b> {u.id}</p>
+					<p><b>Имя:</b> {u.firstname}</p>
+					<p><b>Фамилия:</b> {u.lastname}</p>
+					<p><b>Дата рождения:</b> {formatDate(u.birthday)}</p>
+					<p><b>Пол:</b> {formatSex(u.sex)}</p>
+					<hr class="my-2 border-gray-600" />
 
-				<div class="my-2 flex flex-col justify-center gap-2">
-					<h2 class="text-2xl text-white">Уведомления</h2>
-					{#if subscribed}
-						<div class="flex justify-center">
-							<Button color="blue" kind="small" onclick={unsubscribe}
-								>Отписаться</Button
-							>
-						</div>
-					{:else}
-						<div class="flex justify-center">
-							<Button color="green" kind="small" onclick={subscribe}
-								>Подписаться</Button
-							>
-						</div>
-					{/if}
+					<div class="my-2 flex flex-col justify-center gap-2">
+						<h2 class="text-2xl text-white">Уведомления</h2>
+						{#if subscribed}
+							<div class="flex justify-center">
+								<Button color="blue" kind="small" onclick={unsubscribe}
+									>Отписаться</Button
+								>
+							</div>
+						{:else}
+							<div class="flex justify-center">
+								<Button color="green" kind="small" onclick={subscribe}
+									>Подписаться</Button
+								>
+							</div>
+						{/if}
+					</div>
+
+					<hr class="my-2 border-gray-600" />
 				</div>
-
-				<hr class="my-2 border-gray-600" />
-			</div>
-		{:else}
-			<p>Пользователь не найден. Возможно, вы не вошли в систему.</p>
-		{/if}
-	{/await}
+			{:else}
+				<p>Пользователь не найден. Возможно, вы не вошли в систему.</p>
+			{/if}
+		{/await}
+	</div>
 </main>
 <section class="banner">
 	<h1 class="mb-4 text-2xl font-bold">Профиль</h1>
 </section>
-<section class="low-content">
-	<form class="flex justify-center" method="POST" action="/?/logout" use:enhance>
+
+<section class="low-content grid grid-cols-3 gap-4">
+	<div></div>
+	<form class="grid w-full grid-cols-1" method="POST" action="/?/logout" use:enhance>
 		<Button type="submit" kind="small" color="red">Выйти</Button>
 	</form>
+	<div></div>
 </section>
