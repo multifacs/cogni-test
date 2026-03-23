@@ -3,15 +3,17 @@
 	export let data;
 </script>
 
-<main class="flex flex-col h-full items-center justify-center gap-6 p-8 text-white">
-	<h1 class="text-2xl font-bold">Информационные материалы</h1>
-
-	<div class="flex w-full max-w-md flex-col gap-4">
-		{#each data.articles as article}
-			<Button color="blue" goto={`/materials/${article.slug}`}>
-				{article.emoji}
-				{article.title}
-			</Button>
-		{/each}
-	</div>
+<section class="banner">
+	<h1 class="text-3xl font-bold">Информационные материалы</h1>
+</section>
+<main class="main flex flex-col gap-4 justify-center">
+	{#each data.articles as article}
+		<Button color="blue" goto={`/materials/${article.slug}`}>
+			{article.emoji}
+			{article.title}
+		</Button>
+	{/each}
 </main>
+<section class="low-content">
+	<!-- <h1 class="text-3xl font-bold">Информационные материалы</h1> -->
+</section>

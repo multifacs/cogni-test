@@ -2,6 +2,7 @@
 	import { clamp, delay } from '$lib/utils';
 	import { onDestroy, onMount } from 'svelte';
 	import type { Cell, Word, Selection, MunsterbergResult } from './types';
+	import ProgressBar from '$lib/components/ui/ProgressBar.svelte';
 
 	// Props
 	let { data, gameEnd, sendResults } = $props();
@@ -97,11 +98,11 @@
 
 		sendResults({
 			results: generatedWords.map((x) => {
-				const {value, ...rest} = x;
-                const result: MunsterbergResult = {
-                    ...rest,
-                    word: value
-                }
+				const { value, ...rest } = x;
+				const result: MunsterbergResult = {
+					...rest,
+					word: value
+				};
 				return result;
 			}),
 			meta: generatedWords.map((x) => x.value)
@@ -272,7 +273,8 @@
 	{/each}
 </div>
 {#if isGameRunning}
-	<h3>{`0${timer === 60 ? 1 : 0}:${timer % 60 < 10 ? '0' : ''}${timer % 60}`}</h3>
+	<!-- <h3>{`0${timer === 60 ? 1 : 0}:${timer % 60 < 10 ? '0' : ''}${timer % 60}`}</h3> -->
+	<ProgressBar min={0} max={60} progress={60 - timer} />
 {:else}
 	<h3>Вы отгадали {guessedCount}/{generatedWords.length} за {60 - timer} сек.</h3>
 {/if}

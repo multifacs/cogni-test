@@ -49,25 +49,12 @@
 	}
 </script>
 
-<main
-	class="flex h-full w-full max-w-md flex-col items-center gap-6 overflow-y-auto p-4 text-white"
->
-	<h1 class="text-2xl font-bold">Определение когнитивного возраста</h1>
-
-	<div class="w-full rounded-3xl bg-blue-100 p-4 text-center text-blue-900 shadow">
-		<p class="text-lg font-medium">🧠 Когнитивный возраст</p>
-		<p class="mt-1 text-3xl font-bold">
-			{#if data.predictedAge !== null && data.predictedAge !== undefined}
-				{Math.round(data.predictedAge)} лет
-			{:else}
-				<span title="Пройдите хотя бы один раз каждый тест">??</span>
-			{/if}
-		</p>
-		<p class="text-xs opacity-70">⚠️ Я только учусь, и я могу ошибаться ⚠️</p>
-	</div>
-
+<section class="banner">
+	<h1 class="text-3xl font-bold">Определение когнитивного возраста</h1>
+</section>
+<main class="main">
 	{#if runAllMode}
-	<Spinner></Spinner>
+		<Spinner></Spinner>
 	{:else}
 		{#if Object.keys(testSessionCounts).length < data.tests.length}
 			<div
@@ -103,3 +90,14 @@
 		</div>
 	{/if}
 </main>
+<section class="low-content grid grid-cols-3 gap-5 text-center items-center">
+	<p class="text-xs font-medium">🧠 Когнитивный возраст 🧠</p>
+	<p class="mt-1 text-3xl font-bold">
+		{#if data.predictedAge !== null && data.predictedAge !== undefined}
+			{Math.round(data.predictedAge)} лет
+		{:else}
+			<span title="Пройдите хотя бы один раз каждый тест">??</span>
+		{/if}
+	</p>
+	<p class="text-xs font-medium">⚠️ Я только учусь, и я могу ошибаться ⚠️</p>
+</section>

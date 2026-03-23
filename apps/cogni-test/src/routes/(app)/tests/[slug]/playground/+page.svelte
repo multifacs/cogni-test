@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import type { MetaResult, RegularResults, TestResultMap } from '$lib/tests/types.js';
 	// import type { Result } from '$lib/types/index.js';
 	// import { delay } from '$lib/utils/common.js';
@@ -48,9 +49,7 @@
 		goto(`/tests/${slug}/results`);
 	}
 
-	async function onSendResults(
-		results: RegularResults | MetaResult
-	) {
+	async function onSendResults(results: RegularResults | MetaResult) {
 		const response = await fetch(`/tests/${slug}/playground`, {
 			method: 'POST',
 			body: JSON.stringify({ results }),
@@ -63,14 +62,32 @@
 </script>
 
 {#if Component}
-	<Component bind:this={childComponent} gameEnd={onGameEnd} sendResults={onSendResults} {data}
-	></Component>
-	<div class="controls flex items-center justify-center gap-2.5">
-		{#if isGameEnd}
+	<main class="main flex flex-col items-center justify-evenly">
+		<Component bind:this={childComponent} gameEnd={onGameEnd} sendResults={onSendResults} {data}
+		></Component>
+	</main>
+
+	{#if isGameEnd}
+		<section class="low-content grid grid-cols-2 gap-4">
+			<Button color="red" goto={`/tests/${slug}`}>Назад</Button>
 			<Button color="blue" goto={`/tests/${slug}/results`}>Результаты</Button>
-		{/if}
-		<Button color="red" goto={`/tests/${slug}`}>Назад</Button>
-	</div>
+		</section>
+	{:else}
+		<section class="low-content grid grid-cols-3 gap-4">
+			<div></div>
+			<Button color="red" goto={`/tests/${slug}`}>Назад</Button>
+			<div></div>
+		</section>
+	{/if}
 {:else}
-	<p>Загрузка логики теста...</p>
+	<main class="main flex flex-col items-center justify-center gap-4">
+		<Spinner></Spinner>
+		<p>Загрузка теста {slug}...</p>
+	</main>
+
+	<section class="low-content grid grid-cols-3 gap-4">
+		<div></div>
+		<Button color="red" goto={`/tests/${slug}`}>Назад</Button>
+		<div></div>
+	</section>
 {/if}

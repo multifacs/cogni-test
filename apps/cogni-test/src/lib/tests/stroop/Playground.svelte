@@ -112,8 +112,7 @@
 
 <div class="color-text flex h-20 flex-col items-center justify-center">
 	{#if isTestRunning}
-		<h1 style="color: {currentColor};" class="max-xs:hidden sm:text-xl">{translate(currentWord)}</h1>
-		<h2 style="color: {currentColor};" class="xs:hidden sm:text-xl">{translate(currentWord)}</h2>
+		<h1 style="color: {currentColor};">{translate(currentWord)}</h1>
 		{#if currentWord.includes('stage')}
 			<p class="text-center sm:text-xl">{stageInstructions[checkWordStage(currentWord)]}</p>
 		{/if}

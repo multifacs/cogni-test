@@ -14,23 +14,25 @@
 </script>
 
 {#if Component}
-	<div
-		class="scroll-container group max-xs:text-xs xs:text-base min-h-0 shrink grow-0 overflow-y-auto px-2"
-	>
+	<main class="main text-justify">
 		<Component></Component>
-		<div class="scroll-fade"></div>
-	</div>
-	<div
-		class="	controls
-  flex items-center justify-center gap-2.5"
-	>
-		<Button color="blue" goto={`/tests/${slug}/results`}>История</Button>
-		<Button color="green" goto={`/tests/${slug}/playground`}>Начать</Button>
+		<!-- <div class="scroll-fade"></div> -->
+	</main>
+
+	<section class="low-content grid grid-cols-3 gap-4">
 		<Button color="red" goto="/tests">Назад</Button>
-	</div>
+		<Button color="green" goto={`/tests/${slug}/playground`}>Начать</Button>
+		<Button color="blue" goto={`/tests/${slug}/results`}>История</Button>
+	</section>
 {:else}
-	<Spinner></Spinner>
-	<p>Загрузка теста {slug}...</p>
+	<main class="main flex flex-col items-center justify-center gap-4">
+		<Spinner></Spinner>
+		<p>Загрузка теста {slug}...</p>
+	</main>
+
+	<section class="low-content flex justify-center gap-2 align-middle">
+		<Button color="red" goto="/tests">Назад</Button>
+	</section>
 {/if}
 
 <style>
@@ -50,7 +52,9 @@
 	}
 	.scroll-container .scroll-fade {
 		animation: scrolling forwards;
-		animation-timeline: scroll(); /* it will consider the ancestor having overflow: auto/hidden  */
+		animation-timeline: scroll(
+
+		); /* it will consider the ancestor having overflow: auto/hidden  */
 	}
 	@keyframes scrolling {
 		from {

@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-@plugin "@tailwindcss/typography";
 
 :root {
 	--main-bg-color: var(--color-gray-800);
@@ -24,10 +23,6 @@
 	--camp-light-yellow: #feee7f;
 }
 
-@theme {
-	--breakpoint-xs: 340px;
-}
-
 * {
 	box-sizing: border-box;
 }
@@ -44,7 +39,7 @@ h3 {
 }
 
 h1 {
-	font-size: var(--text-3xl);
+	font-size: var(--text-2xl);
 	--tw-font-weight: var(--font-weight-bold);
 	font-weight: var(--font-weight-bold);
 	text-shadow:

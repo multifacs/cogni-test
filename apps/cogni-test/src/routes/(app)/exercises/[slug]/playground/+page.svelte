@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Spinner from '$lib/components/ui/Spinner.svelte';
 	// import type { MetaResult, RegularResult, TestResultMap } from '$lib/tests/types.js';
 	// import type { Result } from '$lib/types/index.js';
 	// import { delay } from '$lib/utils/common.js';
@@ -26,15 +27,27 @@
 		isGameEnd = true;
 		goto(`/exercises/${slug}/about`);
 	}
-
 </script>
 
 {#if Component}
-	<Component bind:this={childComponent} gameEnd={onGameEnd} {data}
-	></Component>
-	<div class="controls flex items-center justify-center gap-2.5">
+	<main class="main flex flex-col items-center justify-evenly">
+		<Component bind:this={childComponent} gameEnd={onGameEnd} {data}></Component>
+	</main>
+
+	<section class="low-content grid grid-cols-3 gap-4">
+		<div></div>
 		<Button color="red" goto={`/exercises/${slug}`}>Назад</Button>
-	</div>
+		<div></div>
+	</section>
 {:else}
-	<p>Загрузка логики теста...</p>
+	<main class="main flex flex-col items-center justify-center gap-4">
+		<Spinner></Spinner>
+		<p>Загрузка упражнения {slug}...</p>
+	</main>
+
+	<section class="low-content grid grid-cols-3 gap-4">
+		<div></div>
+		<Button color="red" goto={`/exercises/${slug}`}>Назад</Button>
+		<div></div>
+	</section>
 {/if}
