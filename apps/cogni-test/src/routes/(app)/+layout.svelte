@@ -63,10 +63,10 @@
 </div>
 
 <div class="container">
-	<header class="header">Header</header>
-	<aside class="left-aside">Left Aside</aside>
+	<header class="header"></header>
+	<aside class="left-aside"></aside>
 	{@render children()}
-	<aside class="right-aside">Right Aside</aside>
+	<aside class="right-aside"></aside>
 	<footer class="footer flex justify-center">
 		<div class="w-2/3 max-md:w-full">
 			<NavBar />
@@ -95,7 +95,7 @@
 
 		.header {
 			grid-area: header;
-			background-color: #f4b30081;
+			background-color: #f4b30018;
 			padding: 1rem;
 			text-align: center;
 			display: flex;
@@ -105,7 +105,7 @@
 
 		.left-aside {
 			grid-area: left-aside;
-			background-color: #0f9d5880;
+			background-color: #0f9d581c;
 			padding: 1rem;
 			display: flex;
 			justify-content: center;
@@ -114,7 +114,7 @@
 
 		.main {
 			grid-area: main;
-			background-color: #4286f46d;
+			background-color: #4286f433;
 			padding: 1rem;
 			/* display: flex;
 			justify-content: center;
@@ -128,7 +128,7 @@
 
 		.banner {
 			grid-area: banner;
-			background-color: #db453774;
+			background-color: #db45370e;
 			padding: 1rem;
 			text-align: center;
 			display: flex;
@@ -138,7 +138,7 @@
 
 		.right-aside {
 			grid-area: right-aside;
-			background-color: #f4b30076;
+			background-color: #f4b3001f;
 			padding: 1rem;
 			display: flex;
 			justify-content: center;
@@ -147,7 +147,7 @@
 
 		.low-content {
 			grid-area: low-content;
-			background-color: #0f9d586d;
+			background-color: #0f9d581d;
 			padding: 0.5rem;
 			/* display: flex;
 			justify-content: center;
@@ -156,7 +156,7 @@
 
 		.footer {
 			grid-area: footer;
-			background-color: #4286f479;
+			background-color: #4286f41b;
 			padding: 0.5rem;
 			text-align: center;
 			align-items: center;

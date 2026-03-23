@@ -18,6 +18,7 @@ if (buildTarget === 'vercel') {
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	preprocess: [vitePreprocess(), mdsvex()],
+	// preprocess: [vitePreprocess()],
 	kit: {
 		adapter,
 		// svelte-kit вообще может автоматически регистрировать service worker
@@ -25,6 +26,7 @@ const config = {
 		serviceWorker: { register: false }
 	},
 	extensions: ['.svelte', '.svx']
+	// extensions: ['.svelte']
 };
 
 export default config;
