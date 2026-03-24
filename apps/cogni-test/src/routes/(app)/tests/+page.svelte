@@ -52,7 +52,7 @@
 <section class="banner">
 	<h1 class="text-3xl font-bold">Определение когнитивного возраста</h1>
 </section>
-<main class="main">
+<main class="main flex flex-col gap-3">
 	{#if runAllMode}
 		<Spinner></Spinner>
 	{:else}

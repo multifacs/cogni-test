@@ -440,7 +440,7 @@
 	</Modal>
 {/if}
 
-<div class="flex flex-col items-center gap-6">
+<div class="flex flex-col items-center gap-6 w-3/4">
 	{#if phase === 'category-select'}
 		<CategorySelect {selectCategory} />
 	{:else if phase === 'time-select'}

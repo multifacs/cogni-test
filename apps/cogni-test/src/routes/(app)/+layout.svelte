@@ -7,10 +7,12 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import NavBar from '$lib/components/ui/NavBar.svelte';
+	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import { isSubscribed } from '$lib/utils/push';
 
 	let subscribed = $state(false);
 	let showModal = $state(false);
+	let showSpinner = $state(false);
 
 	let { data, children, leftAside }: { data: LayoutData; children: Snippet; leftAside: Snippet } =
 		$props();
@@ -29,7 +31,9 @@
 		}
 
 		try {
+			showSpinner = true;
 			await pushService.subscribe();
+			showSpinner = false;
 			subscribed = true;
 			showModal = false;
 			console.log('Subscribed successfully');
@@ -43,32 +47,40 @@
 	{#if showModal}
 		<Modal bind:showModal>
 			{#snippet header()}
-				<h2 class="text-2xl text-white">Подпишитесь на пуш-уведомления</h2>
+				<h2 class="text-2xl text-white">Подпишитесь на push-уведомления</h2>
 			{/snippet}
 			<div class="flex flex-col gap-4">
-				<p class="text-white">
-					Для корректной работы некоторых функций требуется подписка на уведомления.
-					Например, мы сможем отправлять вам напоминания о прохождении тестов.
-				</p>
-				<p class="text-white">Для подписки достаточно нажать зелёную кнопочку.</p>
-				<p class="text-white">
-					Вы всегда сможете подписаться или отписаться от push-уведомлений в любое время
-					на странице профиля.
-				</p>
-				<Button color="green" onclick={subscribe}>Подписаться</Button>
-				<Button color="red" onclick={() => (showModal = false)}>Нет, спасибо</Button>
+				{#if showSpinner}
+					<div class="flex flex-col w-full justify-center align-middle items-center gap-2">
+						<Spinner></Spinner>
+						<p class="text-white text-center">Перезагрузите страницу, если загрузка идет долго</p>
+					</div>
+				{:else}
+					<p class="text-white">
+						Для корректной работы некоторых функций требуется подписка на уведомления.
+						Например, мы сможем отправлять вам напоминания о прохождении тестов.
+					</p>
+					<p class="text-white">Для подписки достаточно нажать зелёную кнопочку.</p>
+					<p class="text-white">
+						Вы сможете подписаться или отписаться от push-уведомлений в любое время на
+						странице профиля.
+					</p>
+					<Button color="green" onclick={subscribe}>Подписаться</Button>
+					<Button color="red" onclick={() => (showModal = false)}>Нет, спасибо</Button>
+				{/if}
 			</div>
 		</Modal>
 	{/if}
 </div>
 
 <div class="container">
-	<header class="header"></header>
+	<!-- <header class="header"></header> -->
 	<aside class="left-aside"></aside>
 	{@render children()}
 	<aside class="right-aside"></aside>
-	<footer class="footer flex justify-center">
-		<div class="w-2/3 max-md:w-full">
+	<footer class="footer flex justify-center rounded-lg">
+		<!-- <div class="w-2/3 max-md:w-full"> -->
+		<div class="w-full">
 			<NavBar />
 		</div>
 	</footer>
@@ -76,7 +88,7 @@
 
 <style>
 	:global {
-		.container {
+		/* .container {
 			display: grid;
 			grid-template-rows: 3rem auto 1fr auto 3rem;
 			grid-template-columns: 1fr 4fr 1fr;
@@ -86,16 +98,32 @@
 				'left-aside banner right-aside'
 				'left-aside main right-aside'
 				'left-aside low-content right-aside'
-				'footer footer footer';
+				'left-aside footer right-aside';
 			gap: 0.5rem;
 			padding: 0.5rem;
-			font-weight: 600;
+			/* font-weight: 600;
+			font-size: 1.25rem;
+		} */
+
+		.container {
+			display: grid;
+			grid-template-rows: auto 1fr auto 3rem;
+			grid-template-columns: 1fr 4fr 1fr;
+			height: 100dvh;
+			grid-template-areas:
+				'left-aside banner right-aside'
+				'left-aside main right-aside'
+				'left-aside low-content right-aside'
+				'left-aside footer right-aside';
+			gap: 0.5rem;
+			padding: 0.5rem;
+			/* font-weight: 600; */
 			font-size: 1.25rem;
 		}
 
 		.header {
 			grid-area: header;
-			background-color: #f4b30018;
+			/* background-color: #f4b30018; */
 			padding: 1rem;
 			text-align: center;
 			display: flex;
@@ -105,7 +133,7 @@
 
 		.left-aside {
 			grid-area: left-aside;
-			background-color: #0f9d581c;
+			/* background-color: #0f9d581c; */
 			padding: 1rem;
 			display: flex;
 			justify-content: center;
@@ -124,11 +152,14 @@
 			overflow-x: auto; /* Enable horizontal scrolling */
 			overflow-y: auto; /* Optional: enable vertical scrolling too */
 			min-width: 0; /* Critical: allows flex children to shrink below content size */
+			border-radius: var(--radius-lg);
 		}
 
 		.banner {
 			grid-area: banner;
-			background-color: #db45370e;
+			border-radius: var(--radius-lg);
+			/* background-color: #db45370e; */
+			background-color: #4286f41b;
 			padding: 1rem;
 			text-align: center;
 			display: flex;
@@ -138,7 +169,7 @@
 
 		.right-aside {
 			grid-area: right-aside;
-			background-color: #f4b3001f;
+			/* background-color: #f4b3001f; */
 			padding: 1rem;
 			display: flex;
 			justify-content: center;
@@ -147,8 +178,10 @@
 
 		.low-content {
 			grid-area: low-content;
-			background-color: #0f9d581d;
+			/* background-color: #0f9d581d; */
+			background-color: #4286f42e;
 			padding: 0.5rem;
+			border-radius: var(--radius-lg);
 			/* display: flex;
 			justify-content: center;
 			align-items: center; */

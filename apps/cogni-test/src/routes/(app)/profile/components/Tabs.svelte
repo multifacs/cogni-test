@@ -13,9 +13,7 @@
 	} = $props();
 </script>
 
-<ul
-	class="text-body grid gap-1 grid-cols-3 grid-rows-2 text-center text-sm font-medium sm:grid-cols-5 sm:grid-rows-1"
->
+<ul class="text-body flex gap-1 text-center text-sm font-medium">
 	{#each tabs as tab}
 		<li class="me-2">
 			<button
@@ -27,7 +25,9 @@
                 rounded-sm
                 px-4
                 py-2.5
-                text-ellipsis
+                text-sm
+				max-md:text-xs
+				text-ellipsis
                 "
 				class:text-fg-disabled={tab.disabled}
 				class:cursor-not-allowed={tab.disabled}
@@ -43,7 +43,7 @@
 				}}
 				disabled={tab.disabled}
 			>
-				{tab.label}
+				{activeTab === tab.id ? tab.label : tab.label.split(' ')[0]}
 			</button>
 		</li>
 	{/each}

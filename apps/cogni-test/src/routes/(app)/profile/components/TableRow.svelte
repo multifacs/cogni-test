@@ -40,7 +40,7 @@
 		{label}
 	</td>
 
-	<td class="min-w-max px-6 py-4 text-sm text-blue-900">
+	<td class="px-6 py-4 text-sm text-blue-900">
 		{#if type === 'input'}
 			<input
 				type="text"
@@ -60,7 +60,7 @@
 						bind:checked={value}
 						class="h-4 w-4 cursor-pointer rounded-sm border-blue-300 text-blue-600 focus:ring-blue-500"
 					/>
-					<span class="text-blue-900">Да / Нет</span>
+					<span class="text-blue-900">{value ? 'Да' : 'Нет'}</span>
 				</label>
 			{:else}
 				<select
@@ -90,7 +90,7 @@
 		{:else if type === 'custom-choice'}
 			<div class="flex flex-col gap-2">
 				{#each value as row, i}
-					<div class="flex items-center gap-2">
+					<div class="flex items-center gap-2 max-md:flex-col max-md:items-start">
 						<input
 							type="text"
 							bind:value={row.text}
@@ -99,23 +99,25 @@
 							placeholder="Текст"
 						/>
 
-						<select
-							bind:value={row.choice}
-							class="rounded-sm border border-blue-300 bg-white px-2 py-1 text-blue-900
+						<div class="flex gap-2">
+							<select
+								bind:value={row.choice}
+								class="rounded-sm border border-blue-300 bg-white px-2 py-1 text-blue-900
 							outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
-						>
-							{#each options as opt}
-								<option value={opt.value}>{opt.label}</option>
-							{/each}
-						</select>
+							>
+								{#each options as opt}
+									<option value={opt.value}>{opt.label}</option>
+								{/each}
+							</select>
 
-						<button
-							type="button"
-							onclick={() => removeRow(i)}
-							class="cursor-pointer font-bold text-red-500 hover:text-red-600"
-						>
-							✕
-						</button>
+							<button
+								type="button"
+								onclick={() => removeRow(i)}
+								class="cursor-pointer font-bold text-red-500 hover:text-red-600"
+							>
+								✕
+							</button>
+						</div>
 					</div>
 				{/each}
 

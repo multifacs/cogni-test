@@ -12,7 +12,7 @@
 </script>
 
 <h2>Вспомните все три сочетания:</h2>
-<div class="flex w-9/12 flex-col gap-2">
+<div class="flex w-full flex-col gap-2">
 	{#if category === 'words'}
 		<TextInput plain name="input1" bind:value={input1} placeholder="1. Исходное" />
 
