@@ -26,7 +26,7 @@ export const exercises: TestData[] = [
 	},
 	{
   		name: 'nback-stream',
-  		title: 'N-back поток',
+  		title: 'Определение повторов',
   		path: '/exercises/nback-stream/about', 
   		img: '/exercises/n-back.svg' 
 	},
