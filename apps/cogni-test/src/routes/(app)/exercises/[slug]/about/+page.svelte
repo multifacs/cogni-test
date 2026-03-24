@@ -17,7 +17,7 @@
 
 {#if Component}
 	<!-- <main class="main text-justify"> -->
-	<main class="main flex flex-col justify-center gap-4 text-justify">
+	<main class="main flex flex-col items-center gap-4 text-justify">
 		<Component></Component>
 		<!-- <div class="scroll-fade"></div> -->
 	</main>
