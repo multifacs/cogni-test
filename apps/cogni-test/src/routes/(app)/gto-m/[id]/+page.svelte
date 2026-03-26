@@ -1,10 +1,11 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
 	import { tests } from '$lib/tests';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 	let session = data.session;
-	console.log(session);
+    console.log(session);
 
 	function getAvailableTestsData() {
 		let result = [];
@@ -24,6 +25,42 @@
 	}
 
 	const availableTestsData = getAvailableTestsData();
+
+	async function getResults() {
+		if (!session) {
+			console.error('Okay, where is the session?');
+			return;
+		}
+		try {
+			const resp = await fetch('/api/getLastTestResults', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					sessionCreatedAt: session.createdAt,
+					tests: availableTestsData.map((test) => test.name),
+					userId: session.userId
+				})
+			});
+
+			if (!resp.ok) {
+				console.error(resp);
+				return;
+			}
+
+			const data = await resp.json();
+
+			if (data.error) {
+				console.error(data.error);
+				return;
+			}
+
+			console.log(data);
+		} catch (error) {
+			console.error(error);
+		}
+	}
 </script>
 
 <div class="flex flex-col items-center justify-center gap-6 p-8 text-white">
@@ -43,10 +80,11 @@
 					</a>
 				{/each}
 			</div>
-        {:else if data.userId === session.adminId}
-            {#each availableTestsData as test}
-                <h2>Результаты {test.title}:</h2>
-            {/each}
+		{:else if data.userId === session.adminId}
+			{#each availableTestsData as test}
+				<h2>Результаты {test.title}:</h2>
+			{/each}
+			<Button color="blue" onclick={getResults}>Обновить результаты</Button>
 		{/if}
 	{:else}
 		<p>Session not found</p>
