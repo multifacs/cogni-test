@@ -106,7 +106,7 @@
 	</div>
 
 	<!-- <div class="flex flex-col gap-1 hidden"> -->
-	<div class="hidden"></div>
+	<div class="hidden">
 		<label for="password">🔑 Код</label>
 		<PasswordInput required name="password" bind:value={password} placeholder="Код" />
 	</div>
