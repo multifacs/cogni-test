@@ -31,7 +31,7 @@
 </script>
 
 <nav
-	class="fixed bottom-0 z-50 flex w-full justify-around border-t border-gray-700 bg-gray-900 py-2 text-white"
+	class="flex w-full justify-around text-white"
 >
 	{#each paths as path}
 		<a

@@ -41,5 +41,5 @@ export const tests: TestData[] = [
 		title: 'Тест «Ласточка»',
 		path: '/tests/swallow/about',
 		img: '/tests/swallow.svg'
-	},
+	}
 ];

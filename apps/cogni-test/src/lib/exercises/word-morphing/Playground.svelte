@@ -431,7 +431,7 @@
 			</p>
 			<p class="text-white">Для подписки достаточно нажать зелёную кнопочку.</p>
 			<p class="text-white">
-				Вы всегда сможете подписаться или отписаться от push-уведомлений в любое время на
+				Вы сможете подписаться или отписаться от push-уведомлений в любое время на
 				странице профиля.
 			</p>
 			<Button color="green" onclick={subscribe}>Подписаться</Button>
@@ -440,7 +440,7 @@
 	</Modal>
 {/if}
 
-<div class="flex flex-col items-center gap-6">
+<div class="flex flex-col items-center gap-6 w-3/4">
 	{#if phase === 'category-select'}
 		<CategorySelect {selectCategory} />
 	{:else if phase === 'time-select'}
