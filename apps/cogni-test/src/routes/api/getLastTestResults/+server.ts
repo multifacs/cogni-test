@@ -1,31 +1,32 @@
-import { json } from '@sveltejs/kit';
+import { getLastResult } from '$lib/server/db/controllers/result';
+import { produce } from 'sveltekit-sse';
 
 import type { RequestHandler } from './$types';
-import { getLastResult } from '$lib/server/db/controllers/result';
-import type { ResultInfo } from '$lib/tests/types';
+import type { ResultInfo, TestResultMap } from '$lib/tests/types';
 
-export const POST: RequestHandler = async ({ request }) => {
-	const { sessionCreatedAt, tests, userId } = await request.json();
+async function getLastResults(sessionCreatedAt: string, tests: string[], userId: string) {
+	let results: Record<string, ResultInfo<any>> = {};
+
 	if (!sessionCreatedAt) {
-		return json({ error: 'Session created at is required' }, { status: 400 });
+		console.error('sessionCreatedAt is null');
+		return results;
 	}
 
 	if (!tests) {
-		return json({ error: 'Tests is required' }, { status: 400 });
+		console.error('tests is null');
+		return results;
 	}
 
 	if (!userId) {
-		return json({ error: 'UserId is required' }, { status: 400 });
+		console.error('userId is null');
+		return results;
 	}
-
-	let results: Record<string, ResultInfo<any>> = {};
 
 	for (const test of tests) {
 		try {
-			const res = await getLastResult(test, userId);
+			const res = await getLastResult((test as keyof TestResultMap), userId);
 
 			if (!res) {
-				console.log(`No results for ${test}`);
 				continue;
 			}
 
@@ -33,7 +34,6 @@ export const POST: RequestHandler = async ({ request }) => {
 			const sessionCreatedAtDate = new Date(sessionCreatedAt);
 
 			if (resCreatedAtDate.getTime() < sessionCreatedAtDate.getTime()) {
-				console.log(`Results for ${test} is too old`);
 				continue;
 			}
 
@@ -44,5 +44,29 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 	}
 
-	return json({ success: true, results });
+	return results;
+}
+
+export const POST: RequestHandler = async ({ request }) => {
+	const { sessionCreatedAt, tests, userId } = await request.json();
+
+	return produce(async function start({ emit }) {
+		let interval = setInterval(async () => {
+			let results = await getLastResults(sessionCreatedAt, tests, userId);
+			console.log('results from db:', results);
+
+			const { error } = emit('message', JSON.stringify(results));
+            console.log("sent to client:", JSON.stringify(results));
+			if (error) {
+                console.error('Error sending results to client:', error);
+				return function cancel() {
+					clearInterval(interval);
+				};
+			}
+		}, 5000);
+
+		return function cancel() {
+			clearInterval(interval);
+		};
+	});
 };

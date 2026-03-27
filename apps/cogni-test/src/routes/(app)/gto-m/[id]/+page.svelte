@@ -1,11 +1,25 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
 	import { tests } from '$lib/tests';
+	import { source } from 'sveltekit-sse';
 	import type { PageProps } from './$types';
+	import type { ResultInfo } from '$lib/tests/types';
 
 	let { data }: PageProps = $props();
 	let session = data.session;
-    console.log(session);
+
+	const availableTestsData = getAvailableTestsData();
+
+	const connection = source('/api/getLastTestResults', {
+		options: {
+			body: JSON.stringify({
+				sessionCreatedAt: session?.createdAt,
+				tests: availableTestsData.map((test) => test.name),
+				userId: session?.userId
+			})
+		}
+	});
+
+	const results = connection.select('message').json<Record<string, ResultInfo<any>>>();
 
 	function getAvailableTestsData() {
 		let result = [];
@@ -23,46 +37,9 @@
 
 		return result;
 	}
-
-	const availableTestsData = getAvailableTestsData();
-
-	async function getResults() {
-		if (!session) {
-			console.error('Okay, where is the session?');
-			return;
-		}
-		try {
-			const resp = await fetch('/api/getLastTestResults', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					sessionCreatedAt: session.createdAt,
-					tests: availableTestsData.map((test) => test.name),
-					userId: session.userId
-				})
-			});
-
-			if (!resp.ok) {
-				console.error(resp);
-				return;
-			}
-
-			const data = await resp.json();
-
-			if (data.error) {
-				console.error(data.error);
-				return;
-			}
-
-			console.log(data);
-		} catch (error) {
-			console.error(error);
-		}
-	}
 </script>
 
+<!-- TODO: would it be better to separate into components or snippets? -->
 <div class="flex flex-col items-center justify-center gap-6 p-8 text-white">
 	{#if session}
 		{#if data.userId === session.userId}
@@ -83,8 +60,11 @@
 		{:else if data.userId === session.adminId}
 			{#each availableTestsData as test}
 				<h2>Результаты {test.title}:</h2>
+				{#if $results}
+                    <!-- TODO: parse the results -->
+					<pre>{JSON.stringify($results[test.name].attempts)}</pre>
+				{/if}
 			{/each}
-			<Button color="blue" onclick={getResults}>Обновить результаты</Button>
 		{/if}
 	{:else}
 		<p>Session not found</p>
