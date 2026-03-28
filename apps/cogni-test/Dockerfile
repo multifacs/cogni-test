@@ -32,5 +32,7 @@ COPY --from=builder /app/src/lib ./src/lib
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/index.js ./
 
+EXPOSE 80
+
 # Запускаем сервер
 CMD ["/bin/sh", "-c", "npm i --omit=dev && npx drizzle-kit push --force && node index.js"]
