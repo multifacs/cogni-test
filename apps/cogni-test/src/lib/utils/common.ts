@@ -1,9 +1,9 @@
 export function translate(word: string): string {
 	const dict: Record<string, string> = {
 		red: 'Красный',
-		cyan: 'Бирюзовый',
+		cyan: 'Голубой',
 		green: 'Зеленый',
-		magenta: 'Пурпурный',
+		magenta: 'Розовый',
 		blue: 'Синий',
 		yellow: 'Желтый',
 		stage: 'Этап',
@@ -14,8 +14,8 @@ export function translate(word: string): string {
 
 		black: 'чёрный',
 		white: 'белый',
-		'dark-magenta': 'тёмно-пурпурный',
-		'light-magenta': 'светло-пурпурный',
+		'dark-magenta': 'тёмно-розовый',
+		'light-magenta': 'светло-розовый',
 		'dark-blue': 'тёмно-синий',
 		'light-blue': 'светло-синий',
 		'dark-green': 'тёмно-зелёный',
