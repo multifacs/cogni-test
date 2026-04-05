@@ -19,9 +19,9 @@
 
 	const colors: Record<string, Color> = {
 		Красный: 'red',
-		Бирюзовый: 'cyan',
+		Голубой: 'cyan',
 		Синий: 'blue',
-		Пурпурный: 'magenta',
+		Розовый: 'magenta',
 		Зеленый: 'green',
 		Желтый: 'yellow'
 	};
