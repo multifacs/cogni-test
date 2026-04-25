@@ -10,7 +10,7 @@ export class GameState {
 	private currentRight: number | null = $state(1);
 
 	private score = 0;
-	DURATION = 3;
+	DURATION = 5;
 	private timeLeft = $state(this.DURATION);
 	private showResults = $state(false);
 	private timer: ReturnType<typeof setInterval> | null = null;

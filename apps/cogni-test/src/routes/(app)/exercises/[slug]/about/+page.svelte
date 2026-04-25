@@ -16,31 +16,33 @@
 </script>
 
 {#if Component}
-	<div
-		class="scroll-container group max-xs:text-xs xs:text-base min-h-0 shrink grow-0 overflow-y-auto px-2"
-	>
+	<!-- <main class="main text-justify"> -->
+	<main class="main flex flex-col items-center gap-4 text-justify">
 		<Component></Component>
-		<div class="scroll-fade"></div>
-	</div>
+		<!-- <div class="scroll-fade"></div> -->
+	</main>
+
 	{#if page.url.pathname.includes('road-trip') || page.url.pathname.includes('not-lost')}
-		<div
-			class="	controls
-  mb-2 flex items-center justify-center"
-		>
+		<section class="low-content grid grid-cols-3 gap-4">
+			<div></div>
 			<Button color="red" goto="/exercises">Назад</Button>
-		</div>
+			<div></div>
+		</section>
 	{:else}
-		<div
-			class="	controls
-  flex items-center justify-center gap-2.5"
-		>
-			<Button color="green" goto={`/exercises/${slug}/playground`}>Начать</Button>
+		<section class="low-content grid grid-cols-2 gap-4">
 			<Button color="red" goto="/exercises">Назад</Button>
-		</div>
+			<Button color="green" goto={`/exercises/${slug}/playground`}>Начать</Button>
+		</section>
 	{/if}
 {:else}
-	<Spinner></Spinner>
-	<p>Загрузка теста {slug}...</p>
+	<main class="main flex flex-col items-center justify-center gap-4">
+		<Spinner></Spinner>
+		<p>Загрузка упражнения {slug}...</p>
+	</main>
+
+	<section class="low-content flex justify-center gap-2 align-middle">
+		<Button color="red" goto="/exercises">Назад</Button>
+	</section>
 {/if}
 
 <style>

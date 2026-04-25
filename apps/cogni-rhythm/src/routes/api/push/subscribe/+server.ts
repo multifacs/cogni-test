@@ -2,10 +2,11 @@
 import { json } from '@sveltejs/kit';
 import { webpush } from '$lib/server/webpush.js';
 import { PushSubscriptionService } from '$lib/server/pushSubscriptionService.js';
+import type { RequestHandler } from '@sveltejs/kit';
 
 const subscriptionService = new PushSubscriptionService();
 
-export async function POST({ request, cookies }) {
+export const POST: RequestHandler = async ({ request, cookies }) => {
 	try {
 		const subscription = await request.json();
 		const userAgent = request.headers.get('user-agent');

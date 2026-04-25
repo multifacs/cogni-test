@@ -118,6 +118,7 @@
 	max-xs:text-base
 	max-xs:p-1
 	xs:p-2.5
+	p-2
 	block
 	w-full
     rounded-lg

@@ -2,10 +2,11 @@
 import { json } from '@sveltejs/kit';
 import { webpush } from '$lib/server/webpush.js';
 import { PushSubscriptionService } from '$lib/server/pushSubscriptionService.js';
+import type { RequestHandler } from './$types';
 
 const subscriptionService = new PushSubscriptionService();
 
-export async function POST({ request }) {
+export const POST: RequestHandler = async ({ request }) => {
 	try {
 		const { title, body, icon, data } = await request.json();
 
@@ -23,7 +24,7 @@ export async function POST({ request }) {
 			try {
 				await webpush.sendNotification(subscription, payload);
 				return { success: true, endpoint: subscription.endpoint };
-			} catch (error) {
+			} catch (error: any) {
 				console.error('Failed to send to:', subscription.endpoint, error);
 
 				// Handle expired subscriptions

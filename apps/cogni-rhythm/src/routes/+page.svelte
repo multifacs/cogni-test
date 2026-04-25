@@ -9,13 +9,11 @@
 	import TextInput from '$lib/components/ui/login-form/TextInput.svelte';
 	import PasswordInput from '$lib/components/ui/login-form/PasswordInput.svelte';
 
-	import { PUBLIC_PASSWORD } from '$env/static/public';
-
 	let firstname = $state('');
 	let lastname = $state('');
 	let birthdate = $state('31.01.2001');
 	let sex = $state<'male' | 'female'>('male');
-	let password = $state('');
+	let password = $state('261180');
 
 	let firstnameError = $state('');
 	let lastnameError = $state('');
@@ -34,7 +32,14 @@
 		);
 	}
 
-	const hashedSecurePassword = PUBLIC_PASSWORD || 261180;
+	import { env } from '$env/dynamic/public'; 
+	// const { PUBLIC_PASSWORD } = await ;
+	let hashedSecurePassword = 261180;
+	if (env.PUBLIC_PASSWORD) {
+		hashedSecurePassword = parseInt(env.PUBLIC_PASSWORD);
+	} else {
+		console.error('PUBLIC_PASSWORD not found in environment variables');
+	}
 
 	async function handleSubmit() {
 		const userId = crypto.randomUUID();
@@ -100,7 +105,8 @@
 		<label><input type="radio" name="sex" bind:group={sex} value="female" /> Женский</label>
 	</div>
 
-	<div class="flex flex-col gap-1">
+	<!-- <div class="flex flex-col gap-1 hidden"> -->
+	<div class="hidden">
 		<label for="password">🔑 Код</label>
 		<PasswordInput required name="password" bind:value={password} placeholder="Код" />
 	</div>

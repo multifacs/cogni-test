@@ -2,7 +2,9 @@
 	import Button from '$lib/components/ui/Button.svelte';
 </script>
 
-<section class="mx-auto max-w-3xl space-y-4 p-6 text-justify text-sm leading-relaxed text-white">
+<section
+	class="mx-auto flex max-w-3xl flex-col items-center space-y-4 p-6 text-justify text-sm leading-relaxed text-white gap-2 overflow-scroll"
+>
 	<h1 class="mb-6 text-center text-2xl font-semibold">
 		Согласие на участие в исследовании и обработку персональных данных
 	</h1>

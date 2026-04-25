@@ -1,5 +1,7 @@
 import { exercises } from '$lib/exercises';
-export function load({ params }) {
+import type { LayoutServerLoad } from './$types';
+
+export const load: LayoutServerLoad = ({ params }) => {
 	const slug = params.slug;
 	return {
 		slug,

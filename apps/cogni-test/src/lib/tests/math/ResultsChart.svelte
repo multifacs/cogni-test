@@ -82,6 +82,7 @@
 			},
 			options: {
 				onHover: function (event, chartElements) {
+					// @ts-ignore
 					const target = event.native ? event.native.target : event.chart.canvas;
 					target.style.cursor = chartElements.length ? 'pointer' : 'default';
 				},
@@ -94,18 +95,17 @@
 					tooltip: {
 						callbacks: {
 							title: (context) => {
-								const value = context[0].raw;
-								const raw = value.raw;
+								const value = context[0].raw as Result;
+								const raw = value.raw as MathResult;
 								return `${raw.left} ${raw.sign} ${raw.right}`;
 							},
 							afterTitle: (context) => {
-								const value = context[0].raw;
-								const raw = value.raw;
+								const value = context[0].raw as Result;
+								const raw = value.raw as MathResult;
 								return `Ответ: ${raw.userAnswer ? 'да' : 'нет'}`;
 							},
 							label: function (context) {
-								const value = context.raw;
-								const raw = value.raw;
+								const value = context.raw as Result;
 								const isCorrect = value.isCorrect;
 								const status = isCorrect ? 'Верно' : 'Неверно';
 								return `Реакция: ${value.y} мс (${status})`;
@@ -119,9 +119,13 @@
 					legend: {
 						labels: {
 							usePointStyle: true,
+							// @ts-ignore
 							generateLabels: (chart) => {
-								const original = Chart.defaults.plugins.legend.labels.generateLabels(chart);
-								console.log(Chart.defaults.plugins.legend.labels.generateLabels(chart));
+								const original =
+									Chart.defaults.plugins.legend.labels.generateLabels(chart);
+								console.log(
+									Chart.defaults.plugins.legend.labels.generateLabels(chart)
+								);
 								const fontColor = original[0]['fontColor'];
 								const strokeStyle = original[0]['strokeStyle'];
 								const newLabels = [];
@@ -190,12 +194,13 @@
 							maxRotation: 90,
 							minRotation: 90,
 							callback: (idx) =>
-								`${parsedResults[idx].raw.left}\uFEFF${parsedResults[idx].raw.sign}\uFEFF${parsedResults[idx].raw.right}`.replace(
+								`${(parsedResults[idx as number].raw as MathResult).left}\uFEFF${(parsedResults[idx as number].raw as MathResult).sign}\uFEFF${(parsedResults[idx as number].raw as MathResult).right}`.replace(
 									/-/g,
 									'\u2043'
 								),
 							color: (ctx) => {
-								const color = parsedResults[ctx.index].raw.correctAnswer
+								const color = (parsedResults[ctx.index].raw as MathResult)
+									.correctAnswer
 									? '--color-green-500'
 									: '--color-red-400';
 								return getCSSVar(color);

@@ -80,6 +80,7 @@
 			},
 			options: {
 				onHover: function (event, chartElements) {
+                    // @ts-ignore
 					const target = event.native ? event.native.target : event.chart.canvas;
 					target.style.cursor = chartElements.length ? 'pointer' : 'default';
 				},
@@ -88,18 +89,16 @@
 					tooltip: {
 						callbacks: {
 							title: (context) => {
-								const value = context[0].raw;
-								const raw = value.raw;
+								const value = context[0].raw as Result;
 								return `Слово ${value.x}`;
 							},
 							afterTitle: (context) => {
-								const value = context[0].raw;
-								const raw = value.raw;
+								const value = context[0].raw as Result;
+								const raw = value.raw as MemoryResult;
 								return raw.word;
 							},
 							label: function (context) {
-								const value = context.raw;
-								const raw = value.raw;
+								const value = context.raw as Result;
 								const isCorrect = value.isCorrect;
 								const status = isCorrect ? 'Верно' : 'Неверно';
 								return `Реакция: ${value.y} мс (${status})`;
@@ -110,6 +109,7 @@
 					legend: {
 						labels: {
 							usePointStyle: true,
+                            // @ts-ignore
 							generateLabels: (chart) => {
 								const original = Chart.defaults.plugins.legend.labels.generateLabels(chart);
 								console.log(Chart.defaults.plugins.legend.labels.generateLabels(chart));
@@ -173,9 +173,9 @@
 							text: 'Попытки'
 						},
 						ticks: {
-							callback: (idx) => parsedResults[idx].raw.word,
+							callback: (idx) => (parsedResults[idx as number].raw as MemoryResult).word,
 							color: (ctx) => {
-								const color = parsedResults[ctx.index].raw.correctAnswer
+								const color = (parsedResults[ctx.index].raw as MemoryResult).correctAnswer
 									? '--color-green-500'
 									: '--color-red-400';
 								return getCSSVar(color);

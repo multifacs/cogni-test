@@ -10,12 +10,12 @@ import {
 	rhythmAttempt,
 	memoryMatchAttempt
 } from '$lib/server/db/models/tests';
-import type { MetaResult, RegularResult, TestResultMap } from '$lib/tests/types';
+import type { MetaResult, RegularResults, TestResultMap, TestType } from '$lib/tests/types';
 import short from 'short-uuid';
 
-export async function postResult<T extends keyof TestResultMap>(
-	results: RegularResult<T> | MetaResult<T>,
-	testType: T,
+export async function postResult(
+	results: RegularResults | MetaResult,
+	testType: TestType,
 	userId: string
 ): Promise<string> {
 	const hasMeta = 'meta' in results;
@@ -45,6 +45,7 @@ export async function postResult<T extends keyof TestResultMap>(
 
 	if (!insertAttempt) throw new Error(`Unknown test type: ${testType}`);
 
+
 	await db.insert(insertAttempt).values(
 		attempts.map((attempt) => ({
 			...attempt,
@@ -58,10 +59,10 @@ export async function postResult<T extends keyof TestResultMap>(
 import type { ResultInfo } from '$lib/tests/types';
 import { eq, asc, desc } from 'drizzle-orm';
 
-export async function getResults<T extends keyof TestResultMap>(
-	testType: T,
+export async function getResults(
+	testType: TestType,
 	userId: string
-): Promise<ResultInfo<T>[]> {
+): Promise<ResultInfo[]> {
 	const sessions = await db.query.session.findMany({
 		where: (fields, { eq, and }) => and(eq(fields.testType, testType), eq(fields.userId, userId)),
 		orderBy: (fields, { desc }) => desc(fields.createdAt)
@@ -78,7 +79,7 @@ export async function getResults<T extends keyof TestResultMap>(
 		memoryMatch: db.query.memoryMatchAttempt
 	}[testType] as typeof db.query.campimetryAttempt;
 
-	const results: ResultInfo<T>[] = [];
+	const results: ResultInfo[] = [];
 
 	for (const s of sessions) {
 		const attempts = await attemptTable.findMany({
@@ -89,6 +90,7 @@ export async function getResults<T extends keyof TestResultMap>(
 		results.push({
 			sessionId: s.id,
 			createdAt: s.createdAt,
+            // @ts-ignore
 			attempts,
 			meta: s.meta ? JSON.parse(s.meta) : undefined
 		});
@@ -100,7 +102,7 @@ export async function getResults<T extends keyof TestResultMap>(
 export async function getLastResult<T extends keyof TestResultMap>(
 	testType: T,
 	userId: string
-): Promise<ResultInfo<T> | null> {
+): Promise<ResultInfo | null> {
 	const all = await getResults(testType, userId);
 	return all[0] ?? null;
 }

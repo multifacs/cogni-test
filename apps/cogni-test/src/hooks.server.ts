@@ -7,6 +7,10 @@ import { webpush } from '$lib/server/webpush';
 import { eq, and, lte } from 'drizzle-orm';
 import { formatDateLog } from '$lib/utils';
 
+declare global {
+	var __notification_worker__: NodeJS.Timeout | null;
+}
+
 export async function processScheduledNotifications() {
 	try {
 		const now = new Date();
@@ -90,7 +94,7 @@ export async function processScheduledNotifications() {
 						notificationId: notification.id,
 						endpoint: subscription.endpoint
 					};
-				} catch (error) {
+				} catch (error: any) {
 					console.error('Failed to send scheduled notification:', notification.id, error);
 
 					// Handle expired subscriptions
@@ -141,6 +145,7 @@ let isProcessing = false;
 // Use globalThis to persist across HMR
 const WORKER_KEY = '__notification_worker__';
 
+
 // Worker function that runs every 3 seconds
 function startWorker() {
 	// Check if worker already exists globally
@@ -157,7 +162,7 @@ function startWorker() {
 
 		process.stdin.on('data', (key) => {
 			// Handle Ctrl+C
-			if (key === '\u0003') {
+			if (key.toString() === '\u0003') {
 				console.log('Ctrl+C pressed, shutting down...');
 				if (workerInterval) {
 					clearInterval(workerInterval);

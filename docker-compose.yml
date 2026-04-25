@@ -8,15 +8,13 @@ services:
       - "443:443"
     volumes:
       - /root/cogni-test/certs:/etc/ssl/new-certs:ro
-      - /etc/ssl/private/cogni-test.ru_private_key.pem:/etc/ssl/private/cogni-test.ru_private_key.pem:ro
-      - /etc/ssl/certs/cogni-test.ru_cert.pem:/etc/ssl/certs/cogni-test.ru_cert.pem:ro
     networks:
       - cogni-network
 
-  cogni-dev:
+  cogni-test-dev:
     build:
       context: ./apps/cogni-test
-    image: ghcr.io/multifacs/cogni-test/app-dev:latest
+    image: ghcr.io/multifacs/cogni-test/cogni-test:dev
     profiles:
       - "dev"
     container_name: cogni-test-dev
@@ -36,10 +34,10 @@ services:
     stdin_open: true  # -i
     tty: true         # -t
 
-  cogni:
+  cogni-test:
     build:
       context: ./apps/cogni-test
-    image: ghcr.io/multifacs/cogni-test/app:latest
+    image: ghcr.io/multifacs/cogni-test/cogni-test:latest
     profiles:
       - "prod"
     container_name: cogni-test
@@ -59,10 +57,10 @@ services:
     stdin_open: true  # -i
     tty: true         # -t
 
-  rhythm-dev:
+  cogni-rhythm-dev:
     build:
       context: ./apps/cogni-rhythm
-    image: ghcr.io/multifacs/cogni-test/rhythm-dev:latest
+    image: ghcr.io/multifacs/cogni-test/cogni-rhythm:dev
     profiles:
       - "rhythm-dev"
     container_name: cogni-rhythm-dev
@@ -82,10 +80,10 @@ services:
     stdin_open: true  # -i
     tty: true         # -t
 
-  rhythm:
+  cogni-rhythm:
     build:
       context: ./apps/cogni-rhythm
-    image: ghcr.io/multifacs/cogni-test/rhythm:latest
+    image: ghcr.io/multifacs/cogni-test/cogni-rhythm:latest
     profiles:
       - "rhythm-prod"
     container_name: cogni-rhythm

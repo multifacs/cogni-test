@@ -46,8 +46,8 @@ export const mathAttempt = sqliteTable(
 	'math_attempt',
 	{
 		id: text('id').primaryKey().$defaultFn(short.generate),
+        stage: integer('stage').notNull(),
 		attempt: integer('attempt').notNull(),
-		stage: integer('stage').notNull(),
 		time: integer('time').notNull(),
 		left: text('left').notNull(),
 		sign: text('sign').notNull(),

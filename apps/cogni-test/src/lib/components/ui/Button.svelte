@@ -3,7 +3,25 @@
 	import type { Snippet } from 'svelte';
 	import type { MouseEventHandler } from 'svelte/elements';
 
-	type ButtonColor = 'red' | 'blue' | 'green' | 'gray' | 'yellow' | 'purple' | 'pink' | 'indigo' | 'teal' | 'orange' | 'cyan' | 'lime' | 'amber' | 'emerald' | 'sky' | 'violet' | 'fuchsia' | 'rose';
+	type ButtonColor =
+		| 'red'
+		| 'blue'
+		| 'green'
+		| 'gray'
+		| 'yellow'
+		| 'purple'
+		| 'pink'
+		| 'indigo'
+		| 'teal'
+		| 'orange'
+		| 'cyan'
+		| 'lime'
+		| 'amber'
+		| 'emerald'
+		| 'sky'
+		| 'violet'
+		| 'fuchsia'
+		| 'rose';
 	type OnclickType = MouseEventHandler<HTMLButtonElement> | null | undefined;
 	type TypeType = 'button' | 'submit' | 'reset' | null | undefined;
 	let {
@@ -14,7 +32,8 @@
 		goto = undefined,
 		disabled = false,
 		type = null,
-		class: className = ''
+		class: className = '',
+		style: styleName = ''
 	}: {
 		kind?: string;
 		color: ButtonColor;
@@ -24,6 +43,7 @@
 		disabled?: boolean;
 		type?: TypeType;
 		class?: string;
+		style?: string;
 	} = $props();
 
 	if (goto) {
@@ -154,22 +174,15 @@
 </script>
 
 <button
+	style={`${styleName}`}
 	class={`
 	cursor-pointer
-	rounded-full
 	active:scale-95
 	active:ring-2
 	active:ring-white/50
 	${colorClasses[disabled ? 'gray' : color].bg}
-	max-xs:text-xs
-	xs:text-base
-	xs:max-lg:landscape:text-xs
 	touch-none
-	px-4
-	py-2
-	text-center
 	text-white
-	shadow-md
 	transition
 	duration-200
 	ease-in
@@ -179,8 +192,18 @@
 	${colorClasses[color].ring}
 	focus:ring-offset-2
 	${colorClasses[color].offset}
-	focus:outline-none
 	${className}
+	items-center
+	gap-x-2
+	rounded-lg
+	px-4
+	py-3
+	text-sm
+	font-medium
+	focus:outline-hidden
+	disabled:pointer-events-none
+	disabled:opacity-50
+	text-center
 	`}
 	{onclick}
 	{disabled}

@@ -4,7 +4,6 @@ import type { MunsterbergResult } from './munsterberg/types';
 import type { MemoryResult } from './memory/types';
 import type { SwallowResult } from './swallow/types';
 import type { CampimetryResult } from './campimetry/types';
-import type { RhythmResult } from './rhythm/types';
 
 export { type TestData } from './index';
 
@@ -15,19 +14,41 @@ export type TestResultMap = {
 	memory: MemoryResult;
 	swallow: SwallowResult;
 	campimetry: CampimetryResult;
-	rhythm: RhythmResult;
 	// можно добавлять дальше
 };
 
-export type ResultInfo<T extends keyof TestResultMap> = {
+export type TestType =
+	| 'math'
+	| 'stroop'
+	| 'munsterberg'
+	| 'memory'
+	| 'swallow'
+	| 'campimetry'
+
+export type RegularResult =
+	| StroopResult
+	| MathResult
+	| MunsterbergResult
+	| MemoryResult
+	| SwallowResult
+	| CampimetryResult
+
+export type RegularResults =
+	| StroopResult[]
+	| MathResult[]
+	| MunsterbergResult[]
+	| MemoryResult[]
+	| SwallowResult[]
+	| CampimetryResult[];
+
+export type ResultInfo = {
 	sessionId: string;
 	createdAt: string;
-	attempts: TestResultMap[T][];
+	attempts: RegularResults;
 };
 
-export type RegularResult<T extends keyof TestResultMap> = TestResultMap[T][];
-export interface MetaResult<T extends keyof TestResultMap> {
-	results: TestResultMap[T][];
+export interface MetaResult {
+	results: RegularResults;
 	meta: string[];
 }
 
