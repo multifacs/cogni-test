@@ -86,7 +86,7 @@
 	const tabs = [
 		{ id: 'tab1', label: '😀 Основное' },
 		{ id: 'tab2', label: '🎓 Образование' },
-		{ id: 'tab3', label: '💃 Хобби' },
+		{ id: 'tab3', label: '💃 Занятия' },
 		{ id: 'tab4', label: '💪 Тело' },
 		{ id: 'tab5', label: '⚙️ Настройки' }
 	];
@@ -135,21 +135,59 @@
 							>
 								<Autocomplete></Autocomplete>
 							</TableRow>
+							<TableRow
+								label="Текущее место проживания"
+								type="choice"
+								options={[
+									{
+										label: 'Столичный город (Москва или Санкт-Петербург)',
+										value: 'capital'
+									},
+									{ label: 'Областной центр', value: 'municipality' },
+									{ label: 'Районный центр', value: 'city' },
+									{
+										label: 'Малый город или поселок городского типа',
+										value: 'town'
+									},
+									{ label: 'Деревня/село', value: 'village' }
+								]}
+								value="capital"
+							></TableRow>
 						</Table>
 					</div>
 
 					<div class:hidden={activeTab !== 'tab2'}>
 						<Table>
 							<TableRow
-								label="Есть ли у вас высшее образование?"
+								label="Какое у вас образование?"
 								type="choice"
-								isBoolean={true}
-							/>
-							<TableRow
-								label="Cколько лет вы посвятили обучению (включая школу, среднее, высшее и дополнительное образование)?"
-								type="range"
-								min={0}
-								max={50}
+								options={[
+									{
+										label: 'Без образования, начальное, неполное среднее',
+										value: 'none'
+									},
+									{ label: 'Среднее общее', value: 'highschool' },
+									{
+										label: 'Среднее специальное – ПТУ, СПТУ, колледж',
+										value: 'associate'
+									},
+									{
+										label: 'Среднее техническое – техникум',
+										value: 'vocational'
+									},
+									{
+										label: 'Незаконченное высшее – не менее 3 курсов вуза',
+										value: 'undergrad'
+									},
+									{
+										label: 'Высшее – специалист, бакалавр, магистр',
+										value: 'graduate'
+									},
+									{
+										label: 'Высшее научное – аспирантура, кандидат или доктор наук',
+										value: 'phd'
+									}
+								]}
 							/>
 							<TableRow
 								label="Сколько лет вашей основной деятельностью была работа, не требующая особой квалификации (охранник, официант, садовник, уборщик и т.д.)?"
@@ -185,6 +223,78 @@
 					</div>
 					<div class:hidden={activeTab !== 'tab3'}>
 						<Table>
+							<TableRow
+								label="Какой из предложенных ниже вариантов лучше всего описывает ваше основное занятие в настоящее время?"
+								value={''}
+							/>
+							<TableRow
+								label="Какой из предложенных ниже вариантов лучше всего описывает ваше основное занятие в настоящее время?"
+								type="choice"
+								options={[
+									{
+										label: 'Ученик средней школы, гимназии, ПТУ, профессионального училища, профессионального лицея, техникума, колледжа',
+										value: 'student'
+									},
+									{ label: 'Студент дневного вуза', value: 'uni_student' },
+									{ label: 'Работаю', value: 'employed' },
+									{
+										label: 'Не работаю по состоянию здоровья, инвалид',
+										value: 'disabled'
+									},
+									{
+										label: 'Веду домашнее хозяйство, ухаживаю за другими членами семьи, воспитываю детей',
+										value: 'homemaker'
+									},
+									{ label: 'Пенсионер', value: 'retiree' },
+									{ label: 'Другое', value: 'other' }
+								]}
+							/>
+							<TableRow
+								label="К какой категории можно отнести вашу должность на основном месте работы?"
+								type="choice"
+								options={[
+									{
+										label: 'Бизнесмен, предприниматель',
+										value: 'business_owner'
+									},
+									{
+										label: 'Руководитель высшего звена, управленец',
+										value: 'executive'
+									},
+									{
+										label: 'Руководитель среднего звена (мастер, бригадир, начальник отдела и др.)',
+										value: 'middle_manager'
+									},
+									{ label: 'Военнослужащий', value: 'military' },
+									{
+										label: 'Сотрудник органов внутренних дел',
+										value: 'law_enforcement'
+									},
+									{ label: 'Учитель, воспитатель', value: 'teacher' },
+									{
+										label: 'Сотрудник государственного и муниципального управления',
+										value: 'civil_servant'
+									},
+									{
+										label: 'Врач, работник здравоохранения',
+										value: 'healthcare'
+									},
+									{
+										label: 'Представитель творческой интеллигенции (актер, музыкант, художник и др.)',
+										value: 'creative_professional'
+									},
+									{
+										label: 'Преподаватель вуза, научный работник',
+										value: 'academic'
+									},
+									{
+										label: 'Служащий, специалист предприятия, организации',
+										value: 'office_employee'
+									},
+									{ label: 'Рабочий', value: 'worker' },
+									{ label: 'Другое', value: 'other_profession' }
+								]}
+							/>
 							<TableRow
 								label="Укажите какими из представленных дел вы занимаетесь еженедельно:"
 								value={''}
@@ -413,10 +523,11 @@
 	<h1 class="mb-4 text-2xl font-bold">Профиль</h1>
 </section>
 
-<section class="low-content grid grid-cols-3 gap-4">
+<section class="low-content grid grid-cols-4 gap-4">
 	<div></div>
-	<form class="grid w-full grid-cols-1" method="POST" action="/?/logout" use:enhance>
-		<Button type="submit" kind="small" color="red">Выйти</Button>
+	<form class="" method="POST" action="/?/logout" use:enhance>
+		<Button class="w-full" type="submit" kind="small" color="red">Выйти</Button>
 	</form>
+	<Button type="submit" kind="small" color="green" disabled>Сохранить</Button>
 	<div></div>
 </section>
