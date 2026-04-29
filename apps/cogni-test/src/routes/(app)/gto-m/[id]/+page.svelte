@@ -19,7 +19,8 @@
 		}
 	});
 
-	const results = connection.select('message').json<Record<string, ResultInfo<any>>>();
+	const results = connection.select('message').json<Record<string, ResultInfo>>();
+    console.log('results', $results);
 
 	function getAvailableTestsData() {
 		let result = [];
@@ -61,8 +62,10 @@
 			{#each availableTestsData as test}
 				<h2>Результаты {test.title}:</h2>
 				{#if $results}
-                    <!-- TODO: parse the results -->
-					<pre>{JSON.stringify($results[test.name].attempts)}</pre>
+                    {#if $results[test.name].attempts}
+                        <!-- TODO: parse the results -->
+                        <pre>{JSON.stringify($results[test.name].attempts[0].attempt)}</pre>
+                    {/if}
 				{/if}
 			{/each}
 		{/if}

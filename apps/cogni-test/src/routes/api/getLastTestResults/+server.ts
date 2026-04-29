@@ -5,7 +5,7 @@ import type { RequestHandler } from './$types';
 import type { ResultInfo, TestResultMap } from '$lib/tests/types';
 
 async function getLastResults(sessionCreatedAt: string, tests: string[], userId: string) {
-	let results: Record<string, ResultInfo<any>> = {};
+	let results: Record<string, ResultInfo> = {};
 
 	if (!sessionCreatedAt) {
 		console.error('sessionCreatedAt is null');
@@ -25,6 +25,7 @@ async function getLastResults(sessionCreatedAt: string, tests: string[], userId:
 	for (const test of tests) {
 		try {
 			const res = await getLastResult((test as keyof TestResultMap), userId);
+            console.log('called getLastResult for', test, '. Result:', res);
 
 			if (!res) {
 				continue;
@@ -33,11 +34,13 @@ async function getLastResults(sessionCreatedAt: string, tests: string[], userId:
 			const resCreatedAtDate = new Date(res.createdAt);
 			const sessionCreatedAtDate = new Date(sessionCreatedAt);
 
-			if (resCreatedAtDate.getTime() < sessionCreatedAtDate.getTime()) {
+			if (resCreatedAtDate.getTime() > sessionCreatedAtDate.getTime()) {
+                console.log('result is older than session', test, res);
 				continue;
 			}
 
 			results[test] = res;
+            console.log('added result', test, res);
 		} catch (error) {
 			console.error(error);
 			continue;
