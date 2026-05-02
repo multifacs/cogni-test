@@ -35,12 +35,16 @@
 	}
 </script>
 
-<tr class="transition-colors odd:bg-blue-50 even:bg-blue-100 hover:bg-blue-200">
-	<td class="px-6 py-4 text-sm font-medium whitespace-break-spaces text-blue-900">
+<tr
+	class="transition-colors odd:bg-blue-50 even:bg-blue-100 hover:bg-blue-200 max-md:flex max-md:flex-col max-md:items-start"
+>
+	<td
+		class="max-w-[50%] px-6 py-4 max-md:py-2 text-sm font-medium whitespace-break-spaces text-blue-900 max-md:max-w-full"
+	>
 		{label}
 	</td>
 
-	<td class="px-6 py-4 text-sm text-blue-900">
+	<td class="max-w-[50%] px-6 py-4 text-sm text-blue-900 max-md:max-w-full">
 		{#if type === 'input'}
 			<input
 				type="text"
@@ -54,19 +58,19 @@
 			{value}
 		{:else if type === 'choice'}
 			{#if isBoolean}
-				<label class="flex items-center gap-2">
-					<input
-						type="checkbox"
-						bind:checked={value}
-						class="h-4 w-4 cursor-pointer rounded-sm border-blue-300 text-blue-600 focus:ring-blue-500"
-					/>
-					<span class="text-blue-900">{value ? 'Да' : 'Нет'}</span>
-				</label>
+				<select
+					bind:value
+					class="w-full rounded-sm border border-blue-300 bg-white px-3 py-2 text-blue-900
+					transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400"
+				>
+					<option value="false">Нет</option>
+					<option value="true">Да</option>
+				</select>
 			{:else}
 				<select
 					bind:value
-					class="w-full min-w-max rounded-sm border border-blue-300 bg-white px-3 py-2 text-blue-900
-					transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400"
+					class="w-full truncate rounded-sm border border-blue-300 bg-white px-3 py-2
+					text-blue-900 transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400"
 				>
 					{#each options as opt}
 						<option value={opt.value}>{opt.label}</option>

@@ -13,7 +13,7 @@
 	let lastname = $state('');
 	let birthdate = $state('31.01.2001');
 	let sex = $state<'male' | 'female'>('male');
-	let password = $state('');
+	let password = $state('261180');
 
 	let firstnameError = $state('');
 	let lastnameError = $state('');
@@ -105,7 +105,8 @@
 		<label><input type="radio" name="sex" bind:group={sex} value="female" /> Женский</label>
 	</div>
 
-	<div class="flex flex-col gap-1">
+	<!-- <div class="flex flex-col gap-1 hidden"> -->
+	<div class="hidden">
 		<label for="password">🔑 Код</label>
 		<PasswordInput required name="password" bind:value={password} placeholder="Код" />
 	</div>
