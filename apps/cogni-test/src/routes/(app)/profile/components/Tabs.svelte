@@ -13,7 +13,7 @@
 	} = $props();
 </script>
 
-<ul class="flex gap-1 text-center text-sm font-medium">
+<ul class="w-full flex gap-1 text-center text-sm font-medium justify-center">
 	{#each tabs as tab}
 		<li class="me-2 shrink-0" class:max-md:flex-1={!tab.disabled && activeTab === tab.id}>
 			<button
@@ -28,9 +28,9 @@
                 py-2.5
 				text-sm
 				text-ellipsis
-				max-md:w-auto
 				max-md:text-xs
                 "
+				class:grow-3={!tab.disabled && activeTab === tab.id}
 				class:text-fg-disabled={tab.disabled}
 				class:cursor-not-allowed={tab.disabled}
 				class:bg-blue-600={!tab.disabled && activeTab === tab.id}

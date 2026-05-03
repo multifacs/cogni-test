@@ -50,7 +50,8 @@
 </script>
 
 <section class="banner">
-	<h1 class="text-3xl font-bold">Определение когнитивного возраста</h1>
+	<h1 class="font-bold max-md:hidden">Определение когнитивного возраста</h1>
+	<h2 class="font-bold md:hidden">Определение когнитивного возраста</h2>
 </section>
 <main class="main flex flex-col gap-3">
 	{#if runAllMode}
@@ -91,7 +92,8 @@
 	{/if}
 </main>
 <section class="low-content grid grid-cols-3 gap-5 text-center items-center">
-	<p class="text-xs font-medium">🧠 Когнитивный возраст 🧠</p>
+	<p class="text-xs font-medium max-md:hidden">🧠 Когнитивный возраст 🧠</p>
+	<p class="text-xs font-medium md:hidden">🧠Когнитивный🧠 возраст</p>
 	<p class="mt-1 text-3xl font-bold">
 		{#if data.predictedAge !== null && data.predictedAge !== undefined}
 			{Math.round(data.predictedAge)} лет
@@ -99,5 +101,6 @@
 			<span title="Пройдите хотя бы один раз каждый тест">??</span>
 		{/if}
 	</p>
-	<p class="text-xs font-medium">⚠️ Я только учусь, и я могу ошибаться ⚠️</p>
+	<p class="text-xs font-medium max-md:hidden">⚠️ Я только учусь, и я могу ошибаться ⚠️</p>
+	<p class="text-xs font-medium md:hidden">Могу ⚠️ошибаться⚠️</p>
 </section>

@@ -1,6 +1,7 @@
 <section class="banner">
 
-# Питание и здоровье мозга: научный подход
+<h1 class="font-bold max-md:hidden">Питание и здоровье мозга: научный подход</h1>
+<h3 class="font-bold text-sm md:hidden">Питание и здоровье мозга: научный подход</h3>
 
 </section>
 

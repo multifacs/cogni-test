@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
-	import { userStore } from '$lib/stores/user';
+	import { profileSurveyStore, userStore } from '$lib/stores/user';
 	import { derived } from 'svelte/store';
 
 	import Button from '$lib/components/ui/Button.svelte';
@@ -19,6 +19,7 @@
 
 	onMount(async () => {
 		subscribed = await isSubscribed();
+		console.log({ ...$profileSurveyStore });
 	});
 
 	console.log($user);
@@ -95,10 +96,62 @@
 		console.log(tab);
 		activeTab = tab;
 	}
+
+	// Функция для конвертации объекта в FormData
+	function toFormData(data) {
+		const formData = new FormData();
+
+		for (const [key, value] of Object.entries(data)) {
+			if (value !== null && value !== undefined && value !== '') {
+				// Для булевых значений конвертируем в 0/1
+				if (typeof value === 'boolean') {
+					formData.append(key, value ? '1' : '0');
+				} else {
+					formData.append(key, value.toString());
+				}
+			}
+		}
+
+		return formData;
+	}
+
+	let isSaving = $state('false');
+
+	async function handleSave() {
+		isSaving = 'true';
+		try {
+			const formDataToSend = toFormData($profileSurveyStore);
+
+			const response = await fetch('/?/save', {
+				method: 'POST',
+				body: formDataToSend
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to save profile data');
+			}
+
+			const result = await response.json();
+			console.log('Profile saved successfully:', result);
+
+			isSaving = 'saved';
+
+			return result;
+		} catch (err) {
+			console.error('Error saving profile survey:', err);
+			isSaving = 'error';
+			// error = err.message;
+			throw err;
+		} finally {
+			setTimeout(() => {
+				isSaving = 'false';
+			}, 2000);
+		}
+	}
 </script>
 
 <main class="main grid w-full">
-	<div class="flex w-full flex-col items-center justify-center">
+	<form class="flex w-full flex-col items-center justify-center">
 		{#await $user}
 			<p>Загрузка...</p>
 		{:then u}
@@ -108,19 +161,20 @@
 				<Tabs {tabs} bind:activeTab {onTabChange}>
 					<div class:hidden={activeTab !== 'tab1'}>
 						<Table>
-							<TableRow label="ID" value={u.id} />
+							<TableRow label="ID" value={u.id} omit />
 							<TableRow
 								label="Имя"
-								type="input"
+								type="value"
 								value={`${u.firstname} ${u.lastname}`}
+								omit
 							/>
 							<TableRow
 								label="Дата рождения"
-								type="input"
-								value={formatDate(u.birthday)}
+								type="value"
+								value={`${formatDate(u.birthday)} (${formatAge(u.birthday)} лет)`}
+								omit
 							/>
-							<TableRow label="Возраст" type="value" value={formatAge(u.birthday)} />
-							<TableRow
+							<!-- <TableRow
 								label="Пол"
 								type="choice"
 								options={[
@@ -128,12 +182,14 @@
 									{ label: 'Женщина', value: 'female' }
 								]}
 								value={u.sex}
-							/>
+							/> -->
+							<TableRow label="Пол" type="value" value={formatSex(u.sex)} omit />
 							<TableRow
 								label="Населенный пункт, в котором вы прожили большую часть жизни"
 								type="custom"
 							>
-								<Autocomplete></Autocomplete>
+								<Autocomplete bind:query={$profileSurveyStore.birthCity}
+								></Autocomplete>
 							</TableRow>
 							<TableRow
 								label="Текущее место проживания"
@@ -151,7 +207,7 @@
 									},
 									{ label: 'Деревня/село', value: 'village' }
 								]}
-								value="capital"
+								bind:value={$profileSurveyStore.currentCityType}
 							></TableRow>
 						</Table>
 					</div>
@@ -188,36 +244,42 @@
 										value: 'phd'
 									}
 								]}
+								bind:value={$profileSurveyStore.education}
 							/>
 							<TableRow
 								label="Сколько лет вашей основной деятельностью была работа, не требующая особой квалификации (охранник, официант, садовник, уборщик и т.д.)?"
 								type="range"
 								min={0}
 								max={50}
+								bind:value={$profileSurveyStore.yearsNotQualified}
 							/>
 							<TableRow
 								label="Сколько лет вашей основной деятельностью была работа, требующая квалифицированного прикладного труда (медсестра, повар, парикмахер, слесарь и т.д.)?"
 								type="range"
 								min={0}
 								max={50}
+								bind:value={$profileSurveyStore.yearsQualifiedApplied}
 							/>
 							<TableRow
 								label="Сколько лет вашей основной деятельностью была работа, требующая квалифицированного не прикладного труда (агент по недвижимости, менеджер по продажам, музыкант, руководитель небольшого коллектива)?"
 								type="range"
 								min={0}
 								max={50}
+								bind:value={$profileSurveyStore.yearsQualifiedNonApplied}
 							/>
 							<TableRow
 								label="Сколько лет вашей основной деятельностью была профессиональная работа (управляющий компанией, адвокат, врач, учитель и т.д.)?"
 								type="range"
 								min={0}
 								max={50}
+								bind:value={$profileSurveyStore.yearsProfessional}
 							/>
 							<TableRow
 								label="Сколько лет вашей основной деятельностью была высокоответственная или интеллектуальная работа (директор крупной компании, ученый, профессор, судья, хирург)?"
 								type="range"
 								min={0}
 								max={50}
+								bind:value={$profileSurveyStore.yearsHighResponsibility}
 							/>
 						</Table>
 					</div>
@@ -244,6 +306,7 @@
 									{ label: 'Пенсионер', value: 'retiree' },
 									{ label: 'Другое', value: 'other' }
 								]}
+								bind:value={$profileSurveyStore.currentOccupation}
 							/>
 							<TableRow
 								label="К какой категории можно отнести вашу должность на основном месте работы?"
@@ -290,10 +353,12 @@
 									{ label: 'Рабочий', value: 'worker' },
 									{ label: 'Другое', value: 'other_profession' }
 								]}
+								bind:value={$profileSurveyStore.jobPosition}
 							/>
 							<TableRow
 								label="Укажите какими из представленных дел вы занимаетесь еженедельно:"
 								value={''}
+								span
 							/>
 							<TableRow
 								label="Чтение газет, журналов, книг"
@@ -303,6 +368,7 @@
 									{ label: 'Изредка', value: 'seldom' },
 									{ label: 'Регулярно', value: 'often' }
 								]}
+								bind:value={$profileSurveyStore.weeklyReading}
 							/>
 							<TableRow
 								label="Домашние обязанности (приготовление пищи, стирка, покупка продуктов и т.д.)"
@@ -312,6 +378,7 @@
 									{ label: 'Изредка', value: 'seldom' },
 									{ label: 'Регулярно', value: 'often' }
 								]}
+								bind:value={$profileSurveyStore.weeklyHousework}
 							/>
 							<TableRow
 								label="Хобби (шахматы, танцы, вязание, коллекционирование и т.д.)"
@@ -321,6 +388,7 @@
 									{ label: 'Изредка', value: 'seldom' },
 									{ label: 'Регулярно', value: 'often' }
 								]}
+								bind:value={$profileSurveyStore.weeklyHobby}
 							/>
 							<TableRow
 								label="Использование современных технологий (интернет, компьютер)"
@@ -330,19 +398,22 @@
 									{ label: 'Изредка', value: 'seldom' },
 									{ label: 'Регулярно', value: 'often' }
 								]}
+								bind:value={$profileSurveyStore.weeklyTech}
 							/>
 							<TableRow
 								label="Укажите какими из представленных дел вы занимаетесь ежемесячно:"
 								value={''}
+								span
 							/>
 							<TableRow
-								label="Социальные мероприятия (клубя, ассоциации, собрания)"
+								label="Социальные мероприятия (клубы, ассоциации, собрания)"
 								type="choice"
 								options={[
 									{ label: 'Никогда', value: 'never' },
 									{ label: 'Изредка', value: 'seldom' },
 									{ label: 'Регулярно', value: 'often' }
 								]}
+								bind:value={$profileSurveyStore.monthlySocial}
 							/>
 							<TableRow
 								label="Кино, театр"
@@ -352,6 +423,7 @@
 									{ label: 'Изредка', value: 'seldom' },
 									{ label: 'Регулярно', value: 'often' }
 								]}
+								bind:value={$profileSurveyStore.monthlyCulture}
 							/>
 							<TableRow
 								label="Садоводство, рукоделие"
@@ -361,6 +433,7 @@
 									{ label: 'Изредка', value: 'seldom' },
 									{ label: 'Регулярно', value: 'often' }
 								]}
+								bind:value={$profileSurveyStore.monthlyGardening}
 							/>
 							<TableRow
 								label="Забота о ком-то (внуки, пожилые люди)"
@@ -370,6 +443,7 @@
 									{ label: 'Изредка', value: 'seldom' },
 									{ label: 'Регулярно', value: 'often' }
 								]}
+								bind:value={$profileSurveyStore.monthlyCaring}
 							/>
 							<TableRow
 								label="Волонтерская работа"
@@ -379,6 +453,7 @@
 									{ label: 'Изредка', value: 'seldom' },
 									{ label: 'Регулярно', value: 'often' }
 								]}
+								bind:value={$profileSurveyStore.monthlyVolunteer}
 							/>
 							<TableRow
 								label="Художественная деятельность (пение, рисование, игра на музыкальных инструментах и т.д.)"
@@ -388,10 +463,12 @@
 									{ label: 'Изредка', value: 'seldom' },
 									{ label: 'Регулярно', value: 'often' }
 								]}
+								bind:value={$profileSurveyStore.monthlyArtistic}
 							/>
 							<TableRow
 								label="Укажите какими из представленных дел вы занимаетесь ежегодно:"
 								value={''}
+								span
 							/>
 							<TableRow
 								label="Выставки, концерты, конференции"
@@ -401,6 +478,7 @@
 									{ label: 'Изредка', value: 'seldom' },
 									{ label: 'Регулярно', value: 'often' }
 								]}
+								bind:value={$profileSurveyStore.yearlyEvents}
 							/>
 							<TableRow
 								label="Путешествия на несколько дней"
@@ -410,6 +488,7 @@
 									{ label: 'Изредка', value: 'seldom' },
 									{ label: 'Регулярно', value: 'often' }
 								]}
+								bind:value={$profileSurveyStore.yearlyTravel}
 							/>
 							<TableRow
 								label="Чтение книг"
@@ -419,14 +498,27 @@
 									{ label: 'Изредка', value: 'seldom' },
 									{ label: 'Регулярно', value: 'often' }
 								]}
+								bind:value={$profileSurveyStore.yearlyBookReading}
 							/>
 						</Table>
 					</div>
 
 					<div class:hidden={activeTab !== 'tab4'}>
 						<Table>
-							<TableRow label="Рост" type="range" min={100} max={250} />
-							<TableRow label="Вес" type="range" min={50} max={250} />
+							<TableRow
+								label="Рост"
+								type="range"
+								min={0}
+								max={250}
+								bind:value={$profileSurveyStore.height}
+							/>
+							<TableRow
+								label="Вес"
+								type="range"
+								min={0}
+								max={250}
+								bind:value={$profileSurveyStore.weight}
+							/>
 							<TableRow
 								label="Ведущая рука (какой рукой в основном пишете)"
 								type="choice"
@@ -434,13 +526,20 @@
 									{ label: 'Правая', value: 'left' },
 									{ label: 'Левая', value: 'right' }
 								]}
+								bind:value={$profileSurveyStore.dominantHand}
 							/>
 							<TableRow
 								label="Являетесь ли вы амбидекстром?"
 								type="choice"
 								isBoolean={true}
+								bind:value={$profileSurveyStore.isAmbidextrous}
 							/>
-							<TableRow label="Хронические заболевания" type="input" />
+							<!-- <TableRow label="Хронические заболевания" type="input" /> -->
+							<TableRow
+								label="Хронические заболевания"
+								type="custom-choice"
+								bind:value={$profileSurveyStore.chronicDiseases}
+							/>
 							<TableRow
 								label="Курение"
 								type="choice"
@@ -449,6 +548,7 @@
 									{ label: 'Да', value: 'yes' },
 									{ label: 'Было', value: 'usedTo' }
 								]}
+								bind:value={$profileSurveyStore.smoking}
 							/>
 							<TableRow
 								label="Алкоголь"
@@ -457,6 +557,7 @@
 									{ label: 'Нет', value: 'no' },
 									{ label: 'Да (1+ в неделю)', value: 'yes' }
 								]}
+								bind:value={$profileSurveyStore.alcohol}
 							/>
 							<TableRow
 								label="Какими видами спорта занимаетесь сейчас?"
@@ -469,18 +570,20 @@
 									{ label: 'Раз в 2 недели', value: 'biweekly' },
 									{ label: 'Раз в месяц', value: 'montly' }
 								]}
+								bind:value={$profileSurveyStore.sports}
 							/>
 							<TableRow
 								label="Занимаетесь ли киберспортом или являетесь геймером?"
 								type="choice"
 								isBoolean={true}
+								bind:value={$profileSurveyStore.isGamer}
 							/>
 						</Table>
 					</div>
 
 					<div class:hidden={activeTab !== 'tab5'}>
 						<Table>
-							<TableRow label="Уведомления" type="custom">
+							<TableRow label="Уведомления" type="custom" omit>
 								{#if subscribed}
 									<div class="flex justify-center">
 										<Button color="blue" kind="small" onclick={unsubscribe}
@@ -513,17 +616,38 @@
 				<p>Пользователь не найден. Возможно, вы не вошли в систему.</p>
 			{/if}
 		{/await}
-	</div>
+	</form>
 </main>
 <section class="banner">
 	<h1 class="mb-4 text-2xl font-bold">Профиль</h1>
 </section>
 
-<section class="low-content grid grid-cols-4 gap-4">
-	<div></div>
-	<form class="" method="POST" action="/?/logout" use:enhance>
-		<Button class="w-full" type="submit" kind="small" color="red">Выйти</Button>
+<section class="low-content grid grid-cols-2 gap-4 md:grid-cols-4">
+	<div class="max-md:hidden"></div>
+	<form method="POST" action="/?/logout" use:enhance>
+		<Button class="h-full w-full" type="submit" kind="small" color="red">Выйти</Button>
 	</form>
-	<Button type="submit" kind="small" color="green" disabled>Сохранить</Button>
-	<div></div>
+	<Button
+		class="flex items-center justify-center"
+		kind="small"
+		color="green"
+		onclick={handleSave}
+	>
+		{#if isSaving === 'false'}
+			Сохранить
+		{/if}
+
+		{#if isSaving === 'true'}
+			...
+		{/if}
+
+		{#if isSaving === 'saved'}
+			Сохранено!
+		{/if}
+
+		{#if isSaving === 'error'}
+			Ошибка!
+		{/if}
+	</Button>
+	<div class="max-md:hidden"></div>
 </section>
