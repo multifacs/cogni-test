@@ -12,7 +12,8 @@
 
 <section class="banner">
 
-# Гимнастика для шейного отдела
+<h1 class="font-bold max-md:hidden">Гимнастика для шейного отдела</h1>
+<h3 class="font-bold text-sm md:hidden">Гимнастика для шейного отдела</h3>
 
 </section>
 <main class="main">

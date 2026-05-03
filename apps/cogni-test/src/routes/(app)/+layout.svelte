@@ -206,7 +206,7 @@
 		/* ✅ Better breakpoint */
 		@media (max-width: 768px) {
 			.container {
-				grid-template-rows: 2.5rem 2rem 2rem 1fr 2rem 2rem 3rem;
+				grid-template-rows: 1rem 2rem 2rem 1fr 1.5rem 1.5rem 3rem;
 				grid-template-columns: 1fr;
 				grid-template-areas:
 					'banner'

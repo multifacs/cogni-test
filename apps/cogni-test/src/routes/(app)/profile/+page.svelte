@@ -116,7 +116,6 @@
 	}
 
 	async function handleSave() {
-
 		try {
 			const formDataToSend = toFormData($profileSurveyStore);
 
@@ -347,6 +346,7 @@
 							<TableRow
 								label="Укажите какими из представленных дел вы занимаетесь еженедельно:"
 								value={''}
+								span
 							/>
 							<TableRow
 								label="Чтение газет, журналов, книг"
@@ -391,6 +391,7 @@
 							<TableRow
 								label="Укажите какими из представленных дел вы занимаетесь ежемесячно:"
 								value={''}
+								span
 							/>
 							<TableRow
 								label="Социальные мероприятия (клубы, ассоциации, собрания)"
@@ -455,6 +456,7 @@
 							<TableRow
 								label="Укажите какими из представленных дел вы занимаетесь ежегодно:"
 								value={''}
+								span
 							/>
 							<TableRow
 								label="Выставки, концерты, конференции"
@@ -569,7 +571,7 @@
 
 					<div class:hidden={activeTab !== 'tab5'}>
 						<Table>
-							<TableRow label="Уведомления" type="custom">
+							<TableRow label="Уведомления" type="custom" omit>
 								{#if subscribed}
 									<div class="flex justify-center">
 										<Button color="blue" kind="small" onclick={unsubscribe}
@@ -608,11 +610,11 @@
 	<h1 class="mb-4 text-2xl font-bold">Профиль</h1>
 </section>
 
-<section class="low-content grid grid-cols-4 gap-4">
-	<div></div>
-	<form class="" method="POST" action="/?/logout" use:enhance>
-		<Button class="w-full" type="submit" kind="small" color="red">Выйти</Button>
+<section class="low-content grid grid-cols-2 gap-4 md:grid-cols-4">
+	<div class="max-md:hidden"></div>
+	<form method="POST" action="/?/logout" use:enhance>
+		<Button class="h-full w-full" type="submit" kind="small" color="red">Выйти</Button>
 	</form>
 	<Button kind="small" color="green" onclick={handleSave}>Сохранить</Button>
-	<div></div>
+	<div class="max-md:hidden"></div>
 </section>

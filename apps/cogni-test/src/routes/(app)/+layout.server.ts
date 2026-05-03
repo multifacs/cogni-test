@@ -21,51 +21,50 @@ export const load: LayoutServerLoad = async ({ cookies }) => {
 	// Дефолтные значения для всех полей
 	const getDefaultValues = () => ({
 		// Tab 1
-		birthCity: '',
-		currentCityType: 'capital',
-		// currentCityType: 'city',
+		birthCity: null,
+		currentCityType: null,
 
 		// Tab 2
-		education: 'none',
-		yearsNotQualified: 0,
-		yearsQualifiedApplied: 0,
-		yearsQualifiedNonApplied: 0,
-		yearsProfessional: 0,
-		yearsHighResponsibility: 0,
+		education: null,
+		yearsNotQualified: null,
+		yearsQualifiedApplied: null,
+		yearsQualifiedNonApplied: null,
+		yearsProfessional: null,
+		yearsHighResponsibility: null,
 
 		// Tab 3
-		currentOccupation: 'employed',
-		jobPosition: 'office_employee',
+		currentOccupation: null,
+		jobPosition: null,
 
 		// Еженедельные активности
-		weeklyReading: 'never',
-		weeklyHousework: 'never',
-		weeklyHobby: 'never',
-		weeklyTech: 'never',
+		weeklyReading: null,
+		weeklyHousework: null,
+		weeklyHobby: null,
+		weeklyTech: null,
 
 		// Ежемесячные активности
-		monthlySocial: 'never',
-		monthlyCulture: 'never',
-		monthlyGardening: 'never',
-		monthlyCaring: 'never',
-		monthlyVolunteer: 'never',
-		monthlyArtistic: 'never',
+		monthlySocial: null,
+		monthlyCulture: null,
+		monthlyGardening: null,
+		monthlyCaring: null,
+		monthlyVolunteer: null,
+		monthlyArtistic: null,
 
 		// Ежегодные активности
-		yearlyEvents: 'never',
-		yearlyTravel: 'never',
-		yearlyBookReading: 'never',
+		yearlyEvents: null,
+		yearlyTravel: null,
+		yearlyBookReading: null,
 
 		// Tab 4
-		height: 170,
-		weight: 70,
-		dominantHand: 'right',
-		isAmbidextrous: 0,
-		chronicDiseases: '',
-		smoking: 'no',
-		alcohol: 'no',
-		sports: '',
-		isGamer: 0
+		height: null,
+		weight: null,
+		dominantHand: null,
+		isAmbidextrous: null,
+		chronicDiseases: null,
+		smoking: null,
+		alcohol: null,
+		sports: null,
+		isGamer: null
 	});
 
 	if (!profileSurvey) {

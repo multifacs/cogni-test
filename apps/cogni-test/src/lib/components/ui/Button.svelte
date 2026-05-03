@@ -198,6 +198,7 @@
 	rounded-lg
 	px-4
 	py-3
+	max-md:py-2
 	text-sm
 	font-medium
 	focus:outline-hidden
