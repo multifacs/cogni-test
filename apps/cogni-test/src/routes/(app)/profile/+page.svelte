@@ -115,7 +115,10 @@
 		return formData;
 	}
 
+	let isSaving = $state('false');
+
 	async function handleSave() {
+		isSaving = 'true';
 		try {
 			const formDataToSend = toFormData($profileSurveyStore);
 
@@ -130,11 +133,19 @@
 
 			const result = await response.json();
 			console.log('Profile saved successfully:', result);
+
+			isSaving = 'saved';
+
 			return result;
 		} catch (err) {
 			console.error('Error saving profile survey:', err);
+			isSaving = 'error';
 			// error = err.message;
 			throw err;
+		} finally {
+			setTimeout(() => {
+				isSaving = 'false';
+			}, 2000);
 		}
 	}
 </script>
@@ -150,18 +161,19 @@
 				<Tabs {tabs} bind:activeTab {onTabChange}>
 					<div class:hidden={activeTab !== 'tab1'}>
 						<Table>
-							<TableRow label="ID" value={u.id} />
+							<TableRow label="ID" value={u.id} omit />
 							<TableRow
 								label="Имя"
 								type="value"
 								value={`${u.firstname} ${u.lastname}`}
+								omit
 							/>
 							<TableRow
 								label="Дата рождения"
 								type="value"
-								value={formatDate(u.birthday)}
+								value={`${formatDate(u.birthday)} (${formatAge(u.birthday)} лет)`}
+								omit
 							/>
-							<TableRow label="Возраст" type="value" value={formatAge(u.birthday)} />
 							<!-- <TableRow
 								label="Пол"
 								type="choice"
@@ -171,7 +183,7 @@
 								]}
 								value={u.sex}
 							/> -->
-							<TableRow label="Пол" type="value" value={formatSex(u.sex)} />
+							<TableRow label="Пол" type="value" value={formatSex(u.sex)} omit />
 							<TableRow
 								label="Населенный пункт, в котором вы прожили большую часть жизни"
 								type="custom"
@@ -615,6 +627,27 @@
 	<form method="POST" action="/?/logout" use:enhance>
 		<Button class="h-full w-full" type="submit" kind="small" color="red">Выйти</Button>
 	</form>
-	<Button kind="small" color="green" onclick={handleSave}>Сохранить</Button>
+	<Button
+		class="flex items-center justify-center"
+		kind="small"
+		color="green"
+		onclick={handleSave}
+	>
+		{#if isSaving === 'false'}
+			Сохранить
+		{/if}
+
+		{#if isSaving === 'true'}
+			...
+		{/if}
+
+		{#if isSaving === 'saved'}
+			Сохранено!
+		{/if}
+
+		{#if isSaving === 'error'}
+			Ошибка!
+		{/if}
+	</Button>
 	<div class="max-md:hidden"></div>
 </section>
