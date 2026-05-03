@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, type Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
-	import { userStore } from '$lib/stores/user';
+	import { profileSurveyStore, userStore } from '$lib/stores/user';
 	import { pushService } from '$lib/pushService';
 
 	import Button from '$lib/components/ui/Button.svelte';
@@ -19,6 +19,9 @@
 
 	onMount(async () => {
 		userStore.set(data.user);
+		console.log(data.profileSurvey);
+		profileSurveyStore.set(data.profileSurvey);
+		console.log('Profile survey set in store:', { ...$profileSurveyStore });
 
 		subscribed = await isSubscribed();
 		showModal = !subscribed;
@@ -51,9 +54,13 @@
 			{/snippet}
 			<div class="flex flex-col gap-4">
 				{#if showSpinner}
-					<div class="flex flex-col w-full justify-center align-middle items-center gap-2">
+					<div
+						class="flex w-full flex-col items-center justify-center gap-2 align-middle"
+					>
 						<Spinner></Spinner>
-						<p class="text-white text-center">Перезагрузите страницу, если загрузка идет долго</p>
+						<p class="text-center text-white">
+							Перезагрузите страницу, если загрузка идет долго
+						</p>
 					</div>
 				{:else}
 					<p class="text-white">

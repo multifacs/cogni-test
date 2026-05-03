@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import { sqliteTable, integer, text, check } from 'drizzle-orm/sqlite-core';
 import short from 'short-uuid';
 export * from './models/tests';
+export * from './models/survey';
 
 export function enumCheck(column: any, values: string[]) {
 	const joined = values.map((v) => `'${v}'`).join(', ');

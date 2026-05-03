@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
-	import { userStore } from '$lib/stores/user.js';
+	import { profileSurveyStore, userStore } from '$lib/stores/user.js';
 
 	import Button from '$lib/components/ui/Button.svelte';
 	import DateInput from '$lib/components/ui/login-form/DateInput.svelte';
@@ -23,6 +23,7 @@
 
 	onMount(() => {
 		userStore.set(null);
+		profileSurveyStore.set(null);
 	});
 
 	function isSubmitDisabled() {

@@ -2,7 +2,7 @@
 	import cities from './russia-cities.json';
 
 	let value = '';
-	let query = '';
+	export let query = '';
 	let isOpen = false;
 
 	// filter only cities with type === "Город"
