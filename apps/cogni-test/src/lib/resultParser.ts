@@ -1,3 +1,4 @@
+import type { CampimetryResult } from './tests/campimetry/types';
 import type { MathResult } from './tests/math/types';
 import type { StroopResult } from './tests/stroop/types';
 import type { RegularResults, TestType } from './tests/types';
@@ -28,12 +29,27 @@ type ParsedMathResult = {
 	meanTimeOfAttemptOnFalse: number;
 };
 
+type ParsedCampimetryResult = {
+	meanTimeFirstStage: number;
+	meanTimeSecondStage: number;
+	varianceFirstStage: number;
+	varianceSecondStage: number;
+	stddevFirstStage: number;
+	stddevSecondStage: number;
+	meanNumClicksFirstStage: number;
+	meanDeltaUnderSecondStage: number;
+	meanDeltaOverSecondStage: number;
+	correctnessRateSecondStage: number;
+};
+
 export function parseResult(attempts: RegularResults, name: TestType) {
 	switch (name) {
 		case 'stroop':
 			return parseStroopResults(attempts as StroopResult[]);
 		case 'math':
 			return parseMathResults(attempts as MathResult[]);
+		case 'campimetry':
+			return parseCampimetryResults(attempts as CampimetryResult[]);
 	}
 }
 
@@ -143,6 +159,55 @@ function parseMathResults(attempts: MathResult[]) {
 	).stddev;
 
 	return parsedResults;
+}
+
+function parseCampimetryResults(attempts: CampimetryResult[]) {
+	let parsedResults: ParsedCampimetryResult = {
+		meanTimeFirstStage: 0,
+		meanTimeSecondStage: 0,
+		varianceFirstStage: 0,
+		varianceSecondStage: 0,
+		stddevFirstStage: 0,
+		stddevSecondStage: 0,
+		meanNumClicksFirstStage: 0,
+		meanDeltaUnderSecondStage: 0,
+		meanDeltaOverSecondStage: 0,
+		correctnessRateSecondStage: 0
+	};
+
+	const firstStageResults = attempts.filter((res) => res.stage == 1);
+	const secondStageResults = attempts.filter((res) => res.stage == 2);
+
+	parsedResults['meanTimeFirstStage'] = calculateMean(firstStageResults.map((res) => res.time));
+	parsedResults['meanTimeSecondStage'] = calculateMean(secondStageResults.map((res) => res.time));
+
+	let { variance, stddev } = calculateVarianceAndStddev(
+		firstStageResults.map((res) => res.time),
+		parsedResults['meanTimeFirstStage']
+	);
+	parsedResults['varianceFirstStage'] = variance;
+	parsedResults['stddevFirstStage'] = stddev;
+
+	let { variance: varianceSecondStage, stddev: stddevSecondStage } = calculateVarianceAndStddev(
+		secondStageResults.map((res) => res.time),
+		parsedResults['meanTimeSecondStage']
+	);
+	parsedResults['varianceSecondStage'] = varianceSecondStage;
+	parsedResults['stddevSecondStage'] = stddevSecondStage;
+
+	parsedResults['meanNumClicksFirstStage'] = calculateMean(
+		firstStageResults.map((res) => res.delta)
+	);
+	parsedResults['meanDeltaUnderSecondStage'] = calculateMean(
+		secondStageResults.filter((res) => res.delta > 0).map((res) => res.delta)
+	);
+	parsedResults['meanDeltaOverSecondStage'] = calculateMean(
+		secondStageResults.filter((res) => res.delta < 0).map((res) => res.delta)
+	);
+
+	parsedResults['correctnessRateSecondStage'] =
+		secondStageResults.reduce((acc, res) => acc + (res.delta == 0 ? 1 : 0), 0) /
+		secondStageResults.length;
 }
 
 function calculateMean(array: number[]) {
