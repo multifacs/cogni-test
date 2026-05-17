@@ -1,6 +1,7 @@
 import type { CampimetryResult } from './tests/campimetry/types';
 import type { MathResult } from './tests/math/types';
 import type { StroopResult } from './tests/stroop/types';
+import type { SwallowResult } from './tests/swallow/types';
 import type { RegularResults, TestType } from './tests/types';
 
 type ParsedStroopResult = {
@@ -42,6 +43,19 @@ type ParsedCampimetryResult = {
 	correctnessRateSecondStage: number;
 };
 
+type ParsedSwallowResult = {
+	meanTimeOfAttempt: number;
+	varianceTimeOfAttempt: number;
+	stddevTimeOfAttempt: number;
+	correctnessRate: number;
+	correctnessRateRed: number;
+	correctnessRateBlue: number;
+	meanTimeOfAttemptRed: number;
+	meanTimeOfAttemptBlue: number;
+	stddevTimeOfAttemptRed: number;
+	stddevTimeOfAttemptBlue: number;
+};
+
 export function parseResult(attempts: RegularResults, name: TestType) {
 	switch (name) {
 		case 'stroop':
@@ -50,6 +64,8 @@ export function parseResult(attempts: RegularResults, name: TestType) {
 			return parseMathResults(attempts as MathResult[]);
 		case 'campimetry':
 			return parseCampimetryResults(attempts as CampimetryResult[]);
+		case 'swallow':
+			return parseSwallowResults(attempts as SwallowResult[]);
 	}
 }
 
@@ -208,6 +224,62 @@ function parseCampimetryResults(attempts: CampimetryResult[]) {
 	parsedResults['correctnessRateSecondStage'] =
 		secondStageResults.reduce((acc, res) => acc + (res.delta == 0 ? 1 : 0), 0) /
 		secondStageResults.length;
+}
+
+function parseSwallowResults(attempts: SwallowResult[]) {
+	let parsedResults: ParsedSwallowResult = {
+		meanTimeOfAttempt: 0,
+		varianceTimeOfAttempt: 0,
+		stddevTimeOfAttempt: 0,
+		correctnessRate: 0,
+		correctnessRateRed: 0,
+		correctnessRateBlue: 0,
+		meanTimeOfAttemptRed: 0,
+		meanTimeOfAttemptBlue: 0,
+		stddevTimeOfAttemptRed: 0,
+		stddevTimeOfAttemptBlue: 0
+	};
+
+	const redResults = attempts.filter((res) => {
+		res.background === 'red';
+	});
+	const blueResults = attempts.filter((res) => {
+		res.background === 'blue';
+	});
+
+	parsedResults['meanTimeOfAttempt'] = calculateMean(attempts.map((result) => result.time));
+
+	let { variance, stddev } = calculateVarianceAndStddev(
+		attempts.map((result) => result.time),
+		parsedResults['meanTimeOfAttempt']
+	);
+	parsedResults['varianceTimeOfAttempt'] = variance;
+	parsedResults['stddevTimeOfAttempt'] = stddev;
+
+	const correctnessRate = attempts.filter((res) => res.isCorrect).length / attempts.length;
+	parsedResults['correctnessRate'] = correctnessRate;
+
+	const correctnessRateRed = redResults.filter((res) => res.isCorrect).length / attempts.length;
+	const correctnessRateBlue = blueResults.filter((res) => res.isCorrect).length / attempts.length;
+	parsedResults['correctnessRateRed'] = correctnessRateRed;
+	parsedResults['correctnessRateBlue'] = correctnessRateBlue;
+
+	const meanRed = calculateMean(redResults.map((res) => res.time));
+	const meanBlue = calculateMean(blueResults.map((res) => res.time));
+
+	parsedResults['meanTimeOfAttemptRed'] = meanRed;
+	parsedResults['meanTimeOfAttemptBlue'] = meanBlue;
+
+	parsedResults['stddevTimeOfAttemptRed'] = calculateVarianceAndStddev(
+		redResults.map((res) => res.time),
+		meanRed
+	).stddev;
+	parsedResults['stddevTimeOfAttemptBlue'] = calculateVarianceAndStddev(
+		blueResults.map((res) => res.time),
+		meanBlue
+	).stddev;
+
+	return parsedResults;
 }
 
 function calculateMean(array: number[]) {
