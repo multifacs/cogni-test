@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import PasswordInput from '$lib/components/ui/admin/PasswordInput.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import TextInput from '$lib/components/ui/login-form/TextInput.svelte';
 
 	let { form } = $props();
 </script>
@@ -16,7 +16,6 @@
 	{#if form?.incorrect}
 		<p class="text-red-500">Incorrect password</p>
 	{/if}
-	<label for="password">Password</label>
-	<PasswordInput name="password" id="password" placeholder="Enter password..." required />
+	<TextInput plain type="password" name="password" id="password" placeholder="Enter password..." required />
 	<Button type="submit" color="green">Login</Button>
 </form>
