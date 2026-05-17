@@ -1,4 +1,4 @@
-import type { PageServerLoad, Actions } from '../../$types';
+import type { PageServerLoad, Actions } from '../../../$types';
 import { fail, redirect } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ cookies }) => {
@@ -8,7 +8,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 	}
 };
 
-import { env } from '$env/dynamic/private'; 
+import { env } from '$env/dynamic/private';
 
 export const actions = {
 	login: async ({ request, cookies }) => {

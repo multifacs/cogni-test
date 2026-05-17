@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit';
-import { createUser, getUserById } from '$lib/server/db';
+import { createUser, getUserById, getUsersAnalytics } from '$lib/server/db';
 import { checkFormData, formDataToUser } from '$lib/utils';
 import type { User } from '$lib/server/db/types';
 import type { Actions } from './$types';
@@ -52,7 +52,13 @@ export const actions = {
 		if ('isAmbidextrous' in dataAsObject) {
 			dataAsObject.isAmbidextrous = dataAsObject.isAmbidextrous === '0' ? false : true;
 		}
-		console.log("Data received in save action:", dataAsObject);
+		console.log('Data received in save action:', dataAsObject);
 		updateProfileSurvey(cookies.get('user_id')!, dataAsObject);
+	},
+
+	getUsersAnalytics: async () => {
+		const analytics = await getUsersAnalytics();
+		console.log('Analytics data retrieved:', analytics);
+		return { analytics };
 	}
 } satisfies Actions;

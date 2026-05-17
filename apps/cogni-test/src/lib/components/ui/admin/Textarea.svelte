@@ -18,6 +18,7 @@
                 border
                 border-gray-600
                 bg-gray-700
+                p-2
                 text-white
                 placeholder-gray-400
                 outline-0
