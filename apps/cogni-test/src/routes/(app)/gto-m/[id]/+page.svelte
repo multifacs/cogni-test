@@ -3,6 +3,7 @@
 	import { source } from 'sveltekit-sse';
 	import type { PageProps } from './$types';
 	import type { ResultInfo } from '$lib/tests/types';
+	import ResultsTable from '$lib/components/ui/gto-m/ResultsTable.svelte';
 
 	let { data }: PageProps = $props();
 	let session = data.session;
@@ -20,7 +21,7 @@
 	});
 
 	const results = connection.select('message').json<Record<string, ResultInfo>>();
-    console.log('results', $results);
+	console.log('results', $results);
 
 	function getAvailableTestsData() {
 		let result = [];
@@ -62,10 +63,9 @@
 			{#each availableTestsData as test}
 				<h2>Результаты {test.title}:</h2>
 				{#if $results}
-                    {#if $results[test.name].attempts}
-                        <!-- TODO: parse the results -->
-                        <pre>{JSON.stringify($results[test.name].attempts[0].attempt)}</pre>
-                    {/if}
+					{#if $results[test.name] && $results[test.name].attempts}
+						<ResultsTable results={$results[test.name].attempts} testName={test.name} />
+					{/if}
 				{/if}
 			{/each}
 		{/if}
