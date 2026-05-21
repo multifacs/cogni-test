@@ -113,9 +113,10 @@ function parseMathResults(attempts: MathResult[]) {
 	const correctnessRate = attempts.filter((res) => res.isCorrect).length / attempts.length;
 	parsedResults.results['Общая корректность'] = correctnessRate;
 
-	const correctnessRateTrue = trueResults.filter((res) => res.isCorrect).length / attempts.length;
+	const correctnessRateTrue =
+		trueResults.filter((res) => res.isCorrect).length / trueResults.length;
 	const correctnessRateFalse =
-		falseResults.filter((res) => res.isCorrect).length / attempts.length;
+		falseResults.filter((res) => res.isCorrect).length / falseResults.length;
 	parsedResults.results['Корректность по верным неравенствам'] = correctnessRateTrue;
 	parsedResults.results['Корректность по неверным неравенствам'] = correctnessRateFalse;
 
@@ -144,8 +145,8 @@ function parseCampimetryResults(attempts: CampimetryResult[]) {
 		results: {}
 	};
 
-	const firstStageResults = attempts.filter((res) => res.stage == 1);
-	const secondStageResults = attempts.filter((res) => res.stage == 2);
+	const firstStageResults = attempts.filter((res) => res.stage === 1);
+	const secondStageResults = attempts.filter((res) => res.stage === 2);
 
 	parsedResults.results['Среднее время одной попытки 1 этапа'] = calculateMean(
 		firstStageResults.map((res) => res.time)
@@ -193,12 +194,8 @@ function parseSwallowResults(attempts: SwallowResult[]) {
 		results: {}
 	};
 
-	const redResults = attempts.filter((res) => {
-		res.background === 'red';
-	});
-	const blueResults = attempts.filter((res) => {
-		res.background === 'blue';
-	});
+	const redResults = attempts.filter((res) => res.background === 'red');
+	const blueResults = attempts.filter((res) => res.background === 'blue');
 
 	parsedResults.results['Среднее время одной попытки'] = calculateMean(
 		attempts.map((result) => result.time)
@@ -214,8 +211,9 @@ function parseSwallowResults(attempts: SwallowResult[]) {
 	const correctnessRate = attempts.filter((res) => res.isCorrect).length / attempts.length;
 	parsedResults.results['Общая корректность'] = correctnessRate;
 
-	const correctnessRateRed = redResults.filter((res) => res.isCorrect).length / attempts.length;
-	const correctnessRateBlue = blueResults.filter((res) => res.isCorrect).length / attempts.length;
+	const correctnessRateRed = redResults.filter((res) => res.isCorrect).length / redResults.length;
+	const correctnessRateBlue =
+		blueResults.filter((res) => res.isCorrect).length / blueResults.length;
 	parsedResults.results['Корректность по красному цвету'] = correctnessRateRed;
 	parsedResults.results['Корректность по синему цвету'] = correctnessRateBlue;
 
