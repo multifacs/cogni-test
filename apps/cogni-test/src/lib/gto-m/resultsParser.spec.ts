@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import parseResults from './resultParser.ts';
+import parseResults from './resultsParser.ts';
 import assert from 'assert';
 
 it('should parse stroop results correctly', () => {

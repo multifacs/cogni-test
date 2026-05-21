@@ -1,5 +1,5 @@
 <script lang="ts">
-	import parseResults from '$lib/gto-m/resultParser';
+	import parseResults from '$lib/gto-m/resultsParser';
 
 	let { results, testName } = $props();
 

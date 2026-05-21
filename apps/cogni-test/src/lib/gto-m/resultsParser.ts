@@ -24,7 +24,6 @@ type ParsedSwallowResult = {
 	results: Record<string, number>; // заголовок - значение
 };
 
-// TODO: testing... fun...
 // for whatever reason vitest can't find this function if not default exported
 export default function parseResults(attempts: RegularResults, name: TestType) {
 	switch (name) {
