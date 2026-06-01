@@ -17,9 +17,15 @@
 
 {#if Component}
 	<!-- <main class="main text-justify"> -->
-	<main class="main flex flex-col items-center gap-4 text-justify">
+	<!-- <div class="scroll-fade"></div> -->
+	<!-- <main class="main flex flex-col items-center gap-4 text-justify">
 		<Component></Component>
-		<!-- <div class="scroll-fade"></div> -->
+	</main> -->
+
+	<main class="main box-border text-justify">
+		<div class="flex min-h-full flex-col justify-center">
+			<Component></Component>
+		</div>
 	</main>
 
 	{#if page.url.pathname.includes('road-trip') || page.url.pathname.includes('not-lost')}

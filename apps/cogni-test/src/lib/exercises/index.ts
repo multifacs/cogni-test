@@ -25,10 +25,46 @@ export const exercises: TestData[] = [
 		img: '/exercises/memory-match.svg'
 	},
 	{
-  		name: 'nback-stream',
-  		title: 'Определение повторов',
-  		path: '/exercises/nback-stream/about', 
-  		img: '/exercises/n-back.svg' 
+		name: 'nback-stream',
+		title: 'Определение повторов',
+		path: '/exercises/nback-stream/about',
+		img: '/exercises/n-back.svg'
+	},
+	{
+		name: 'emoji',
+		title: 'Тест на смену эмодзи',
+		path: '/exercises/emoji/about',
+		img: '/exercises/emoji.svg'
+	},
+	{
+		name: 'attention',
+		title: 'Тест на внимание',
+		path: '/exercises/attention/about',
+		img: '/exercises/attention.svg'
+	},
+	{
+		name: 'pictures',
+		title: 'Запоминание картинок',
+		path: '/exercises/pictures/about',
+		img: '/exercises/pictures.svg'
+	},
+	{
+		name: 'numbers',
+		title: 'Запоминание чисел',
+		path: '/exercises/numbers/about',
+		img: '/exercises/numbers.svg'
+	},
+	{
+		name: 'flanker',
+		title: 'Фланговый тест Эриксена',
+		path: '/exercises/flanker/about',
+		img: '/exercises/flanker.svg'
+	},
+	{
+		name: 'letters',
+		title: 'Буквенный охват',
+		path: '/exercises/letters/about',
+		img: '/exercises/letters.svg'
 	},
 	{
 		name: 'road-trip',
