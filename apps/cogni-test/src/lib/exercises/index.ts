@@ -31,6 +31,12 @@ export const exercises: TestData[] = [
 		img: '/exercises/n-back.svg'
 	},
 	{
+		name: 'raven-matrices',
+		title: 'Матрицы Равена',
+		path: '/exercises/raven-matrices/about',
+		img: '/exercises/raven-matrices.svg'
+	},
+	{
 		name: 'emoji',
 		title: 'Тест на смену эмодзи',
 		path: '/exercises/emoji/about',
