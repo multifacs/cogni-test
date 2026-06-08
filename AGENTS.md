@@ -69,7 +69,7 @@ cogni-test's adapter is selected via `BUILD` env var:
 - Docker Compose profiles control which services run: `dev`, `prod`, `rhythm-dev`, `rhythm-prod`, `nginx`, `web-db`
 - Example: `docker compose --profile dev up -d --build`
 - Traefik (v3) acts as reverse proxy on the `cogni-network`; config at `traefik/traefik.yml` and `traefik/dynamic/`
-- TLS certificates are configured via the file provider in `traefik/dynamic/tls.yml`; routed from `/root/cogni-test/certs/` on the host
+- TLS certificates are provisioned on-demand via Let's Encrypt (ACME HTTP challenge); stored in `/root/cogni-test/acme.json`
 - App services use Docker labels for Traefik routing rules; no custom Dockerfile needed for the reverse proxy
 - Secrets loaded from env vars on host (VAPID keys, admin password)
 

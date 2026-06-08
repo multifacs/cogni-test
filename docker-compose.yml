@@ -10,7 +10,7 @@ services:
             - '443:443'
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock:ro
-            - /root/cogni-test/certs:/etc/ssl/new-certs:ro
+            - /root/cogni-test/acme.json:/etc/traefik/acme.json
             - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
             - ./traefik/dynamic:/etc/traefik/dynamic:ro
         networks:
@@ -43,6 +43,7 @@ services:
             - 'traefik.http.routers.cogni-test-dev.rule=Host(`dev2.cogni-test.ru`)'
             - 'traefik.http.routers.cogni-test-dev.entrypoints=websecure'
             - 'traefik.http.routers.cogni-test-dev.tls=true'
+            - 'traefik.http.routers.cogni-test-dev.tls.certresolver=letsencrypt'
             - 'traefik.http.services.cogni-test-dev.loadbalancer.server.port=80'
 
     cogni-test:
@@ -72,6 +73,7 @@ services:
             - 'traefik.http.routers.cogni-test.rule=Host(`cogni-test.ru`) || Host(`www.cogni-test.ru`)'
             - 'traefik.http.routers.cogni-test.entrypoints=websecure'
             - 'traefik.http.routers.cogni-test.tls=true'
+            - 'traefik.http.routers.cogni-test.tls.certresolver=letsencrypt'
             - 'traefik.http.services.cogni-test.loadbalancer.server.port=80'
 
     cogni-rhythm-dev:
@@ -101,6 +103,7 @@ services:
             - 'traefik.http.routers.cogni-rhythm-dev.rule=Host(`dev2.cogni-rhythm.ru`)'
             - 'traefik.http.routers.cogni-rhythm-dev.entrypoints=websecure'
             - 'traefik.http.routers.cogni-rhythm-dev.tls=true'
+            - 'traefik.http.routers.cogni-rhythm-dev.tls.certresolver=letsencrypt'
             - 'traefik.http.services.cogni-rhythm-dev.loadbalancer.server.port=80'
 
     cogni-rhythm:
@@ -130,6 +133,7 @@ services:
             - 'traefik.http.routers.cogni-rhythm.rule=Host(`cogni-rhythm.ru`) || Host(`www.cogni-rhythm.ru`)'
             - 'traefik.http.routers.cogni-rhythm.entrypoints=websecure'
             - 'traefik.http.routers.cogni-rhythm.tls=true'
+            - 'traefik.http.routers.cogni-rhythm.tls.certresolver=letsencrypt'
             - 'traefik.http.services.cogni-rhythm.loadbalancer.server.port=80'
 
     drizzle-gateway:

@@ -1,23 +1,11 @@
-tls:
-  stores:
-    default:
-      certificates:
-        - certFile: /etc/ssl/new-certs/cogni-test.ru_cert.pem
-          keyFile: /etc/ssl/new-certs/cogni-test.ru_private_key.pem
-          stores:
-            - default
-        - certFile: /etc/ssl/new-certs/cogni-rhythm.ru_cert.pem
-          keyFile: /etc/ssl/new-certs/cogni-rhythm.ru_private_key.pem
-          stores:
-            - default
-
 http:
   routers:
     dev-redirect:
       rule: "Host(`dev.cogni-test.ru`)"
       entrypoints:
         - websecure
-      tls: {}
+      tls:
+        certResolver: letsencrypt
       middlewares:
         - dev-redirect
       service: noop@file
