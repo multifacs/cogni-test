@@ -35,6 +35,8 @@ jobs:
               env:
                   DOCKER_HOST: ssh://${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}
               run: |
-                  ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "mkdir -p /root/cogni-test/acme"
+                  ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "mkdir -p /root/cogni-test/acme /root/cogni-test/traefik/dynamic"
+                  scp traefik/traefik.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/root/cogni-test/traefik/traefik.yml
+                  scp traefik/dynamic/tls.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/root/cogni-test/traefik/dynamic/tls.yml
                   docker compose --profile traefik up -d --pull always --remove-orphans --force-recreate --wait --wait-timeout 30
                   docker image prune -f

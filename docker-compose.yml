@@ -11,8 +11,8 @@ services:
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock:ro
             - /root/cogni-test/acme:/acme
-            - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
-            - ./traefik/dynamic:/etc/traefik/dynamic:ro
+            - /root/cogni-test/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+            - /root/cogni-test/traefik/dynamic:/etc/traefik/dynamic:ro
         networks:
             - cogni-network
 
