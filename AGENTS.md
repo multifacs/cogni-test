@@ -2,7 +2,7 @@
 
 ## Monorepo Structure
 
-- **Root** is an npm workspace with three packages: `apps/cogni-test`, `apps/cogni-rhythm`, `nginx`
+- **Root** is an npm workspace with two apps: `apps/cogni-test`, `apps/cogni-rhythm`, plus a `traefik` config directory
 - Run all package scripts from repo root using `-w` flag (e.g. `npm run dev -w ./apps/cogni-test`)
 - Both apps are SvelteKit 5 + Svelte 5 + Tailwind CSS v4 + Drizzle ORM (SQLite)
 
@@ -68,7 +68,9 @@ cogni-test's adapter is selected via `BUILD` env var:
 
 - Docker Compose profiles control which services run: `dev`, `prod`, `rhythm-dev`, `rhythm-prod`, `nginx`, `web-db`
 - Example: `docker compose --profile dev up -d --build`
-- Nginx acts as reverse proxy on the `cogni-network`
+- Traefik (v3) acts as reverse proxy on the `cogni-network`; config at `traefik/traefik.yml` and `traefik/dynamic/`
+- TLS certificates are provisioned on-demand via Let's Encrypt (ACME HTTP challenge); stored in `/root/cogni-test/acme/`
+- App services use Docker labels for Traefik routing rules; no custom Dockerfile needed for the reverse proxy
 - Secrets loaded from env vars on host (VAPID keys, admin password)
 
 ## Existing Skill

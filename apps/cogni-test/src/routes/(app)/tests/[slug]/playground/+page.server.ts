@@ -1,14 +1,18 @@
 import { error } from '@sveltejs/kit';
+import { testRegistry } from '$lib/tests';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, fetch }) => {
 	const slug = params.slug;
-	console.log(slug);
+	const test = testRegistry[slug];
+
+	if (!test) {
+		error(404, 'test not found');
+	}
 
 	try {
-		await import(`$lib/tests/${slug}/Playground.svelte`);
-	} catch (err) {
-		console.log(err);
+		await test.playground();
+	} catch {
 		error(404, 'test not found');
 	}
 
@@ -40,4 +44,4 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 	}
 
 	return data;
-}
+};

@@ -53,8 +53,8 @@ npx @sveltejs/mcp svelte-autofixer '<script>let count = \$state(0);</script>'
 # Analyze a file
 npx @sveltejs/mcp svelte-autofixer ./src/lib/Component.svelte
 
-# Target Svelte 4
-npx @sveltejs/mcp svelte-autofixer ./Component.svelte --svelte-version 4
+# Target Svelte 5
+npx @sveltejs/mcp svelte-autofixer ./Component.svelte --svelte-version 5
 ```
 
 **Important:** When passing code with runes (`$state`, `$derived`, etc.) via the terminal, escape the `$` character as `\$` to prevent shell variable substitution.
