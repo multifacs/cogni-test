@@ -2,6 +2,7 @@
 	import { createEventDispatcher, onDestroy } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import type { AttentionResult } from './types';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	const dispatch = createEventDispatcher<{ done: AttentionResult }>();
 
@@ -21,7 +22,7 @@
 			alert('m не может быть больше n');
 			return;
 		}
-		const arr = new Set<number>();
+		const arr = new SvelteSet<number>();
 		while (arr.size < n) arr.add(Math.floor(Math.random() * 1000));
 		numbers = Array.from(arr);
 		const shuffled = [...numbers].sort(() => Math.random() - 0.5);

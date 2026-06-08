@@ -2,24 +2,25 @@
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
-	// import type { MetaResult, RegularResult, TestResultMap } from '$lib/tests/types.js';
-	// import type { Result } from '$lib/types/index.js';
-	// import { delay } from '$lib/utils/common.js';
-	import { onMount, type SvelteComponent } from 'svelte';
+	import { type SvelteComponent } from 'svelte';
+	import { exerciseRegistry } from '$lib/exercises';
 
 	const { data } = $props();
-	// console.log('playground data ', data);
 	const slug = data.slug;
+	const exercise = $derived(exerciseRegistry[slug]);
 	let Component: typeof SvelteComponent | null = $state(null);
-
-	// let componentRef: InstanceType<typeof SvelteComponent> | null = $state(null);
 
 	let isGameRunning = $state(true);
 	let isGameEnd = $state(false);
 	let childComponent: InstanceType<typeof SvelteComponent> | null = $state(null);
 
-	onMount(async () => {
-		Component = (await import(`$lib/exercises/${slug}/Playground.svelte`)).default;
+	$effect(() => {
+		Component = null;
+		if (exercise?.playground) {
+			exercise.playground().then((mod) => {
+				Component = mod.default;
+			});
+		}
 	});
 
 	function onGameEnd() {

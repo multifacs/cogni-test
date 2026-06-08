@@ -4,7 +4,7 @@
 	import type { AttentionResult } from './types';
 
 	let running = false;
-	let finalResult: AttentionResult | null = null;
+	let finalResult: AttentionResult | null = $state(null);
 
 	function handleDone(e: CustomEvent<AttentionResult>) {
 		finalResult = e.detail;
