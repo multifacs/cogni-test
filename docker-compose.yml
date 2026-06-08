@@ -70,7 +70,7 @@ services:
         tty: true
         labels:
             - 'traefik.enable=true'
-            - 'traefik.http.routers.cogni-test.rule=Host(`cogni-test.ru`) || Host(`www.cogni-test.ru`)'
+            - 'traefik.http.routers.cogni-test.rule=Host(`cogni-test.ru`)'
             - 'traefik.http.routers.cogni-test.entrypoints=websecure'
             - 'traefik.http.routers.cogni-test.tls=true'
             - 'traefik.http.routers.cogni-test.tls.certresolver=letsencrypt'
@@ -130,7 +130,7 @@ services:
         tty: true
         labels:
             - 'traefik.enable=true'
-            - 'traefik.http.routers.cogni-rhythm.rule=Host(`cogni-rhythm.ru`) || Host(`www.cogni-rhythm.ru`)'
+            - 'traefik.http.routers.cogni-rhythm.rule=Host(`cogni-rhythm.ru`)'
             - 'traefik.http.routers.cogni-rhythm.entrypoints=websecure'
             - 'traefik.http.routers.cogni-rhythm.tls=true'
             - 'traefik.http.routers.cogni-rhythm.tls.certresolver=letsencrypt'
