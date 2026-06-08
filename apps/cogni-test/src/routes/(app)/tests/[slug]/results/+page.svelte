@@ -1,7 +1,7 @@
 <script lang="ts">
-	// import ResultsChart from '$lib/components/charts/ResultsChart.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import type { TestResultMap } from '$lib/tests/types.js';
+	import { testRegistry } from '$lib/tests';
 	import { formatUserLocalDate } from '$lib/utils/index.js';
 	import { onMount, type Component } from 'svelte';
 	import localforage from 'localforage';
@@ -10,28 +10,30 @@
 	const { data } = $props();
 	const slug = data.slug;
 	const results = data.results;
-	console.log(slug, results);
 
+	const test = $derived(testRegistry[slug]);
 	let Comp: Component | null = $state(null);
 
 	let runAllMode = $state(false);
 
-	onMount(async () => {
-		runAllMode = (await localforage.getItem('runAllMode')) || false;
-		console.log('runAllMode', runAllMode);
-
-		let customResultsChart;
-		try {
-			customResultsChart = (await import(`$lib/tests/${slug}/ResultsChart.svelte`)).default;
-			Comp = customResultsChart;
-		} catch (err) {
-			console.log(err);
+	$effect(() => {
+		Comp = null;
+		if (test?.resultsChart) {
+			test.resultsChart()
+				.then((mod) => {
+					Comp = mod.default as Component;
+				})
+				.catch(async () => {
+					const resultsChart = (
+						await import('$lib/components/charts/ResultsChart.svelte')
+					).default;
+					Comp = resultsChart as Component;
+				});
+		} else {
+			import('$lib/components/charts/ResultsChart.svelte').then((mod) => {
+				Comp = mod.default as Component;
+			});
 		}
-		if (Comp) return;
-		const resultsChart = (await import(`$lib/components/charts/ResultsChart.svelte`)).default;
-
-		// love ts very much
-		Comp = resultsChart as Component;
 	});
 
 	// Открытый элемент (по умолчанию первый)
@@ -41,14 +43,27 @@
 	const toggleSession = (sessionId: string) => {
 		openedSessionId = (openedSessionId === sessionId ? null : sessionId) as string;
 	};
+
+	onMount(async () => {
+		try {
+			const mode = await localforage.getItem('runAllMode');
+			if (typeof mode === 'boolean') {
+				runAllMode = mode;
+			}
+		} catch (err) {
+			console.log(err);
+		}
+	});
 </script>
 
-<main class="main">
+<main class="main box-border">
 	{#if !results}
 		<Spinner></Spinner>
 		<p>Загрузка теста {slug}...</p>
 	{:else if results.length != 0}
-		<div class="flex flex-col items-center justify-center gap-2">
+		<!-- <div class="flex flex-col items-center justify-center gap-2">
+		</div> -->
+		<div class="flex min-h-full flex-col justify-center gap-2">
 			{#each results as result}
 				<div class="w-full rounded-2xl bg-gray-600 shadow">
 					<button

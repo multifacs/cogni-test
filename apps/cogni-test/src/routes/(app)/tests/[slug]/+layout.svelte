@@ -1,12 +1,10 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
+	import { testRegistry } from '$lib/tests';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
-	// console.log(data);
-	const found = data.tests.find((x) => x.name == data.slug);
-	let title: string = $state('');
-	if (found) title = found.title;
+	const title = $derived(testRegistry[data.slug]?.title ?? '');
 </script>
 
 <section class="banner">

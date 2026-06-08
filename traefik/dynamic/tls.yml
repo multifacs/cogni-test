@@ -1,0 +1,22 @@
+http:
+  routers:
+    dev-redirect:
+      rule: "Host(`dev.cogni-test.ru`)"
+      entrypoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+      middlewares:
+        - dev-redirect
+      service: noop@file
+  middlewares:
+    dev-redirect:
+      redirectRegex:
+        regex: "^https://dev\\.cogni-test\\.ru/(.*)"
+        replacement: "https://cogni-test.ru/${1}"
+        permanent: true
+  services:
+    noop:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1:80"

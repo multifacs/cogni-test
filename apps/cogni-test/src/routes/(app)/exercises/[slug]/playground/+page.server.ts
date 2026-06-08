@@ -1,17 +1,20 @@
 import { error } from '@sveltejs/kit';
+import { exerciseRegistry } from '$lib/exercises';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const slug = params.slug;
-	console.log(slug);
+	const exercise = exerciseRegistry[slug];
 
-	try {
-		await import(`$lib/exercises/${slug}/Playground.svelte`);
-	} catch (err) {
-		console.log(err);
+	if (!exercise?.hasPlayground || !exercise.playground) {
 		error(404, 'test not found');
 	}
 
+	try {
+		await exercise.playground();
+	} catch {
+		error(404, 'test not found');
+	}
 
 	if (slug.includes('campimetry')) {
 		const silhouettes = {
@@ -22,6 +25,6 @@ export const load: PageServerLoad = async ({ params }) => {
 			shark: '/campimetry/shark.svg'
 		};
 
-        return { silhouettes };
+		return { silhouettes };
 	}
-}
+};
