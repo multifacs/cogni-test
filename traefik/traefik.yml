@@ -17,7 +17,7 @@ certificatesResolvers:
   letsencrypt:
     acme:
       email: kiwi0tails@gmail.com
-      storage: /etc/traefik/acme.json
+      storage: /acme/acme.json
       httpChallenge:
         entryPoint: web
 

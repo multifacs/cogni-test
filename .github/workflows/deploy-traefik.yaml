@@ -35,6 +35,6 @@ jobs:
               env:
                   DOCKER_HOST: ssh://${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}
               run: |
-                  ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "touch /root/cogni-test/acme.json && chmod 600 /root/cogni-test/acme.json"
+                  ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "mkdir -p /root/cogni-test/acme"
                   docker compose --profile traefik up -d --pull always --remove-orphans --force-recreate --wait --wait-timeout 30
                   docker image prune -f
