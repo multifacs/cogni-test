@@ -1,30 +1,22 @@
 # AGENTS.md
 
-## Monorepo Structure
+## Project Structure
 
-- **Root** is an npm workspace with two apps: `apps/cogni-test`, `apps/cogni-rhythm`, plus a `traefik` config directory
-- Run all package scripts from repo root using `-w` flag (e.g. `npm run dev -w ./apps/cogni-test`)
-- Both apps are SvelteKit 5 + Svelte 5 + Tailwind CSS v4 + Drizzle ORM (SQLite)
+- SvelteKit 5 + Svelte 5 + Tailwind CSS v4 + Drizzle ORM (SQLite)
 
 ## Key Commands
 
-### cogni-test (main app)
-
 | Action | Command |
 |--------|---------|
-| Dev server | `npm run dev -w ./apps/cogni-test` |
-| Dev + LAN access | `npm run host -w ./apps/cogni-test` |
-| Build | `npm run build -w ./apps/cogni-test` |
-| Prod start | `npm run start -w ./apps/cogni-test` |
-| Init DB (dev) | `npm run init-db-dev -w ./apps/cogni-test` |
-| Init DB (prod) | `npm run init-db -w ./apps/cogni-test` |
-| Lint | `npm run lint -w ./apps/cogni-test` |
-| Typecheck | `npm run check -w ./apps/cogni-test` |
-| Tests | `npm run test -w ./apps/cogni-test` |
-
-### cogni-rhythm
-
-No test runner configured. Has `lint`, `check`, `format`, and drizzle DB commands.
+| Dev server | `npm run dev` |
+| Dev + LAN access | `npm run host` |
+| Build | `npm run build` |
+| Prod start | `npm run start` |
+| Init DB (dev) | `npm run init-db-dev` |
+| Init DB (prod) | `npm run init-db` |
+| Lint | `npm run lint` |
+| Typecheck | `npm run check` |
+| Tests | `npm run test` |
 
 ### Before committing
 
@@ -40,7 +32,7 @@ Run in order: `format -> lint -> check -> test`
 
 ## Database
 
-- SQLite via Drizzle ORM; schema at `src/lib/server/db/schema.ts` within each app
+- SQLite via Drizzle ORM; schema at `src/lib/server/db/schema.ts`
 - Local dev uses `DATABASE_URL=file:sqlite.db` (set automatically by `cross-env` in npm scripts)
 - Production uses libsql URLs from environment
 - `drizzle-kit push --force` to sync schema (no migration files)
@@ -55,8 +47,7 @@ cogni-test's adapter is selected via `BUILD` env var:
 ## Svelte Config Notes
 
 - cogni-test uses **mdsvex** (`.svx` files supported)
-- cogni-rhythm does not use mdsvex
-- Service workers are NOT auto-registered in either app (`register: false`)
+- Service workers are NOT auto-registered (`register: false`)
 - cogni-test drops `console` and `debugger` in PROD builds via esbuild
 
 ## Prettier / Style
@@ -66,11 +57,11 @@ cogni-test's adapter is selected via `BUILD` env var:
 
 ## Docker / Deploy
 
-- Docker Compose profiles control which services run: `dev`, `prod`, `rhythm-dev`, `rhythm-prod`, `nginx`, `web-db`
+- Docker Compose profiles control which services run: `dev`, `prod`, `web-db`
 - Example: `docker compose --profile dev up -d --build`
-- Traefik (v3) acts as reverse proxy on the `cogni-network`; config at `traefik/traefik.yml` and `traefik/dynamic/`
+- Traefik (v3) acts as reverse proxy on the `cogni-network` (managed in a separate repo)
 - TLS certificates are provisioned on-demand via Let's Encrypt (ACME HTTP challenge); stored in `/root/cogni-test/acme/`
-- App services use Docker labels for Traefik routing rules; no custom Dockerfile needed for the reverse proxy
+- App services use Docker labels for Traefik routing rules
 - Secrets loaded from env vars on host (VAPID keys, admin password)
 
 ## Existing Skill

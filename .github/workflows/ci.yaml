@@ -20,4 +20,4 @@ jobs:
             - name: Install Playwright Dependencies
               run: npx playwright install --with-deps
             - name: Run Tests
-              run: npm run test -w ./apps/cogni-test
+              run: npm run test

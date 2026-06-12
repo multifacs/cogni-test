@@ -40,7 +40,7 @@ jobs:
             - name: Build and push
               uses: docker/build-push-action@v7
               with:
-                  context: ./apps/cogni-test
+                  context: .
                   push: true
                   tags: |
                       ghcr.io/${{ github.repository }}/cogni-test:${{ env.TAG }}

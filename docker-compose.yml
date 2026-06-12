@@ -1,24 +1,7 @@
 services:
-    traefik:
-        image: traefik:v3
-        profiles:
-            - 'traefik'
-        container_name: traefik
-        restart: always
-        ports:
-            - '80:80'
-            - '443:443'
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock:ro
-            - /root/cogni-test/acme:/acme
-            - /root/cogni-test/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
-            - /root/cogni-test/traefik/dynamic:/etc/traefik/dynamic:ro
-        networks:
-            - cogni-network
-
     cogni-test-dev:
         build:
-            context: ./apps/cogni-test
+            context: .
         image: ghcr.io/multifacs/cogni-test/cogni-test:dev
         profiles:
             - 'dev'
@@ -48,7 +31,7 @@ services:
 
     cogni-test:
         build:
-            context: ./apps/cogni-test
+            context: .
         image: ghcr.io/multifacs/cogni-test/cogni-test:latest
         profiles:
             - 'prod'
@@ -75,66 +58,6 @@ services:
             - 'traefik.http.routers.cogni-test.tls=true'
             - 'traefik.http.routers.cogni-test.tls.certresolver=letsencrypt'
             - 'traefik.http.services.cogni-test.loadbalancer.server.port=80'
-
-    cogni-rhythm-dev:
-        build:
-            context: ./apps/cogni-rhythm
-        image: ghcr.io/multifacs/cogni-test/cogni-rhythm:dev
-        profiles:
-            - 'rhythm-dev'
-        container_name: cogni-rhythm-dev
-        restart: always
-        networks:
-            - cogni-network
-        volumes:
-            - /root/cogni-test/data/:/app/data
-        environment:
-            - MODE=DEV
-            - DATABASE_URL=file:./data/rhythm-dev.db
-            - PUBLIC_VAPID_SUBJECT=${PUBLIC_VAPID_SUBJECT}
-            - PUBLIC_VAPID_KEY=${PUBLIC_VAPID_KEY}
-            - PRIVATE_VAPID_KEY=${PRIVATE_VAPID_KEY}
-            - ORIGIN=https://dev2.cogni-rhythm.ru
-            - PUBLIC_PASSWORD=261180
-        stdin_open: true
-        tty: true
-        labels:
-            - 'traefik.enable=true'
-            - 'traefik.http.routers.cogni-rhythm-dev.rule=Host(`dev2.cogni-rhythm.ru`)'
-            - 'traefik.http.routers.cogni-rhythm-dev.entrypoints=websecure'
-            - 'traefik.http.routers.cogni-rhythm-dev.tls=true'
-            - 'traefik.http.routers.cogni-rhythm-dev.tls.certresolver=letsencrypt'
-            - 'traefik.http.services.cogni-rhythm-dev.loadbalancer.server.port=80'
-
-    cogni-rhythm:
-        build:
-            context: ./apps/cogni-rhythm
-        image: ghcr.io/multifacs/cogni-test/cogni-rhythm:latest
-        profiles:
-            - 'rhythm-prod'
-        container_name: cogni-rhythm
-        restart: always
-        networks:
-            - cogni-network
-        volumes:
-            - /root/cogni-test/data/:/app/data
-        environment:
-            - MODE=PROD
-            - DATABASE_URL=file:./data/rhythm.db
-            - PUBLIC_VAPID_SUBJECT=${PUBLIC_VAPID_SUBJECT}
-            - PUBLIC_VAPID_KEY=${PUBLIC_VAPID_KEY}
-            - PRIVATE_VAPID_KEY=${PRIVATE_VAPID_KEY}
-            - ORIGIN=https://cogni-rhythm.ru
-            - PUBLIC_PASSWORD=261180
-        stdin_open: true
-        tty: true
-        labels:
-            - 'traefik.enable=true'
-            - 'traefik.http.routers.cogni-rhythm.rule=Host(`cogni-rhythm.ru`)'
-            - 'traefik.http.routers.cogni-rhythm.entrypoints=websecure'
-            - 'traefik.http.routers.cogni-rhythm.tls=true'
-            - 'traefik.http.routers.cogni-rhythm.tls.certresolver=letsencrypt'
-            - 'traefik.http.services.cogni-rhythm.loadbalancer.server.port=80'
 
     drizzle-gateway:
         image: ghcr.io/drizzle-team/gateway:latest
