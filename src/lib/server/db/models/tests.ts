@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { sqliteTable, integer, text, check } from 'drizzle-orm/sqlite-core';
 import { session, enumCheck } from '../schema';
-import short from 'short-uuid';
+import { generate } from 'short-uuid';
 
 const CAMPIMETRY_COLORS = [
 	'black',
@@ -19,7 +19,7 @@ const CAMPIMETRY_COLORS = [
 export const campimetryAttempt = sqliteTable(
 	'campimetry_attempt',
 	{
-		id: text('id').primaryKey().$defaultFn(short.generate),
+		id: text('id').primaryKey().$defaultFn(generate),
 		attempt: integer('attempt').notNull(),
 		stage: integer('stage').notNull(),
 		silhouette: text('silhouette').notNull(),
@@ -45,8 +45,8 @@ export const campimetryAttempt = sqliteTable(
 export const mathAttempt = sqliteTable(
 	'math_attempt',
 	{
-		id: text('id').primaryKey().$defaultFn(short.generate),
-        stage: integer('stage').notNull(),
+		id: text('id').primaryKey().$defaultFn(generate),
+		stage: integer('stage').notNull(),
 		attempt: integer('attempt').notNull(),
 		time: integer('time').notNull(),
 		left: text('left').notNull(),
@@ -66,7 +66,7 @@ export const mathAttempt = sqliteTable(
 );
 
 export const memoryAttempt = sqliteTable('memory_attempt', {
-	id: text('id').primaryKey().$defaultFn(short.generate),
+	id: text('id').primaryKey().$defaultFn(generate),
 	attempt: integer('attempt').notNull(),
 	time: integer('time').notNull(),
 	word: text('word').notNull(),
@@ -82,7 +82,7 @@ export const memoryAttempt = sqliteTable('memory_attempt', {
 });
 
 export const munsterbergAttempt = sqliteTable('munsterberg_attempt', {
-	id: text('id').primaryKey().notNull().$defaultFn(short.generate),
+	id: text('id').primaryKey().notNull().$defaultFn(generate),
 	word: text('word').notNull(),
 	row: integer('row').notNull(),
 	col: integer('col').notNull(),
@@ -100,7 +100,7 @@ export const munsterbergAttempt = sqliteTable('munsterberg_attempt', {
 export const stroopAttempt = sqliteTable(
 	'stroop_attempt',
 	{
-		id: text('id').primaryKey().notNull().$defaultFn(short.generate),
+		id: text('id').primaryKey().notNull().$defaultFn(generate),
 		stage: integer('stage').notNull(),
 		attempt: integer('attempt').notNull(),
 		time: integer('time').notNull(),
@@ -131,7 +131,7 @@ const BACKGROUND_VALUES = ['red', 'blue'];
 export const swallowAttempt = sqliteTable(
 	'swallow_attempt',
 	{
-		id: text('id').primaryKey().notNull().$defaultFn(short.generate),
+		id: text('id').primaryKey().notNull().$defaultFn(generate),
 		attempt: integer('attempt').notNull(),
 		time: integer('time').notNull(),
 		direction: text('direction').notNull(),
@@ -155,7 +155,7 @@ export const swallowAttempt = sqliteTable(
 );
 
 export const rhythmAttempt = sqliteTable('rhythm_attempt', {
-	id: text('id').primaryKey().notNull().$defaultFn(short.generate),
+	id: text('id').primaryKey().notNull().$defaultFn(generate),
 	attempt: integer('attempt').notNull(),
 	note: integer('note').notNull(),
 	sessionId: text('session_id')
@@ -167,7 +167,7 @@ export const rhythmAttempt = sqliteTable('rhythm_attempt', {
 });
 
 export const memoryMatchAttempt = sqliteTable('memory_match_attempt', {
-	id: text('id').primaryKey().$defaultFn(short.generate),
+	id: text('id').primaryKey().$defaultFn(generate),
 	attempt: integer('attempt').notNull(), // 1..3
 	time: integer('time').notNull(), // durationMs
 	stage: integer('stage').notNull(), // дубль attempt

@@ -3,15 +3,14 @@ import { playwright } from '@vitest/browser-playwright';
 import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
 import mkcert from 'vite-plugin-mkcert';
-import devtoolsJson from 'vite-plugin-devtools-json';
 
-console.log('Vite config loaded with MODE:', process.env);
+// console.log('Vite config loaded with MODE:', process.env);
 
 export default defineConfig({
 	esbuild: {
 		drop: process.env.MODE == 'PROD' ? ['console', 'debugger'] : []
 	},
-	plugins: [sveltekit(), tailwindcss(), mkcert(), devtoolsJson()],
+	plugins: [sveltekit(), tailwindcss(), mkcert()],
 	test: {
 		expect: { requireAssertions: true },
 		projects: [

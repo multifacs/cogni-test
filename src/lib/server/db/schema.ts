@@ -1,8 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { sqliteTable, integer, text, check } from 'drizzle-orm/sqlite-core';
-import short from 'short-uuid';
-export * from './models/tests';
-export * from './models/survey';
+import { generate } from 'short-uuid';
 
 export function enumCheck(column: any, values: string[]) {
 	const joined = values.map((v) => `'${v}'`).join(', ');
@@ -12,7 +10,7 @@ export function enumCheck(column: any, values: string[]) {
 export const user = sqliteTable(
 	'user',
 	{
-		id: text('id').primaryKey().$defaultFn(short.generate),
+		id: text('id').primaryKey().$defaultFn(generate),
 		firstname: text('first_name').notNull(),
 		lastname: text('last_name').notNull(),
 		birthday: integer('birthday', { mode: 'timestamp' }).notNull(),
@@ -25,7 +23,7 @@ export const user = sqliteTable(
 );
 
 export const session = sqliteTable('session', {
-	id: text('id').primaryKey().$defaultFn(short.generate),
+	id: text('id').primaryKey().$defaultFn(generate),
 	testType: text('test_type').notNull(),
 	meta: text('meta'),
 	userId: text('user_id')
@@ -47,7 +45,6 @@ export const scheduledPushNotifications = sqliteTable('scheduled_push_notificati
 		.$defaultFn(() => new Date())
 });
 
-
 export const pushSubscriptions = sqliteTable('push_subscriptions', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
 	userId: text('user_id'), // Optional: link to user accounts
@@ -63,3 +60,6 @@ export const pushSubscriptions = sqliteTable('push_subscriptions', {
 		.$defaultFn(() => new Date()),
 	isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true)
 });
+
+export * from './models/tests';
+export * from './models/survey';

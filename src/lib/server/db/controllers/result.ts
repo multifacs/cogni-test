@@ -21,6 +21,8 @@ export async function postResult(
 	const hasMeta = 'meta' in results;
 	const meta = hasMeta ? JSON.stringify(results.meta) : undefined;
 
+	console.log(short, short.generate);
+
 	const sessionId = short.generate();
 
 	await db.insert(session).values({
@@ -40,11 +42,10 @@ export async function postResult(
 		munsterberg: munsterbergAttempt,
 		campimetry: campimetryAttempt,
 		rhythm: rhythmAttempt,
-		memoryMatch: memoryMatchAttempt, 
+		memoryMatch: memoryMatchAttempt
 	}[testType];
 
 	if (!insertAttempt) throw new Error(`Unknown test type: ${testType}`);
-
 
 	await db.insert(insertAttempt).values(
 		attempts.map((attempt) => ({
@@ -59,12 +60,10 @@ export async function postResult(
 import type { ResultInfo } from '$lib/tests/types';
 import { eq, asc, desc } from 'drizzle-orm';
 
-export async function getResults(
-	testType: TestType,
-	userId: string
-): Promise<ResultInfo[]> {
+export async function getResults(testType: TestType, userId: string): Promise<ResultInfo[]> {
 	const sessions = await db.query.session.findMany({
-		where: (fields, { eq, and }) => and(eq(fields.testType, testType), eq(fields.userId, userId)),
+		where: (fields, { eq, and }) =>
+			and(eq(fields.testType, testType), eq(fields.userId, userId)),
 		orderBy: (fields, { desc }) => desc(fields.createdAt)
 	});
 
@@ -90,7 +89,7 @@ export async function getResults(
 		results.push({
 			sessionId: s.id,
 			createdAt: s.createdAt,
-            // @ts-ignore
+			// @ts-ignore
 			attempts,
 			meta: s.meta ? JSON.parse(s.meta) : undefined
 		});
