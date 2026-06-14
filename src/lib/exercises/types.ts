@@ -3,6 +3,7 @@ import type { CampimetryResult } from './campimetry/types';
 import type { EmojiResult } from './emoji/types';
 import type { FlankerResult } from './flanker/types';
 import type { LettersResult } from './letters/types';
+import type { MemoryMatchSummaryRow } from './memory-match/types';
 import type { NumbersResult } from './numbers/types';
 import type { PicturesResult } from './pictures/types';
 import type { RavenFullResult } from './raven-matrices/types';
@@ -13,6 +14,7 @@ export type ExerciseType =
 	| 'emoji'
 	| 'flanker'
 	| 'letters'
+	| 'memoryMatchExercise'
 	| 'numbers'
 	| 'pictures'
 	| 'ravenMatrices';
@@ -23,6 +25,7 @@ export type ExerciseResultMap = {
 	emoji: EmojiResult;
 	flanker: FlankerResult;
 	letters: LettersResult;
+	memoryMatchExercise: MemoryMatchSummaryRow;
 	numbers: NumbersResult;
 	pictures: PicturesResult;
 	ravenMatrices: RavenFullResult;
@@ -34,6 +37,7 @@ export type ExerciseResult =
 	| EmojiResult
 	| FlankerResult
 	| LettersResult
+	| MemoryMatchSummaryRow
 	| NumbersResult
 	| PicturesResult
 	| RavenFullResult;
@@ -44,6 +48,7 @@ export type ExerciseResults =
 	| EmojiResult[]
 	| FlankerResult[]
 	| LettersResult[]
+	| MemoryMatchSummaryRow[]
 	| NumbersResult[]
 	| PicturesResult[]
 	| RavenFullResult[];
