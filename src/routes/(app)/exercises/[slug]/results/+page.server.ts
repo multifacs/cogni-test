@@ -8,6 +8,7 @@ const slugToExerciseType: Record<string, ExerciseType> = {
 	emoji: 'emoji',
 	flanker: 'flanker',
 	letters: 'letters',
+	'memory-match': 'memoryMatchExercise',
 	numbers: 'numbers',
 	pictures: 'pictures',
 	'raven-matrices': 'ravenMatrices'

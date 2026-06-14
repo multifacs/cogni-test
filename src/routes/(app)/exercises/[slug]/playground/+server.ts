@@ -11,6 +11,7 @@ const SLUG_TO_EXERCISE_TYPE: Record<string, ExerciseType> = {
 	emoji: 'emoji',
 	flanker: 'flanker',
 	letters: 'letters',
+	'memory-match': 'memoryMatchExercise',
 	numbers: 'numbers',
 	pictures: 'pictures',
 	'raven-matrices': 'ravenMatrices'
