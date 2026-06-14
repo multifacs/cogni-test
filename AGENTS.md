@@ -64,6 +64,36 @@ cogni-test's adapter is selected via `BUILD` env var:
 - App services use Docker labels for Traefik routing rules
 - Secrets loaded from env vars on host (VAPID keys, admin password)
 
+## Known Issues
+
+### Windows: `Expand-Archive` module auto-load failure
+
+On Windows, opencode's Grep/Glob/Skill tools may emit this error on every invocation:
+
+```
+Expand-Archive : The 'Expand-Archive' command was found in the module
+'Microsoft.PowerShell.Archive', but the module could not be loaded.
+```
+
+**Cause:** Known opencode bug (GitHub issues [#24291], [#29957], [#24489]). When extracting zip files (ripgrep binary, skill packages), opencode runs `powershell.exe -NoProfile -NonInteractive -Command "Expand-Archive ..."` — using Windows PowerShell 5.1 instead of pwsh 7. When spawned from the Bun-compiled opencode binary, PowerShell 5.1's module auto-loading for `Microsoft.PowerShell.Archive` fails. The same command works fine from any normal shell.
+
+**Impact:** Ripgrep and skill zips never get extracted, so tools that depend on them break or fall back.
+
+**Workaround:** Manually extract `rg.exe` to the cache dir:
+
+```powershell
+$bin = "$env:USERPROFILE\.cache\opencode\bin"
+$zip = Get-ChildItem "$bin\ripgrep-*.zip" | Select-Object -First 1
+if ($zip) {
+    $tmp = "$bin\rg-temp"
+    Expand-Archive -LiteralPath $zip.FullName -DestinationPath $tmp -Force
+    Copy-Item "$tmp\*\rg.exe" "$bin\rg.exe" -Force
+    Remove-Item $tmp -Recurse -Force
+}
+```
+
+For skills, pre-extract zip archives manually or read SKILL.md files directly with the `read` tool.
+
 ## Existing Skills
 
 - **Svelte 5 code-writer** at `.agents/skills/svelte-code-writer/SKILL.md` — provides `npx @sveltejs/mcp` CLI for docs lookup and autofixer. Use when editing `.svelte` or `.svelte.ts/.svelte.js` files.
