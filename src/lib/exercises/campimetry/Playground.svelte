@@ -4,17 +4,19 @@
 	import { LabColor } from './logic/lab-color.svelte';
 	import { error } from '@sveltejs/kit';
 	import { shuffle } from '$lib/utils';
-
 	import Button from '$lib/components/ui/Button.svelte';
-	import ResultsChart from '$lib/tests/campimetry/ResultsChart.svelte';
-	import type { CampimetryResult } from '$lib/tests/campimetry/types';
 
-	let { data } = $props();
-
-	console.log(data);
+	let {
+		data,
+		gameEnd,
+		sendResults
+	}: {
+		data: any;
+		gameEnd: () => void;
+		sendResults: (results: any[]) => void;
+	} = $props();
 
 	let isGameRunning = $state(true);
-	let showResults = $state(false);
 
 	let game: CampimetryGame = $state(Object());
 	let silhouettes: string[] = $state([]);
@@ -29,12 +31,10 @@
 	let delta = $state(0);
 
 	onMount(async () => {
-		console.log(Object.keys(data.silhouettes));
 		resetGame();
 	});
 
-	export function resetGame() {
-		showResults = false;
+	function resetGame() {
 		currentStage = 1;
 		delta = 0;
 		game = new CampimetryGame(Object.keys(data.silhouettes));
@@ -50,7 +50,7 @@
 		channel: 'a' | 'b',
 		op: '+' | '-'
 	) {
-		silhouettes = s; // getSilhouetteChoices(2, currentAnswer)
+		silhouettes = s;
 		currentStage = stage;
 		currentSilhouette = silhouette;
 		if (stage != 2) {
@@ -61,12 +61,10 @@
 		currentOp = op;
 	}
 
-	let results: CampimetryResult[] | null = $state(null);
-
-	export function stopGame() {
+	function stopGame() {
 		isGameRunning = false;
-		console.log(game.getResults());
-		results = game.getResults();
+		sendResults(game.getResults());
+		gameEnd();
 	}
 
 	function getSilhouetteChoices(num: number, correct: string): string[] {
@@ -84,7 +82,6 @@
 		if (!isGameRunning || game.isGameOver()) return stopGame();
 		game.startNextTask();
 		const currentTask = game.getCurrentTask();
-		console.log(currentTask);
 		updateState(
 			getSilhouetteChoices(2, currentTask.silhouette),
 			currentTask.stage,
@@ -97,7 +94,6 @@
 
 	function handleAnswer() {
 		if (!isGameRunning) return;
-		console.log('ui stage:', currentStage);
 
 		game.handleAnswer(delta);
 		if (currentStage == 1) {
@@ -112,7 +108,6 @@
 	function addRandomToDelta() {
 		const increment = Math.round(Math.random() * 5 + 4);
 		delta += increment;
-		console.log('added ', increment);
 		if (currentChannel == 'a')
 			for (let i = 0; i < increment; i++) {
 				currentOp == '+' ? currentSilhouetteColor.incA() : currentSilhouetteColor.decA();
@@ -132,19 +127,18 @@
 		}
 		if (currentStage == 1) delta++;
 		if (currentStage == 2) delta--;
-		console.log(delta);
 	}
 </script>
 
 {#if isGameRunning}
 	<div class="background" style={`background-color: ${currentBackgroundColor.toString()}`}>
 		<div
-			class="max-xs:w-16 max-xs:h-16 relative h-32 w-32 mask-contain"
+			class="max-xs:w-16 max-xs:h-16 h-32 w-32 mask-contain"
 			style={`
-        background-color: ${currentSilhouetteColor.toString()};
-        mask-image: url(${data.silhouettes[currentSilhouette]});
-        -webkit-mask-image: url(${data.silhouettes[currentSilhouette]});
-        `}
+                background-color: ${currentSilhouetteColor.toString()};
+                mask-image: url(${data.silhouettes[currentSilhouette]});
+                -webkit-mask-image: url(${data.silhouettes[currentSilhouette]});
+            `}
 		></div>
 	</div>
 	<div class="flex gap-2">
@@ -163,8 +157,8 @@
 					class="max-xs:w-16 max-xs:h-16 h-[100px] w-[100px] cursor-pointer touch-none bg-white mask-contain select-none"
 					disabled={!delta}
 					style={`
-                    mask-image: url(${data.silhouettes[s]});
-                    -webkit-mask-image: url(${data.silhouettes[s]});
+                        mask-image: url(${data.silhouettes[s]});
+                        -webkit-mask-image: url(${data.silhouettes[s]});
                     `}
 					onclick={() => {
 						if (s == currentSilhouette) {
@@ -179,11 +173,12 @@
 		</p>
 	{:else}
 		<p class="text-center">
-			Изменяйте оттенок, пока силуэт не перестанет быть виден. Затем нажмите "Больне не видно".
+			Изменяйте оттенок, пока силуэт не перестанет быть виден. Затем нажмите "Больше не
+			видно".
 		</p>
 	{/if}
 {:else}
-	<ResultsChart testType="campimetry" results={results!}></ResultsChart>
+	<h1>Тест окончен</h1>
 {/if}
 
 <style>
@@ -195,21 +190,17 @@
 		margin: 10px 0;
 	}
 
-	/* Вертикальная ориентация */
 	@media (orientation: portrait) {
 		.background {
 			width: 70vw;
 			height: 70vw;
-			/* например, квадрат по ширине */
 		}
 	}
 
-	/* Горизонтальная ориентация */
 	@media (orientation: landscape) {
 		.background {
 			width: 50vh;
 			height: 50vh;
-			/* квадрат по высоте */
 		}
 	}
 </style>

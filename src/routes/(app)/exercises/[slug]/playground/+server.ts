@@ -7,6 +7,7 @@ import type { RequestHandler } from '@sveltejs/kit';
 
 const SLUG_TO_EXERCISE_TYPE: Record<string, ExerciseType> = {
 	attention: 'attention',
+	campimetry: 'campimetryExercise',
 	emoji: 'emoji',
 	flanker: 'flanker',
 	letters: 'letters',

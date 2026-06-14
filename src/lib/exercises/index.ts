@@ -101,7 +101,8 @@ const exerciseLoaders: Record<string, ExerciseLoader> = {
 	},
 	campimetry: {
 		about: () => import('./campimetry/About.svelte'),
-		playground: () => import('./campimetry/Playground.svelte')
+		playground: () => import('./campimetry/Playground.svelte'),
+		result: () => import('./campimetry/Result.svelte')
 	},
 	'memory-match': {
 		about: () => import('./memory-match/About.svelte'),

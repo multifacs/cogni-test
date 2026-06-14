@@ -1,4 +1,5 @@
 import type { AttentionResult } from './attention/types';
+import type { CampimetryResult } from './campimetry/types';
 import type { EmojiResult } from './emoji/types';
 import type { FlankerResult } from './flanker/types';
 import type { LettersResult } from './letters/types';
@@ -8,6 +9,7 @@ import type { RavenFullResult } from './raven-matrices/types';
 
 export type ExerciseType =
 	| 'attention'
+	| 'campimetryExercise'
 	| 'emoji'
 	| 'flanker'
 	| 'letters'
@@ -17,6 +19,7 @@ export type ExerciseType =
 
 export type ExerciseResultMap = {
 	attention: AttentionResult;
+	campimetryExercise: CampimetryResult;
 	emoji: EmojiResult;
 	flanker: FlankerResult;
 	letters: LettersResult;
@@ -27,6 +30,7 @@ export type ExerciseResultMap = {
 
 export type ExerciseResult =
 	| AttentionResult
+	| CampimetryResult
 	| EmojiResult
 	| FlankerResult
 	| LettersResult
@@ -36,6 +40,7 @@ export type ExerciseResult =
 
 export type ExerciseResults =
 	| AttentionResult[]
+	| CampimetryResult[]
 	| EmojiResult[]
 	| FlankerResult[]
 	| LettersResult[]

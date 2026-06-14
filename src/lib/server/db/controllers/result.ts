@@ -12,6 +12,7 @@ import {
 } from '$lib/server/db/models/tests';
 import {
 	attentionAttempt,
+	campimetryExerciseAttempt,
 	emojiAttempt,
 	flankerAttempt,
 	lettersAttempt,
@@ -46,6 +47,7 @@ const attemptTableMap: Record<string, any> = {
 	letters: lettersAttempt,
 	numbers: numbersAttempt,
 	pictures: picturesAttempt,
+	campimetryExercise: campimetryExerciseAttempt,
 	ravenMatrices: ravenAttempt
 };
 
@@ -64,7 +66,8 @@ const queryTableMap: Record<string, any> = {
 	letters: db.query.lettersAttempt,
 	numbers: db.query.numbersAttempt,
 	pictures: db.query.picturesAttempt,
-	ravenMatrices: db.query.ravenAttempt
+	ravenMatrices: db.query.ravenAttempt,
+	campimetryExercise: db.query.campimetryExerciseAttempt
 };
 
 export async function postResult(

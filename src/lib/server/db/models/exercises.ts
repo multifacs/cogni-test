@@ -112,6 +112,24 @@ export const picturesAttempt = sqliteTable('pictures_attempt', {
 		.notNull()
 });
 
+export const campimetryExerciseAttempt = sqliteTable('campimetry_exercise_attempt', {
+	id: text('id').primaryKey().$defaultFn(generate),
+	attempt: integer('attempt').default(1).notNull(),
+	stage: integer('stage').notNull(),
+	silhouette: text('silhouette').notNull(),
+	channel: text('channel').notNull(),
+	op: text('op').notNull(),
+	color: text('color').notNull(),
+	delta: integer('delta').notNull(),
+	time: integer('time').notNull(),
+	sessionId: text('session_id')
+		.notNull()
+		.references(() => session.id),
+	createdAt: text('created_at')
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull()
+});
+
 export const ravenAnswer = sqliteTable('raven_answer', {
 	id: text('id').primaryKey().$defaultFn(generate),
 	taskId: text('task_id').notNull(),

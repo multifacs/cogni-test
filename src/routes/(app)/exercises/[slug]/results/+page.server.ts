@@ -4,6 +4,7 @@ import type { PageServerLoad } from './$types';
 
 const slugToExerciseType: Record<string, ExerciseType> = {
 	attention: 'attention',
+	campimetry: 'campimetryExercise',
 	emoji: 'emoji',
 	flanker: 'flanker',
 	letters: 'letters',
