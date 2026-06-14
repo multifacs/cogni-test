@@ -113,7 +113,8 @@ const exerciseLoaders: Record<string, ExerciseLoader> = {
 	},
 	'raven-matrices': {
 		about: () => import('./raven-matrices/About.svelte'),
-		playground: () => import('./raven-matrices/Playground.svelte')
+		playground: () => import('./raven-matrices/Playground.svelte'),
+		result: () => import('./raven-matrices/Result.svelte')
 	},
 	emoji: {
 		about: () => import('./emoji/About.svelte'),

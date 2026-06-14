@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { generateRavenTest } from './logic/generator';
 	import { taskClassLabel } from './results-adapter';
 	import RavenCell from './RavenCell.svelte';
@@ -7,26 +7,31 @@
 	import type {
 		GeneratedRavenTask,
 		RavenAnswerRecord,
-		RavenFullResult,
 		RavenTestGenerationOptions
 	} from './types';
 
-	export let options: RavenTestGenerationOptions = { count: 10, mode: 'default', answerCount: 6 };
+	let {
+		gameEnd,
+		sendResults,
+		options = { count: 10, mode: 'default', answerCount: 6 }
+	}: {
+		gameEnd: () => void;
+		sendResults: (summary: Record<string, unknown>[], answers: RavenAnswerRecord[]) => void;
+		options?: RavenTestGenerationOptions;
+	} = $props();
 
-	const dispatch = createEventDispatcher<{ done: RavenFullResult }>();
+	let tasks = $state<GeneratedRavenTask[]>([]);
+	let currentIndex = $state(0);
+	let selectedIndex: number | null = $state(null);
+	let answers = $state<RavenAnswerRecord[]>([]);
+	let testStartedAt = $state(0);
+	let questionStartedAt = $state(0);
+	let isStarted = $state(false);
+	let isLocked = $state(false);
 
-	let tasks: GeneratedRavenTask[] = [];
-	let currentIndex = 0;
-	let selectedIndex: number | null = null;
-	let answers: RavenAnswerRecord[] = [];
-	let testStartedAt = 0;
-	let questionStartedAt = 0;
-	let isStarted = false;
-	let isLocked = false;
-
-	$: currentTask = tasks[currentIndex];
-	$: progress = tasks.length ? ((currentIndex + 1) / tasks.length) * 100 : 0;
-	$: currentLabel = currentTask ? taskClassLabel(currentTask.taskClass) : '';
+	let currentTask = $derived(tasks[currentIndex]);
+	let progress = $derived(tasks.length ? ((currentIndex + 1) / tasks.length) * 100 : 0);
+	let currentLabel = $derived(currentTask ? taskClassLabel(currentTask.taskClass) : '');
 
 	onMount(() => {
 		prepareTest();
@@ -98,14 +103,16 @@
 			? Math.round(answers.reduce((sum, a) => sum + a.responseTimeMs, 0) / answers.length)
 			: 0;
 
-		dispatch('done', {
+		const summary = {
 			totalQuestions: tasks.length,
 			correctCount,
-			accuracy: tasks.length ? correctCount / tasks.length : 0,
+			accuracy: tasks.length ? Math.round((correctCount / tasks.length) * 100) : 0,
 			totalDurationMs,
-			averageResponseTimeMs,
-			answers
-		});
+			averageResponseTimeMs
+		};
+
+		sendResults([summary], answers);
+		gameEnd();
 	}
 </script>
 
@@ -139,7 +146,7 @@
 		<button
 			class="cursor-pointer rounded-xl border-0 bg-slate-800 px-4 py-3 font-extrabold text-white"
 			type="button"
-			on:click={start}>Начать</button
+			onclick={start}>Начать</button
 		>
 	</section>
 {:else if currentTask}
@@ -197,7 +204,7 @@
 						class:correct={selectedIndex !== null && index === currentTask.correctIndex}
 						class:wrong={selectedIndex === index && index !== currentTask.correctIndex}
 						disabled={isLocked}
-						on:click={() => selectAnswer(index)}
+						onclick={() => selectAnswer(index)}
 						aria-label={`Вариант ${index + 1}`}
 					>
 						<span

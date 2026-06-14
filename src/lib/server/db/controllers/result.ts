@@ -15,7 +15,8 @@ import {
 	emojiAttempt,
 	flankerAttempt,
 	lettersAttempt,
-	numbersAttempt
+	numbersAttempt,
+	ravenAttempt
 } from '$lib/server/db/models/exercises';
 import type { MetaResult as TestMetaResult, RegularResults, TestType } from '$lib/tests/types';
 import type {
@@ -42,7 +43,8 @@ const attemptTableMap: Record<string, any> = {
 	emoji: emojiAttempt,
 	flanker: flankerAttempt,
 	letters: lettersAttempt,
-	numbers: numbersAttempt
+	numbers: numbersAttempt,
+	ravenMatrices: ravenAttempt
 };
 
 const queryTableMap: Record<string, any> = {
@@ -58,7 +60,8 @@ const queryTableMap: Record<string, any> = {
 	emoji: db.query.emojiAttempt,
 	flanker: db.query.flankerAttempt,
 	letters: db.query.lettersAttempt,
-	numbers: db.query.numbersAttempt
+	numbers: db.query.numbersAttempt,
+	ravenMatrices: db.query.ravenAttempt
 };
 
 export async function postResult(
