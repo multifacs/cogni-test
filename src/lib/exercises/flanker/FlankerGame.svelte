@@ -1,9 +1,14 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import type { FlankerResult } from './types';
 
-	const dispatch = createEventDispatcher<{ done: FlankerResult }>();
+	let {
+		gameEnd,
+		sendResults
+	}: {
+		gameEnd: () => void;
+		sendResults: (results: FlankerResult[]) => void;
+	} = $props();
 
 	const TOTAL_TRIALS = 50;
 	const MAX_TEST_SECONDS = 120;
@@ -122,29 +127,19 @@
 		const avgRtIncongruentMs = Math.round(avg(incongruentRts));
 		const errors = answerLog.filter((a) => !a.isCorrect).length;
 
-		dispatch('done', {
-			correctAnswers,
-			totalTrials: TOTAL_TRIALS,
-			elapsedTime,
-			timeLimit,
-			avgRtCongruentMs,
-			avgRtIncongruentMs,
-			flankerEffectMs: avgRtIncongruentMs - avgRtCongruentMs,
-			errors
-		});
-	}
-
-	function restartTest() {
-		stopTimer();
-		testStarted = false;
-		testFinished = false;
-		timeLimit = false;
-		trials = [];
-		currentTrial = null;
-		correctAnswers = 0;
-		elapsedTime = 0;
-		layoutKey = 0;
-		answerLog = [];
+		sendResults([
+			{
+				correctAnswers,
+				totalTrials: TOTAL_TRIALS,
+				elapsedTime,
+				timeLimit,
+				avgRtCongruentMs,
+				avgRtIncongruentMs,
+				flankerEffectMs: avgRtIncongruentMs - avgRtCongruentMs,
+				errors
+			}
+		]);
+		gameEnd();
 	}
 </script>
 
@@ -181,27 +176,8 @@
 		</div>
 	</div>
 {:else if testFinished}
-	<div class="mx-auto mt-5 grid max-w-4xl grid-cols-[repeat(3,auto)] justify-center gap-[15px]">
-		<p
-			class="m-0 rounded-lg bg-[#364b6c] p-8 text-center text-base font-semibold text-[#4caf50]"
-		>
-			Правильных: {correctAnswers} / {TOTAL_TRIALS}
-		</p>
-		<p class="m-0 rounded-lg bg-[#364b6c] p-8 text-center text-base text-white">
-			Время: {elapsedTime} сек
-		</p>
-		{#if timeLimit}<p
-				class="m-0 rounded-lg bg-[#364b6c] p-8 text-center text-base font-semibold text-[#ff4d4d]"
-			>
-				Время вышло
-			</p>{:else}<p class="m-0 rounded-lg bg-[#364b6c] p-8 text-center text-base text-white">
-				Завершено
-			</p>{/if}
-	</div>
-	<div
-		class="mb-5 flex flex-col items-center justify-center gap-3 rounded-[20px] bg-white/8 p-5 backdrop-blur-[8px]"
-	>
-		<Button color="blue" onclick={restartTest}>Пройти заново</Button>
+	<div class="flex flex-col items-center justify-center gap-3">
+		<p class="text-lg font-semibold text-white">Тест завершён</p>
 	</div>
 {:else}
 	<Button color="green" onclick={startTest}>Старт</Button>

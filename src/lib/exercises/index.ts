@@ -135,7 +135,8 @@ const exerciseLoaders: Record<string, ExerciseLoader> = {
 	},
 	flanker: {
 		about: () => import('./flanker/About.svelte'),
-		playground: () => import('./flanker/Playground.svelte')
+		playground: () => import('./flanker/Playground.svelte'),
+		result: () => import('./flanker/Result.svelte')
 	},
 	letters: {
 		about: () => import('./letters/About.svelte'),
