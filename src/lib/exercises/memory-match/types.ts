@@ -42,3 +42,12 @@ export type FullResult = {
   perStage: StageResult[];
   totalDurationMs: number;    // непрерывный суммарный таймер
 };
+
+export type MemoryMatchSummaryRow = {
+    stage: number;
+    cardsCount: number;
+    flipsCount: number;
+    mistakes: number;
+    durationMs: number;
+    efficiency: number;
+};
