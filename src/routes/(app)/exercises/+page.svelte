@@ -3,9 +3,13 @@
 	import { onMount } from 'svelte';
 
 	let { data } = $props();
+	let exerciseSessionCounts: Record<string, number> = $state({});
 
 	onMount(() => {
 		userStore.set(data.user || '');
+		if (data.exerciseSessionCounts) {
+			exerciseSessionCounts = data.exerciseSessionCounts;
+		}
 	});
 </script>
 
@@ -19,7 +23,16 @@
 				href={path}
 				class="flex items-center justify-between rounded-2xl bg-gray-600 p-3 shadow transition hover:bg-gray-100 hover:text-black"
 			>
-				<span class="text-lg">{title}</span>
+				<div class="flex flex-col gap-1">
+					<span class="text-lg">{title}</span>
+					{#if exerciseSessionCounts[name]}
+						<span class="text-sm font-medium text-lime-200">
+							Пройдено: {exerciseSessionCounts[name]}
+						</span>
+					{:else}
+						<span class="text-sm text-orange-400"> Не пройдено </span>
+					{/if}
+				</div>
 				<img src={img} alt={name} class="h-14 w-14 rounded-xl bg-white" />
 			</a>
 		{/each}
@@ -27,5 +40,7 @@
 </main>
 <section class="low-content flex items-center justify-center text-center">
 	<!-- <p class="text-sm"></p> -->
-	<p class="max-w-md text-center text-lg max-md:text-sm">👼 Это только начало, следи за моим ростом 👼</p>
+	<p class="max-w-md text-center text-lg max-md:text-sm">
+		👼 Это только начало, следи за моим ростом 👼
+	</p>
 </section>
