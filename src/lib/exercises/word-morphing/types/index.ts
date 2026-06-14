@@ -22,3 +22,10 @@ export type Color = {
 	name: string;
 	value: string;
 };
+
+export type WordMorphingSummaryRow = {
+	category: string;
+	totalCombos: number;
+	correctCount: number;
+	durationSeconds: number;
+};

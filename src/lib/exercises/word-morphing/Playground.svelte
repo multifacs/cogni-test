@@ -8,10 +8,9 @@
 	import { pushService } from '$lib/pushService';
 	import { adjectives, nouns } from './logic/data';
 	import localforage from 'localforage';
-	import type { Color, Shape, WordMorphingSession } from './types';
+	import type { Color, Shape, WordMorphingSession, WordMorphingSummaryRow } from './types';
 
 	import { v7 as uuid } from 'uuid';
-	import Result from './components/Result.svelte';
 	import Recall from './components/Recall.svelte';
 	import WaitTimer from './components/WaitTimer.svelte';
 	import ReplaceNoun from './components/ReplaceNoun.svelte';
@@ -19,7 +18,6 @@
 	import CategorySelect from './components/CategorySelect.svelte';
 	import TimeSelect from './components/TimeSelect.svelte';
 	import Initial from './components/Initial.svelte';
-	import { is } from 'drizzle-orm';
 
 	// Добавляем выбор категории
 	let category: 'words' | 'shapes' = $state('words');
@@ -57,7 +55,15 @@
 		}
 	};
 
-	// let { data } = $props();
+	let {
+		data,
+		gameEnd,
+		sendResults
+	}: {
+		data: any;
+		gameEnd: () => void;
+		sendResults: (results: any[]) => void;
+	} = $props();
 
 	let selectedTimeOption: TimeOption = $state(timeOptions[0]);
 	let customTimeInSeconds = $state(60); // По умолчанию 1 минута
@@ -121,8 +127,7 @@
 		| 'replace-adj'
 		| 'replace-noun'
 		| 'wait'
-		| 'recall'
-		| 'result' = $state('category-select');
+		| 'recall' = $state('category-select');
 
 	let recalledCombos: string[] = $state([]);
 	let input1 = $state('');
@@ -289,7 +294,7 @@
 			// This will be triggered when timer expires in showLocalNotification()
 
 			intervalWorker.postMessage('start');
-		} else if (phase === 'recall') phase = 'result';
+		}
 	}
 
 	function setAdjective(value: string | Shape) {
@@ -335,15 +340,39 @@
 	async function finishRecall() {
 		setRecalledCombos();
 
-		// Clear session from localforage
+		let correctCount = 0;
+		for (let i = 0; i < expectedCombos.length; i++) {
+			const recalled = recalledCombos[i] || '';
+			const expected = expectedCombos[i];
+			if (
+				recalled.toLocaleLowerCase().replace('ё', 'е') ===
+				expected.toLocaleLowerCase().replace('ё', 'е')
+			) {
+				correctCount++;
+			}
+		}
+
+		const waitTime =
+			selectedTimeOption.name === 'Пользовательский'
+				? customTimeInSeconds
+				: selectedTimeOption.seconds;
+
+		const summaryRow: WordMorphingSummaryRow = {
+			category,
+			totalCombos: expectedCombos.length,
+			correctCount,
+			durationSeconds: waitTime
+		};
+
+		sendResults([summaryRow]);
+		gameEnd();
+
 		try {
 			await localforage.removeItem('wordMorphingSession');
 			timerEndsAt = null;
 		} catch (error) {
 			console.error('Error clearing session:', error);
 		}
-
-		nextPhase();
 	}
 
 	function setOriginalShapeAndColor(shapeName: string, colorName: string) {
@@ -431,8 +460,8 @@
 			</p>
 			<p class="text-white">Для подписки достаточно нажать зелёную кнопочку.</p>
 			<p class="text-white">
-				Вы сможете подписаться или отписаться от push-уведомлений в любое время на
-				странице профиля.
+				Вы сможете подписаться или отписаться от push-уведомлений в любое время на странице
+				профиля.
 			</p>
 			<Button color="green" onclick={subscribe}>Подписаться</Button>
 			<Button color="red" onclick={() => (showModal = false)}>Нет, спасибо</Button>
@@ -470,15 +499,5 @@
 		<WaitTimer {timerEndsAt} {currentTime} />
 	{:else if phase === 'recall'}
 		<Recall {category} bind:input1 bind:input2 bind:input3 onFinishRecall={finishRecall} />
-	{:else if phase === 'result'}
-		<Result
-			{recalledCombos}
-			{expectedCombos}
-			{category}
-			{originalShape}
-			{originalColor}
-			{currentShape}
-			{currentColor}
-		></Result>
 	{/if}
 </div>

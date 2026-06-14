@@ -167,6 +167,21 @@ export const nbackExerciseAttempt = sqliteTable('nback_exercise_attempt', {
 		.notNull()
 });
 
+export const wordMorphingExerciseAttempt = sqliteTable('word_morphing_exercise_attempt', {
+	id: text('id').primaryKey().$defaultFn(generate),
+	attempt: integer('attempt').default(1).notNull(),
+	category: text('category').notNull(),
+	totalCombos: integer('total_combos').notNull(),
+	correctCount: integer('correct_count').notNull(),
+	durationSeconds: integer('duration_seconds').notNull(),
+	sessionId: text('session_id')
+		.notNull()
+		.references(() => session.id),
+	createdAt: text('created_at')
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull()
+});
+
 export const ravenAnswer = sqliteTable('raven_answer', {
 	id: text('id').primaryKey().$defaultFn(generate),
 	taskId: text('task_id').notNull(),

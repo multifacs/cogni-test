@@ -12,7 +12,8 @@ const slugToExerciseType: Record<string, ExerciseType> = {
 	'nback-stream': 'nbackExercise',
 	numbers: 'numbers',
 	pictures: 'pictures',
-	'raven-matrices': 'ravenMatrices'
+	'raven-matrices': 'ravenMatrices',
+	'word-morphing': 'wordMorphingExercise'
 };
 
 export const load: PageServerLoad = async ({ params, cookies }) => {

@@ -97,7 +97,8 @@ type ExerciseLoader = {
 const exerciseLoaders: Record<string, ExerciseLoader> = {
 	'word-morphing': {
 		about: () => import('./word-morphing/About.svelte'),
-		playground: () => import('./word-morphing/Playground.svelte')
+		playground: () => import('./word-morphing/Playground.svelte'),
+		result: () => import('./word-morphing/Result.svelte')
 	},
 	campimetry: {
 		about: () => import('./campimetry/About.svelte'),

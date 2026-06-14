@@ -8,6 +8,7 @@ import type { NBackSummaryRow } from './nback-stream/types';
 import type { NumbersResult } from './numbers/types';
 import type { PicturesResult } from './pictures/types';
 import type { RavenFullResult } from './raven-matrices/types';
+import type { WordMorphingSummaryRow } from './word-morphing/types';
 
 export type ExerciseType =
 	| 'attention'
@@ -19,7 +20,8 @@ export type ExerciseType =
 	| 'nbackExercise'
 	| 'numbers'
 	| 'pictures'
-	| 'ravenMatrices';
+	| 'ravenMatrices'
+	| 'wordMorphingExercise';
 
 export type ExerciseResultMap = {
 	attention: AttentionResult;
@@ -32,6 +34,7 @@ export type ExerciseResultMap = {
 	numbers: NumbersResult;
 	pictures: PicturesResult;
 	ravenMatrices: RavenFullResult;
+	wordMorphingExercise: WordMorphingSummaryRow;
 };
 
 export type ExerciseResult =
@@ -44,7 +47,8 @@ export type ExerciseResult =
 	| NBackSummaryRow
 	| NumbersResult
 	| PicturesResult
-	| RavenFullResult;
+	| RavenFullResult
+	| WordMorphingSummaryRow;
 
 export type ExerciseResults =
 	| AttentionResult[]
@@ -56,7 +60,8 @@ export type ExerciseResults =
 	| NBackSummaryRow[]
 	| NumbersResult[]
 	| PicturesResult[]
-	| RavenFullResult[];
+	| RavenFullResult[]
+	| WordMorphingSummaryRow[];
 
 export type ResultInfo = {
 	sessionId: string;

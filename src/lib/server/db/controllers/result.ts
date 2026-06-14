@@ -20,7 +20,8 @@ import {
 	nbackExerciseAttempt,
 	numbersAttempt,
 	picturesAttempt,
-	ravenAttempt
+	ravenAttempt,
+	wordMorphingExerciseAttempt
 } from '$lib/server/db/models/exercises';
 import type { MetaResult as TestMetaResult, RegularResults, TestType } from '$lib/tests/types';
 import type {
@@ -52,7 +53,8 @@ const attemptTableMap: Record<string, any> = {
 	numbers: numbersAttempt,
 	pictures: picturesAttempt,
 	campimetryExercise: campimetryExerciseAttempt,
-	ravenMatrices: ravenAttempt
+	ravenMatrices: ravenAttempt,
+	wordMorphingExercise: wordMorphingExerciseAttempt
 };
 
 const queryTableMap: Record<string, any> = {
@@ -73,7 +75,8 @@ const queryTableMap: Record<string, any> = {
 	numbers: db.query.numbersAttempt,
 	pictures: db.query.picturesAttempt,
 	ravenMatrices: db.query.ravenAttempt,
-	campimetryExercise: db.query.campimetryExerciseAttempt
+	campimetryExercise: db.query.campimetryExerciseAttempt,
+	wordMorphingExercise: db.query.wordMorphingExerciseAttempt
 };
 
 export async function postResult(

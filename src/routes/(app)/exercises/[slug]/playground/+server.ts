@@ -15,7 +15,8 @@ const SLUG_TO_EXERCISE_TYPE: Record<string, ExerciseType> = {
 	'nback-stream': 'nbackExercise',
 	numbers: 'numbers',
 	pictures: 'pictures',
-	'raven-matrices': 'ravenMatrices'
+	'raven-matrices': 'ravenMatrices',
+	'word-morphing': 'wordMorphingExercise'
 };
 
 export const POST: RequestHandler = async ({ params, request, cookies }) => {
