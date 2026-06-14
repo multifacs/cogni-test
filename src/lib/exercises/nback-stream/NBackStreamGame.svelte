@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { fly } from 'svelte/transition';
 	import { onDestroy } from 'svelte';
 	import StreamBoard from './StreamBoard.svelte';
 	import type {
@@ -20,21 +19,21 @@
 		sendResults: (results: NBackSummaryRow[]) => void;
 	} = $props();
 
-	let domain: Domain = 'figures';
-	let nBack: 1 | 2 | 3 = 1;
-	let target: TargetFeature = 'shape';
+	let domain = $state<Domain>('figures');
+	let nBack = $state<1 | 2 | 3>(1);
+	let target = $state<TargetFeature>('shape');
 	const DURATION_MS = 60_000;
 
-	let phase: 'config' | 'countdown' | 'running' | 'done' = 'config';
-	let countdown = 3;
+	let phase = $state<'config' | 'countdown' | 'running' | 'done'>('config');
+	let countdown = $state(3);
 	let seq: Stimulus[] = [];
 	let idx = 0;
-	let current: Stimulus | null = null;
+	let current = $state<Stimulus | null>(null);
 	let clicks: ClickEvent[] = [];
 	let lastClickTs: number | null = null;
 	let startAt = 0;
 	let stimShownAt = 0;
-	let remainSec = 60;
+	let remainSec = $state(60);
 	let tickTimer: any = null;
 
 	function pickTargetForFigures(): TargetFeature {
@@ -178,17 +177,15 @@
 		<h2 class="text-xl font-semibold">Выберите режим</h2>
 		<div class="grid grid-cols-2 gap-4 max-w-xl">
 			<button
-				class="card"
-				class:selected={domain === 'figures'}
-				on:click={() => (domain = 'figures')}
+				class="card {domain === 'figures' ? 'selected' : ''}"
+				onclick={() => (domain = 'figures')}
 			>
 				<div class="text-3xl mb-2">⬢</div>
 				<div class="font-medium">Фигуры</div>
 			</button>
 			<button
-				class="card"
-				class:selected={domain === 'numbers'}
-				on:click={() => (domain = 'numbers')}
+				class="card {domain === 'numbers' ? 'selected' : ''}"
+				onclick={() => (domain = 'numbers')}
 			>
 				<div class="text-3xl mb-2">7</div>
 				<div class="font-medium">Числа</div>
@@ -196,19 +193,19 @@
 		</div>
 
 		<div class="grid grid-cols-3 gap-4 max-w-xl">
-			<button class="card" class:selected={nBack === 1} on:click={() => (nBack = 1)}
+			<button class="card {nBack === 1 ? 'selected' : ''}" onclick={() => (nBack = 1)}
 				><div class="text-2xl">1-back</div></button
 			>
-			<button class="card" class:selected={nBack === 2} on:click={() => (nBack = 2)}
+			<button class="card {nBack === 2 ? 'selected' : ''}" onclick={() => (nBack = 2)}
 				><div class="text-2xl">2-back</div></button
 			>
-			<button class="card" class:selected={nBack === 3} on:click={() => (nBack = 3)}
+			<button class="card {nBack === 3 ? 'selected' : ''}" onclick={() => (nBack = 3)}
 				><div class="text-2xl">3-back</div></button
 			>
 		</div>
 
 		<div class="w-full flex justify-center gap-4 pt-2">
-			<button class="btn" on:click={start}>Далее</button>
+			<button class="btn" onclick={start}>Далее</button>
 		</div>
 	</div>
 {:else if phase === 'countdown'}
@@ -245,19 +242,19 @@
 
 		<div class="flex gap-4 justify-center pt-2">
 			{#if current?.truth === null}
-				<button class="btn primary" on:click={advance} aria-label="Далее (Space)"
+				<button class="btn primary" onclick={advance} aria-label="Далее (Space)"
 					>Далее</button
 				>
 			{:else}
-				<button class="ans yes" on:click={() => onAnswer('yes')}>Да</button>
-				<button class="ans no" on:click={() => onAnswer('no')}>Нет</button>
+				<button class="ans yes" onclick={() => onAnswer('yes')}>Да</button>
+				<button class="ans no" onclick={() => onAnswer('no')}>Нет</button>
 			{/if}
 		</div>
 	</div>
 {/if}
 
 <svelte:window
-	on:keydown={(e) => {
+	onkeydown={(e) => {
 		if (phase !== 'running') return;
 		if (current?.truth === null) {
 			if (e.code === 'Space') {
@@ -345,19 +342,5 @@
 		padding: 0.6rem 0.9rem;
 		text-align: center;
 		font-size: 0.95rem;
-	}
-	.stat {
-		padding: 0.8rem 1rem;
-		border: 1px solid rgba(0, 0, 0, 0.1);
-		border-radius: 0.8rem;
-		background: #fff;
-	}
-	.label {
-		font-size: 0.8rem;
-		opacity: 0.7;
-	}
-	.value {
-		font-size: 1.3rem;
-		font-weight: 600;
 	}
 </style>

@@ -18,7 +18,7 @@ Base commit: `3fc4a4f`
 | 009 | [Generic Exercise Results Page for Future Exercises](./009-exercise-results-page.md) | DONE | Medium | Plans 001–007 |
 | 010 | [Save campimetry exercise results to DB + show results page](./010-campimetry-save-results.md) | DONE | Medium | Plan 009 |
 | 011 | [Save memory-match exercise results to DB + show results page](./011-memory-match-save-results.md) | DONE | Medium | Plan 009 |
-| 012 | [Save nback-stream exercise results to DB + show results page](./012-nback-stream-save-results.md) | TODO | Medium | Plan 009 |
+| 012 | [Save nback-stream exercise results to DB + show results page](./012-nback-stream-save-results.md) | DONE | Medium | Plan 009 |
 | 013 | [Save word-morphing exercise results to DB + show results page](./013-word-morphing-save-results.md) | TODO | Medium-Large | Plan 009 |
 
 ## Sprint: Exercise Results Persistence

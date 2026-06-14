@@ -6,9 +6,9 @@ import type { PageServerLoad } from './$types';
 
 const exerciseToSessionType: Record<string, string> = {
 	'word-morphing': 'word-morphing',
-	campimetry: 'campimetry',
-	'memory-match': 'memoryMatch',
-	'nback-stream': 'nback-stream',
+	campimetry: 'campimetryExercise',
+	'memory-match': 'memoryMatchExercise',
+	'nback-stream': 'nbackExercise',
 	'raven-matrices': 'ravenMatrices',
 	emoji: 'emoji',
 	attention: 'attention',
