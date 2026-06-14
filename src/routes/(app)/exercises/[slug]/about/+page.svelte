@@ -25,7 +25,7 @@
 		</div>
 	</main>
 
-	{#if !exercise?.hasPlayground}
+	{#if !exercise?.playground}
 		<section class="low-content grid grid-cols-3 gap-4">
 			<div></div>
 			<Button color="red" goto="/exercises">Назад</Button>

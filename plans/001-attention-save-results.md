@@ -1,7 +1,7 @@
 # Plan 001: Save Attention Exercise Results to DB + Show Results
 
 **Commit:** `699490d`
-**Status:** TODO
+**Status:** DONE
 **Effort:** Medium
 **Depends on:** none
 
@@ -43,7 +43,7 @@ Key differences from memory-match's approach (which does its own fetch inside Pl
 - Memory-match directly calls `fetch("/tests/memoryMatch/playground", ...)` from its Playground component — this tightly couples UI to routing.
 - The tests pattern injects `sendResults` from the route page — cleaner separation of concerns, reusable by any exercise.
 
-Additionally, add a `hasResults` flag to `TestData` in the exercise registry so the exercises playground route page can conditionally show the "Результаты" button only for exercises that have DB persistence.
+Additionally, use the existing `result` lazy loader on `ExerciseLoader` (instead of a separate `hasResults` flag on `TestData`) so the playground route page can conditionally show the "Результаты" button only for exercises that have DB persistence. Checking `exercise?.result` replaces the now-removed `hasResults` boolean — one fewer field to keep in sync.
 
 For DB/controller plumbing, reuse the existing `postResult`/`getResults` functions — just register the new `attentionAttempt` table in their lookup maps. No new controllers needed.
 
@@ -51,14 +51,19 @@ For DB/controller plumbing, reuse the existing `postResult`/`getResults` functio
 
 ### Step 1: Add `attentionAttempt` table to DB schema
 
-**File:** `src/lib/server/db/models/tests.ts`
+**New file:** `src/lib/server/db/models/exercises.ts`
 
-Add after line 185 (after `memoryMatchAttempt`):
+Create a separate model file for exercise-specific attempt tables (keeping `tests.ts` for test tables only):
 
 ```ts
+import { text, integer, sqliteTable } from 'drizzle-orm/sqlite-core';
+import { sql } from 'drizzle-orm';
+import { generate } from '$lib/utils/db-utils.js';
+import { session } from './tests';
+
 export const attentionAttempt = sqliteTable('attention_attempt', {
 	id: text('id').primaryKey().$defaultFn(generate),
-	attempt: integer('attempt').notNull(),
+	attempt: integer('attempt').default(1).notNull(),
 	n: integer('n').notNull(),
 	m: integer('m').notNull(),
 	errors: integer('errors').notNull(),
@@ -73,17 +78,24 @@ export const attentionAttempt = sqliteTable('attention_attempt', {
 });
 ```
 
-Each completed game produces one row (attempt = 1). If multi-attempt support is desired later, the `attempt` column allows it — same pattern as all other tables.
+**Important:** The `attempt` column uses `.default(1).notNull()` instead of just `.notNull()`. The `AttentionResult` type (`{ n, m, errors, elapsed, found }`) has no `attempt` field. When `postResult` spreads result objects into the insert, `attempt` would be `undefined` → Drizzle sends `null` → violates the `NOT NULL` constraint. The `.default(1)` lets SQLite fill in the value automatically.
 
-**Verification:** Run `npm run init-db-dev` to push schema changes (or `npx drizzle-kit push --force`). Confirm table exists with `sqlite3 sqlite.db ".schema attention_attempt"`.
+Also add the re-export to schema so drizzle-kit picks up the new model file:
+
+**File:** `src/lib/server/db/schema.ts`
+
+Add at bottom:
+```ts
+export * from './models/exercises';
+```
 
 ### Step 2: Register `attentionAttempt` in the result controller
 
 **File:** `src/lib/server/db/controllers/result.ts`
 
-1. Import `attentionAttempt` alongside existing imports (line 10):
+1. Import `attentionAttempt` from the exercises model (not tests):
 ```ts
-import { ..., attentionAttempt } from '$lib/server/db/models/tests';
+import { ..., attentionAttempt } from '$lib/server/db/models/exercises';
 ```
 
 2. In `postResult()`, add `'attention'` to the `insertAttempt` map (after line 45):
@@ -171,26 +183,27 @@ export type RegularResults =
 
 **Verification:** `npm run check` passes.
 
-### Step 4: Add `hasResults` flag to exercise registry
+### Step 4: Use `result` loader instead of `hasResults` flag
 
 **File:** `src/lib/exercises/index.ts`
 
-Add `hasResults` to the `TestData` type and set it on exercises that support DB persistence (currently only attention):
+Instead of adding a `hasResults` boolean to `TestData` (which would be redundant with the existence of the `result` lazy loader on `ExerciseLoader`), use `exercise?.result` as the check. The `TestData` type stays as-is (no `hasResults` field). The `ExerciseLoader` type already has an optional `result?: () => Promise<any>` field.
 
+The attention entry in `exerciseLoaders` already registers its result component:
 ```ts
-export type TestData = {
-	name: string;
-	title: string;
-	path: string;
-	img: string;
-	hasPlayground: boolean;
-	hasResults: boolean;
-};
+attention: {
+    about: () => import('./attention/About.svelte'),
+    playground: () => import('./attention/Playground.svelte'),
+    result: () => import('./attention/Result.svelte')
+},
 ```
 
-Set `hasResults: true` for the attention entry and `hasResults: false` for all others. The route page will use this flag to conditionally show the "Результаты" button and pass `sendResults` to components.
+The route page checks `exercise?.result` where it previously would have checked `hasResults`:
+- `if (exercise?.result)` → navigate to results page
+- `sendResults={exercise?.result ? onSendResults : undefined}` → pass callback only when results exist
+- `{#if isGameEnd && exercise?.result}` → show "Результаты" button
 
-**Verification:** `npm run check` passes.
+This means adding DB persistence for a future exercise only requires adding a `result` loader entry — no extra boolean flag needed.
 
 ### Step 5: Update `AttentionGame.svelte` — replace `createEventDispatcher` with callback props
 
@@ -389,7 +402,7 @@ Replace with (follows exact pattern of `tests/[slug]/playground/+page.svelte`):
 	function onGameEnd() {
 		isGameRunning = false;
 		isGameEnd = true;
-		if (exercise?.hasResults) {
+		if (exercise?.result) {
 			goto(`/exercises/${slug}/results`);
 		}
 	}
@@ -410,12 +423,12 @@ Replace with (follows exact pattern of `tests/[slug]/playground/+page.svelte`):
 		<Component
 			bind:this={childComponent}
 			gameEnd={onGameEnd}
-			sendResults={exercise?.hasResults ? onSendResults : undefined}
+			sendResults={exercise?.result ? onSendResults : undefined}
 			{data}
 		></Component>
 	</main>
 
-	{#if isGameEnd && exercise?.hasResults}
+	{#if isGameEnd && exercise?.result}
 		<section class="low-content grid grid-cols-2 gap-4">
 			<Button color="red" goto={`/exercises/${slug}`}>Назад</Button>
 			<Button color="blue" goto={`/exercises/${slug}/results`}>Результаты</Button>
@@ -451,11 +464,11 @@ Key differences from current code:
 
 | Behavior | Before | After |
 |----------|--------|-------|
-| On game end | Navigates to `/exercises/{slug}/about` | If `hasResults`: navigates to `/exercises/{slug}/results`; otherwise goes to about |
-| `sendResults` prop | Not passed | Passed when exercise has DB persistence; `undefined` otherwise |
-| Bottom buttons after game end | Always 3-col (spacer + Назад + spacer) | If `hasResults`: 2-col (Назад + Результаты); otherwise 3-col |
+| On game end | Navigates to `/exercises/{slug}/about` | If `exercise?.result`: navigates to `/exercises/{slug}/results`; otherwise goes to about |
+| `sendResults` prop | Not passed | Passed when `exercise?.result` is truthy; `undefined` otherwise |
+| Bottom buttons after game end | Always 3-col (spacer + Назад + spacer) | If `exercise?.result`: 2-col (Назад + Результаты); otherwise 3-col |
 
-Exercises without `hasResults` will not receive `sendResults`, so their Playground components simply won't call it — no changes needed for existing exercise Playground components.
+Exercises without a `result` loader will not receive `sendResults`, so their Playground components simply won't call it — no changes needed for existing exercise Playground components.
 
 **Verification:** Open `/exercises/attention/playground`. Complete a game. Confirm:
 - Network tab shows POST `/exercises/attention/playground` returns 201
@@ -463,7 +476,7 @@ Exercises without `hasResults` will not receive `sendResults`, so their Playgrou
 - "Результаты" button appears after game end
 - For other exercises (e.g. word-morphing), behavior is unchanged (no sendResults, navigates to /about)
 
-### Step 9: Add results route — load data from DB
+### Step 9: Add results route — server-side load + GET API endpoint
 
 **New file:** `src/routes/(app)/exercises/[slug]/results/+page.server.ts`
 
@@ -484,90 +497,106 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 };
 ```
 
-**Verification:** Navigate to `/exercises/attention/results` after completing a game — page loads without error and `data.results` contains entries.
+**New file:** `src/routes/(app)/exercises/[slug]/results/+server.ts`
 
-### Step 10: Create the results page component
+GET endpoint so the self-contained `Result.svelte` component can fetch its own data:
 
-**New file:** `src/routes/(app)/exercises/[slug]/results/+page.svelte`
+```ts
+import { getResults } from '$lib/server/db/controllers/result.js';
+import { json } from '@sveltejs/kit';
+import type { RequestHandler } from '@sveltejs/kit';
 
-Modeled after `src/routes/(app)/tests/[slug]/results/+page.svelte` but simplified for attention's simpler data structure:
+export const GET: RequestHandler = async ({ params, cookies }) => {
+	const slug = params.slug;
+	if (slug !== 'attention') {
+		return json({ results: [] });
+	}
+	const userId = cookies.get('user_id') as string;
+	const results = await getResults('attention', userId);
+	return json({ results });
+};
+```
+
+**Verification:** Navigate to `/exercises/attention/results` after completing a game — page loads without error and data is available both through SSR (`data.results`) and via `fetch('/exercises/attention/results')`.
+
+### Step 10: Create the Result component + update results page
+
+**New file:** `src/lib/exercises/attention/Result.svelte`
+
+Self-contained result display component. Accepts `{ slug }` as a prop, fetches its own data via the GET endpoint, and renders the accordion UI with found/time/errors cards plus navigation buttons:
 
 ```svelte
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
-	import { formatUserLocalDate } from '$lib/utils/index.js';
+	import Spinner from '$lib/components/ui/Spinner.svelte';
+	import { formatUserLocalDate } from '$lib/utils/common.js';
+	import type { AttentionResult } from './types';
+	import type { ResultInfo } from '$lib/tests/types';
 
-	const { data } = $props();
-	const results = data.results;
+	let { slug }: { slug: string } = $props();
 
-	let openedSessionId = $state(results[0]?.sessionId ?? null);
+	let results = $state<ResultInfo[]>([]);
+	let loading = $state(true);
+	let openedSessionId: string | null = $state(null);
+
+	async function loadResults() {
+		loading = true;
+		try {
+			const res = await fetch(`/exercises/${slug}/results`);
+			if (res.ok) {
+				const data = await res.json();
+				results = data.results ?? [];
+				openedSessionId = results[0]?.sessionId ?? null;
+			}
+		} finally {
+			loading = false;
+		}
+	}
+
+	loadResults();
 
 	function toggleSession(sessionId: string) {
 		openedSessionId = openedSessionId === sessionId ? null : sessionId;
 	}
 </script>
 
-<main class="main box-border">
-	{#if results.length > 0}
-		<div class="flex min-h-full flex-col justify-center gap-2">
-			{#each results as result}
-				<div class="w-full rounded-2xl bg-gray-600 shadow">
-					<button
-						class={`flex w-full cursor-pointer items-center justify-between rounded-t-2xl px-4 py-3 transition-colors hover:bg-gray-400 ${openedSessionId !== result.sessionId ? 'hover:rounded-b-2xl' : ''}`}
-						onclick={() => toggleSession(result.sessionId)}
-					>
-						<span class="font-medium text-gray-50">
-							{openedSessionId === result.sessionId
-								? 'Попытка от ' + formatUserLocalDate(result.createdAt)
-								: formatUserLocalDate(result.createdAt)}
-						</span>
-						<svg
-							class={`h-5 w-5 transform text-gray-500 transition-transform ${openedSessionId === result.sessionId ? 'rotate-180' : ''}`}
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M19 9l-7 7-7-7"
-							/>
-						</svg>
-					</button>
+<!-- loading / results / empty states with accordion UI -->
+```
 
-					{#if openedSessionId === result.sessionId}
-						<div class="box-border flex flex-col items-center border-t p-2">
-							{#each result.attempts as attempt}
-								<div class="grid grid-cols-3 gap-4 py-2">
-									<div class="rounded-2xl bg-[#364b6c] p-4 text-center text-white">
-										<span class="mb-2 block opacity-70">Найдено</span>
-										<strong class="text-2xl">{attempt.found} / {attempt.n}</strong>
-									</div>
-									<div class="rounded-2xl bg-[#364b6c] p-4 text-center text-white">
-										<span class="mb-2 block opacity-70">Время</span>
-										<strong class="text-2xl">{attempt.elapsed} сек</strong>
-									</div>
-									<div class="rounded-2xl bg-[#364b6c] p-4 text-center text-white">
-										<span class="mb-2 block opacity-70">Ошибки</span>
-										<strong class="text-2xl">{attempt.errors}</strong>
-									</div>
-								</div>
-							{/each}
-						</div>
-					{/if}
-				</div>
-			{/each}
-		</div>
-	{:else}
-		<h1>Попыток нет</h1>
-	{/if}
-</main>
+**File:** `src/routes/(app)/exercises/[slug]/results/+page.svelte`
 
-<section class="low-content grid grid-cols-2 gap-4">
-	<Button color="red" goto="/exercises/attention">Назад</Button>
-	<Button color="blue" goto="/exercises/attention/playground">Пройти снова</Button>
-</section>
+Updated to dynamically load the `result` component from the exercise registry and render it with `{ slug }`:
+
+```svelte
+<script lang="ts">
+	import Spinner from '$lib/components/ui/Spinner.svelte';
+	import { exerciseRegistry } from '$lib/exercises';
+	import type { SvelteComponent } from 'svelte';
+
+	const { data } = $props();
+	const slug = data.slug;
+	const exercise = $derived(exerciseRegistry[slug]);
+
+	let Component: typeof SvelteComponent | null = $state(null);
+
+	$effect(() => {
+		Component = null;
+		if (exercise?.result) {
+			exercise.result().then((mod) => {
+				Component = mod.default;
+			});
+		}
+	});
+</script>
+
+{#if Component}
+	<Component {slug} />
+{:else}
+	<main class="main flex flex-col items-center justify-center gap-4">
+		<Spinner />
+		<p>Загрузка результатов {slug}...</p>
+	</main>
+{/if}
 ```
 
 **Verification:** Complete a game, navigate to `/exercises/attention/results`. Should show an accordion entry with date. Expand to see found/time/errors cards.
@@ -576,26 +605,27 @@ Modeled after `src/routes/(app)/tests/[slug]/results/+page.svelte` but simplifie
 
 If you want a Chart.js visualization like other tests (showing performance over time), you can add a `ResultsChart.svelte` inside `src/lib/exercises/attention/` and register it. However, since attention has a simple summary (not time-series per-attempt), the card-based display in Step 10 is sufficient for MVP. Skip this step unless you want trend charts across sessions.
 
-To add later if desired:
-1. Create `src/lib/exercises/attention/ResultsChart.svelte`
-2. In `src/lib/exercises/index.ts`, change `ExerciseLoader` type to include `resultsChart?: () => Promise<any>`
-3. Add `resultsChart` to the attention entry in `exerciseLoaders`
-4. Update `+page.svelte` results page to dynamically load it
+Note: The `result` lazy loader is already registered on the attention entry in `exerciseLoaders`. If adding a `ResultsChart`, you'd need to either:
+1. Add a separate `resultsChart?: () => Promise<any>` field to `ExerciseLoader` and load it separately, or
+2. Embed chart rendering inside `Result.svelte` itself
 
 ## Files Changed
 
 | File | Action |
 |------|--------|
-| `src/lib/server/db/models/tests.ts` | Edit — add `attentionAttempt` table |
-| `src/lib/server/db/controllers/result.ts` | Edit — import + register in both maps |
+| `src/lib/server/db/models/exercises.ts` | **New** — `attentionAttempt` table with `attempt: integer('attempt').default(1).notNull()` |
+| `src/lib/server/db/schema.ts` | Edit — add `export * from './models/exercises'` |
+| `src/lib/server/db/controllers/result.ts` | Edit — import `attentionAttempt` from `$lib/server/db/models/exercises`, register in both maps |
 | `src/lib/tests/types.ts` | Edit — add `'attention'` to `TestType`, `RegularResult`, `RegularResults`, `TestResultMap` |
-| `src/lib/exercises/index.ts` | Edit — add `hasResults` flag to type + attention entry |
+| `src/lib/exercises/index.ts` | Edit — remove `hasResults` from `TestData` type and all entries; `result` loader already registered on attention |
 | `src/lib/exercises/attention/AttentionGame.svelte` | Edit — replace `createEventDispatcher` with `gameEnd`/`sendResults` props |
 | `src/lib/exercises/attention/Playground.svelte` | Edit — forward `gameEnd`/`sendResults` props, remove inline results display |
-| `src/routes/(app)/exercises/[slug]/playground/+page.svelte` | Edit — add `onSendResults`, conditional "Результаты" button, navigate to results on game end |
+| `src/lib/exercises/attention/Result.svelte` | **New** — self-contained result display component (fetches own data, renders accordion + buttons) |
+| `src/routes/(app)/exercises/[slug]/playground/+page.svelte` | Edit — add `onSendResults`, use `exercise?.result` instead of `hasResults` for conditional "Результаты" button |
 | `src/routes/(app)/exercises/[slug]/playground/+server.ts` | **New** — POST handler |
-| `src/routes/(app)/exercises/[slug]/results/+page.server.ts` | **New** — load results from DB |
-| `src/routes/(app)/exercises/[slug]/results/+page.svelte` | **New** — display results with accordion |
+| `src/routes/(app)/exercises/[slug]/results/+page.server.ts` | **New** — load results from DB (SSR) |
+| `src/routes/(app)/exercises/[slug]/results/+page.svelte` | Edit — dynamically load `Result` component from registry via `exercise.result()` |
+| `src/routes/(app)/exercises/[slug]/results/+server.ts` | **New** — GET endpoint for self-contained Result component |
 
 ## Files Explicitly Out of Scope
 
@@ -631,10 +661,10 @@ Run these commands and verify expected output:
 
 ## Maintenance Notes
 
-- Adding DB persistence for another exercise follows the exact same pattern: add table → register in controller maps → set `hasResults: true` → update Playground to accept `gameEnd`/`sendResults` props.
+- Adding DB persistence for another exercise follows the exact same pattern: add table to `models/exercises.ts` → register in controller maps → add `result` loader to `exerciseLoaders` → create self-contained `Result.svelte` → update Playground to accept `gameEnd`/`sendResults` props.
 - The `TestType` union and `postResult`/`getResults` lookup maps must stay in sync with DB tables — if you add an exercise table, update all three places.
-- The `attempt=1` convention means each completed game is one row. If multi-round sessions are added later, increment `attempt` per round and group by `sessionId`.
-- The `hasResults` flag on `TestData` controls UI behavior at the route level — exercises without it still work exactly as before (no sendResults prop, navigate to /about, 3-col bottom buttons).
+- The `attempt=1` default convention means each completed game is one row. If multi-round sessions are added later, increment `attempt` per round and group by `sessionId`.
+- The `exercise?.result` check replaces the removed `hasResults` flag — exercises without a `result` loader still work exactly as before (no sendResults prop, navigate to /about, 3-col bottom buttons).
 - This plan addresses the `createEventDispatcher` deprecation only for `AttentionGame.svelte`. The remaining exercises still use it (see improvement plan item 2.1).
 
 ## Escape Hatches
@@ -642,3 +672,11 @@ Run these commands and verify expected output:
 - If `drizzle-kit push --force` fails due to existing data conflicts, run `npm run init-db-dev` instead (it uses cross-env to set DATABASE_URL).
 - If the user doesn't have a `user_id` cookie (not logged in), `postResult` will receive `undefined` as `userId` which violates the NOT NULL constraint on `session.userId`. The existing tests routes have the same behavior — this is a pre-existing issue, not introduced by this plan. If blocking, add a guard: `if (!userId) return json({ error: 'unauthorized' }, { status: 401 });` in the POST handler.
 - If an exercise Playground component doesn't accept `sendResults`/`gameEnd` props yet, it simply won't receive them — TypeScript won't error because Svelte passes extra props silently. The component must be updated to use them when adding DB support for that exercise.
+
+## Bug Fix: `attempt` Column NULL Constraint Violation
+
+**Root cause:** `AttentionResult` type is `{ n, m, errors, elapsed, found }` — no `attempt` field. The `postResult` controller spreads result objects into the Drizzle insert via `.values(attempts.map(attempt => ({ ...attempt, sessionId })))`. Since `attempt` was `.notNull()` without a default, Drizzle sent `null` for the missing field → SQLite rejected it with a NOT NULL constraint violation.
+
+**Fix applied:** Moved `attentionAttempt` table definition to a new `src/lib/server/db/models/exercises.ts` file (separate from `tests.ts`) with `attempt: integer('attempt').default(1).notNull()`. This lets SQLite auto-fill `1` when the field isn't provided in the insert payload.
+
+Also ran `drizzle-kit push --force` to apply the `DEFAULT 1` on the existing `attention_attempt` table in SQLite.

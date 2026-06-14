@@ -6,7 +6,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	const slug = params.slug;
 	const exercise = exerciseRegistry[slug];
 
-	if (!exercise?.hasPlayground || !exercise.playground) {
+	if (!exercise?.playground) {
 		error(404, 'test not found');
 	}
 
