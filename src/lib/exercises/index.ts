@@ -111,7 +111,8 @@ const exerciseLoaders: Record<string, ExerciseLoader> = {
 	},
 	'nback-stream': {
 		about: () => import('./nback-stream/About.svelte'),
-		playground: () => import('./nback-stream/Playground.svelte')
+		playground: () => import('./nback-stream/Playground.svelte'),
+		result: () => import('./nback-stream/Result.svelte')
 	},
 	'raven-matrices': {
 		about: () => import('./raven-matrices/About.svelte'),

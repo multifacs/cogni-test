@@ -4,6 +4,7 @@ import type { EmojiResult } from './emoji/types';
 import type { FlankerResult } from './flanker/types';
 import type { LettersResult } from './letters/types';
 import type { MemoryMatchSummaryRow } from './memory-match/types';
+import type { NBackSummaryRow } from './nback-stream/types';
 import type { NumbersResult } from './numbers/types';
 import type { PicturesResult } from './pictures/types';
 import type { RavenFullResult } from './raven-matrices/types';
@@ -15,6 +16,7 @@ export type ExerciseType =
 	| 'flanker'
 	| 'letters'
 	| 'memoryMatchExercise'
+	| 'nbackExercise'
 	| 'numbers'
 	| 'pictures'
 	| 'ravenMatrices';
@@ -26,6 +28,7 @@ export type ExerciseResultMap = {
 	flanker: FlankerResult;
 	letters: LettersResult;
 	memoryMatchExercise: MemoryMatchSummaryRow;
+	nbackExercise: NBackSummaryRow;
 	numbers: NumbersResult;
 	pictures: PicturesResult;
 	ravenMatrices: RavenFullResult;
@@ -38,6 +41,7 @@ export type ExerciseResult =
 	| FlankerResult
 	| LettersResult
 	| MemoryMatchSummaryRow
+	| NBackSummaryRow
 	| NumbersResult
 	| PicturesResult
 	| RavenFullResult;
@@ -49,6 +53,7 @@ export type ExerciseResults =
 	| FlankerResult[]
 	| LettersResult[]
 	| MemoryMatchSummaryRow[]
+	| NBackSummaryRow[]
 	| NumbersResult[]
 	| PicturesResult[]
 	| RavenFullResult[];

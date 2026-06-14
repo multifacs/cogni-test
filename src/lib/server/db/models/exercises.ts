@@ -147,6 +147,26 @@ export const memoryMatchExerciseAttempt = sqliteTable('memory_match_exercise_att
 		.notNull()
 });
 
+export const nbackExerciseAttempt = sqliteTable('nback_exercise_attempt', {
+	id: text('id').primaryKey().$defaultFn(generate),
+	attempt: integer('attempt').default(1).notNull(),
+	domain: text('domain').notNull(),
+	nBack: integer('n_back').notNull(),
+	target: text('target').notNull(),
+	durationMs: integer('duration_ms').notNull(),
+	totalStimuli: integer('total_stimuli').notNull(),
+	correct: integer('correct').notNull(),
+	incorrect: integer('incorrect').notNull(),
+	accuracy: integer('accuracy').notNull(),
+	avgRtMs: integer('avg_rt_ms').notNull(),
+	sessionId: text('session_id')
+		.notNull()
+		.references(() => session.id),
+	createdAt: text('created_at')
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull()
+});
+
 export const ravenAnswer = sqliteTable('raven_answer', {
 	id: text('id').primaryKey().$defaultFn(generate),
 	taskId: text('task_id').notNull(),

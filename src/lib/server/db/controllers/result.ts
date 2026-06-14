@@ -17,6 +17,7 @@ import {
 	flankerAttempt,
 	lettersAttempt,
 	memoryMatchExerciseAttempt,
+	nbackExerciseAttempt,
 	numbersAttempt,
 	picturesAttempt,
 	ravenAttempt
@@ -47,6 +48,7 @@ const attemptTableMap: Record<string, any> = {
 	flanker: flankerAttempt,
 	letters: lettersAttempt,
 	memoryMatchExercise: memoryMatchExerciseAttempt,
+	nbackExercise: nbackExerciseAttempt,
 	numbers: numbersAttempt,
 	pictures: picturesAttempt,
 	campimetryExercise: campimetryExerciseAttempt,
@@ -67,6 +69,7 @@ const queryTableMap: Record<string, any> = {
 	flanker: db.query.flankerAttempt,
 	letters: db.query.lettersAttempt,
 	memoryMatchExercise: db.query.memoryMatchExerciseAttempt,
+	nbackExercise: db.query.nbackExerciseAttempt,
 	numbers: db.query.numbersAttempt,
 	pictures: db.query.picturesAttempt,
 	ravenMatrices: db.query.ravenAttempt,

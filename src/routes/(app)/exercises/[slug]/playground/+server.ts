@@ -12,6 +12,7 @@ const SLUG_TO_EXERCISE_TYPE: Record<string, ExerciseType> = {
 	flanker: 'flanker',
 	letters: 'letters',
 	'memory-match': 'memoryMatchExercise',
+	'nback-stream': 'nbackExercise',
 	numbers: 'numbers',
 	pictures: 'pictures',
 	'raven-matrices': 'ravenMatrices'

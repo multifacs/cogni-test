@@ -9,6 +9,7 @@ const slugToExerciseType: Record<string, ExerciseType> = {
 	flanker: 'flanker',
 	letters: 'letters',
 	'memory-match': 'memoryMatchExercise',
+	'nback-stream': 'nbackExercise',
 	numbers: 'numbers',
 	pictures: 'pictures',
 	'raven-matrices': 'ravenMatrices'
