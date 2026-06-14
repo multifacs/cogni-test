@@ -285,7 +285,7 @@
 								Исходные числа
 							</h3>
 							<div class="flex flex-wrap gap-2">
-								{#each currentReview.sequence as value (value)}
+								{#each currentReview.sequence as value, idx (idx)}
 									<div
 										class="rounded-lg bg-white/10 px-3.5 py-2 text-lg font-semibold text-white"
 									>
