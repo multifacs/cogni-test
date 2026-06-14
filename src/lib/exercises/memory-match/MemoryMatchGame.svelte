@@ -266,15 +266,15 @@
 			<button class="btn btn-primary" onclick={startGame}>Начать</button>
 		</div>
 	{:else}
-			<div class="muted flex flex-col items-center justify-center gap-2">
-				<p>
-					Этап {stages[currentStageIndex].stage} из {stages.length} ({stages[
-						currentStageIndex
-					].cols}×{stages[currentStageIndex].rows})
-				</p>
-				<p>Открытий: {flipsCount}</p>
-				<p>Ошибок: {mistakes}</p>
-			</div>
+		<div class="muted flex flex-col items-center justify-center gap-2">
+			<p>
+				Этап {stages[currentStageIndex].stage} из {stages.length} ({stages[
+					currentStageIndex
+				].cols}×{stages[currentStageIndex].rows})
+			</p>
+			<p>Открытий: {flipsCount}</p>
+			<p>Ошибок: {mistakes}</p>
+		</div>
 
 		<div class="board" style={`grid-template-columns:${grid};`}>
 			{#each currentCards as c, i (c.id)}
