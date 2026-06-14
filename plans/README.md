@@ -1,7 +1,7 @@
 # Plans Index
 
 Generated: 2026-06-14
-Base commit: `4bf31cc`
+Base commit: `3fc4a4f`
 
 ## Active Plans
 
@@ -15,8 +15,52 @@ Base commit: `4bf31cc`
 | 006 | [Save raven matrices exercise results to DB + add Result page](./006-raven-matrices-save-results.md) | DONE | Medium-Large | Plan 001 |
 | 007 | [Save pictures exercise results to DB + add "Результаты" button/page](./007-pictures-save-results.md) | DONE | Medium | Plan 001 |
 | 008 | [Show exercise session counts on exercises listing page](./008-exercise-session-counts.md) | DONE | Small | Plans 001–007 |
+| 009 | [Generic Exercise Results Page for Future Exercises](./009-exercise-results-page.md) | TODO | Medium | Plans 001–007 |
+| 010 | [Save campimetry exercise results to DB + show results page](./010-campimetry-save-results.md) | TODO | Medium | Plan 009 |
+| 011 | [Save memory-match exercise results to DB + show results page](./011-memory-match-save-results.md) | TODO | Medium | Plan 009 |
+| 012 | [Save nback-stream exercise results to DB + show results page](./012-nback-stream-save-results.md) | TODO | Medium | Plan 009 |
+| 013 | [Save word-morphing exercise results to DB + show results page](./013-word-morphing-save-results.md) | TODO | Medium-Large | Plan 009 |
 
-## Execution Order
+## Sprint: Exercise Results Persistence
+
+Plans 010–013 form a sprint to add result persistence for the four remaining exercises without it. All depend on the shared infrastructure documented in Plan 009.
+
+### Recommended execution order
+
+1. **Plan 010** (campimetry) — lowest risk; test-side DB table already exists as reference
+2. **Plan 011** (memory-match) — medium risk; must convert Svelte 4 dispatcher pattern
+3. **Plan 012** (nback-stream) — medium risk; also needs Svelte 4 conversion; chart won't render from summary-only data (acceptable MVP trade-off)
+4. **Plan 013** (word-morphing) — highest risk; Playground IS the game (no separate component), multi-phase with localforage/push notifications
+
+### Key differences between exercises
+
+| Exercise | Has separate Game component? | Uses createEventDispatcher? | Existing types.ts? | Test DB table? | Chart reuse? |
+|----------|------------------------------|----------------------------|---------------------|----------------|--------------|
+| Campimetry | No (logic in class) | No | Yes | Yes (`campimetry_attempt`) | Variant B: reuse test's ResultsChart |
+| Memory-match | Yes (`MemoryMatchGame.svelte`) | Yes | Yes (`FullResult`) | Yes (`memory_match_attempt`) | Variant B: own ResultsChart |
+| N-back stream | Yes (`NBackStreamGame.svelte`) | Yes | Yes (`FullResult`) | No | Variant A only (summary can't feed chart) |
+| Word-morphing | No (all in Playground) | No | Yes (`WordMorphingResult`) | No | Variant A: stat cards only |
+
+### Shared infrastructure changes
+
+All four plans touch these shared files. Execute sequentially or merge carefully:
+
+- `src/lib/server/db/models/exercises.ts` — each plan adds one table
+- `src/lib/server/db/controllers/result.ts` — each plan adds two map entries
+- `src/lib/exercises/types.ts` — each plan adds type imports + union members
+- `src/lib/exercises/index.ts` — each plan adds a `result` loader
+- `src/routes/(app)/exercises/[slug]/playground/+server.ts` — each plan adds slug mapping
+- `src/routes/(app)/exercises/[slug]/results/+page.server.ts` — each plan adds slug mapping
+
+If executing plans in parallel, be aware of merge conflicts in these files.
+
+### Dependency notes
+
+- All four plans depend on Plan 009 (reference guide), which is documentation only and is already written.
+- The four plans are independent of each other but share the files listed above.
+- If Plans 010+ are executed after all four land, run `npm run init-db-dev` once rather than per-plan.
+
+## Previous Execution Order
 
 1. ~~**Plan 001**~~ — Done.
 2. ~~**Plan 002**~~ — Done (depended on 001).
