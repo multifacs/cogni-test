@@ -106,7 +106,8 @@ const exerciseLoaders: Record<string, ExerciseLoader> = {
 	},
 	'memory-match': {
 		about: () => import('./memory-match/About.svelte'),
-		playground: () => import('./memory-match/Playground.svelte')
+		playground: () => import('./memory-match/Playground.svelte'),
+		result: () => import('./memory-match/Result.svelte')
 	},
 	'nback-stream': {
 		about: () => import('./nback-stream/About.svelte'),
