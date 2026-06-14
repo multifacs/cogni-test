@@ -98,6 +98,8 @@ export * from './models/exercises';
 import { ..., attentionAttempt } from '$lib/server/db/models/exercises';
 ```
 
+Note: The `postResult`/`getResults` functions now accept `AnySessionType = TestType | ExerciseType` as their session type parameter, so `'attention'` is valid as an exercise type key.
+
 2. In `postResult()`, add `'attention'` to the `insertAttempt` map (after line 45):
 ```ts
 const insertAttempt = {
@@ -119,67 +121,45 @@ const attemptTable = {
 
 **Verification:** Open a REPL or temp script that imports `postResult` — no TS errors. Alternatively, run `npm run check`.
 
-### Step 3: Add `attention` as a valid `TestType`
+### Step 3: Add `attention` as a valid `ExerciseType`
 
-**File:** `src/lib/tests/types.ts`
+**File:** `src/lib/exercises/types.ts`
 
-This type is used by `controllers/result.ts` for `postResult(testType: TestType, ...)`. Currently:
+This type is used by `controllers/result.ts` for `postResult(sessionType: AnySessionType, ...)` where `AnySessionType = TestType | ExerciseType`. Currently:
 
 ```ts
-export type TestType =
-	| 'math'
-	| 'stroop'
-	| 'munsterberg'
-	| 'memory'
-	| 'swallow'
-	| 'campimetry'
+export type ExerciseType =
+	// (empty or not yet defined)
 ```
 
 Add `'attention'`:
 
 ```ts
-export type TestType =
-	| 'math'
-	| 'stroop'
-	| 'munsterberg'
-	| 'memory'
-	| 'swallow'
-	| 'campimetry'
+export type ExerciseType =
 	| 'attention'
 ```
 
-Also add the `AttentionResult` import and extend `RegularResult`, `RegularResults`, and `TestResultMap`:
+Also add the `AttentionResult` import and extend `ExerciseResult`, `ExerciseResults`, and `ExerciseResultMap`:
 
 At top of file, add import:
 ```ts
-import type { AttentionResult } from '$lib/exercises/attention/types';
+import type { AttentionResult } from './attention/types';
 ```
 
 Extend types:
 ```ts
-export type TestResultMap = {
-    // ...existing...
+export type ExerciseResultMap = {
     attention: AttentionResult;
 };
 
-export type RegularResult =
-    | StroopResult
-    | MathResult
-    | MunsterbergResult
-    | MemoryResult
-    | SwallowResult
-    | CampimetryResult
+export type ExerciseResult =
     | AttentionResult;
 
-export type RegularResults =
-    | StroopResult[]
-    | MathResult[]
-    | MunsterbergResult[]
-    | MemoryResult[]
-    | SwallowResult[]
-    | CampimetryResult[]
+export type ExerciseResults =
     | AttentionResult[];
 ```
+
+Note: `ResultInfo` and `MetaResult` are also defined in `src/lib/exercises/types.ts` alongside these exercise-specific types.
 
 **Verification:** `npm run check` passes.
 
@@ -297,7 +277,7 @@ Modeled after `src/routes/(app)/tests/[slug]/playground/+server.ts`:
 ```ts
 import { postResult } from '$lib/server/db/controllers/result.js';
 import { json } from '@sveltejs/kit';
-import type { RegularResults } from '$lib/tests/types.js';
+import type { ExerciseResults } from '$lib/exercises/types.js';
 import type { RequestHandler } from '@sveltejs/kit';
 
 export const POST: RequestHandler = async ({ params, request, cookies }) => {
@@ -305,7 +285,7 @@ export const POST: RequestHandler = async ({ params, request, cookies }) => {
 	if (slug !== 'attention') {
 		return json({ error: 'unknown exercise' }, { status: 400 });
 	}
-	const { results }: { results: RegularResults } = await request.json();
+	const { results }: { results: ExerciseResults } = await request.json();
 	const userId = cookies.get('user_id') as string;
 
 	await postResult(results, 'attention', userId);
@@ -377,7 +357,7 @@ Replace with (follows exact pattern of `tests/[slug]/playground/+page.svelte`):
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
-	import type { MetaResult, RegularResults } from '$lib/tests/types.js';
+	import type { MetaResult, ExerciseResults } from '$lib/exercises/types.js';
 	import { type SvelteComponent } from 'svelte';
 	import { exerciseRegistry } from '$lib/exercises';
 
@@ -407,7 +387,7 @@ Replace with (follows exact pattern of `tests/[slug]/playground/+page.svelte`):
 		}
 	}
 
-	async function onSendResults(results: RegularResults | MetaResult) {
+	async function onSendResults(results: ExerciseResults | MetaResult) {
 		await fetch(`/exercises/${slug}/playground`, {
 			method: 'POST',
 			body: JSON.stringify({ results }),
@@ -531,7 +511,7 @@ Self-contained result display component. Accepts `{ slug }` as a prop, fetches i
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import { formatUserLocalDate } from '$lib/utils/common.js';
 	import type { AttentionResult } from './types';
-	import type { ResultInfo } from '$lib/tests/types';
+	import type { ResultInfo } from '$lib/exercises/types';
 
 	let { slug }: { slug: string } = $props();
 
@@ -616,7 +596,7 @@ Note: The `result` lazy loader is already registered on the attention entry in `
 | `src/lib/server/db/models/exercises.ts` | **New** — `attentionAttempt` table with `attempt: integer('attempt').default(1).notNull()` |
 | `src/lib/server/db/schema.ts` | Edit — add `export * from './models/exercises'` |
 | `src/lib/server/db/controllers/result.ts` | Edit — import `attentionAttempt` from `$lib/server/db/models/exercises`, register in both maps |
-| `src/lib/tests/types.ts` | Edit — add `'attention'` to `TestType`, `RegularResult`, `RegularResults`, `TestResultMap` |
+| `src/lib/exercises/types.ts` | Edit — add `'attention'` to `ExerciseType`, `ExerciseResult`, `ExerciseResults`, `ExerciseResultMap` |
 | `src/lib/exercises/index.ts` | Edit — remove `hasResults` from `TestData` type and all entries; `result` loader already registered on attention |
 | `src/lib/exercises/attention/AttentionGame.svelte` | Edit — replace `createEventDispatcher` with `gameEnd`/`sendResults` props |
 | `src/lib/exercises/attention/Playground.svelte` | Edit — forward `gameEnd`/`sendResults` props, remove inline results display |
@@ -661,8 +641,8 @@ Run these commands and verify expected output:
 
 ## Maintenance Notes
 
-- Adding DB persistence for another exercise follows the exact same pattern: add table to `models/exercises.ts` → register in controller maps → add `result` loader to `exerciseLoaders` → create self-contained `Result.svelte` → update Playground to accept `gameEnd`/`sendResults` props.
-- The `TestType` union and `postResult`/`getResults` lookup maps must stay in sync with DB tables — if you add an exercise table, update all three places.
+- Adding DB persistence for another exercise follows the exact same pattern: add table to `models/exercises.ts` → register in controller maps → add to `ExerciseType` union in `src/lib/exercises/types.ts` → add `result` loader to `exerciseLoaders` → create self-contained `Result.svelte` → update Playground to accept `gameEnd`/`sendResults` props.
+- The `ExerciseType` union and `postResult`/`getResults` lookup maps must stay in sync with DB tables — if you add an exercise table, update all three places. Note that `postResult`/`getResults` now take `AnySessionType = TestType | ExerciseType`, so both type unions must cover all registered tables.
 - The `attempt=1` default convention means each completed game is one row. If multi-round sessions are added later, increment `attempt` per round and group by `sessionId`.
 - The `exercise?.result` check replaces the removed `hasResults` flag — exercises without a `result` loader still work exactly as before (no sendResults prop, navigate to /about, 3-col bottom buttons).
 - This plan addresses the `createEventDispatcher` deprecation only for `AttentionGame.svelte`. The remaining exercises still use it (see improvement plan item 2.1).

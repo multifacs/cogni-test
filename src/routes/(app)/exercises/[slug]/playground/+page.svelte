@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
-	import type { MetaResult, RegularResults } from '$lib/tests/types.js';
+	import type { MetaResult, ExerciseResults } from '$lib/exercises/types.js';
 	import { type SvelteComponent } from 'svelte';
 	import { exerciseRegistry } from '$lib/exercises';
 
@@ -32,7 +32,7 @@
 		}
 	}
 
-	async function onSendResults(results: RegularResults | MetaResult) {
+	async function onSendResults(results: ExerciseResults | MetaResult) {
 		await fetch(`/exercises/${slug}/playground`, {
 			method: 'POST',
 			body: JSON.stringify({ results }),

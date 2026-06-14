@@ -5,6 +5,8 @@ export type ExerciseData = {
 	img: string;
 };
 
+export type { ExerciseType, ExerciseResult, ExerciseResults } from './types';
+
 export const exercises: ExerciseData[] = [
 	{
 		name: 'word-morphing',

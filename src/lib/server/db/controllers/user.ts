@@ -56,9 +56,8 @@ export async function getUserById(id: string): Promise<User | null> {
 	return found ?? null;
 }
 
-export type TestType = 'math' | 'stroop' | 'munsterberg' | 'memory' | 'swallow' | 'campimetry';
-
-const TEST_TYPES: TestType[] = ['math', 'stroop', 'munsterberg', 'memory', 'swallow', 'campimetry'];
+import type { TestType } from '$lib/tests/types';
+import type { ExerciseType } from '$lib/exercises/types';
 
 // Поля анкеты, которые проверяем на null
 const SURVEY_FIELDS = [

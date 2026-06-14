@@ -3,7 +3,7 @@
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import { formatUserLocalDate } from '$lib/utils/common.js';
 	import type { AttentionResult } from './types';
-	import type { ResultInfo } from '$lib/tests/types';
+	import type { ResultInfo } from '$lib/exercises/types';
 
 	let { slug }: { slug: string } = $props();
 
