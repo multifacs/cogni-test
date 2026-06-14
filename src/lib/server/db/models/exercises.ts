@@ -34,6 +34,21 @@ export const emojiAttempt = sqliteTable('emoji_attempt', {
 		.notNull()
 });
 
+export const lettersAttempt = sqliteTable('letters_attempt', {
+	id: text('id').primaryKey().$defaultFn(generate),
+	attempt: integer('attempt').default(1).notNull(),
+	maxSpan: integer('max_span').notNull(),
+	roundsCompleted: integer('rounds_completed').notNull(),
+	elapsed: integer('elapsed').notNull(),
+	timeoutTriggered: integer('time_limit', { mode: 'boolean' }).notNull(),
+	sessionId: text('session_id')
+		.notNull()
+		.references(() => session.id),
+	createdAt: text('created_at')
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull()
+});
+
 export const flankerAttempt = sqliteTable('flanker_attempt', {
 	id: text('id').primaryKey().$defaultFn(generate),
 	attempt: integer('attempt').default(1).notNull(),

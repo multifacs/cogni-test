@@ -1,9 +1,14 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import type { LettersResult, RoundEntry } from './types';
 
-	const dispatch = createEventDispatcher<{ done: LettersResult }>();
+	let {
+		gameEnd,
+		sendResults
+	}: {
+		gameEnd: () => void;
+		sendResults: (results: LettersResult[]) => void;
+	} = $props();
 
 	const LETTERS = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'.split('');
 	const MAX_GAME_SECONDS = 60;
@@ -123,24 +128,16 @@
 		started = false;
 		finished = true;
 		numLetters = START_LENGTH;
-		dispatch('done', {
+		const result: LettersResult = {
 			maxSpan,
 			roundsCompleted: answerLog.filter((r) => r.isCorrect).length,
 			elapsed,
 			timeoutTriggered
-		});
+		};
+		sendResults([result]);
+		gameEnd();
 	}
 
-	function restart() {
-		stopTimers();
-		started = false;
-		finished = false;
-		showing = false;
-		maxSpan = 0;
-		elapsed = 0;
-		answerLog = [];
-		timeoutTriggered = false;
-	}
 </script>
 
 {#if started && showing}
@@ -162,7 +159,7 @@
 		<div
 			class="flex max-w-4xl flex-wrap justify-center gap-3 rounded-3xl bg-white/8 p-5 backdrop-blur-[8px]"
 		>
-			{#each [...lettersToShow] as letter}
+			{#each [...lettersToShow] as letter, i (i)}
 				<button
 					type="button"
 					disabled
@@ -187,7 +184,7 @@
 		</div>
 
 		<div class="grid max-w-4xl grid-cols-5 gap-3 rounded-3xl bg-white/8 p-5">
-			{#each gridLetters as letter}
+			{#each gridLetters as letter, i (i)}
 				<button
 					type="button"
 					class={userAnswer.includes(letter)
@@ -204,23 +201,10 @@
 		</div>
 	</div>
 {:else if finished}
-	<div class="mx-auto mt-5 grid max-w-4xl grid-cols-[repeat(3,auto)] justify-center gap-[15px]">
-		<p class="text-center text-base font-semibold text-[#4caf50]">
-			Макс. span: {maxSpan}
+	<div class="flex flex-col items-center justify-center gap-3">
+		<p class="text-lg font-semibold text-white">
+			{timeoutTriggered ? 'Время вышло' : 'Тест завершён'}
 		</p>
-		<p class="text-center text-base text-white">
-			Время: {elapsed} сек
-		</p>
-		{#if timeoutTriggered}
-			<p class="text-center text-base font-semibold text-[#ff4d4d]">Время вышло</p>
-		{:else}
-			<p class="text-center text-base text-white">Тест завершён</p>
-		{/if}
-	</div>
-	<div
-		class="mb-5 flex flex-col items-center justify-center gap-3 rounded-[20px] bg-white/8 p-5 backdrop-blur-[8px]"
-	>
-		<Button color="blue" onclick={restart}>Пройти заново</Button>
 	</div>
 {:else}
 	<Button color="green" onclick={startGame}>Старт</Button>

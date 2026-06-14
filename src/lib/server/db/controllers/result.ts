@@ -10,7 +10,7 @@ import {
 	rhythmAttempt,
 	memoryMatchAttempt
 } from '$lib/server/db/models/tests';
-import { attentionAttempt, emojiAttempt, flankerAttempt } from '$lib/server/db/models/exercises';
+import { attentionAttempt, emojiAttempt, flankerAttempt, lettersAttempt } from '$lib/server/db/models/exercises';
 import type { MetaResult as TestMetaResult, RegularResults, TestType } from '$lib/tests/types';
 import type {
 	ExerciseResults,
@@ -34,7 +34,8 @@ const attemptTableMap: Record<string, any> = {
 	memoryMatch: memoryMatchAttempt,
 	attention: attentionAttempt,
 	emoji: emojiAttempt,
-	flanker: flankerAttempt
+	flanker: flankerAttempt,
+	letters: lettersAttempt
 };
 
 const queryTableMap: Record<string, any> = {
@@ -48,7 +49,8 @@ const queryTableMap: Record<string, any> = {
 	memoryMatch: db.query.memoryMatchAttempt,
 	attention: db.query.attentionAttempt,
 	emoji: db.query.emojiAttempt,
-	flanker: db.query.flankerAttempt
+	flanker: db.query.flankerAttempt,
+	letters: db.query.lettersAttempt
 };
 
 export async function postResult(

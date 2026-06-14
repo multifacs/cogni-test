@@ -140,7 +140,8 @@ const exerciseLoaders: Record<string, ExerciseLoader> = {
 	},
 	letters: {
 		about: () => import('./letters/About.svelte'),
-		playground: () => import('./letters/Playground.svelte')
+		playground: () => import('./letters/Playground.svelte'),
+		result: () => import('./letters/Result.svelte')
 	},
 	'road-trip': {
 		about: () => import('./road-trip/About.svelte')
