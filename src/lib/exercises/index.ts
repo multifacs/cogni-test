@@ -4,7 +4,6 @@ export type TestData = {
 	path: string;
 	img: string;
 	hasPlayground: boolean;
-	hasResults: boolean;
 };
 
 export const exercises: TestData[] = [
@@ -13,110 +12,98 @@ export const exercises: TestData[] = [
 		title: 'Тест на словосочетания',
 		path: '/exercises/word-morphing/about',
 		img: '/exercises/word-morphing.svg',
-		hasPlayground: true,
-		hasResults: false
+		hasPlayground: true
 	},
 	{
 		name: 'campimetry',
 		title: 'Расширенная кампиметрия',
 		path: '/exercises/campimetry/about',
 		img: '/tests/campimetry.svg',
-		hasPlayground: true,
-		hasResults: false
+		hasPlayground: true
 	},
 	{
 		name: 'memory-match',
 		title: 'Совпадения',
 		path: '/exercises/memory-match/about',
 		img: '/exercises/memory-match.svg',
-		hasPlayground: true,
-		hasResults: false
+		hasPlayground: true
 	},
 	{
 		name: 'nback-stream',
 		title: 'Определение повторов',
 		path: '/exercises/nback-stream/about',
 		img: '/exercises/n-back.svg',
-		hasPlayground: true,
-		hasResults: false
+		hasPlayground: true
 	},
 	{
 		name: 'raven-matrices',
 		title: 'Матрицы Равена',
 		path: '/exercises/raven-matrices/about',
 		img: '/exercises/raven-matrices.svg',
-		hasPlayground: true,
-		hasResults: false
+		hasPlayground: true
 	},
 	{
 		name: 'emoji',
 		title: 'Тест на смену эмодзи',
 		path: '/exercises/emoji/about',
 		img: '/exercises/emoji.svg',
-		hasPlayground: true,
-		hasResults: false
+		hasPlayground: true
 	},
 	{
 		name: 'attention',
 		title: 'Тест на внимание',
 		path: '/exercises/attention/about',
 		img: '/exercises/attention.svg',
-		hasPlayground: true,
-		hasResults: true
+		hasPlayground: true
 	},
 	{
 		name: 'pictures',
 		title: 'Запоминание картинок',
 		path: '/exercises/pictures/about',
 		img: '/exercises/pictures.svg',
-		hasPlayground: true,
-		hasResults: false
+		hasPlayground: true
 	},
 	{
 		name: 'numbers',
 		title: 'Запоминание чисел',
 		path: '/exercises/numbers/about',
 		img: '/exercises/numbers.svg',
-		hasPlayground: true,
-		hasResults: false
+		hasPlayground: true
 	},
 	{
 		name: 'flanker',
 		title: 'Фланговый тест Эриксена',
 		path: '/exercises/flanker/about',
 		img: '/exercises/flanker.svg',
-		hasPlayground: true,
-		hasResults: false
+		hasPlayground: true
 	},
 	{
 		name: 'letters',
 		title: 'Буквенный охват',
 		path: '/exercises/letters/about',
 		img: '/exercises/letters.svg',
-		hasPlayground: true,
-		hasResults: false
+		hasPlayground: true
 	},
 	{
 		name: 'road-trip',
 		title: 'По дороге на работу',
 		path: '/exercises/road-trip/about',
 		img: '/exercises/road-trip.svg',
-		hasPlayground: false,
-		hasResults: false
+		hasPlayground: false
 	},
 	{
 		name: 'not-lost',
 		title: 'По дороге на работу',
 		path: '/exercises/not-lost/about',
 		img: '/exercises/not-lost.svg',
-		hasPlayground: false,
-		hasResults: false
+		hasPlayground: false
 	}
 ];
 
 type ExerciseLoader = {
 	about: () => Promise<any>;
 	playground?: () => Promise<any>;
+	result?: () => Promise<any>;
 };
 
 const exerciseLoaders: Record<string, ExerciseLoader> = {
@@ -146,7 +133,8 @@ const exerciseLoaders: Record<string, ExerciseLoader> = {
 	},
 	attention: {
 		about: () => import('./attention/About.svelte'),
-		playground: () => import('./attention/Playground.svelte')
+		playground: () => import('./attention/Playground.svelte'),
+		result: () => import('./attention/Result.svelte')
 	},
 	pictures: {
 		about: () => import('./pictures/About.svelte'),

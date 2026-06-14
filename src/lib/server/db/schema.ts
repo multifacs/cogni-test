@@ -63,3 +63,4 @@ export const pushSubscriptions = sqliteTable('push_subscriptions', {
 
 export * from './models/tests';
 export * from './models/survey';
+export * from './models/exercises';

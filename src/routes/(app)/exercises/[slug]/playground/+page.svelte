@@ -27,7 +27,7 @@
 	function onGameEnd() {
 		isGameRunning = false;
 		isGameEnd = true;
-		if (exercise?.hasResults) {
+		if (exercise?.result) {
 			goto(`/exercises/${slug}/results`);
 		}
 	}
@@ -48,12 +48,12 @@
 		<Component
 			bind:this={childComponent}
 			gameEnd={onGameEnd}
-			sendResults={exercise?.hasResults ? onSendResults : undefined}
+			sendResults={exercise?.result ? onSendResults : undefined}
 			{data}
 		></Component>
 	</main>
 
-	{#if isGameEnd && exercise?.hasResults}
+	{#if isGameEnd && exercise?.result}
 		<section class="low-content grid grid-cols-2 gap-4">
 			<Button color="red" goto={`/exercises/${slug}`}>Назад</Button>
 			<Button color="blue" goto={`/exercises/${slug}/results`}>Результаты</Button>

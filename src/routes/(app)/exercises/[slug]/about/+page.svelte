@@ -31,6 +31,12 @@
 			<Button color="red" goto="/exercises">Назад</Button>
 			<div></div>
 		</section>
+	{:else if exercise?.result}
+		<section class="low-content grid grid-cols-3 gap-4">
+			<Button color="red" goto="/exercises">Назад</Button>
+			<Button color="green" goto={`/exercises/${slug}/playground`}>Начать</Button>
+			<Button color="blue" goto={`/exercises/${slug}/results`}>История</Button>
+		</section>
 	{:else}
 		<section class="low-content grid grid-cols-2 gap-4">
 			<Button color="red" goto="/exercises">Назад</Button>

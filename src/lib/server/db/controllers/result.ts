@@ -8,9 +8,9 @@ import {
 	munsterbergAttempt,
 	campimetryAttempt,
 	rhythmAttempt,
-	memoryMatchAttempt,
-	attentionAttempt
+	memoryMatchAttempt
 } from '$lib/server/db/models/tests';
+import { attentionAttempt } from '$lib/server/db/models/exercises';
 import type { MetaResult, RegularResults, TestResultMap, TestType } from '$lib/tests/types';
 import short from 'short-uuid';
 
