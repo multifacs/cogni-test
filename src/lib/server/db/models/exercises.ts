@@ -67,3 +67,17 @@ export const flankerAttempt = sqliteTable('flanker_attempt', {
 		.default(sql`CURRENT_TIMESTAMP`)
 		.notNull()
 });
+
+export const numbersAttempt = sqliteTable('numbers_attempt', {
+	id: text('id').primaryKey().$defaultFn(generate),
+	attempt: integer('attempt').default(1).notNull(),
+	correct: integer('correct').notNull(),
+	total: integer('total').notNull(),
+	digitSpan: integer('digit_span').notNull(),
+	sessionId: text('session_id')
+		.notNull()
+		.references(() => session.id),
+	createdAt: text('created_at')
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull()
+});

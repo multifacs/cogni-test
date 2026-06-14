@@ -1,12 +1,18 @@
 <script lang="ts">
-	import { createEventDispatcher, onDestroy } from 'svelte';
+	import { onDestroy } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import type { NumbersResult, LevelReview } from './types';
 
 	type Phase = 'intro' | 'memorize' | 'input' | 'review' | 'finished';
 	type LevelConfig = { level: number; count: number; mode: 'single' | 'mixed' };
 
-	const dispatch = createEventDispatcher<{ done: NumbersResult }>();
+	let {
+		gameEnd,
+		sendResults
+	}: {
+		gameEnd: () => void;
+		sendResults: (results: NumbersResult[]) => void;
+	} = $props();
 
 	const studySeconds = 10;
 	const levelConfigs: LevelConfig[] = Array.from({ length: 8 }, (_, index) => ({
@@ -86,18 +92,6 @@
 		startLevel(0);
 	};
 
-	const restartTest = () => {
-		clearTimers();
-		phase = 'intro';
-		currentLevelIndex = 0;
-		currentSequence = [];
-		recallInput = '';
-		countdown = studySeconds;
-		validationMessage = '';
-		currentReview = null;
-		acceptedReviews = [];
-	};
-
 	const repeatLevel = () => {
 		startLevel(currentLevelIndex);
 	};
@@ -140,16 +134,17 @@
 		acceptedReviews = [...acceptedReviews, currentReview];
 		if (isLastLevel()) {
 			clearTimers();
-			phase = 'finished';
 			const digitSpan = acceptedReviews
 				.filter((r) => r.isCorrect)
 				.reduce((max, r) => Math.max(max, levelConfigs[r.level - 1].count), 0);
-			dispatch('done', {
+			const result: NumbersResult = {
 				correct: correctLevels(),
 				total: levelConfigs.length,
 				digitSpan,
 				reviews: acceptedReviews
-			});
+			};
+			sendResults([result]);
+			gameEnd();
 			return;
 		}
 		startLevel(currentLevelIndex + 1);
@@ -184,41 +179,6 @@
 			</ol>
 		</div>
 		<Button color="green" onclick={startTest}>Начать тест</Button>
-	</div>
-{:else if phase === 'finished'}
-	<div class="flex min-h-screen flex-col items-center justify-start gap-6 px-5 py-10">
-		<section
-			class="flex w-full max-w-[820px] flex-col gap-6 rounded-3xl bg-white/10 p-8 backdrop-blur-sm"
-		>
-			<p class="text-xs tracking-widest text-white/50 uppercase">Тест завершен</p>
-			<h1 class="text-3xl font-bold text-white">Тест на запоминание чисел пройден</h1>
-			<p class="text-base leading-relaxed text-white/70">
-				Верно завершено {correctLevels()} из {levelConfigs.length} уровней.
-			</p>
-			<div class="flex flex-col gap-2.5">
-				{#each acceptedReviews as review (review.level)}
-					<article class="flex flex-col gap-1.5 rounded-xl bg-white/5 px-5 py-4">
-						<div class="flex items-center justify-between gap-3">
-							<strong class="text-base text-white">Уровень {review.level}</strong>
-							<span
-								class="text-sm {review.isCorrect
-									? 'text-green-200'
-									: 'text-red-300'}"
-							>
-								{review.isCorrect ? 'Без ошибок' : 'Есть ошибки'}
-							</span>
-						</div>
-						<p class="text-sm text-white/50">
-							Исходные числа: {review.sequence.join(' - ')}
-						</p>
-						<p class="text-sm text-white/50">
-							Ваш ввод: {review.submitted.join(' - ')}
-						</p>
-					</article>
-				{/each}
-			</div>
-			<Button color="blue" onclick={restartTest}>Пройти тест заново</Button>
-		</section>
 	</div>
 {:else}
 	<div class="flex flex-col items-center justify-center gap-4">
