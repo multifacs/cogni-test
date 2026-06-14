@@ -1,6 +1,6 @@
 # Plan 002: Save Emoji Exercise Results to DB + Add "Результаты" Button/Page
 
-**Status:** TODO
+**Status:** DONE
 **Effort:** Medium
 **Depends on:** Plan 001 (done — provides exercise route infrastructure)
 

@@ -10,7 +10,7 @@ import {
 	rhythmAttempt,
 	memoryMatchAttempt
 } from '$lib/server/db/models/tests';
-import { attentionAttempt } from '$lib/server/db/models/exercises';
+import { attentionAttempt, emojiAttempt } from '$lib/server/db/models/exercises';
 import type { MetaResult as TestMetaResult, RegularResults, TestType } from '$lib/tests/types';
 import type {
 	ExerciseResults,
@@ -32,7 +32,8 @@ const attemptTableMap: Record<string, any> = {
 	campimetry: campimetryAttempt,
 	rhythm: rhythmAttempt,
 	memoryMatch: memoryMatchAttempt,
-	attention: attentionAttempt
+	attention: attentionAttempt,
+	emoji: emojiAttempt
 };
 
 const queryTableMap: Record<string, any> = {
@@ -44,7 +45,8 @@ const queryTableMap: Record<string, any> = {
 	campimetry: db.query.campimetryAttempt,
 	rhythm: db.query.rhythmAttempt,
 	memoryMatch: db.query.memoryMatchAttempt,
-	attention: db.query.attentionAttempt
+	attention: db.query.attentionAttempt,
+	emoji: db.query.emojiAttempt
 };
 
 export async function postResult(
@@ -111,7 +113,10 @@ export async function getResults(sessionType: AnySessionType, userId: string): P
 	return results;
 }
 
-export async function getLastResult(sessionType: AnySessionType, userId: string): Promise<any | null> {
+export async function getLastResult(
+	sessionType: AnySessionType,
+	userId: string
+): Promise<any | null> {
 	const all = await getResults(sessionType, userId);
 	return all[0] ?? null;
 }

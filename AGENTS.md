@@ -16,7 +16,7 @@
 | Init DB (prod) | `npm run init-db` |
 | Lint | `npm run lint` |
 | Typecheck | `npm run check` |
-| Tests | `npm run test` |
+| Tests | `npm run test` | (but tests are kinda useless right now)
 
 ### Before committing
 
@@ -64,6 +64,8 @@ cogni-test's adapter is selected via `BUILD` env var:
 - App services use Docker labels for Traefik routing rules
 - Secrets loaded from env vars on host (VAPID keys, admin password)
 
-## Existing Skill
+## Existing Skills
 
-A Svelte 5 code-writer skill exists at `.agents/skills/svelte-code-writer/SKILL.md`. It provides `npx @sveltejs/mcp` CLI for docs lookup and autofixer — use when editing `.svelte` or `.svelte.ts/.svelte.js` files.
+- **Svelte 5 code-writer** at `.agents/skills/svelte-code-writer/SKILL.md` — provides `npx @sveltejs/mcp` CLI for docs lookup and autofixer. Use when editing `.svelte` or `.svelte.ts/.svelte.js` files.
+- **Svelte core best practices** at `.agents/skills/svelte-core-bestpractices/SKILL.md` — best-practice guidance for writing Svelte 5 (runes, effects, props, snippets, styling, etc.). References live under `.agents/skills/svelte-core-bestpractices/references/`. Resolve relative paths from the workspace root.
+- **Improve** at `.agents/skills/improve/SKILL.md` — codebase audit & planning skill (read-only, never edits source). References live under `.agents/skills/improve/references/` (`audit-playbook.md`, `closing-the-loop.md`, `plan-template.md`). When the skill says to read a reference file by relative path like `references/closing-the-loop.md`, resolve it as `.agents/skills/improve/references/closing-the-loop.md` from the workspace root.

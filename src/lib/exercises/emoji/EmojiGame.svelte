@@ -1,9 +1,14 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import type { EmojiResult, TrialLog } from './types';
 
-	const dispatch = createEventDispatcher<{ done: EmojiResult }>();
+	let {
+		gameEnd,
+		sendResults
+	}: {
+		gameEnd: () => void;
+		sendResults: (results: EmojiResult[]) => void;
+	} = $props();
 
 	const EMOJIS = [
 		'😀',
@@ -124,13 +129,15 @@
 		finished = true;
 		started = false;
 		cleanup();
-		dispatch('done', {
+		const result: EmojiResult = {
 			score,
 			mistakes,
 			totalAnswers,
 			accuracy: totalAnswers === 0 ? 0 : Math.round((score / totalAnswers) * 100),
 			trialLog
-		});
+		};
+		sendResults([result]);
+		gameEnd();
 	}
 
 	function cleanup() {

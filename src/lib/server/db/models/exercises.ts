@@ -18,3 +18,18 @@ export const attentionAttempt = sqliteTable('attention_attempt', {
 		.default(sql`CURRENT_TIMESTAMP`)
 		.notNull()
 });
+
+export const emojiAttempt = sqliteTable('emoji_attempt', {
+	id: text('id').primaryKey().$defaultFn(generate),
+	attempt: integer('attempt').default(1).notNull(),
+	score: integer('score').notNull(),
+	mistakes: integer('mistakes').notNull(),
+	totalAnswers: integer('total_answers').notNull(),
+	accuracy: integer('accuracy').notNull(),
+	sessionId: text('session_id')
+		.notNull()
+		.references(() => session.id),
+	createdAt: text('created_at')
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull()
+});

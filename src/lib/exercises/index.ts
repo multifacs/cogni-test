@@ -117,7 +117,8 @@ const exerciseLoaders: Record<string, ExerciseLoader> = {
 	},
 	emoji: {
 		about: () => import('./emoji/About.svelte'),
-		playground: () => import('./emoji/Playground.svelte')
+		playground: () => import('./emoji/Playground.svelte'),
+		result: () => import('./emoji/Result.svelte')
 	},
 	attention: {
 		about: () => import('./attention/About.svelte'),
