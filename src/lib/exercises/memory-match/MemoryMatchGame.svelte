@@ -1,8 +1,6 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import { IMAGE_URLS, OVERLAY_URL } from './images';
-
-	const dispatch = createEventDispatcher<{ done: FullResult }>();
+	import type { MemoryMatchSummaryRow } from './types';
 
 	// ---- Types ----
 	export interface StageConfig {
@@ -33,12 +31,19 @@
 		seed: string;
 	}
 
-	// ---- Config ----
-	export let stages: StageConfig[] = [
-		{ stage: 1, rows: 3, cols: 4 },
-		{ stage: 2, rows: 4, cols: 4 },
-		{ stage: 3, rows: 4, cols: 5 }
-	];
+	let {
+		gameEnd,
+		sendResults,
+		stages = [
+			{ stage: 1, rows: 3, cols: 4 },
+			{ stage: 2, rows: 4, cols: 4 },
+			{ stage: 3, rows: 4, cols: 5 }
+		]
+	}: {
+		gameEnd: () => void;
+		sendResults: (results: MemoryMatchSummaryRow[]) => void;
+		stages?: StageConfig[];
+	} = $props();
 
 	const FLIP_MS = 220; // длительность флипа
 	const MISMATCH_SHOW_MS = 650; // держим неверную пару открытой
@@ -227,10 +232,16 @@
 			currentStageIndex++;
 			startStage(currentStageIndex);
 		} else {
-			const totalDurationMs = perStage.reduce((s, r) => s + r.durationMs, 0);
-			const totalFlips = perStage.reduce((s, r) => s + r.flipsCount, 0);
-			const totalMistakes = perStage.reduce((s, r) => s + r.mistakes, 0);
-			dispatch('done', { perStage, totalDurationMs, totalFlips, totalMistakes, seed });
+			const summaryRows: MemoryMatchSummaryRow[] = perStage.map((s) => ({
+				stage: s.stage,
+				cardsCount: s.cardsCount,
+				flipsCount: s.flipsCount,
+				mistakes: s.mistakes,
+				durationMs: s.durationMs,
+				efficiency: Math.round((s.flipsCount / s.cardsCount) * 1000)
+			}));
+			sendResults(summaryRows);
+			gameEnd();
 		}
 	}
 
@@ -241,16 +252,18 @@
 		startStage(0);
 	}
 
-	$: grid = stages[currentStageIndex]
-		? `repeat(${stages[currentStageIndex].cols}, minmax(72px, 1fr))`
-		: 'repeat(4, 1fr)';
+	let grid = $derived(
+		stages[currentStageIndex]
+			? `repeat(${stages[currentStageIndex].cols}, minmax(72px, 1fr))`
+			: 'repeat(4, 1fr)'
+	);
 </script>
 
 <div class="flex flex-col items-center justify-center gap-4">
 	{#if !currentCards.length}
 		<div class="flex flex-col items-center justify-center gap-4">
 			<div class="muted">Этапы: {stages.map((s) => `${s.rows}×${s.cols}`).join(' · ')}</div>
-			<button class="btn btn-primary" on:click={startGame}>Начать</button>
+			<button class="btn btn-primary" onclick={startGame}>Начать</button>
 		</div>
 	{:else}
 			<div class="muted flex flex-col items-center justify-center gap-2">
@@ -271,7 +284,7 @@
 					class:matched={c.isMatched}
 					disabled={lockBoard || c.isMatched}
 					aria-label={c.label}
-					on:click={() => onCardClick(i)}
+					onclick={() => onCardClick(i)}
 					title={c.label}
 				>
 					<div class="inner">
