@@ -15,9 +15,9 @@ Base commit: `3fc4a4f`
 | 006 | [Save raven matrices exercise results to DB + add Result page](./006-raven-matrices-save-results.md) | DONE | Medium-Large | Plan 001 |
 | 007 | [Save pictures exercise results to DB + add "Результаты" button/page](./007-pictures-save-results.md) | DONE | Medium | Plan 001 |
 | 008 | [Show exercise session counts on exercises listing page](./008-exercise-session-counts.md) | DONE | Small | Plans 001–007 |
-| 009 | [Generic Exercise Results Page for Future Exercises](./009-exercise-results-page.md) | TODO | Medium | Plans 001–007 |
+| 009 | [Generic Exercise Results Page for Future Exercises](./009-exercise-results-page.md) | DONE | Medium | Plans 001–007 |
 | 010 | [Save campimetry exercise results to DB + show results page](./010-campimetry-save-results.md) | DONE | Medium | Plan 009 |
-| 011 | [Save memory-match exercise results to DB + show results page](./011-memory-match-save-results.md) | TODO | Medium | Plan 009 |
+| 011 | [Save memory-match exercise results to DB + show results page](./011-memory-match-save-results.md) | DONE | Medium | Plan 009 |
 | 012 | [Save nback-stream exercise results to DB + show results page](./012-nback-stream-save-results.md) | TODO | Medium | Plan 009 |
 | 013 | [Save word-morphing exercise results to DB + show results page](./013-word-morphing-save-results.md) | TODO | Medium-Large | Plan 009 |
 

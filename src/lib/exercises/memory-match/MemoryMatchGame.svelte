@@ -49,13 +49,13 @@
 	const MISMATCH_SHOW_MS = 650; // держим неверную пару открытой
 
 	// ---- State ----
-	let currentStageIndex = 0;
-	let currentCards: Card[] = [];
-	let openedIdx: number[] = []; // индексы открытых карт (0..2)
+	let currentStageIndex = $state(0);
+	let currentCards: Card[] = $state([]);
+	let openedIdx: number[] = $state([]); // индексы открытых карт (0..2)
 	let stageStartTs = 0;
-	let flipsCount = 0;
-	let mistakes = 0;
-	let perStage: StageResult[] = [];
+	let flipsCount = $state(0);
+	let mistakes = $state(0);
+	let perStage: StageResult[] = $state([]);
 	function safeUUID() {
 		// если есть нативный — используем
 		if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
