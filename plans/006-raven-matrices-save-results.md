@@ -1,6 +1,6 @@
 # Plan 006: Save Raven Matrices Exercise Results to DB + Add "Результаты" Button/Page
 
-**Status:** TODO
+**Status:** DONE
 **Effort:** Medium-Large
 **Depends on:** Plan 001 (done — provides exercise route infrastructure)
 

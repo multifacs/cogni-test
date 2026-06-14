@@ -11,6 +11,8 @@ Base commit: `699490d`
 | 002 | [Save emoji exercise results to DB + show "Результаты"](./002-emoji-save-results.md) | DONE | Medium | Plan 001 |
 | 003 | [Save flanker exercise results to DB + add Result page](./003-flanker-save-results.md) | DONE | Medium | Plan 001 |
 | 004 | [Save letters exercise results to DB + add Result page](./004-letters-save-results.md) | DONE | Medium | Plan 001 |
+| 005 | [Save numbers exercise results to DB + add "Результаты" button/page](./005-numbers-save-results.md) | DONE | Medium | Plan 001 |
+| 006 | [Save raven matrices exercise results to DB + add Result page](./006-raven-matrices-save-results.md) | DONE | Medium-Large | Plan 001 |
 
 ## Execution Order
 
@@ -18,6 +20,8 @@ Base commit: `699490d`
 2. ~~**Plan 002**~~ — Done (depended on 001).
 3. ~~**Plan 003**~~ — Done (depended on 001). Executed at `251f283`.
 4. ~~**Plan 004**~~ — Done (depended on 001). Executed at `b200332`. Steps 3 & 7 skipped (already done by prior plans).
+5. ~~**Plan 005**~~ — Done (depended on 001). Executed at `a46b462`. Steps 3 & 7 skipped (already done by prior plans).
+6. ~~**Plan 006**~~ — Done (depended on 001). Executed at `1b4dba1`. Step 3 skipped (types already configured); minor out-of-scope NumbersGame fix included.
 
 ## Considered and Rejected
 
