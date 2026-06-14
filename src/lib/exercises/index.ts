@@ -4,6 +4,7 @@ export type TestData = {
 	path: string;
 	img: string;
 	hasPlayground: boolean;
+	hasResults: boolean;
 };
 
 export const exercises: TestData[] = [
@@ -12,91 +13,104 @@ export const exercises: TestData[] = [
 		title: 'Тест на словосочетания',
 		path: '/exercises/word-morphing/about',
 		img: '/exercises/word-morphing.svg',
-		hasPlayground: true
+		hasPlayground: true,
+		hasResults: false
 	},
 	{
 		name: 'campimetry',
 		title: 'Расширенная кампиметрия',
 		path: '/exercises/campimetry/about',
 		img: '/tests/campimetry.svg',
-		hasPlayground: true
+		hasPlayground: true,
+		hasResults: false
 	},
 	{
 		name: 'memory-match',
 		title: 'Совпадения',
 		path: '/exercises/memory-match/about',
 		img: '/exercises/memory-match.svg',
-		hasPlayground: true
+		hasPlayground: true,
+		hasResults: false
 	},
 	{
 		name: 'nback-stream',
 		title: 'Определение повторов',
 		path: '/exercises/nback-stream/about',
 		img: '/exercises/n-back.svg',
-		hasPlayground: true
+		hasPlayground: true,
+		hasResults: false
 	},
 	{
 		name: 'raven-matrices',
 		title: 'Матрицы Равена',
 		path: '/exercises/raven-matrices/about',
 		img: '/exercises/raven-matrices.svg',
-		hasPlayground: true
+		hasPlayground: true,
+		hasResults: false
 	},
 	{
 		name: 'emoji',
 		title: 'Тест на смену эмодзи',
 		path: '/exercises/emoji/about',
 		img: '/exercises/emoji.svg',
-		hasPlayground: true
+		hasPlayground: true,
+		hasResults: false
 	},
 	{
 		name: 'attention',
 		title: 'Тест на внимание',
 		path: '/exercises/attention/about',
 		img: '/exercises/attention.svg',
-		hasPlayground: true
+		hasPlayground: true,
+		hasResults: true
 	},
 	{
 		name: 'pictures',
 		title: 'Запоминание картинок',
 		path: '/exercises/pictures/about',
 		img: '/exercises/pictures.svg',
-		hasPlayground: true
+		hasPlayground: true,
+		hasResults: false
 	},
 	{
 		name: 'numbers',
 		title: 'Запоминание чисел',
 		path: '/exercises/numbers/about',
 		img: '/exercises/numbers.svg',
-		hasPlayground: true
+		hasPlayground: true,
+		hasResults: false
 	},
 	{
 		name: 'flanker',
 		title: 'Фланговый тест Эриксена',
 		path: '/exercises/flanker/about',
 		img: '/exercises/flanker.svg',
-		hasPlayground: true
+		hasPlayground: true,
+		hasResults: false
 	},
 	{
 		name: 'letters',
 		title: 'Буквенный охват',
 		path: '/exercises/letters/about',
 		img: '/exercises/letters.svg',
-		hasPlayground: true
+		hasPlayground: true,
+		hasResults: false
 	},
 	{
 		name: 'road-trip',
 		title: 'По дороге на работу',
 		path: '/exercises/road-trip/about',
 		img: '/exercises/road-trip.svg',
-		hasPlayground: false
+		hasPlayground: false,
+		hasResults: false
 	},
 	{
 		name: 'not-lost',
 		title: 'По дороге на работу',
 		path: '/exercises/not-lost/about',
 		img: '/exercises/not-lost.svg',
-		hasPlayground: false
+		hasPlayground: false,
+		hasResults: false
 	}
 ];
 

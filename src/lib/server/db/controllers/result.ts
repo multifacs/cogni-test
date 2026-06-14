@@ -8,7 +8,8 @@ import {
 	munsterbergAttempt,
 	campimetryAttempt,
 	rhythmAttempt,
-	memoryMatchAttempt
+	memoryMatchAttempt,
+	attentionAttempt
 } from '$lib/server/db/models/tests';
 import type { MetaResult, RegularResults, TestResultMap, TestType } from '$lib/tests/types';
 import short from 'short-uuid';
@@ -42,7 +43,8 @@ export async function postResult(
 		munsterberg: munsterbergAttempt,
 		campimetry: campimetryAttempt,
 		rhythm: rhythmAttempt,
-		memoryMatch: memoryMatchAttempt
+		memoryMatch: memoryMatchAttempt,
+		attention: attentionAttempt
 	}[testType];
 
 	if (!insertAttempt) throw new Error(`Unknown test type: ${testType}`);
@@ -75,7 +77,8 @@ export async function getResults(testType: TestType, userId: string): Promise<Re
 		munsterberg: db.query.munsterbergAttempt,
 		campimetry: db.query.campimetryAttempt,
 		rhythm: db.query.rhythmAttempt,
-		memoryMatch: db.query.memoryMatchAttempt
+		memoryMatch: db.query.memoryMatchAttempt,
+		attention: db.query.attentionAttempt
 	}[testType] as typeof db.query.campimetryAttempt;
 
 	const results: ResultInfo[] = [];

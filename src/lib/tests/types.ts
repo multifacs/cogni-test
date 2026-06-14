@@ -4,6 +4,7 @@ import type { MunsterbergResult } from './munsterberg/types';
 import type { MemoryResult } from './memory/types';
 import type { SwallowResult } from './swallow/types';
 import type { CampimetryResult } from './campimetry/types';
+import type { AttentionResult } from '$lib/exercises/attention/types';
 
 export { type TestData } from './index';
 
@@ -14,7 +15,7 @@ export type TestResultMap = {
 	memory: MemoryResult;
 	swallow: SwallowResult;
 	campimetry: CampimetryResult;
-	// можно добавлять дальше
+	attention: AttentionResult;
 };
 
 export type TestType =
@@ -24,6 +25,7 @@ export type TestType =
 	| 'memory'
 	| 'swallow'
 	| 'campimetry'
+	| 'attention';
 
 export type RegularResult =
 	| StroopResult
@@ -32,6 +34,7 @@ export type RegularResult =
 	| MemoryResult
 	| SwallowResult
 	| CampimetryResult
+	| AttentionResult;
 
 export type RegularResults =
 	| StroopResult[]
@@ -39,7 +42,8 @@ export type RegularResults =
 	| MunsterbergResult[]
 	| MemoryResult[]
 	| SwallowResult[]
-	| CampimetryResult[];
+	| CampimetryResult[]
+	| AttentionResult[];
 
 export type ResultInfo = {
 	sessionId: string;

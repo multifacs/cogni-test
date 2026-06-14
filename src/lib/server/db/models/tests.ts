@@ -183,3 +183,19 @@ export const memoryMatchAttempt = sqliteTable('memory_match_attempt', {
 		.default(sql`CURRENT_TIMESTAMP`)
 		.notNull()
 });
+
+export const attentionAttempt = sqliteTable('attention_attempt', {
+	id: text('id').primaryKey().$defaultFn(generate),
+	attempt: integer('attempt').notNull(),
+	n: integer('n').notNull(),
+	m: integer('m').notNull(),
+	errors: integer('errors').notNull(),
+	elapsed: integer('elapsed').notNull(),
+	found: integer('found').notNull(),
+	sessionId: text('session_id')
+		.notNull()
+		.references(() => session.id),
+	createdAt: text('created_at')
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull()
+});

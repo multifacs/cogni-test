@@ -1,10 +1,16 @@
 <script lang="ts">
-	import { createEventDispatcher, onDestroy } from 'svelte';
+	import { onDestroy } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import type { AttentionResult } from './types';
 	import { SvelteSet } from 'svelte/reactivity';
 
-	const dispatch = createEventDispatcher<{ done: AttentionResult }>();
+	let {
+		gameEnd,
+		sendResults
+	}: {
+		gameEnd: () => void;
+		sendResults: (results: AttentionResult[]) => void;
+	} = $props();
 
 	let n = $state(30);
 	let m = $state(5);
@@ -51,13 +57,15 @@
 			if (found.size === targets.size) {
 				stopTimer();
 				started = false;
-				dispatch('done', {
+				const result: AttentionResult = {
 					n: targets.size,
 					m: found.size,
 					errors,
 					elapsed,
 					found: found.size
-				});
+				};
+				sendResults([result]);
+				gameEnd();
 			}
 		} else {
 			errors++;
