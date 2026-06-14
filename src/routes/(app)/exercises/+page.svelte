@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { userStore } from '$lib/stores/user.js';
+	import { exerciseRegistry } from '$lib/exercises';
 	import { onMount } from 'svelte';
 
 	let { data } = $props();
@@ -25,12 +26,14 @@
 			>
 				<div class="flex flex-col gap-1">
 					<span class="text-lg">{title}</span>
-					{#if exerciseSessionCounts[name]}
-						<span class="text-sm font-medium text-lime-200">
-							Пройдено: {exerciseSessionCounts[name]}
-						</span>
-					{:else}
-						<span class="text-sm text-orange-400"> Не пройдено </span>
+					{#if exerciseRegistry[name]?.result}
+						{#if exerciseSessionCounts[name]}
+							<span class="text-sm font-medium text-lime-200">
+								Пройдено: {exerciseSessionCounts[name]}
+							</span>
+						{:else}
+							<span class="text-sm text-orange-400"> Не пройдено </span>
+						{/if}
 					{/if}
 				</div>
 				<img src={img} alt={name} class="h-14 w-14 rounded-xl bg-white" />

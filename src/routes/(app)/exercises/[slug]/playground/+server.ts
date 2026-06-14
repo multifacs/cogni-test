@@ -5,24 +5,25 @@ import { json } from '@sveltejs/kit';
 import type { ExerciseResults, MetaResult, ExerciseType } from '$lib/exercises/types.js';
 import type { RequestHandler } from '@sveltejs/kit';
 
-const EXERCISES_WITH_RESULTS = new Set<string>([
-	'attention',
-	'emoji',
-	'flanker',
-	'letters',
-	'numbers',
-	'pictures',
-	'ravenMatrices'
-]);
+const SLUG_TO_EXERCISE_TYPE: Record<string, ExerciseType> = {
+	attention: 'attention',
+	emoji: 'emoji',
+	flanker: 'flanker',
+	letters: 'letters',
+	numbers: 'numbers',
+	pictures: 'pictures',
+	'raven-matrices': 'ravenMatrices'
+};
 
 export const POST: RequestHandler = async ({ params, request, cookies }) => {
 	const slug = params.slug!;
-	if (!slug || !EXERCISES_WITH_RESULTS.has(slug)) {
+	const exerciseType = SLUG_TO_EXERCISE_TYPE[slug];
+	if (!slug || !exerciseType) {
 		return json({ error: 'unknown exercise' }, { status: 400 });
 	}
 	const userId = cookies.get('user_id') as string;
 
-	if (slug === 'ravenMatrices') {
+	if (slug === 'raven-matrices') {
 		const body = await request.json();
 		const { summary, answers } = body as {
 			summary: Record<string, unknown>;
@@ -60,6 +61,6 @@ export const POST: RequestHandler = async ({ params, request, cookies }) => {
 	}
 
 	const { results }: { results: ExerciseResults | MetaResult } = await request.json();
-	await postResult(results, slug as ExerciseType, userId);
+	await postResult(results, exerciseType, userId);
 	return json('success', { status: 201 });
 };

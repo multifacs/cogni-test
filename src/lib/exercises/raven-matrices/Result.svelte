@@ -6,6 +6,8 @@
 	let { results }: { results: ExerciseResults; exerciseType?: string; meta?: string[] } =
 		$props();
 
+	console.log(results);
+
 	function reconstructFullResult(attempt_raw: Record<string, unknown>): RavenFullResult {
 		const a = attempt_raw as any;
 		return {
