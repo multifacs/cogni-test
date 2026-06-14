@@ -128,7 +128,8 @@ const exerciseLoaders: Record<string, ExerciseLoader> = {
 	},
 	pictures: {
 		about: () => import('./pictures/About.svelte'),
-		playground: () => import('./pictures/Playground.svelte')
+		playground: () => import('./pictures/Playground.svelte'),
+		result: () => import('./pictures/Result.svelte')
 	},
 	numbers: {
 		about: () => import('./numbers/About.svelte'),

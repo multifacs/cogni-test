@@ -98,6 +98,20 @@ export const ravenAttempt = sqliteTable('raven_attempt', {
 		.notNull()
 });
 
+export const picturesAttempt = sqliteTable('pictures_attempt', {
+	id: text('id').primaryKey().$defaultFn(generate),
+	attempt: integer('attempt').default(1).notNull(),
+	score: integer('score').notNull(),
+	maxScore: integer('max_score').notNull(),
+	normalizedScore: integer('normalized_score').notNull(),
+	sessionId: text('session_id')
+		.notNull()
+		.references(() => session.id),
+	createdAt: text('created_at')
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull()
+});
+
 export const ravenAnswer = sqliteTable('raven_answer', {
 	id: text('id').primaryKey().$defaultFn(generate),
 	taskId: text('task_id').notNull(),

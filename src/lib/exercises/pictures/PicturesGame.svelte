@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import type { PicturesResult, AnswerRecord } from './types';
 
@@ -16,7 +15,13 @@
 		buttonLabel?: string;
 	};
 
-	const dispatch = createEventDispatcher<{ done: PicturesResult }>();
+	let {
+		gameEnd,
+		sendResults
+	}: {
+		gameEnd: () => void;
+		sendResults: (results: PicturesResult[]) => void;
+	} = $props();
 
 	const calendarNumber = 4;
 	const butterflyCount = 3;
@@ -170,21 +175,24 @@
 			questionShownAt = Date.now();
 		} else {
 			finished = true;
-			dispatch('done', {
-				score: score(),
-				maxScore: recallQuestions.length,
-				normalizedScore: Math.round((score() / recallQuestions.length) * 100),
-				answers: questions.map((q) => {
-					const selectedValue = answers[q.id];
-					const option = selectedValue ? optionForValue(q, selectedValue) : undefined;
-					return {
-						questionId: String(q.id),
-						answer: selectedValue ?? undefined,
-						isCorrect: q.scored ? Boolean(option?.correct) : null,
-						reactionTimeMs: answerTimings[q.id] ?? 0
-					};
-				})
-			});
+			sendResults([
+				{
+					score: score(),
+					maxScore: recallQuestions.length,
+					normalizedScore: Math.round((score() / recallQuestions.length) * 100),
+					answers: questions.map((q) => {
+						const selectedValue = answers[q.id];
+						const option = selectedValue ? optionForValue(q, selectedValue) : undefined;
+						return {
+							questionId: String(q.id),
+							answer: selectedValue ?? undefined,
+							isCorrect: q.scored ? Boolean(option?.correct) : null,
+							reactionTimeMs: answerTimings[q.id] ?? 0
+						};
+					})
+				}
+			]);
+			gameEnd();
 		}
 	};
 
@@ -198,12 +206,15 @@
 			questionShownAt = Date.now();
 		} else {
 			finished = true;
-			dispatch('done', {
-				score: score(),
-				maxScore: recallQuestions.length,
-				normalizedScore: Math.round((score() / recallQuestions.length) * 100),
-				answers: []
-			});
+			sendResults([
+				{
+					score: score(),
+					maxScore: recallQuestions.length,
+					normalizedScore: Math.round((score() / recallQuestions.length) * 100),
+					answers: []
+				}
+			]);
+			gameEnd();
 		}
 	};
 </script>

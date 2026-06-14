@@ -16,6 +16,7 @@ import {
 	flankerAttempt,
 	lettersAttempt,
 	numbersAttempt,
+	picturesAttempt,
 	ravenAttempt
 } from '$lib/server/db/models/exercises';
 import type { MetaResult as TestMetaResult, RegularResults, TestType } from '$lib/tests/types';
@@ -44,6 +45,7 @@ const attemptTableMap: Record<string, any> = {
 	flanker: flankerAttempt,
 	letters: lettersAttempt,
 	numbers: numbersAttempt,
+	pictures: picturesAttempt,
 	ravenMatrices: ravenAttempt
 };
 
@@ -61,6 +63,7 @@ const queryTableMap: Record<string, any> = {
 	flanker: db.query.flankerAttempt,
 	letters: db.query.lettersAttempt,
 	numbers: db.query.numbersAttempt,
+	pictures: db.query.picturesAttempt,
 	ravenMatrices: db.query.ravenAttempt
 };
 
