@@ -7,7 +7,7 @@ Base commit: `699490d`
 
 | # | Plan | Status | Effort | Depends on |
 |---|------|--------|--------|------------|
-| 001 | [Save attention exercise results to DB + show history](./001-attention-save-results.md) | TODO | Medium | — |
+| 001 | [Save attention exercise results to DB + show history](./001-attention-save-results.md) | DONE | Medium | — |
 
 ## Execution Order
 
