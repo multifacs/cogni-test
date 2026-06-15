@@ -69,6 +69,7 @@
 		"dotenv": "^17.4.2",
 		"gray-matter": "^4.0.3",
 		"localforage": "^1.10.0",
+		"onnxruntime-node": "^1.26.0",
 		"short-uuid": "^6.0.3",
 		"uuid": "^14.0.0",
 		"web-push": "^3.6.7"
@@ -78,6 +79,7 @@
 		"esbuild@0.25.12": true,
 		"esbuild@0.28.1": true,
 		"@prisma/client@5.22.0": true,
-		"better-sqlite3@12.10.0": true
+		"better-sqlite3@12.10.0": true,
+		"onnxruntime-node@1.26.0": true
 	}
 }

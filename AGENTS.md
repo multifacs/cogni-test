@@ -4,6 +4,20 @@
 
 - SvelteKit 5 + Svelte 5 + Tailwind CSS v4 + Drizzle ORM (SQLite)
 
+## Git Submodules
+
+This repo uses a git submodule for ONNX age-prediction models at `src/lib/server/age/models/`. When cloning:
+
+```bash
+git clone --recurse-submodules https://github.com/your/sveltekit-repo.git
+```
+
+For an already-cloned repo:
+
+```bash
+git submodule update --init
+```
+
 ## Key Commands
 
 | Action | Command |
