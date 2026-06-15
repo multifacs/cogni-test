@@ -122,7 +122,7 @@ export async function getResults(sessionType: AnySessionType, userId: string): P
 	for (const s of sessions) {
 		const attempts = await attemptTable.findMany({
 			where: (fields: any) => eq(fields.sessionId, s.id),
-			orderBy: (fields: any) => asc(fields.attempt)
+			orderBy: (fields: any) => asc(fields.taskIndex)
 		});
 
 		results.push({
