@@ -5,7 +5,7 @@ import { getTestSessionCounts } from '$lib/server/db/controllers/test';
 import type { PageServerLoad } from './$types';
 
 const exerciseToSessionType: Record<string, string> = {
-	'word-morphing': 'word-morphing',
+	'word-morphing': 'wordMorphingExercise',
 	campimetry: 'campimetryExercise',
 	'memory-match': 'memoryMatchExercise',
 	'nback-stream': 'nbackExercise',
