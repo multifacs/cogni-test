@@ -24,7 +24,7 @@ export function summary(r: FullResult) {
   return { totalDurationMs, totalFlips, totalMistakes, meanEfficiency };
 }
 
-// Что пишем в БД (совместимо с memory_match_attempt)
+// Что пишем в БД (совместимо с memory_match_exercise_attempt)
 export function toDbAttempts(r: FullResult) {
   return r.perStage.map(s => ({
     attempt: s.stage,           // 1..3

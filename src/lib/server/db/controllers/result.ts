@@ -6,9 +6,7 @@ import {
 	memoryAttempt,
 	swallowAttempt,
 	munsterbergAttempt,
-	campimetryAttempt,
-	rhythmAttempt,
-	memoryMatchAttempt
+	campimetryAttempt
 } from '$lib/server/db/models/tests';
 import {
 	attentionAttempt,
@@ -42,8 +40,6 @@ const attemptTableMap: Record<string, any> = {
 	swallow: swallowAttempt,
 	munsterberg: munsterbergAttempt,
 	campimetry: campimetryAttempt,
-	rhythm: rhythmAttempt,
-	memoryMatch: memoryMatchAttempt,
 	attention: attentionAttempt,
 	emoji: emojiAttempt,
 	flanker: flankerAttempt,
@@ -64,8 +60,6 @@ const queryTableMap: Record<string, any> = {
 	swallow: db.query.swallowAttempt,
 	munsterberg: db.query.munsterbergAttempt,
 	campimetry: db.query.campimetryAttempt,
-	rhythm: db.query.rhythmAttempt,
-	memoryMatch: db.query.memoryMatchAttempt,
 	attention: db.query.attentionAttempt,
 	emoji: db.query.emojiAttempt,
 	flanker: db.query.flankerAttempt,

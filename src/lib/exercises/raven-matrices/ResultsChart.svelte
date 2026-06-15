@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type { RavenFullResult } from './types';
+  import type { RavenAttemptRow } from './results-adapter';
   import { formatMs, resultRows, summary } from './results-adapter';
 
-  export let result: RavenFullResult;
+  export let attempts: RavenAttemptRow[];
 
-  $: rows = resultRows(result);
-  $: s = summary(result);
+  $: rows = resultRows(attempts);
+  $: s = summary(attempts);
 </script>
 
 <section class="results-card">

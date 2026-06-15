@@ -51,13 +51,3 @@ export interface MetaResult {
 	meta: string[];
 }
 
-export type MemoryMatchResult = {
-	attempt: number; // этап (1..3)
-	time: number; // ms = durationMs
-	stage: number; // дублируем attempt для совместимости с графиками
-	cards: number; // rows*cols
-	flips: number; // flipsCount
-	mistakes: number; // mistakes
-	efficiency: number; // flips / cards
-	isCorrect: boolean; // всегда true (это не «прав/неправ», а «этап завершён»)
-};

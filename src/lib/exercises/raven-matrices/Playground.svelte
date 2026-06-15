@@ -1,16 +1,12 @@
 <script lang="ts">
 	import RavenMatricesGame from './RavenMatricesGame.svelte';
-	import type { RavenAnswerRecord } from './types';
 
 	let { gameEnd }: { gameEnd: () => void } = $props();
 
-	async function handleGameSendResults(
-		summary: Record<string, unknown>[],
-		answers: RavenAnswerRecord[]
-	) {
+	async function handleGameSendResults(results: Record<string, unknown>[]) {
 		await fetch('/exercises/raven-matrices/playground', {
 			method: 'POST',
-			body: JSON.stringify({ summary: summary[0], answers }),
+			body: JSON.stringify({ results }),
 			headers: {
 				'Content-Type': 'application/json'
 			}

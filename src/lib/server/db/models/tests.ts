@@ -154,34 +154,4 @@ export const swallowAttempt = sqliteTable(
 	]
 );
 
-export const rhythmAttempt = sqliteTable('rhythm_attempt', {
-	id: text('id').primaryKey().notNull().$defaultFn(generate),
-	attempt: integer('attempt').notNull(),
-	note: integer('note').notNull(),
-	sessionId: text('session_id')
-		.notNull()
-		.references(() => session.id),
-	createdAt: text('created_at')
-		.default(sql`CURRENT_TIMESTAMP`)
-		.notNull()
-});
-
-export const memoryMatchAttempt = sqliteTable('memory_match_attempt', {
-	id: text('id').primaryKey().$defaultFn(generate),
-	attempt: integer('attempt').notNull(), // 1..3
-	time: integer('time').notNull(), // durationMs
-	stage: integer('stage').notNull(), // дубль attempt
-	cards: integer('cards').notNull(), // rows*cols
-	flips: integer('flips').notNull(), // flipsCount
-	mistakes: integer('mistakes').notNull(), // mistakes
-	efficiency: integer('efficiency').notNull(), // flips/cards * 1000 (см. ниже)
-	isCorrect: integer('is_correct', { mode: 'boolean' }).notNull().default(true),
-	sessionId: text('session_id')
-		.notNull()
-		.references(() => session.id),
-	createdAt: text('created_at')
-		.default(sql`CURRENT_TIMESTAMP`)
-		.notNull()
-});
-
 

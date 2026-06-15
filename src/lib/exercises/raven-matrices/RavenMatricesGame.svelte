@@ -16,7 +16,7 @@
 		options = { count: 10, mode: 'default', answerCount: 6 }
 	}: {
 		gameEnd: () => void;
-		sendResults: (summary: Record<string, unknown>[], answers: RavenAnswerRecord[]) => void;
+		sendResults: (results: Record<string, unknown>[]) => void;
 		options?: RavenTestGenerationOptions;
 	} = $props();
 
@@ -97,21 +97,23 @@
 	}
 
 	function finish() {
-		const totalDurationMs = Math.round(performance.now() - testStartedAt);
-		const correctCount = answers.filter((a) => a.isCorrect).length;
-		const averageResponseTimeMs = answers.length
-			? Math.round(answers.reduce((sum, a) => sum + a.responseTimeMs, 0) / answers.length)
-			: 0;
-
-		const summary = {
-			totalQuestions: tasks.length,
-			correctCount,
-			accuracy: tasks.length ? Math.round((correctCount / tasks.length) * 100) : 0,
-			totalDurationMs,
-			averageResponseTimeMs
-		};
-
-		sendResults([summary], answers);
+		sendResults(
+			answers.map((a) => ({
+				taskId: a.taskId,
+				taskIndex: a.taskIndex,
+				taskClass: a.taskClass,
+				difficultyLevel: a.difficultyLevel,
+				difficultyScore: a.difficultyScore,
+				rules: JSON.stringify(a.rules),
+				skillTags: JSON.stringify(a.skillTags),
+				selectedIndex: a.selectedIndex ?? null,
+				correctIndex: a.correctIndex,
+				selectedFamily: a.selectedFamily ?? null,
+				isCorrect: a.isCorrect,
+				responseTimeMs: a.responseTimeMs,
+				seed: a.seed
+			}))
+		);
 		gameEnd();
 	}
 </script>

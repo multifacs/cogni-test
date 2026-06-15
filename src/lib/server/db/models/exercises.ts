@@ -84,12 +84,19 @@ export const numbersAttempt = sqliteTable('numbers_attempt', {
 
 export const ravenAttempt = sqliteTable('raven_attempt', {
 	id: text('id').primaryKey().$defaultFn(generate),
-	attempt: integer('attempt').default(1).notNull(),
-	totalQuestions: integer('total_questions').notNull(),
-	correctCount: integer('correct_count').notNull(),
-	accuracy: integer('accuracy').notNull(),
-	totalDurationMs: integer('total_duration_ms').notNull(),
-	averageResponseTimeMs: integer('average_response_time_ms').notNull(),
+	taskId: text('task_id').notNull(),
+	taskIndex: integer('task_index').notNull(),
+	taskClass: text('task_class').notNull(),
+	difficultyLevel: integer('difficulty_level').notNull(),
+	difficultyScore: integer('difficulty_score').notNull(),
+	rules: text('rules').notNull(),
+	skillTags: text('skill_tags').notNull(),
+	selectedIndex: integer('selected_index'),
+	correctIndex: integer('correct_index').notNull(),
+	selectedFamily: text('selected_family'),
+	isCorrect: integer('is_correct', { mode: 'boolean' }).notNull(),
+	responseTimeMs: integer('response_time_ms').notNull(),
+	seed: text('seed').notNull(),
 	sessionId: text('session_id')
 		.notNull()
 		.references(() => session.id),
@@ -182,25 +189,4 @@ export const wordMorphingExerciseAttempt = sqliteTable('word_morphing_exercise_a
 		.notNull()
 });
 
-export const ravenAnswer = sqliteTable('raven_answer', {
-	id: text('id').primaryKey().$defaultFn(generate),
-	taskId: text('task_id').notNull(),
-	taskIndex: integer('task_index').notNull(),
-	taskClass: text('task_class').notNull(),
-	difficultyLevel: integer('difficulty_level').notNull(),
-	difficultyScore: integer('difficulty_score').notNull(),
-	rules: text('rules').notNull(),
-	skillTags: text('skill_tags').notNull(),
-	selectedIndex: integer('selected_index'),
-	correctIndex: integer('correct_index').notNull(),
-	selectedFamily: text('selected_family'),
-	isCorrect: integer('is_correct', { mode: 'boolean' }).notNull(),
-	responseTimeMs: integer('response_time_ms').notNull(),
-	seed: text('seed').notNull(),
-	ravenAttemptId: text('raven_attempt_id')
-		.notNull()
-		.references(() => ravenAttempt.id),
-	createdAt: text('created_at')
-		.default(sql`CURRENT_TIMESTAMP`)
-		.notNull()
-});
+
