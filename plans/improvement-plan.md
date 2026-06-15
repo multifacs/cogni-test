@@ -1,29 +1,40 @@
 # Deep Improvement Plan: cogni-test
 
-Generated: 2026-06-13
+Generated: 2026-06-15 | Updated from: 2026-06-13 original
+Base commit: `67367a9`
 
 ## Executive Summary
 
 SvelteKit 5 cognitive testing PWA with 12+ games, push notifications, admin panel, and Docker deployment. The audit found **3 critical bugs**, **7 high-severity issues**, and numerous medium/low improvements across security, Svelte 5 migration, performance, test coverage, and code quality.
+
+### Changes since last review (2026-06-13)
+
+- Plans 010–013 executed: exercise result persistence for campimetry, memory-match, nback-stream, word-morphing
+- ONNX age prediction feature added
+- Memory-match partially converted to Svelte 5 (`MemoryMatchGame.svelte` → callback props, `Playground.svelte` rewritten) — but `StageBoard.svelte` still legacy
+- **No Priority 1–4 findings have been fixed**
 
 ---
 
 ## Priority 1: Critical Bugs & Security (Do First)
 
 ### 1.1 Memory Leak: Chart.js instances never destroyed
-**Severity:** CRITICAL | **Effort:** Small
+**Severity:** CRITICAL | **Effort:** Small | **Status:** NOT FIXED
 
-All 5 `ResultsChart.svelte` files have `chart.destroy()` **commented out** in `onDestroy`:
+All 6 `ResultsChart.svelte` files that use Chart.js have `chart.destroy()` **commented out** in `onDestroy`:
 - `src/lib/tests/math/ResultsChart.svelte:226-229`
 - `src/lib/tests/memory/ResultsChart.svelte:200-203`
 - `src/lib/tests/stroop/ResultsChart.svelte:230-233`
 - `src/lib/tests/swallow/ResultsChart.svelte:205-208`
 - `src/lib/tests/campimetry/ResultsChart.svelte:221-224`
+- `src/lib/components/charts/ResultsChart.svelte:289-292`
 
 **Fix:** Uncomment `chart.destroy()` in every file's `onDestroy` callback. These should also be migrated from `onMount`/`onDestroy` to `$effect` with cleanup return.
 
+Note: Exercise ResultsCharts (`nback-stream`, `memory-match`, `raven-matrices`) use pure SVG/HTML — no leak.
+
 ### 1.2 Missing `await` in `/api/users` endpoint
-**Severity:** CRITICAL | **Effort:** Trivial
+**Severity:** CRITICAL | **Effort:** Trivial | **Status:** NOT FIXED
 
 `src/routes/api/users/+server.ts:7` — `db.select().from(user).all()` returns a Promise but is never awaited. The response will always be an empty/unresolved Promise object serialized as `{}`.
 
@@ -35,197 +46,240 @@ const result = await db.select().from(user).all();
 ```
 
 ### 1.3 Hardcoded secret in docker-compose.yml
-**Severity:** CRITICAL | **Effort:** Trivial
+**Severity:** CRITICAL | **Effort:** Trivial | **Status:** NOT FIXED
 
 `docker-compose.yml:73` contains `MASTERPASS=2001nikita` in plaintext. This is pushed to the repository and visible to anyone with read access.
 
 **Fix:** Move to an environment variable or Docker secret, replace the value with `${DRIZZLE_GATEWAY_PASSWORD}`, and set it on the host or in GitHub Secrets.
 
 ### 1.4 Unauthenticated `/api/users` endpoint exposes all user data
-**Severity:** HIGH | **Effort:** Small
+**Severity:** HIGH | **Effort:** Small | **Status:** NOT FIXED
 
 `GET /api/users` has zero authentication and returns every user's personal data (names, birthdays, sex). Combined with bug 1.2, it currently returns garbage — but once fixed, it becomes a data breach vector.
 
 **Fix:** Add admin auth check (verify `logged_in_admin` cookie) or remove the endpoint entirely since `admin/db/+page.server.ts` already provides this via server load.
 
 ### 1.5 Admin auth weaknesses
-**Severity:** HIGH | **Effort:** Medium
+**Severity:** HIGH | **Effort:** Medium | **Status:** NOT FIXED
 
 Multiple issues in admin authentication:
 
 | Issue | File:Line |
 |-------|----------|
-| Plain-text password comparison | `(app)/admin/login/+page.server.ts:24` |
 | Password echoed back in `fail()` response | `(app)/admin/login/+page.server.ts:25` — `{password, incorrect: true}` leaks the submitted password |
-| No `httpOnly` flag on admin cookie | Cookie lacks both `httpOnly` and `sameSite` attributes |
+| No `httpOnly` flag on admin cookie | Cookie only sets `{ path: '/', secure: true }` |
+| No `sameSite` on admin cookie | Defaults to browser Lax; should be `strict` |
 | No expiration on admin cookie | Session persists forever until browser closes |
 
 **Fix:**
-- Remove `password` from the `fail()` response object
+- Remove `password` from the `fail()` response object immediately
 - Add `httpOnly: true`, `sameSite: 'strict'` to cookie options
 - Consider adding a maxAge for the admin session
-- The plaintext comparison is acceptable if ADMIN_PASSWORD is long/random enough (it comes from env), but the echoed password must be removed immediately
 
 ---
 
 ## Priority 2: Svelte 5 Migration Completeness
 
 ### 2.1 Replace `createEventDispatcher` with callback props
-**Severity:** HIGH | **Effort:** Medium
+**Severity:** MEDIUM-HIGH | **Effort:** Small-Medium | **Status:** PARTIALLY DONE (was HIGH, downgraded)
 
-10 exercise components still use the deprecated Svelte 4 `createEventDispatcher`:
+Since the last review, memory-match's `MemoryMatchGame.svelte` was migrated to callback props. Only **1 file** still uses the deprecated Svelte 4 `createEventDispatcher`:
 
 | Component | Event |
 |-----------|-------|
-| `attention/AttentionGame.svelte` | `on:done` |
-| `emoji/EmojiGame.svelte` | `on:done` |
-| `flanker/FlankerGame.svelte` | `on:done` |
-| `letters/LettersGame.svelte` | `on:done` |
-| `numbers/NumbersGame.svelte` | `on:done` |
-| `pictures/PicturesGame.svelte` | `on:done` |
-| `memory-match/MemoryMatchGame.svelte` | `on:done` |
-| `memory-match/StageBoard.svelte` | `on:click` |
-| `nback-stream/NBackStreamGame.svelte` | `on:done` |
-| `raven-matrices/RavenMatricesGame.svelte` | `on:done` |
+| `memory-match/StageBoard.svelte:2,22,163` | `finished` |
 
-And their parent Playground components use the corresponding `on:done` listener syntax.
+Parent usage of this component (`MemoryMatchGame.svelte`) has been updated; `StageBoard` is the last holdout.
 
 **Pattern change:**
 ```svelte
 <!-- Before -->
 <script>
 import { createEventDispatcher } from 'svelte';
-const dispatch = createEventDispatcher();
-dispatch('done', payload);
+const dispatch = createEventDispatcher<{ finished: StageResult }>();
+dispatch('finished', res);
 </script>
 
 <!-- After -->
 <script>
-let { onDone } = $props();
-onDone(payload);
+let { onFinished }: { onFinished: (res: StageResult) => void } = $props();
+onFinished(res);
 </script>
 ```
 
-Parent usage changes from `<Game on:done={handler} />` to `<Game onDone={handler} />`.
-
 ### 2.2 Replace `export let` with `$props()`
-**Severity:** HIGH | **Effort:** Small-Medium
+**Severity:** MEDIUM-HIGH | **Effort:** Small-Medium | **Status:** NOT FIXED
 
-Files still using legacy props:
+8 component files still use legacy prop syntax (~20 total occurrences):
 
-- `memory-match/MemoryMatchGame.svelte` — 5 props
-- `memory-match/StageBoard.svelte` — ~15 props
-- `nback-stream/StreamBoard.svelte` — 1 prop
-- `raven-matrices/RavenCell.svelte` — 4 props
-- `raven-matrices/RavenMatrixBoard.svelte` — 1 prop
-- All exercise `ResultsChart.svelte` files — 1-2 props each
+| Component | Props Count |
+|-----------|------------|
+| `exercises/memory-match/StageBoard.svelte` | ~10 props |
+| `exercises/nback-stream/StreamBoard.svelte` | 1 prop |
+| `exercises/raven-matrices/RavenCell.svelte` | 4 props |
+| `exercises/raven-matrices/RavenMatrixBoard.svelte` | 1 prop |
+| `exercises/nback-stream/ResultsChart.svelte` | 1 prop |
+| `exercises/memory-match/ResultsChart.svelte` | 1 prop |
+| `exercises/raven-matrices/ResultsChart.svelte` | 1 prop |
+| `(app)/profile/components/Autocomplete.svelte` | 1 prop |
+
+Note: `export let data` in `+page.svelte` files is valid SvelteKit page syntax — not counted here.
 
 ### 2.3 Replace `$:` reactive statements with `$derived` / `$effect`
-**Severity:** MEDIUM | **Effort:** Small
+**Severity:** MEDIUM | **Effort:** Small | **Status:** NOT FIXED
 
-6 files still use `$:` statements:
-- `memory-match/ResultsChart.svelte` (chart config)
-- `nback-stream/Playground.svelte` (phase derivation)
-- `nback-stream/ResultsChart.svelte` (parsed results)
-- `raven-matrices/RavenMatricesGame.svelte` (timer display)
-- `raven-matrices/ResultsChart.svelte` (computed values)
-- `memory-match/StageBoard.svelte` (grid computation)
+17 occurrences across 5 files still use `$:` statements. All are pure derivations eligible for straightforward `$derived` conversion:
+
+| Component | Count | Purpose |
+|-----------|-------|---------|
+| `exercises/memory-match/ResultsChart.svelte` | 8 | Sort/format stage rows, aggregations, SVG layout constants |
+| `exercises/nback-stream/ResultsChart.svelte` | 5 | Click data derivation, SVG path computation |
+| `exercises/raven-matrices/ResultsChart.svelte` | 2 | Result row + summary computation |
+| `exercises/memory-match/StageBoard.svelte` | 1 | Board sync |
+| `(app)/profile/components/Autocomplete.svelte` | 1 | City filter |
 
 ### 2.4 Fix non-reactive state declarations
-**Severity:** HIGH | **Effort:** Medium
+**Severity:** HIGH | **Effort:** Medium | **Status:** PARTIALLY DONE
 
-Many game components declare mutable state with plain `let` instead of `$state()`, meaning UI updates won't trigger re-renders when these variables are reassigned from event handlers. Key examples:
+Most game components now correctly use `$state()`. However, several files still declare mutable state with plain `let`, meaning UI updates won't trigger re-renders when reassigned from event handlers:
 
-- `NBackStreamGame.svelte`: `domain`, `nBack`, `phase`, `countdown`, `seq`, etc.
-- `MemoryMatchGame.svelte`: `cardFlipped`, `matchedPairs`
-- `RavenMatricesGame.svelte`: `timeLeft`, `results`
-- `NotificationToggle.svelte`: `permission`, `enabled`
-- Multiple Playground components
+**High impact (UI rendered from these):**
 
-**Note:** Some may "work by accident" because of how Svelte's compiler detects top-level assignments. But they're fragile and should be made explicit with `$state()`.
+| Component | Variables | Impact |
+|-----------|-----------|--------|
+| `memory-match/StageBoard.svelte:25,29-33` | `board`, `flips`, `mistakes`, `turnCount`, `firstOpenId`, `lock` | **Critical** — core game state rendered in template |
+| `NotificationToggle.svelte:5-6` | `permission`, `enabled` | **Critical** — button icon won't update |
+| `(app)/profile/components/Autocomplete.svelte:4,6` | `value`, `isOpen` | **Critical** — dropdown visibility broken |
+
+**Medium impact (game tracking, indirect rendering):**
+
+| Component | Variables |
+|-----------|-----------|
+| `NBackStreamGame.svelte:29-34` | `seq`, `idx`, `clicks`, `lastClickTs`, `startAt`, `stimShownAt` |
+| `tests/munsterberg/Playground.svelte:30-31` | `isDragging`, `isResetting` |
+| `tests/swallow/Playground.svelte:19-20` | `phase`, `results` |
+| `memory-match/MemoryMatchGame.svelte:55` | `stageStartTs` (internal timing) |
+| `memory-match/MemoryMatchGame.svelte:76` | `lockBoard` (declared but never mutated — dead variable, remove) |
 
 ---
 
 ## Priority 3: Performance & Architecture
 
 ### 3.1 N+1 query in `getResults()`
-**Severity:** HIGH | **Effort:** Medium
+**Severity:** HIGH | **Effort:** Medium | **Status:** NOT FIXED
 
-`src/lib/server/db/controllers/result.ts:83-96` — For each session row, a separate query fetches attempts. If a user has 20 sessions, this generates 21 queries (1 sessions + 20 attempt queries).
+`src/lib/server/db/controllers/result.ts:116-144` — For each session row, a separate query fetches attempts. If a user has 50 sessions, this generates 51 queries (1 sessions + 50 attempt queries).
 
-**Fix:** Fetch all sessions first, collect IDs, then do a single batch query for all attempts using `inArray(sessionId, ids)`. Group results client-side by sessionId.
+`getLastResult()` at line 146 inherits the N+1 problem even though it only needs index `[0]`.
+
+**Fix:** Fetch all sessions first, collect IDs, then do a single batch query for all attempts using `inArray(sessionId, ids)`. Group results client-side by sessionId. Optionally add a dedicated `getLastResult()` that limits to 1 session.
 
 ### 3.2 Global Chart.js mutation (`Chart.defaults.color`)
-**Severity:** HIGH | **Effort:** Small
+**Severity:** HIGH | **Effort:** Small | **Status:** NOT FIXED
 
-All 5 ResultsChart files mutate `Chart.defaults.color = 'white'` at module scope. This globally overrides text color for ALL Chart.js charts in the app, causing unexpected styling side-effects between different chart renderings.
+All 6 Chart.js-based ResultsChart files mutate `Chart.defaults.color = 'white'` at module scope. This globally overrides text color for ALL Chart.js charts in the app, causing unexpected styling side-effects between different chart renderings.
+
+| File | Line |
+|------|------|
+| `components/charts/ResultsChart.svelte` | 49 |
+| `tests/swallow/ResultsChart.svelte` | 28 |
+| `tests/math/ResultsChart.svelte` | 30 |
+| `tests/stroop/ResultsChart.svelte` | 29 |
+| `tests/memory/ResultsChart.svelte` | 28 |
+| `tests/campimetry/ResultsChart.svelte` | 36 |
 
 **Fix:** Pass color configuration per-chart via `options.plugins.legend.labels.color` and similar per-instance settings.
 
 ### 3.3 Push notification schedule-for-all is O(n) sequential
-**Severity:** MEDIUM | **Effort:** Medium
+**Severity:** MEDIUM | **Effort:** Medium | **Status:** NOT FIXED
 
-`api/push/schedule-for-all/+server.ts` iterates sequentially through all subscriptions inserting one DB row at a time. With many users this creates unacceptable latency.
+`api/push/schedule-for-all/+server.ts:19-39` iterates sequentially through all subscriptions inserting one DB row at a time. Also includes `console.log(result)` debug output at line 39.
 
-**Fix:** Use a batch insert with `db.insert().values(arrayOfRows)` instead of looping individual inserts.
+**Fix:** Use a batch insert with `db.insert().values(arrayOfRows)` instead of looping individual inserts. Remove the console.log.
 
 ### 3.4 Background worker polling interval too aggressive
-**Severity:** LOW | **Effort:** Trivial
+**Severity:** LOW | **Effort:** Trivial | **Status:** NOT FIXED
 
-The notification scheduler runs every **10 seconds** (`hooks.server.ts:199`). For scheduled notifications that are typically minutes/hours away, this is excessive.
+The notification scheduler runs every **10 seconds** (`hooks.server.ts:199`). Comment says "every 3 seconds" but code is `10000ms`. For scheduled notifications typically minutes/hours away, this is excessive.
 
-**Fix:** Increase to 60 seconds, or make it configurable. Alternatively, compute the next-scheduled-for timestamp and set a targeted timeout.
+**Fix:** Increase to 60 seconds. Update the comment to match reality.
 
 ### 3.5 Missing database indexes
-**Severity:** MEDIUM | **Effort:** Small
+**Severity:** MEDIUM | **Effort:** Small | **Status:** NOT FIXED
 
-Frequently queried columns lack indexes:
-- `session.userId` — used in every getResults/getTestSessionCounts query
-- `session.testType` — filtered + grouped in analytics
-- `pushSubscriptions.endpoint` — looked up by endpoint in subscribe/send/unsubscribe
-- `scheduledPushNotifications.scheduledFor` — range queried every 10 seconds by the worker
-- `profileSurvey.userId` — joined on every page load in (app) layout
+Zero non-primary-key indexes exist in the entire schema. Frequently queried columns lack indexes:
 
-**Fix:** Add indexes on these columns using Drizzle's `index()` API.
+| Column | Table | Queried By |
+|--------|-------|------------|
+| `session.userId` | `session` | Every getResults/getTestSessionCounts call |
+| `session.testType` | `session` | Filtered + grouped in analytics |
+| `pushSubscriptions.endpoint` | `push_subscriptions` | Subscribe/send/unsubscribe lookups |
+| `scheduledPushNotifications.scheduledFor` | `scheduled_push_notifications` | Range queried every 10s by worker |
+| `profileSurvey.userId` | `profile_survey` | Joined on every page load |
+| All `_attempt.sessionId` | 12+ attempt tables | N+1 join per session in getResults() |
+
+**Fix:** Add indexes using Drizzle's third-argument table config callback:
+```ts
+sqliteTable('session', { /* cols */ }, (table) => [
+    index('session_user_id_idx').on(table.userId),
+    index('session_test_type_idx').on(table.testType),
+]);
+```
+
+Then run `npm run init-db-dev` to apply schema changes.
 
 ---
 
 ## Priority 4: Code Quality & Type Safety
 
 ### 4.1 Remove debug `console.log` in `postResult()`
-**Severity:** LOW | **Effort:** Trivial
+**Severity:** LOW | **Effort:** Trivial | **Status:** NOT FIXED
 
-`src/lib/server/db/controllers/result.ts:24` — `console.log(short, short.generate)` is clearly a leftover debug statement.
+`src/lib/server/db/controllers/result.ts:90` — `console.log(short, short.generate)` is clearly a leftover debug statement.
+
+Also: `api/push/schedule-for-all/+server.ts:39` has `console.log(result)` inside the loop.
 
 ### 4.2 Replace `any` types with proper types
-**Severity:** MEDIUM | **Effort:** Small
+**Severity:** MEDIUM | **Effort:** Small-Medium | **Status:** NOT FIXED
+
+Expanded since last review — exercise Playground components also use `any`:
 
 | Location | Current | Should Be |
 |----------|---------|-----------|
-| `controllers/result.ts:92` | `// @ts-ignore` | Proper typed map lookup |
-| `NBackStreamGame.svelte:26` | `tickTimer: any` | `ReturnType<typeof setInterval>` |
-| `swallow/Playground.svelte:18` | `timer: any` | `ReturnType<typeof setInterval>` |
-| `munsterberg/Playground.svelte:21` | `timerInterval: any` | `ReturnType<typeof setInterval>` |
-| `word-morphing/Result.svelte:13-14` | `any` | Specific result array type |
+| `controllers/result.ts:92+` | `// @ts-ignore` × multiple | Proper typed map lookups |
+| `tests/swallow/Playground.svelte:18` | `timer: any` | `ReturnType<typeof setInterval>` |
+| `tests/munsterberg/Playground.svelte:21` | `timerInterval: any = $state(null)` | `$state<ReturnType<typeof setInterval> \| null>(null)` |
+| `exercises/nback-stream/NBackStreamGame.svelte:37` | `tickTimer: any` | `ReturnType<typeof setInterval> \| null` |
+| `exercises/word-morphing/Playground.svelte:63,65` | `data: any`, `sendResults: (results: any[]) => void` | Proper types |
+| `exercises/campimetry/Playground.svelte:14,16` | `data: any`, `sendResults: (results: any[]) => void` | Proper types |
+| `exercises/{attention,emoji,flanker,letters,numbers,pictures,nback-stream,memory-match}/Playground.svelte` | `sendResults: (results: any[]) => void` | Specific result array type |
+| `exercises/word-morphing/components/Result.svelte:13-14` | `recalledCombos: any`, `expectedCombos: any` | Specific types |
+| `exercises/campimetry/Result.svelte:16,18` | `b: any` × 2 | Campimetry result type |
+| `exercises/memory-match/Result.svelte:28,32,36` | `b_raw: any` × 3 | Already cast inline — use proper type directly |
+| 6 test ResultsCharts | `@ts-ignore` × 11 | Per-chart typed configs |
 
-### 4.3 `$state(Object())` anti-pattern for DOM refs
-**Severity:** MEDIUM | **Effort:** Trivial
+### 4.3 `$state({})` for DOM refs
+**Severity:** LOW | **Effort:** Trivial | **Status:** MOSTLY RESOLVED
 
-All ResultsChart files and several Playground components initialize canvas/chart references as `$state(new Object())`. Since `bind:this` doesn't need reactivity, plain `let canvas: HTMLCanvasElement;` suffices.
+Previously flagged as `$state(new Object())`. Current search shows:
+- `exercises/+page.svelte:7` — `let exerciseSessionCounts = $state({})` — valid reactive state, not a DOM ref
+- `tests/+page.svelte:11` — `let testSessionCounts = $state({})` — valid reactive state, not a DOM ref
 
-Affected files: math/memory/stroop/swallow/campimetry ResultsChart + Playground components.
+Both are legitimate `$state({})` usage (not DOM ref anti-patterns). Downgrading from original finding.
 
 ### 4.4 Dead/commented-out code cleanup
-**Severity:** LOW | **Effort:** Trivial
+**Severity:** LOW | **Effort:** Trivial | **Status:** PARTIALLY FIXED
 
-- `vite.config.ts:7` — commented-out console.log
-- `service-worker.ts:15-16` — commented-out localforage import + log
-- `models/tests.ts:78-80` — commented-out `sportsFrequency` field check
-- `models/survey.ts:78-80, 212-222` — commented-out sports frequency enum/check
-- `models/survey.ts:3` — unused import comment `// import short from 'short-uuid'`
+| Location | Status |
+|----------|--------|
+| `vite.config.ts:34` | Still commented-out `// console.log(...)` |
+| `models/survey.ts:78-80` | Still commented-out `sportsFrequency` field |
+| `models/survey.ts:3` | Check if unused import comment remains |
+| `service-worker.ts` | Needs re-check |
+| Word-morphing debug | **FIXED** — commit `0db8e7d` removed debug logging |
 
 ### 4.5 Test variable typos
-**Severity:** LOW | **Effort:** Trivial
+**Severity:** LOW | **Effort:** Trivial | **Status:** NOT FIXED
 
 `word-morphing/components/Result.svelte.spec.ts:7,12` — `mockOrginalShape` → `mockOriginalShape`, `mockOrginalColor` → `mockOriginalColor`.
 
@@ -234,9 +288,9 @@ Affected files: math/memory/stroop/swallow/campimetry ResultsChart + Playground 
 ## Priority 5: Testing Infrastructure
 
 ### 5.1 Near-zero test coverage
-**Severity:** CRITICAL (for reliability) | **Effort:** Large
+**Severity:** CRITICAL (for reliability) | **Effort:** Large | **Status:** NOT FIXED
 
-Only **1 test file exists** in the entire project (`Result.svelte.spec.ts`, 53 lines). Zero server tests, zero E2E tests (Playwright config exists but no `.e2e.ts` files).
+Only **1 test file exists** in the entire project (`Result.svelte.spec.ts`, ~53 lines). Zero server tests, zero E2E tests (Playwright config exists but no `.e2e.ts` files).
 
 **Recommended minimum testing:**
 1. **Server unit tests** for controllers (`user.ts`, `result.ts`, `survey.ts`, `test.ts`) — mock Drizzle, verify logic
@@ -245,7 +299,7 @@ Only **1 test file exists** in the entire project (`Result.svelte.spec.ts`, 53 l
 4. **Integration test** for the login flow (cookie set → redirect → authenticated access)
 
 ### 5.2 CI pipeline disabled
-**Severity:** HIGH | **Effort:** Trivial
+**Severity:** HIGH | **Effort:** Trivial | **Status:** NOT FIXED
 
 `.github/workflows/ci.yaml:3-6` — push/PR triggers are commented out. Only manual dispatch works, meaning no automated quality gate.
 
@@ -256,34 +310,70 @@ Only **1 test file exists** in the entire project (`Result.svelte.spec.ts`, 53 l
 ## Priority 6: Structural Improvements
 
 ### 6.1 Deduplicate campimetry logic
-**Severity:** MEDIUM | **Effort:** Medium
+**Severity:** MEDIUM | **Effort:** Medium | **Status:** NOT FIXED
 
 Campimetry game logic appears duplicated between `src/lib/exercises/campimetry/` and `src/lib/tests/campimetry/`. Consider extracting shared logic into a common module.
 
 ### 6.2 Store vs. Runes inconsistency
-**Severity:** LOW | **Effort:** Small
+**Severity:** LOW | **Effort:** Small | **Status:** NOT FIXED
 
-`UserBadge.svelte` uses `derived()` from `svelte/store` for what could be a simple `$derived()` rune. The project has already migrated most state management to runes — finish the job.
+`UserBadge.svelte:3` imports `derived()` from `svelte/store` for what could be a simple `$derived()` rune. The project has already migrated most state management to runes — finish the job.
 
 ### 6.3 Inline encryption keys in scheduled notifications payload
-**Severity:** MEDIUM | **Effort:** Medium
+**Severity:** MEDIUM | **Effort:** Medium | **Status:** NOT FIXED
 
-`scheduledPushNotifications.payload` stores push subscription encryption keys (`p256dh`, `auth`) as JSON in the payload column. This means keys are stored redundantly (also in `pushSubscriptions` table) and if either table is compromised, push impersonation is possible.
+`scheduledPushNotifications.payload` stores push subscription encryption keys (`p256dh`, `auth`) as JSON in the payload column (see `schedule-for-all/+server.ts:22-26`). Keys are stored redundantly (also in `pushSubscriptions` table). If either table is compromised, push impersonation is possible.
 
 **Fix:** Don't store keys in the payload — look them up from `pushSubscriptions` at send time (the worker already does this at `hooks.server.ts:41-50`).
 
-### 6.4 Verify dominantHand label/options mapping
-**Severity:** LOW | **Effort:** Trivial
+### 6.4 Verify dominantHand label/options mapping — CONFIRMED SWAPPED
+**Severity:** MEDIUM | **Effort:** Trivial | **Status:** NOT FIXED — BUG CONFIRMED
 
-The route exploration flagged that the `dominantHand` field label/options may appear swapped (label asks about writing hand, but `left` maps to "Правая" and vice versa). Needs verification against actual UI code.
+`(app)/profile/+page.svelte:526-527`:
+```svelte
+{ label: 'Правая', value: 'left' },
+{ label: 'Левая', value: 'right' }
+```
+
+In Russian, "Правая" means "Right hand" and "Левая" means "Left hand". But `value: 'left'` is paired with "Правая" (Right), and `value: 'right'` is paired with "Левая" (Left). The values are swapped relative to their labels.
+
+**Impact:** Users selecting "Right hand" have `"left"` saved to the database, and vice versa. All existing dominantHand data in the database is inverted.
+
+**Fix:** Swap the values: `{ label: 'Правая', value: 'right' }`, `{ label: 'Левая', value: 'left' }`.
+Consider whether existing DB records need correction.
+
+---
+
+## New Findings Since Last Review
+
+### 7.1 `lockBoard` declared but never used
+**Severity:** LOW | **Effort:** Trivial | **Status:** NEW
+
+`memory-match/MemoryMatchGame.svelte:76` — `let lockBoard = false;` is declared but never mutated or read. Dead variable — remove it.
 
 ---
 
 ## Implementation Order Recommendation
 
-| Phase | Items | Estimated Effort |
-|-------|-------|------------------|
-| **Phase 1** (Immediate) | 1.1–1.5 (Critical bugs + security) | ~2 hours |
-| **Phase 2** (Sprint 1) | 2.1–2.4 (Svelte 5 migration completion) | ~8 hours |
-| **Phase 3** (Sprint 2) | 3.1–3.5 (Performance), 4.1–4.5 (Code quality) | ~4 hours |
-| **Phase 4** (Sprint 3) | 5.1–5.2 (Testing infra), 6.1–6.4 (Structural) | ~16+ hours |
+| Phase | Items | Estimated Effort | Depends On |
+|-------|-------|------------------|------------|
+| **Phase 1** (Immediate) | 1.1–1.5 (Critical bugs + security) | ~2 hours | — |
+| **Phase 2** (Quick wins) | 4.1, 4.5, 6.4, 7.1, 3.4 | ~30 min | — |
+| **Phase 3** (Sprint 1) | 2.1–2.4 (Svelte 5 migration completion) | ~6 hours | — |
+| **Phase 4** (Sprint 2) | 3.1–3.5 (Performance), 4.2, 4.4 (Code quality) | ~4 hours | — |
+| **Phase 5** (Sprint 3) | 5.1–5.2 (Testing infra), 6.1–6.3 (Structural) | ~16+ hours | — |
+
+### Dependency ordering within phases
+
+- **1.2 before 1.4**: Fix the `await` bug first, then decide on auth — otherwise you're securing broken code.
+- **2.1 before 2.2 for StageBoard**: `createEventDispatcher` removal forces `$props()` migration anyway — do them together.
+- **3.5 (indexes)** should land before or alongside **3.1 (N+1 fix)** — indexes make the N+1 less painful but don't eliminate it.
+- **5.2 (CI)** should be enabled before writing substantial tests (finding 5.1) so they actually run automatically.
+- **6.4 (dominantHand)**: Data migration needed if records exist. Check production DB before fixing.
+
+### Not audited / limitations
+
+- ONNX age prediction model pipeline (new, complex — deserves its own focused audit)
+- Service worker push notification end-to-end flow
+- Docker/Traefik deployment configuration beyond the hardcoded secret
+- Client-side localforage caching logic in word-morphing
