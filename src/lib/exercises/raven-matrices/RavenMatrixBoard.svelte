@@ -1,26 +1,30 @@
 <script lang="ts">
-  import type { GeneratedRavenTask } from './types';
-  import RavenCell from './RavenCell.svelte';
+	import type { GeneratedRavenTask } from './types';
+	import RavenCell from './RavenCell.svelte';
 
-  export let task: GeneratedRavenTask;
+	export let task: GeneratedRavenTask;
 </script>
 
 <div class="board-frame" aria-label="Матрица задания">
-  <div class="board">
-    {#each task.cells as cell, index (cell.id)}
-      <div class="board-cell" class:missing={index === task.missingIndex}>
-        <RavenCell cell={index === task.missingIndex ? null : cell} missing={index === task.missingIndex} cellId={`${task.id}-matrix-${index}`} />
-      </div>
-    {/each}
-  </div>
+	<div class="board">
+		{#each task.cells as cell, index (cell.id)}
+			<div class="board-cell" class:missing={index === task.missingIndex}>
+				<RavenCell
+					cell={index === task.missingIndex ? null : cell}
+					missing={index === task.missingIndex}
+					cellId={`${task.id}-matrix-${index}`}
+				/>
+			</div>
+		{/each}
+	</div>
 </div>
 
 <style>
-  .board-frame {
-    width: 100%;
-    display: grid;
-    place-items: center;
-  }
+	.board-frame {
+		width: 100%;
+		display: grid;
+		place-items: center;
+	}
 
   .board {
     display: grid;
@@ -34,19 +38,19 @@
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.85);
   }
 
-  .board-cell {
-    min-width: 0;
-    border-radius: 0.9rem;
-  }
+	.board-cell {
+		min-width: 0;
+		border-radius: 0.9rem;
+	}
 
-  .board-cell.missing {
-    outline: 2px dashed rgb(100 116 139 / 0.36);
-    outline-offset: -4px;
-  }
+	.board-cell.missing {
+		outline: 2px dashed rgb(100 116 139 / 0.36);
+		outline-offset: -4px;
+	}
 
-  @media (max-width: 420px) {
-    .board {
-      width: min(100%, 310px);
-    }
-  }
+	@media (max-width: 420px) {
+		.board {
+			width: min(100%, 310px);
+		}
+	}
 </style>

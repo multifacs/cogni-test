@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { generateRavenTest } from './logic/generator';
 	import { taskClassLabel } from './results-adapter';
-	import RavenCell from './RavenCell.svelte';
+	import RavenAnswerOptions from './RavenAnswerOptions.svelte';
 	import RavenMatrixBoard from './RavenMatrixBoard.svelte';
 	import type {
 		GeneratedRavenTask,
@@ -153,10 +153,10 @@
 	</section>
 {:else if currentTask}
 	<section
-		class="mx-auto flex w-full max-w-3xl flex-col items-center justify-center gap-2 text-slate-800"
+		class="mx-auto flex w-full max-w-4xl flex-col items-center justify-center gap-2 text-slate-800"
 	>
 		<header
-			class="flex w-full items-start justify-between gap-2.5 rounded-xl border border-slate-300/25 bg-linear-to-br from-blue-50 to-orange-50 px-3 py-3"
+			class="flex w-full flex-col items-start justify-between gap-2.5 rounded-xl border border-slate-300/25 bg-linear-to-br from-blue-50 to-orange-50 px-3 py-3 md:flex-row md:items-start"
 		>
 			<div>
 				<p class="m-0 text-xs font-extrabold tracking-wider text-slate-500 uppercase">
@@ -164,7 +164,7 @@
 				</p>
 				<h2 class="text-lg leading-snug text-gray-900">Выберите недостающую ячейку</h2>
 			</div>
-			<div class="flex flex-wrap justify-end gap-1.5">
+			<div class="flex flex-wrap gap-1.5 md:justify-end">
 				<span
 					class="rounded-full bg-white/70 px-3 py-1.5 text-sm text-slate-700 ring-1 ring-slate-300/20"
 					>Сложность {currentTask.difficulty.estimatedLevel}</span
@@ -183,44 +183,25 @@
 			></span>
 		</div>
 
-		<section
-			class="w-full rounded-xl border border-slate-300/25 bg-linear-to-br from-blue-50 to-purple-50 p-2 shadow-md"
-			aria-label="Задание"
-		>
-			<RavenMatrixBoard task={currentTask} />
-		</section>
-
-		<section
-			class="flex w-full flex-col items-center justify-center gap-2 rounded-xl border border-slate-300/25 bg-linear-to-br from-orange-50 to-slate-50 p-3 shadow-md"
-			aria-label="Варианты ответа"
-		>
-			<div class="self-start text-xs font-extrabold tracking-wide text-slate-500">
-				Варианты
+		<!-- Mobile: stacked (2 rows); Desktop: side-by-side (2 columns) -->
+		<div class="grid w-full grid-cols-1 gap-3 md:grid-cols-2">
+			<div
+				class="flex items-center justify-center rounded-xl border border-slate-300/25 bg-linear-to-br from-blue-50 to-purple-50 p-2 shadow-md"
+				aria-label="Задание"
+			>
+				<RavenMatrixBoard task={currentTask} />
 			</div>
-			<div class="grid w-full grid-cols-3 gap-2">
-				{#each currentTask.answerOptions as option, index (option.id)}
-					<button
-						type="button"
-						class="selected:border-slate-700 correct:border-green-500 correct:bg-green-50 wrong:border-red-400 wrong:bg-red-50 relative min-w-0 cursor-pointer rounded-xl border-2 border-transparent bg-white/85 p-1 shadow-sm transition-all duration-100 ease-out hover:-translate-y-0.5 hover:border-slate-400 disabled:pointer-events-none"
-						class:selected={selectedIndex === index}
-						class:correct={selectedIndex !== null && index === currentTask.correctIndex}
-						class:wrong={selectedIndex === index && index !== currentTask.correctIndex}
-						disabled={isLocked}
-						onclick={() => selectAnswer(index)}
-						aria-label={`Вариант ${index + 1}`}
-					>
-						<span
-							class="absolute top-1 left-1 z-1 grid size-5 place-items-center rounded-full bg-slate-700/90 text-xs font-extrabold text-white"
-							>{index + 1}</span
-						>
-						<RavenCell
-							cell={option.cell}
-							cellId={`${currentTask.id}-answer-${index}`}
-							compact
-						/>
-					</button>
-				{/each}
+			<div
+				class="flex items-center justify-center rounded-xl border border-slate-300/25 bg-linear-to-br from-orange-50 to-slate-50 p-3 shadow-md"
+				aria-label="Варианты ответа"
+			>
+				<RavenAnswerOptions
+					task={currentTask}
+					{selectedIndex}
+					{isLocked}
+					onselect={selectAnswer}
+				/>
 			</div>
-		</section>
+		</div>
 	</section>
 {/if}
