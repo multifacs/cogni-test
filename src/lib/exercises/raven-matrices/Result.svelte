@@ -23,11 +23,8 @@
 			seed: String(a.seed ?? '')
 		}));
 	}
+
+	const rows = toAttemptRows(results as Record<string, unknown>[]);
 </script>
 
-{#each results as session_raw, i (i)}
-	{@const session = session_raw as Record<string, unknown>}
-	{@const attempts = (session.attempts ?? []) as Record<string, unknown>[]}
-	{@const rows = toAttemptRows(attempts)}
-	<ResultsChart attempts={rows} />
-{/each}
+<ResultsChart attempts={rows} />

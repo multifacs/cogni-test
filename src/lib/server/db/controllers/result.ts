@@ -73,6 +73,26 @@ const queryTableMap: Record<string, any> = {
 	wordMorphingExercise: db.query.wordMorphingExerciseAttempt
 };
 
+const orderByMap: Record<string, (fields: any) => any> = {
+	math: (f) => asc(f.attempt),
+	stroop: (f) => asc(f.attempt),
+	memory: (f) => asc(f.attempt),
+	swallow: (f) => asc(f.attempt),
+	munsterberg: (f) => asc(f.attempt),
+	campimetry: (f) => asc(f.attempt),
+	attention: (f) => asc(f.attempt),
+	emoji: (f) => asc(f.attempt),
+	flanker: (f) => asc(f.attempt),
+	letters: (f) => asc(f.attempt),
+	memoryMatchExercise: (f) => asc(f.attempt),
+	nbackExercise: (f) => asc(f.attempt),
+	numbers: (f) => asc(f.attempt),
+	pictures: (f) => asc(f.attempt),
+	campimetryExercise: (f) => asc(f.attempt),
+	ravenMatrices: (f) => asc(f.taskIndex),
+	wordMorphingExercise: (f) => asc(f.attempt)
+};
+
 export async function postResult(
 	results: RegularResults | ExerciseResults | AnyMetaResult,
 	sessionType: AnySessionType,
@@ -117,12 +137,15 @@ export async function getResults(sessionType: AnySessionType, userId: string): P
 	const attemptTable = queryTableMap[sessionType];
 	if (!attemptTable) throw new Error(`Unknown session type: ${sessionType}`);
 
+	const orderBy = orderByMap[sessionType];
+	if (!orderBy) throw new Error(`Unknown session type: ${sessionType}`);
+
 	const results: any[] = [];
 
 	for (const s of sessions) {
 		const attempts = await attemptTable.findMany({
 			where: (fields: any) => eq(fields.sessionId, s.id),
-			orderBy: (fields: any) => asc(fields.taskIndex)
+			orderBy
 		});
 
 		results.push({

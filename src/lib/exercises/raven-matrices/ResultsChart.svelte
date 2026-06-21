@@ -1,171 +1,243 @@
 <script lang="ts">
-  import type { RavenAttemptRow } from './results-adapter';
-  import { formatMs, resultRows, summary } from './results-adapter';
+	import Chart from 'chart.js/auto';
+	import annotationPlugin from 'chartjs-plugin-annotation';
 
-  export let attempts: RavenAttemptRow[];
+	import { Colors, type ScriptableContext } from 'chart.js';
+	Chart.register(Colors);
+	Chart.register(annotationPlugin);
 
-  $: rows = resultRows(attempts);
-  $: s = summary(attempts);
+	import { onDestroy, onMount } from 'svelte';
+	import { getCSSVar } from '$lib/utils';
+	import { formatMs, summary, taskClassLabel, type RavenAttemptRow } from './results-adapter';
+
+	import '@fontsource/fira-code';
+
+	type RavenResult = {
+		x: number;
+		y: number;
+		difficultyLevel: number;
+		difficultyScore: number;
+		taskClassLabel: string;
+		isCorrect: boolean;
+		raw: RavenAttemptRow;
+	};
+
+	let { attempts }: { attempts: RavenAttemptRow[] } = $props();
+
+	const pointColor = (ctx: ScriptableContext<'line'>) => {
+		const result = ctx.raw as RavenResult | undefined;
+		if (!result) return 'white';
+		return result.isCorrect ? getCSSVar('--color-green-500') : getCSSVar('--color-red-400');
+	};
+
+	Chart.defaults.color = 'white';
+
+	let canvas: HTMLCanvasElement = $state(Object());
+	let chart = $state(Object());
+
+	let avg = $state(0);
+	let allTime = $state(0);
+	let correctCount = $state(0);
+	let totalCount = $state(0);
+
+	function getResults(attempts: RavenAttemptRow[]): RavenResult[] {
+		return attempts.map((a, i) => ({
+			x: i + 1,
+			y: a.responseTimeMs,
+			difficultyLevel: a.difficultyLevel,
+			difficultyScore: a.difficultyScore,
+			taskClassLabel: taskClassLabel(a.taskClass),
+			isCorrect: a.isCorrect,
+			raw: a
+		}));
+	}
+
+	onMount(() => {
+		const parsed = getResults(attempts);
+		const s = summary(attempts);
+
+		avg = s.averageResponseTimeMs;
+		allTime = Math.round(s.totalDurationMs / 1000);
+		correctCount = s.correctCount;
+		totalCount = s.totalQuestions;
+
+		chart = new Chart(canvas, {
+			type: 'line',
+			data: {
+				labels: parsed.map((r) => r.x),
+				datasets: [
+					{
+						label: 'Время реакции',
+						data: parsed,
+						borderWidth: 1,
+						pointBackgroundColor: pointColor,
+						pointRadius: 5,
+						tension: 0.4
+					}
+				]
+			},
+			options: {
+				onHover(event, chartElements) {
+					// @ts-ignore
+					const target = event.native ? event.native.target : event.chart.canvas;
+					target.style.cursor = chartElements.length ? 'pointer' : 'default';
+				},
+				responsive: true,
+				plugins: {
+					tooltip: {
+						callbacks: {
+							title(context) {
+								const value = context[0].raw as RavenResult;
+								return `Задание ${value.x}`;
+							},
+							afterTitle(context) {
+								const value = context[0].raw as RavenResult;
+								return `${value.taskClassLabel} · Уровень ${value.difficultyLevel} (score ${value.difficultyScore.toFixed(2)})`;
+							},
+							beforeBody(context) {
+								const r = context[0].raw as RavenResult;
+								const raw = r.raw;
+								const selected = raw.selectedIndex != null ? `#${raw.selectedIndex + 1}` : '—';
+								const correct = `#${raw.correctIndex + 1}`;
+								const family = raw.selectedFamily ?? '—';
+								return [
+									`Ответ: ${selected} (верный: ${correct})`,
+									`Тип ошибки: ${family}`
+								];
+							},
+							label(context) {
+								const value = context.raw as RavenResult;
+								const status = value.isCorrect ? 'Верно' : 'Ошибка';
+								return `Реакция: ${formatMs(value.y)} (${status})`;
+							},
+							afterBody(context) {
+								const r = context[0].raw as RavenResult;
+								const raw = r.raw;
+								const rules = (() => {
+									try { return JSON.parse(raw.rules); } catch { return []; }
+								})();
+								const tags = (() => {
+									try { return JSON.parse(raw.skillTags); } catch { return []; }
+								})();
+								const lines: string[] = [];
+								if (rules.length) lines.push(`Правила: ${rules.join(', ')}`);
+								if (tags.length) lines.push(`Навыки: ${tags.join(', ')}`);
+								return lines;
+							}
+						},
+						titleFont: { family: 'Fira Code' }
+					},
+					legend: {
+						labels: {
+							usePointStyle: true,
+							// @ts-ignore
+							generateLabels(chart) {
+								const original =
+									Chart.defaults.plugins.legend.labels.generateLabels(chart);
+								const fontColor = original[0]?.['fontColor'] ?? 'white';
+								const strokeStyle = original[0]?.['strokeStyle'] ?? 'white';
+								return [
+									{
+										text: 'Среднее время реакции',
+										fontColor,
+										fillStyle: 'rgba(255,99,132,0.4)',
+										strokeStyle: 'rgba(255,99,132,1)',
+										pointStyle: 'line',
+										lineDash: [6, 6],
+										hidden: false,
+										index: -1
+									},
+									{
+										text: 'Верно',
+										fontColor,
+										fillStyle: getCSSVar('--color-green-500'),
+										strokeStyle,
+										pointStyle: 'circle',
+										hidden: false,
+										index: -2
+									},
+									{
+										text: 'Ошибка',
+										fontColor,
+										fillStyle: getCSSVar('--color-red-400'),
+										strokeStyle,
+										pointStyle: 'circle',
+										hidden: false,
+										index: -3
+									}
+								];
+							}
+						}
+					},
+					annotation: {
+						annotations: {
+							averageLine: {
+								type: 'line',
+								yMin: avg,
+								yMax: avg,
+								borderColor: 'rgba(255,99,132,1)',
+								borderWidth: 2,
+								borderDash: [6, 6]
+							}
+						}
+					}
+				},
+				scales: {
+					x: {
+						title: {
+							display: true,
+							text: 'Задание'
+						},
+						ticks: {
+							color: (ctx) => {
+								const r = parsed[ctx.index];
+								if (!r) return 'white';
+								const color = r.isCorrect ? '--color-green-500' : '--color-red-400';
+								return getCSSVar(color);
+							},
+							font: {
+								weight: 'bold',
+								family: 'Fira Code'
+							}
+						}
+					},
+					y: {
+						title: {
+							display: true,
+							text: 'Время реакции (мс)'
+						}
+					}
+				}
+			}
+		});
+	});
+
+	onDestroy(() => {
+		chart?.destroy?.();
+	});
 </script>
 
-<section class="results-card">
-  <div class="summary-grid">
-    <div class="metric primary">
-      <span class="label">Правильность</span>
-      <strong>{Math.round(s.accuracy * 100)}%</strong>
-    </div>
-    <div class="metric">
-      <span class="label">Верно</span>
-      <strong>{s.correctCount}/{s.totalQuestions}</strong>
-    </div>
-    <div class="metric">
-      <span class="label">Среднее время</span>
-      <strong>{formatMs(s.averageResponseTimeMs)}</strong>
-    </div>
-    <div class="metric">
-      <span class="label">Общее время</span>
-      <strong>{formatMs(s.totalDurationMs)}</strong>
-    </div>
-  </div>
-
-  <div class="bars" aria-label="Правильность по заданиям">
-    {#each rows as row (row.index)}
-      <span class:ok={row.isCorrect} class:bad={!row.isCorrect} title={`Задание ${row.index}: ${row.isCorrect ? 'верно' : 'ошибка'}`}>{row.index}</span>
-    {/each}
-  </div>
-
-  <div class="attempt-list">
-    {#each rows as row (row.index)}
-      <article class:ok-card={row.isCorrect} class:bad-card={!row.isCorrect}>
-        <b>{row.index}</b>
-        <span>{row.isCorrect ? 'Верно' : 'Ошибка'}</span>
-        <small>{formatMs(row.responseTimeMs)} · сложн. {row.difficultyLevel} · {row.taskClassLabel}</small>
-      </article>
-    {/each}
-  </div>
-</section>
+<div class="chart-wrapper">
+	<div class="stats-row">
+		<span>Общее время: {formatMs(allTime * 1000)}</span>
+		<span>Среднее время: {formatMs(avg)}</span>
+		<span>Верно: {correctCount}/{totalCount}</span>
+		<span>Точность: {totalCount ? Math.round((correctCount / totalCount) * 100) : 0}%</span>
+	</div>
+	<canvas bind:this={canvas}></canvas>
+</div>
 
 <style>
-  .results-card {
-    display: grid;
-    gap: 0.8rem;
-    padding: clamp(0.8rem, 2.4vw, 1rem);
-    border: 1px solid rgb(148 163 184 / 0.24);
-    border-radius: 1.25rem;
-    background: linear-gradient(145deg, #ffffff 0%, #f7fbff 100%);
-    box-shadow: 0 12px 30px rgb(15 23 42 / 0.08);
-  }
+	.chart-wrapper {
+		display: grid;
+		gap: 0.5rem;
+	}
 
-  .summary-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.55rem;
-  }
-
-  .metric {
-    min-width: 0;
-    border-radius: 0.95rem;
-    padding: 0.72rem;
-    background: #f5f7fb;
-    border: 1px solid rgb(148 163 184 / 0.18);
-  }
-
-  .metric.primary {
-    background: #f0f9ff;
-  }
-
-  .label {
-    display: block;
-    margin-bottom: 0.2rem;
-    font-size: 0.72rem;
-    color: #64748b;
-  }
-
-  strong {
-    color: #111827;
-    font-size: clamp(1.05rem, 4.5vw, 1.45rem);
-  }
-
-  .bars {
-    display: grid;
-    grid-template-columns: repeat(10, minmax(0, 1fr));
-    gap: 0.32rem;
-  }
-
-  .bars span {
-    display: grid;
-    min-height: 1.85rem;
-    place-items: center;
-    border-radius: 0.55rem;
-    color: white;
-    font-size: 0.78rem;
-    font-weight: 800;
-  }
-
-  .ok {
-    background: #3ba96b;
-  }
-
-  .bad {
-    background: #d9574f;
-  }
-
-  .attempt-list {
-    display: grid;
-    gap: 0.42rem;
-    max-height: 45vh;
-    overflow: auto;
-    padding-right: 0.15rem;
-  }
-
-  article {
-    display: grid;
-    grid-template-columns: 2rem 4.3rem 1fr;
-    gap: 0.5rem;
-    align-items: center;
-    border-radius: 0.82rem;
-    padding: 0.48rem 0.55rem;
-    border: 1px solid rgb(148 163 184 / 0.18);
-    background: #fbfdff;
-  }
-
-  article b {
-    display: grid;
-    width: 1.6rem;
-    height: 1.6rem;
-    place-items: center;
-    border-radius: 999px;
-    background: #e2e8f0;
-    color: #334155;
-    font-size: 0.8rem;
-  }
-
-  article span {
-    font-weight: 800;
-  }
-
-  article small {
-    color: #64748b;
-    font-size: 0.78rem;
-    line-height: 1.25;
-  }
-
-  .ok-card span {
-    color: #15803d;
-  }
-
-  .bad-card span {
-    color: #b42318;
-  }
-
-  @media (max-width: 640px) {
-    .summary-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    article {
-      grid-template-columns: 1.8rem 4rem 1fr;
-      gap: 0.35rem;
-    }
-  }
+	.stats-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem 1.5rem;
+		font-size: 0.85rem;
+		color: #94a3b8;
+	}
 </style>
