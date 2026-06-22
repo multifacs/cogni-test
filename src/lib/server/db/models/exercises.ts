@@ -178,8 +178,11 @@ export const wordMorphingExerciseAttempt = sqliteTable('word_morphing_exercise_a
 	id: text('id').primaryKey().$defaultFn(generate),
 	attempt: integer('attempt').default(1).notNull(),
 	category: text('category').notNull(),
-	totalCombos: integer('total_combos').notNull(),
-	correctCount: integer('correct_count').notNull(),
+	comboIndex: integer('combo_index').notNull(),
+	expectedCombo: text('expected_combo').notNull(),
+	recalledCombo: text('recalled_combo'),
+	isCorrect: integer('is_correct', { mode: 'boolean' }).notNull(),
+	originalCombo: text('original_combo').notNull(),
 	durationSeconds: integer('duration_seconds').notNull(),
 	sessionId: text('session_id')
 		.notNull()
@@ -188,5 +191,3 @@ export const wordMorphingExerciseAttempt = sqliteTable('word_morphing_exercise_a
 		.default(sql`CURRENT_TIMESTAMP`)
 		.notNull()
 });
-
-

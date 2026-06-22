@@ -90,7 +90,7 @@ const orderByMap: Record<string, (fields: any) => any> = {
 	pictures: (f) => asc(f.attempt),
 	campimetryExercise: (f) => asc(f.attempt),
 	ravenMatrices: (f) => asc(f.taskIndex),
-	wordMorphingExercise: (f) => asc(f.attempt)
+	wordMorphingExercise: (f) => asc(f.comboIndex)
 };
 
 export async function postResult(

@@ -25,7 +25,10 @@ export type Color = {
 
 export type WordMorphingSummaryRow = {
 	category: string;
-	totalCombos: number;
-	correctCount: number;
+	comboIndex: number;
+	expectedCombo: string;
+	recalledCombo: string | null;
+	isCorrect: boolean;
+	originalCombo: string;
 	durationSeconds: number;
 };

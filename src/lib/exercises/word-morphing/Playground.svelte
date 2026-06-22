@@ -340,31 +340,33 @@
 	async function finishRecall() {
 		setRecalledCombos();
 
-		let correctCount = 0;
-		for (let i = 0; i < expectedCombos.length; i++) {
-			const recalled = recalledCombos[i] || '';
-			const expected = expectedCombos[i];
-			if (
-				recalled.toLocaleLowerCase().replace('ё', 'е') ===
-				expected.toLocaleLowerCase().replace('ё', 'е')
-			) {
-				correctCount++;
-			}
-		}
-
 		const waitTime =
 			selectedTimeOption.name === 'Пользовательский'
 				? customTimeInSeconds
 				: selectedTimeOption.seconds;
 
-		const summaryRow: WordMorphingSummaryRow = {
-			category,
-			totalCombos: expectedCombos.length,
-			correctCount,
-			durationSeconds: waitTime
-		};
+		const originalCombo =
+			category === 'words'
+				? `${originalAdjective} ${originalNoun}`
+				: `${originalShape.name} ${originalColor.name}`;
 
-		sendResults([summaryRow]);
+		const detailRows: WordMorphingSummaryRow[] = expectedCombos.map((expected, i) => {
+			const recalled = recalledCombos[i] || '';
+			const isCorrect =
+				recalled.toLocaleLowerCase().replace('ё', 'е') ===
+				expected.toLocaleLowerCase().replace('ё', 'е');
+			return {
+				category,
+				comboIndex: i + 1,
+				expectedCombo: expected,
+				recalledCombo: recalled || null,
+				isCorrect,
+				originalCombo,
+				durationSeconds: waitTime
+			};
+		});
+
+		sendResults(detailRows);
 		gameEnd();
 
 		try {
