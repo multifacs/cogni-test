@@ -19,48 +19,50 @@
 	}
 </script>
 
-{#each results as attempt_raw, i (i)}
-	{@const attempt = attempt_raw as WordMorphingSummaryRow}
-	<div class="grid grid-cols-2 gap-4 py-2">
-		<div class="rounded-2xl bg-[#364b6c] p-4 text-center text-white">
-			<span class="mb-2 block opacity-70">Категория</span>
-			<strong class="text-2xl">{attempt.category === 'words' ? 'Слова' : 'Фигуры'}</strong>
-		</div>
-		<div class="rounded-2xl bg-[#364b6c] p-4 text-center text-white">
-			<span class="mb-2 block opacity-70">Интервал</span>
-			<strong class="text-2xl">{durationLabel(attempt.durationSeconds)}</strong>
-		</div>
-	</div>
-{/each}
-
 {#if results.length > 0}
 	{@const first = results[0] as WordMorphingSummaryRow}
-	<div class="rounded-2xl bg-[#364b6c] p-4 text-center text-white">
-		<span class="mb-2 block opacity-70">Исходное сочетание</span>
-		<strong class="text-xl">{first.originalCombo}</strong>
+	<div class="grid grid-cols-3 gap-2 py-2 sm:gap-4">
+		<div class="rounded-2xl bg-[#364b6c] p-2 text-center text-white sm:p-4">
+			<span class="mb-1 block text-xs opacity-70 sm:mb-2 sm:text-sm">Категория</span>
+			<strong class="text-base sm:text-2xl"
+				>{first.category === 'words' ? 'Слова' : 'Фигуры'}</strong
+			>
+		</div>
+		<div class="rounded-2xl bg-[#364b6c] p-2 text-center text-white sm:p-4">
+			<span class="mb-1 block text-xs opacity-70 sm:mb-2 sm:text-sm">Интервал</span>
+			<strong class="text-base sm:text-2xl">{durationLabel(first.durationSeconds)}</strong>
+		</div>
+		<div class="rounded-2xl bg-[#364b6c] p-2 text-center text-white sm:p-4">
+			<span class="mb-1 block text-xs opacity-70 sm:mb-2 sm:text-sm">Исходное сочетание</span>
+			<strong class="text-sm sm:text-xl">{first.originalCombo}</strong>
+		</div>
 	</div>
 
-	<div class="flex flex-col gap-2">
+	<div class="overflow-hidden rounded-2xl bg-[#364b6c] text-white">
+		<div
+			class="grid grid-cols-[1fr_1fr_auto] gap-x-2 px-2 py-1.5 text-xs opacity-70 border-b border-white/10 sm:gap-x-4 sm:px-4 sm:py-2 sm:text-sm"
+		>
+			<span>Ожидается</span>
+			<span>Ваш ответ</span>
+			<span></span>
+		</div>
 		{#each results as attempt_raw, i (i)}
 			{@const attempt = attempt_raw as WordMorphingSummaryRow}
-			<div class="rounded-2xl bg-[#364b6c] p-4 text-white">
-				<div class="flex items-center justify-between">
-					<div class="flex flex-col gap-1">
-						<span class="opacity-70 text-sm">Ожидается:</span>
-						<span>{attempt.expectedCombo}</span>
-					</div>
-					<div class="flex flex-col gap-1 text-right">
-						<span class="opacity-70 text-sm">Ваш ответ:</span>
-						{#if attempt.recalledCombo}
-							<span class={attempt.isCorrect ? 'text-green-400' : 'text-red-400'}>
-								{attempt.recalledCombo}
-							</span>
-						{:else}
-							<span class="italic opacity-50">(не введено)</span>
-						{/if}
-					</div>
-					<span class="ml-3 text-lg">{attempt.isCorrect ? '✓' : '✗'}</span>
-				</div>
+			<div
+				class="grid grid-cols-[1fr_1fr_auto] gap-x-2 px-2 py-1.5 text-sm items-center sm:gap-x-4 sm:px-4 sm:py-2.5 {i <
+				results.length - 1
+					? 'border-b border-white/10'
+					: ''}"
+			>
+				<span>{attempt.expectedCombo}</span>
+				{#if attempt.recalledCombo}
+					<span class={attempt.isCorrect ? 'text-green-400' : 'text-red-400'}>
+						{attempt.recalledCombo}
+					</span>
+				{:else}
+					<span class="italic opacity-50">(не введено)</span>
+				{/if}
+				<span class="text-base sm:text-lg">{attempt.isCorrect ? '✓' : '✗'}</span>
 			</div>
 		{/each}
 	</div>
