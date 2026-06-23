@@ -20,6 +20,7 @@ Base commit: `3fc4a4f`
 | 011 | [Save memory-match exercise results to DB + show results page](./011-memory-match-save-results.md) | DONE | Medium | Plan 009 |
 | 012 | [Save nback-stream exercise results to DB + show results page](./012-nback-stream-save-results.md) | DONE | Medium | Plan 009 |
 | 013 | [Save word-morphing exercise results to DB + show results page](./013-word-morphing-save-results.md) | DONE | Medium-Large | Plan 009 |
+| 014 | [Enrich word-morphing result data and improve result display](./014%20Enrich%20word-morphing%20result%20data%20and%20improve%20result%20display.md) | DONE | Medium | Plan 013 |
 
 ## Sprint: Exercise Results Persistence
 
