@@ -27,6 +27,7 @@
 	type OnclickType = MouseEventHandler<HTMLButtonElement> | null | undefined;
 	type TypeType = 'button' | 'submit' | 'reset' | null | undefined;
 	let {
+		id,
 		kind = 'normal',
 		color = 'green',
 		children,
@@ -37,6 +38,7 @@
 		class: className = '',
 		style: styleName = ''
 	}: {
+		id?: string;
 		kind?: string;
 		color: ButtonColor;
 		children: Snippet;
@@ -204,6 +206,7 @@
 </script>
 
 <button
+	id={`${id}`}
 	style={`${styleName}`}
 	class={`
 	cursor-pointer

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import type { FlankerTrialRow } from './types';
 
 	let {
@@ -60,6 +61,8 @@
 		}
 	}
 
+	let elem = $state<HTMLElement>();
+
 	function startTest() {
 		testStarted = true;
 		testFinished = false;
@@ -73,13 +76,13 @@
 		trialShownAt = Date.now();
 		answerLog = [];
 		stopTimer();
-		intervalId = setInterval(() => {
-			elapsedTime++;
-			if (elapsedTime >= MAX_TEST_SECONDS) {
-				timeLimit = true;
-				finishTest();
-			}
-		}, 1000);
+		// intervalId = setInterval(() => {
+		// 	elapsedTime++;
+		// 	if (elapsedTime >= MAX_TEST_SECONDS) {
+		// 		timeLimit = true;
+		// 		finishTest();
+		// 	}
+		// }, 1000);
 	}
 
 	function answer(dir: string) {
@@ -88,6 +91,7 @@
 		const target = currentTrial[2];
 		const correct = dir === target;
 		if (correct) correctAnswers++;
+
 		answerLog.push({
 			trialIndex,
 			target,
@@ -127,10 +131,30 @@
 		sendResults(trialRows);
 		gameEnd();
 	}
+
+	function handleKeyDown(e: KeyboardEvent) {
+		const input = e.target as HTMLInputElement;
+		console.log(e);
+
+		if (e.key == 'ArrowLeft') {
+			answer('left');
+		}
+		if (e.key == 'ArrowRight') {
+			answer('right');
+		}
+	}
+
+	onMount(() => {
+		window.addEventListener('keydown', handleKeyDown);
+	});
+
+	onDestroy(() => {
+		window.removeEventListener('keydown', handleKeyDown);
+	});
 </script>
 
 {#if testStarted && !testFinished && currentTrial}
-	<div class="flex flex-col items-center justify-center gap-4">
+	<div bind:this={elem} class="flex flex-col items-center justify-center gap-4">
 		<div class="grid max-w-4xl grid-cols-[repeat(3,auto)] justify-center gap-[15px] text-lg">
 			<p class=" text-white">
 				Время: {elapsedTime} сек
@@ -158,7 +182,8 @@
 
 		<div class="flex flex-row flex-wrap items-center justify-center gap-3">
 			<Button color="blue" onclick={() => answer('left')}>← Влево</Button>
-			<Button color="orange" onclick={() => answer('right')}>Вправо →</Button>
+			<Button id="rightButton" color="orange" onclick={() => answer('right')}>Вправо →</Button
+			>
 		</div>
 	</div>
 {:else if testFinished}
