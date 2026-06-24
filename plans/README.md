@@ -21,7 +21,7 @@ Base commit: `3fc4a4f`
 | 012 | [Save nback-stream exercise results to DB + show results page](./012-nback-stream-save-results.md) | DONE | Medium | Plan 009 |
 | 013 | [Save word-morphing exercise results to DB + show results page](./013-word-morphing-save-results.md) | DONE | Medium-Large | Plan 009 |
 | 014 | [Enrich word-morphing result data and improve result display](./014%20Enrich%20word-morphing%20result%20data%20and%20improve%20result%20display.md) | DONE | Medium | Plan 013 |
-| 015 | [Migrate flanker to per-trial DB schema](./015-flanker-per-trial.md) | TODO | Medium | — |
+| 015 | [Migrate flanker to per-trial DB schema](./015-flanker-per-trial.md) | DONE | Medium | — |
 | 016 | [Migrate letters to per-trial DB schema](./016-letters-per-trial.md) | TODO | Medium | — |
 | 017 | [Migrate numbers to per-trial DB schema](./017-numbers-per-trial.md) | TODO | Medium | — |
 | 018 | [Migrate pictures to per-trial DB schema](./018-pictures-per-trial.md) | TODO | Medium | — |
