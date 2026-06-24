@@ -155,7 +155,7 @@
 
 {#if testStarted && !testFinished && currentTrial}
 	<div bind:this={elem} class="flex flex-col items-center justify-center gap-4">
-		<div class="grid max-w-4xl grid-cols-[repeat(3,auto)] justify-center gap-[15px] text-lg">
+		<div class="grid max-w-4xl grid-cols-[repeat(3,auto)] justify-center gap-4 text-lg">
 			<p class=" text-white">
 				Время: {elapsedTime} сек
 			</p>
