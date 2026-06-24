@@ -1,6 +1,6 @@
 import type { AttentionResult } from './attention/types';
 import type { CampimetryResult } from './campimetry/types';
-import type { EmojiResult } from './emoji/types';
+import type { EmojiTrialRow } from './emoji/types';
 import type { FlankerResult } from './flanker/types';
 import type { LettersResult } from './letters/types';
 import type { MemoryMatchSummaryRow } from './memory-match/types';
@@ -26,7 +26,7 @@ export type ExerciseType =
 export type ExerciseResultMap = {
 	attention: AttentionResult;
 	campimetryExercise: CampimetryResult;
-	emoji: EmojiResult;
+	emoji: EmojiTrialRow;
 	flanker: FlankerResult;
 	letters: LettersResult;
 	memoryMatchExercise: MemoryMatchSummaryRow;
@@ -40,7 +40,7 @@ export type ExerciseResultMap = {
 export type ExerciseResult =
 	| AttentionResult
 	| CampimetryResult
-	| EmojiResult
+	| EmojiTrialRow
 	| FlankerResult
 	| LettersResult
 	| MemoryMatchSummaryRow
@@ -53,7 +53,7 @@ export type ExerciseResult =
 export type ExerciseResults =
 	| AttentionResult[]
 	| CampimetryResult[]
-	| EmojiResult[]
+	| EmojiTrialRow[]
 	| FlankerResult[]
 	| LettersResult[]
 	| MemoryMatchSummaryRow[]

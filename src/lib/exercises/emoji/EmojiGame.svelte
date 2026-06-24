@@ -1,13 +1,13 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
-	import type { EmojiResult, TrialLog } from './types';
+	import type { EmojiTrialRow } from './types';
 
 	let {
 		gameEnd,
 		sendResults
 	}: {
 		gameEnd: () => void;
-		sendResults: (results: EmojiResult[]) => void;
+		sendResults: (results: EmojiTrialRow[]) => void;
 	} = $props();
 
 	const EMOJIS = [
@@ -64,7 +64,7 @@
 	let timerInterval: number;
 
 	let emojiShownAt = 0;
-	let trialLog: TrialLog[] = [];
+	let trialRows: EmojiTrialRow[] = [];
 
 	function randomEmoji(exclude?: string) {
 		let filtered = exclude ? EMOJIS.filter((e) => e !== exclude) : EMOJIS;
@@ -93,8 +93,8 @@
 		if (isCorrect) score++;
 		else mistakes++;
 
-		trialLog.push({
-			index: totalAnswers,
+		trialRows.push({
+			trialIndex: totalAnswers,
 			previousEmoji,
 			currentEmoji,
 			actualChanged,
@@ -114,9 +114,7 @@
 		mistakes = 0;
 		totalAnswers = 0;
 		timeLeft = TEST_DURATION;
-		// currentEmoji = randomEmoji();
-		// previousEmoji = currentEmoji;
-		trialLog = [];
+		trialRows = [];
 		generateNextEmoji();
 
 		timerInterval = window.setInterval(() => {
@@ -129,14 +127,7 @@
 		finished = true;
 		started = false;
 		cleanup();
-		const result: EmojiResult = {
-			score,
-			mistakes,
-			totalAnswers,
-			accuracy: totalAnswers === 0 ? 0 : Math.round((score / totalAnswers) * 100),
-			trialLog
-		};
-		sendResults([result]);
+		sendResults(trialRows);
 		gameEnd();
 	}
 

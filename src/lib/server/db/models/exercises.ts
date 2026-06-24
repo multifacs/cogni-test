@@ -21,11 +21,13 @@ export const attentionAttempt = sqliteTable('attention_attempt', {
 
 export const emojiAttempt = sqliteTable('emoji_attempt', {
 	id: text('id').primaryKey().$defaultFn(generate),
-	attempt: integer('attempt').default(1).notNull(),
-	score: integer('score').notNull(),
-	mistakes: integer('mistakes').notNull(),
-	totalAnswers: integer('total_answers').notNull(),
-	accuracy: integer('accuracy').notNull(),
+	trialIndex: integer('trial_index').notNull(),
+	previousEmoji: text('previous_emoji').notNull(),
+	currentEmoji: text('current_emoji').notNull(),
+	actualChanged: integer('actual_changed', { mode: 'boolean' }).notNull(),
+	userSaidChanged: integer('user_said_changed', { mode: 'boolean' }).notNull(),
+	isCorrect: integer('is_correct', { mode: 'boolean' }).notNull(),
+	reactionTimeMs: integer('reaction_time_ms').notNull(),
 	sessionId: text('session_id')
 		.notNull()
 		.references(() => session.id),

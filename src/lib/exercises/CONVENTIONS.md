@@ -78,3 +78,27 @@ Register the exercise in two places:
 2. `src/lib/exercises/types.ts` — Add to `ExerciseType`, `ExerciseResultMap`, `ExerciseResult`, `ExerciseResults`
 
 The `result` loader key is optional — if omitted, the results page will use a fallback chart.
+
+## Per-Trial vs Per-Session DB Schema
+
+Most exercises store **one row per attempt/stage** in their attempt table (e.g. each word-morphing combo, each raven question, each emoji trial). Each row has a `session_id` FK linking it to the `session` table. Summary metrics (accuracy, average time, etc.) are **derived at read time** by the `results-adapter.ts` + `Result.svelte` — never stored as columns.
+
+A few older exercises (attention, flanker, letters, numbers, pictures) still use a per-session row with aggregate columns (`score`, `mistakes`, `accuracy`, etc.). New exercises should **not** follow this pattern — use per-trial rows instead.
+
+### Per-Trial Pattern (preferred)
+
+Used by: `raven-matrices`, `emoji`, `campimetry`, `word-morphing`, `memory-match`, `nback-stream`
+
+- DB table: one row = one user action/answer
+- `orderByMap` uses the trial index column (e.g. `asc(f.taskIndex)`, `asc(f.trialIndex)`, `asc(f.comboIndex)`)
+- `results-adapter.ts` provides `summary()` to derive aggregates
+- `Result.svelte` shows summary header + `<ResultsChart>` chart
+- `ResultsChart.svelte` renders a Chart.js line chart with per-trial dots (green=correct, red=error)
+
+### Per-Session Pattern (legacy)
+
+Used by: `attention`, `flanker`, `letters`, `numbers`, `pictures`
+
+- DB table: one row = entire session summary
+- `orderByMap` uses `asc(f.attempt)` (1-based attempt number)
+- No `results-adapter.ts`, no `ResultsChart.svelte`
