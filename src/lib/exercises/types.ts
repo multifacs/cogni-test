@@ -7,7 +7,7 @@ import type { MemoryMatchSummaryRow } from './memory-match/types';
 import type { NBackSummaryRow } from './nback-stream/types';
 import type { NumbersResult } from './numbers/types';
 import type { PicturesResult } from './pictures/types';
-import type { RavenFullResult } from './raven-matrices/types';
+import type { RavenAttemptRow } from './raven-matrices/types';
 import type { WordMorphingSummaryRow } from './word-morphing/types';
 
 export type ExerciseType =
@@ -33,7 +33,7 @@ export type ExerciseResultMap = {
 	nbackExercise: NBackSummaryRow;
 	numbers: NumbersResult;
 	pictures: PicturesResult;
-	ravenMatrices: RavenFullResult;
+	ravenMatrices: RavenAttemptRow;
 	wordMorphingExercise: WordMorphingSummaryRow;
 };
 
@@ -47,7 +47,7 @@ export type ExerciseResult =
 	| NBackSummaryRow
 	| NumbersResult
 	| PicturesResult
-	| RavenFullResult
+	| RavenAttemptRow
 	| WordMorphingSummaryRow;
 
 export type ExerciseResults =
@@ -60,7 +60,7 @@ export type ExerciseResults =
 	| NBackSummaryRow[]
 	| NumbersResult[]
 	| PicturesResult[]
-	| RavenFullResult[]
+	| RavenAttemptRow[]
 	| WordMorphingSummaryRow[];
 
 export type ResultInfo = {

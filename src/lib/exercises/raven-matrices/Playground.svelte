@@ -1,5 +1,5 @@
 <script lang="ts">
-	import RavenMatricesGame from './RavenMatricesGame.svelte';
+	import RavenMatricesGame from './components/RavenMatricesGame.svelte';
 
 	let { gameEnd }: { gameEnd: () => void } = $props();
 

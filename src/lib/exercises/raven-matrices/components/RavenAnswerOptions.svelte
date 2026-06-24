@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { GeneratedRavenTask } from './types';
+	import type { GeneratedRavenTask } from '../types';
 	import RavenCell from './RavenCell.svelte';
 
 	let {

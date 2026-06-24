@@ -37,8 +37,6 @@
 
 	let avg = $state(0);
 	let allTime = $state(0);
-	let correctCount = $state(0);
-	let totalCount = $state(0);
 
 	function getResults(attempts: RavenAttemptRow[]): RavenResult[] {
 		return attempts.map((a, i) => ({
@@ -58,8 +56,6 @@
 
 		avg = s.averageResponseTimeMs;
 		allTime = Math.round(s.totalDurationMs / 1000);
-		correctCount = s.correctCount;
-		totalCount = s.totalQuestions;
 
 		chart = new Chart(canvas, {
 			type: 'line',
@@ -97,7 +93,8 @@
 							beforeBody(context) {
 								const r = context[0].raw as RavenResult;
 								const raw = r.raw;
-								const selected = raw.selectedIndex != null ? `#${raw.selectedIndex + 1}` : '—';
+								const selected =
+									raw.selectedIndex != null ? `#${raw.selectedIndex + 1}` : '—';
 								const correct = `#${raw.correctIndex + 1}`;
 								const family = raw.selectedFamily ?? '—';
 								return [
@@ -114,10 +111,18 @@
 								const r = context[0].raw as RavenResult;
 								const raw = r.raw;
 								const rules = (() => {
-									try { return JSON.parse(raw.rules); } catch { return []; }
+									try {
+										return JSON.parse(raw.rules);
+									} catch {
+										return [];
+									}
 								})();
 								const tags = (() => {
-									try { return JSON.parse(raw.skillTags); } catch { return []; }
+									try {
+										return JSON.parse(raw.skillTags);
+									} catch {
+										return [];
+									}
 								})();
 								const lines: string[] = [];
 								if (rules.length) lines.push(`Правила: ${rules.join(', ')}`);
@@ -221,8 +226,6 @@
 	<div class="stats-row">
 		<span>Общее время: {formatMs(allTime * 1000)}</span>
 		<span>Среднее время: {formatMs(avg)}</span>
-		<span>Верно: {correctCount}/{totalCount}</span>
-		<span>Точность: {totalCount ? Math.round((correctCount / totalCount) * 100) : 0}%</span>
 	</div>
 	<canvas bind:this={canvas}></canvas>
 </div>
@@ -236,8 +239,15 @@
 	.stats-row {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.75rem 1.5rem;
-		font-size: 0.85rem;
+		gap: 0.5rem 1.5rem;
+		font-size: 0.75rem;
 		color: #94a3b8;
+	}
+
+	@media (min-width: 640px) {
+		.stats-row {
+			gap: 0.75rem 1.5rem;
+			font-size: 0.85rem;
+		}
 	}
 </style>

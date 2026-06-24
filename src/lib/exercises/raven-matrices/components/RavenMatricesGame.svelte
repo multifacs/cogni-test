@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { generateRavenTest } from './logic/generator';
-	import { taskClassLabel } from './results-adapter';
+	import { generateRavenTest } from '../logic/generator';
+	import { taskClassLabel } from '../results-adapter';
 	import RavenAnswerOptions from './RavenAnswerOptions.svelte';
 	import RavenMatrixBoard from './RavenMatrixBoard.svelte';
 	import type {
 		GeneratedRavenTask,
 		RavenAnswerRecord,
 		RavenTestGenerationOptions
-	} from './types';
+	} from '../types';
 
 	let {
 		gameEnd,

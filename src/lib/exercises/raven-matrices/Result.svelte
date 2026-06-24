@@ -1,30 +1,31 @@
 <script lang="ts">
 	import ResultsChart from './ResultsChart.svelte';
 	import type { ExerciseResults } from '$lib/exercises/types';
-	import type { RavenAttemptRow } from './results-adapter';
+	import type { RavenAttemptRow } from './types';
+	import { formatMs, summary } from './results-adapter';
 
 	let { results }: { results: ExerciseResults; exerciseType?: string; meta?: string[] } =
 		$props();
 
-	function toAttemptRows(attempts_raw: Record<string, unknown>[]): RavenAttemptRow[] {
-		return attempts_raw.map((a) => ({
-			taskId: String(a.taskId ?? ''),
-			taskIndex: Number(a.taskIndex ?? 0),
-			taskClass: String(a.taskClass ?? '') as RavenAttemptRow['taskClass'],
-			difficultyLevel: Number(a.difficultyLevel ?? 0),
-			difficultyScore: Number(a.difficultyScore ?? 0),
-			rules: String(a.rules ?? '[]'),
-			skillTags: String(a.skillTags ?? '[]'),
-			selectedIndex: a.selectedIndex != null ? Number(a.selectedIndex) : null,
-			correctIndex: Number(a.correctIndex ?? 0),
-			selectedFamily: a.selectedFamily != null ? String(a.selectedFamily) : null,
-			isCorrect: Boolean(a.isCorrect),
-			responseTimeMs: Number(a.responseTimeMs ?? 0),
-			seed: String(a.seed ?? '')
-		}));
-	}
-
-	const rows = toAttemptRows(results as Record<string, unknown>[]);
+	const rows = results as RavenAttemptRow[];
+	const s = summary(rows);
 </script>
+
+<div class="grid grid-cols-3 gap-2 py-2 sm:gap-4">
+	<div class="rounded-2xl bg-[#364b6c] p-2 text-center text-white sm:p-4">
+		<span class="mb-1 block text-xs opacity-70 sm:mb-2 sm:text-sm">Верно</span>
+		<strong class="text-base sm:text-2xl">{s.correctCount}/{s.totalQuestions}</strong>
+	</div>
+	<div class="rounded-2xl bg-[#364b6c] p-2 text-center text-white sm:p-4">
+		<span class="mb-1 block text-xs opacity-70 sm:mb-2 sm:text-sm">Точность</span>
+		<strong class="text-base sm:text-2xl"
+			>{s.totalQuestions ? Math.round(s.accuracy * 100) : 0}%</strong
+		>
+	</div>
+	<div class="rounded-2xl bg-[#364b6c] p-2 text-center text-white sm:p-4">
+		<span class="mb-1 block text-xs opacity-70 sm:mb-2 sm:text-sm">Среднее время</span>
+		<strong class="text-base sm:text-2xl">{formatMs(s.averageResponseTimeMs)}</strong>
+	</div>
+</div>
 
 <ResultsChart attempts={rows} />
