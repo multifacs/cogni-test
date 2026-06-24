@@ -7,8 +7,8 @@
 	import { type Component } from 'svelte';
 
 	const { data } = $props();
-	const slug = data.slug;
-	const results = data.results;
+	const slug = $derived(data.slug);
+	const results = $derived(data.results);
 
 	const exercise = $derived(exerciseRegistry[slug]);
 	let Comp: Component | null = $state(null);

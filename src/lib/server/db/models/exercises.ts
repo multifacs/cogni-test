@@ -53,15 +53,14 @@ export const lettersAttempt = sqliteTable('letters_attempt', {
 
 export const flankerAttempt = sqliteTable('flanker_attempt', {
 	id: text('id').primaryKey().$defaultFn(generate),
-	attempt: integer('attempt').default(1).notNull(),
-	correctAnswers: integer('correct_answers').notNull(),
-	totalTrials: integer('total_trials').notNull(),
-	elapsedTime: integer('elapsed_time').notNull(),
+	trialIndex: integer('trial_index').notNull(),
+	target: text('target').notNull(),
+	selected: text('selected').notNull(),
+	isCorrect: integer('is_correct', { mode: 'boolean' }).notNull(),
+	congruent: integer('congruent', { mode: 'boolean' }).notNull(),
+	reactionTimeMs: integer('reaction_time_ms').notNull(),
 	timeLimit: integer('time_limit', { mode: 'boolean' }).notNull(),
-	avgRtCongruentMs: integer('avg_rt_congruent_ms').notNull(),
-	avgRtIncongruentMs: integer('avg_rt_incongruent_ms').notNull(),
-	flankerEffectMs: integer('flanker_effect_ms').notNull(),
-	errors: integer('errors').notNull(),
+	elapsedTime: integer('elapsed_time').notNull(),
 	sessionId: text('session_id')
 		.notNull()
 		.references(() => session.id),

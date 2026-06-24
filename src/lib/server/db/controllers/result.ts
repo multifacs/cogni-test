@@ -82,7 +82,7 @@ const orderByMap: Record<string, (fields: any) => any> = {
 	campimetry: (f) => asc(f.attempt),
 	attention: (f) => asc(f.attempt),
 	emoji: (f) => asc(f.trialIndex),
-	flanker: (f) => asc(f.attempt),
+	flanker: (f) => asc(f.trialIndex),
 	letters: (f) => asc(f.attempt),
 	memoryMatchExercise: (f) => asc(f.attempt),
 	nbackExercise: (f) => asc(f.attempt),

@@ -1,10 +1,10 @@
-export type FlankerResult = {
-	correctAnswers: number;
-	totalTrials: number;
-	elapsedTime: number;
+export type FlankerTrialRow = {
+	trialIndex: number;
+	target: string;
+	selected: string;
+	isCorrect: boolean;
+	congruent: boolean;
+	reactionTimeMs: number;
 	timeLimit: boolean;
-	avgRtCongruentMs: number;
-	avgRtIncongruentMs: number;
-	flankerEffectMs: number;
-	errors: number;
+	elapsedTime: number;
 };

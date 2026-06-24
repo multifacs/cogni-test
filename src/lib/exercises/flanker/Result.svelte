@@ -1,29 +1,47 @@
 <script lang="ts">
-	import type { FlankerResult } from './types';
+	import ResultsChart from './ResultsChart.svelte';
 	import type { ExerciseResults } from '$lib/exercises/types';
+	import type { FlankerTrialRow } from './types';
+	import { formatMs, summary } from './results-adapter';
 
 	let { results }: { results: ExerciseResults; exerciseType?: string; meta?: string[] } =
 		$props();
+
+	const rows = $derived(results as FlankerTrialRow[]);
+	const s = $derived(summary(rows));
 </script>
 
-{#each results as attempt_raw, i (i)}
-	{@const attempt = attempt_raw as FlankerResult}
-	<div class="grid grid-cols-2 gap-4 py-2">
-		<div class="rounded-2xl bg-[#364b6c] p-4 text-center text-white">
-			<span class="mb-2 block opacity-70">Верно</span>
-			<strong class="text-2xl">{attempt.correctAnswers} / {attempt.totalTrials}</strong>
-		</div>
-		<div class="rounded-2xl bg-[#364b6c] p-4 text-center text-white">
-			<span class="mb-2 block opacity-70">Время</span>
-			<strong class="text-2xl">{attempt.elapsedTime} сек</strong>
-		</div>
-		<div class="rounded-2xl bg-[#364b6c] p-4 text-center text-white">
-			<span class="mb-2 block opacity-70">Ошибки</span>
-			<strong class="text-2xl">{attempt.errors}</strong>
-		</div>
-		<div class="rounded-2xl bg-[#364b6c] p-4 text-center text-white">
-			<span class="mb-2 block opacity-70">Flanker-эффект</span>
-			<strong class="text-2xl">{attempt.flankerEffectMs} мс</strong>
-		</div>
+<div class="grid grid-cols-4 gap-2 py-2 sm:gap-4">
+	<div
+		class="flex flex-col items-center justify-center rounded-2xl bg-[#364b6c] p-2 text-white sm:p-4"
+	>
+		<span class="mb-1 block text-xs opacity-70 sm:mb-2 sm:text-sm">Верно</span>
+		<strong class="text-base sm:text-2xl">{s.correctCount}/{s.totalTrials}</strong>
 	</div>
-{/each}
+	<div
+		class="flex flex-col items-center justify-center rounded-2xl bg-[#364b6c] p-2 text-white sm:p-4"
+	>
+		<span class="mb-1 block text-xs opacity-70 sm:mb-2 sm:text-sm">Точность</span>
+		<strong class="text-base sm:text-2xl"
+			>{s.totalTrials ? Math.round(s.accuracy * 100) : 0}%</strong
+		>
+	</div>
+	<div
+		class="flex flex-col items-center justify-center rounded-2xl bg-[#364b6c] p-2 text-white sm:p-4"
+	>
+		<span class="text-center mb-1 block text-xs opacity-70 sm:mb-2 sm:text-sm"
+			>Flanker-эффект</span
+		>
+		<strong class="text-base sm:text-2xl">{formatMs(s.flankerEffectMs)}</strong>
+	</div>
+	<div
+		class="flex flex-col items-center justify-center rounded-2xl bg-[#364b6c] p-2 text-white sm:p-4"
+	>
+		<span class="mb-1 block text-center text-xs opacity-70 sm:mb-2 sm:text-sm"
+			>Среднее время</span
+		>
+		<strong class="text-base sm:text-2xl">{formatMs(s.averageResponseTimeMs)}</strong>
+	</div>
+</div>
+
+<ResultsChart trials={rows} />

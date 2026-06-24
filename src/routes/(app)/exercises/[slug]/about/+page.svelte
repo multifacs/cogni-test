@@ -4,7 +4,7 @@
 	import { exerciseRegistry } from '$lib/exercises';
 
 	const { data } = $props();
-	const slug = data.slug;
+	const slug = $derived(data.slug);
 	const exercise = $derived(exerciseRegistry[slug]);
 	let Component: any = $state(null);
 

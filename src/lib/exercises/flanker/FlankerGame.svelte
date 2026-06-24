@@ -1,13 +1,13 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
-	import type { FlankerResult } from './types';
+	import type { FlankerTrialRow } from './types';
 
 	let {
 		gameEnd,
 		sendResults
 	}: {
 		gameEnd: () => void;
-		sendResults: (results: FlankerResult[]) => void;
+		sendResults: (results: FlankerTrialRow[]) => void;
 	} = $props();
 
 	const TOTAL_TRIALS = 50;
@@ -25,16 +25,8 @@
 
 	let testStartedAt = 0;
 	let trialShownAt = 0;
-	let answerLog: AnswerEntry[] = [];
 
-	type AnswerEntry = {
-		trial: string[];
-		target: string;
-		selected: string;
-		isCorrect: boolean;
-		congruent: boolean;
-		reactionTimeMs: number;
-	};
+	let answerLog = $state<FlankerTrialRow[]>([]);
 
 	const trialIndex = $derived(TOTAL_TRIALS - trials.length);
 
@@ -97,12 +89,14 @@
 		const correct = dir === target;
 		if (correct) correctAnswers++;
 		answerLog.push({
-			trial: [...currentTrial],
+			trialIndex,
 			target,
 			selected: dir,
 			isCorrect: correct,
 			congruent: isCongruent(currentTrial),
-			reactionTimeMs
+			reactionTimeMs,
+			timeLimit,
+			elapsedTime
 		});
 		if (trials.length) {
 			currentTrial = trials.shift() ?? null;
@@ -119,26 +113,18 @@
 		testFinished = true;
 		currentTrial = null;
 
-		const congruentRts = answerLog.filter((a) => a.congruent).map((a) => a.reactionTimeMs);
-		const incongruentRts = answerLog.filter((a) => !a.congruent).map((a) => a.reactionTimeMs);
-		const avg = (arr: number[]) =>
-			arr.length ? arr.reduce((s, v) => s + v, 0) / arr.length : 0;
-		const avgRtCongruentMs = Math.round(avg(congruentRts));
-		const avgRtIncongruentMs = Math.round(avg(incongruentRts));
-		const errors = answerLog.filter((a) => !a.isCorrect).length;
+		const trialRows: FlankerTrialRow[] = answerLog.map((a, i) => ({
+			trialIndex: i + 1,
+			target: a.target,
+			selected: a.selected,
+			isCorrect: a.isCorrect,
+			congruent: a.congruent,
+			reactionTimeMs: a.reactionTimeMs,
+			timeLimit,
+			elapsedTime
+		}));
 
-		sendResults([
-			{
-				correctAnswers,
-				totalTrials: TOTAL_TRIALS,
-				elapsedTime,
-				timeLimit,
-				avgRtCongruentMs,
-				avgRtIncongruentMs,
-				flankerEffectMs: avgRtIncongruentMs - avgRtCongruentMs,
-				errors
-			}
-		]);
+		sendResults(trialRows);
 		gameEnd();
 	}
 </script>
