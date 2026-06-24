@@ -222,19 +222,11 @@
 	});
 </script>
 
-<div class="chart-wrapper">
-	<div class="stats-row">
-		<span>Общее время: {formatMs(allTime * 1000)}</span>
-		<span>Среднее время: {formatMs(avg)}</span>
-	</div>
+<div class="grid gap-2 w-full sm:w-4/5">
 	<canvas bind:this={canvas}></canvas>
 </div>
 
 <style>
-	.chart-wrapper {
-		display: grid;
-		gap: 0.5rem;
-	}
 
 	.stats-row {
 		display: flex;
