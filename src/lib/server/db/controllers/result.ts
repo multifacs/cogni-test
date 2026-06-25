@@ -86,7 +86,7 @@ const orderByMap: Record<string, (fields: any) => any> = {
 	letters: (f) => asc(f.roundIndex),
 	memoryMatchExercise: (f) => asc(f.attempt),
 	nbackExercise: (f) => asc(f.attempt),
-	numbers: (f) => asc(f.attempt),
+	numbers: (f) => asc(f.levelIndex),
 	pictures: (f) => asc(f.attempt),
 	campimetryExercise: (f) => asc(f.attempt),
 	ravenMatrices: (f) => asc(f.taskIndex),

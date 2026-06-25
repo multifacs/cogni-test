@@ -5,7 +5,7 @@ import type { FlankerTrialRow } from './flanker/types';
 import type { LettersTrialRow } from './letters/types';
 import type { MemoryMatchSummaryRow } from './memory-match/types';
 import type { NBackSummaryRow } from './nback-stream/types';
-import type { NumbersResult } from './numbers/types';
+import type { NumbersTrialRow } from './numbers/types';
 import type { PicturesResult } from './pictures/types';
 import type { RavenAttemptRow } from './raven-matrices/types';
 import type { WordMorphingSummaryRow } from './word-morphing/types';
@@ -31,7 +31,7 @@ export type ExerciseResultMap = {
 	letters: LettersTrialRow;
 	memoryMatchExercise: MemoryMatchSummaryRow;
 	nbackExercise: NBackSummaryRow;
-	numbers: NumbersResult;
+	numbers: NumbersTrialRow;
 	pictures: PicturesResult;
 	ravenMatrices: RavenAttemptRow;
 	wordMorphingExercise: WordMorphingSummaryRow;
@@ -45,7 +45,7 @@ export type ExerciseResult =
 	| LettersTrialRow
 	| MemoryMatchSummaryRow
 	| NBackSummaryRow
-	| NumbersResult
+	| NumbersTrialRow
 	| PicturesResult
 	| RavenAttemptRow
 	| WordMorphingSummaryRow;
@@ -58,7 +58,7 @@ export type ExerciseResults =
 	| LettersTrialRow[]
 	| MemoryMatchSummaryRow[]
 	| NBackSummaryRow[]
-	| NumbersResult[]
+	| NumbersTrialRow[]
 	| PicturesResult[]
 	| RavenAttemptRow[]
 	| WordMorphingSummaryRow[];

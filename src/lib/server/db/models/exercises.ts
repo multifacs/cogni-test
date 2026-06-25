@@ -74,10 +74,14 @@ export const flankerAttempt = sqliteTable('flanker_attempt', {
 
 export const numbersAttempt = sqliteTable('numbers_attempt', {
 	id: text('id').primaryKey().$defaultFn(generate),
-	attempt: integer('attempt').default(1).notNull(),
-	correct: integer('correct').notNull(),
-	total: integer('total').notNull(),
-	digitSpan: integer('digit_span').notNull(),
+	levelIndex: integer('level_index').notNull(),
+	level: integer('level').notNull(),
+	digitCount: integer('digit_count').notNull(),
+	mode: text('mode').notNull(),
+	sequence: text('sequence').notNull(),
+	submitted: text('submitted').notNull(),
+	isCorrect: integer('is_correct', { mode: 'boolean' }).notNull(),
+	reactionTimeMs: integer('reaction_time_ms').notNull(),
 	sessionId: text('session_id')
 		.notNull()
 		.references(() => session.id),

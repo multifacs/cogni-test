@@ -23,7 +23,7 @@ Base commit: `3fc4a4f`
 | 014 | [Enrich word-morphing result data and improve result display](./014%20Enrich%20word-morphing%20result%20data%20and%20improve%20result%20display.md) | DONE | Medium | Plan 013 |
 | 015 | [Migrate flanker to per-trial DB schema](./015-flanker-per-trial.md) | DONE | Medium | — |
 | 016 | [Migrate letters to per-trial DB schema](./016-letters-per-trial.md) | DONE | Medium | — |
-| 017 | [Migrate numbers to per-trial DB schema](./017-numbers-per-trial.md) | TODO | Medium | — |
+| 017 | [Migrate numbers to per-trial DB schema](./017-numbers-per-trial.md) | DONE | Medium | — |
 | 018 | [Migrate pictures to per-trial DB schema](./018-pictures-per-trial.md) | TODO | Medium | — |
 | 019 | [Migrate attention to per-trial DB schema](./019-attention-per-trial.md) | TODO | Medium | — |
 | 020 | [Migrate nback-stream to per-trial DB schema](./020-nback-per-trial.md) | TODO | Medium | — |

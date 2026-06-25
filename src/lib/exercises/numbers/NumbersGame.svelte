@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import type { NumbersResult, LevelReview } from './types';
+	import type { NumbersTrialRow, LevelReview } from './types';
 
 	type Phase = 'intro' | 'memorize' | 'input' | 'review' | 'finished';
 	type LevelConfig = { level: number; count: number; mode: 'single' | 'mixed' };
@@ -11,7 +11,7 @@
 		sendResults
 	}: {
 		gameEnd: () => void;
-		sendResults: (results: NumbersResult[]) => void;
+		sendResults: (results: NumbersTrialRow[]) => void;
 	} = $props();
 
 	const studySeconds = 10;
@@ -32,6 +32,7 @@
 
 	let countdownInterval: ReturnType<typeof setInterval> | null = null;
 	let revealTimeout: ReturnType<typeof setTimeout> | null = null;
+	let inputStartedAt = 0;
 
 	const currentLevelNumber = () => currentLevelIndex + 1;
 	const isLastLevel = () => currentLevelIndex === levelConfigs.length - 1;
@@ -77,6 +78,7 @@
 		validationMessage = '';
 		currentReview = null;
 		phase = 'memorize';
+		inputStartedAt = 0;
 
 		countdownInterval = setInterval(() => {
 			countdown = Math.max(countdown - 1, 0);
@@ -84,6 +86,7 @@
 		revealTimeout = setTimeout(() => {
 			clearTimers();
 			phase = 'input';
+			inputStartedAt = Date.now();
 		}, studySeconds * 1000);
 	};
 
@@ -119,12 +122,13 @@
 			validationMessage = 'Можно вводить только целые числа от 1 до 99.';
 			return;
 		}
+		const reactionTimeMs = inputStartedAt > 0 ? Date.now() - inputStartedAt : 0;
 		currentReview = {
 			level: currentLevelNumber(),
 			sequence: [...currentSequence],
 			submitted,
 			isCorrect: submitted.every((v, i) => v === currentSequence[i]),
-			reactionTimeMs: 0
+			reactionTimeMs
 		};
 		phase = 'review';
 	};
@@ -134,16 +138,17 @@
 		acceptedReviews = [...acceptedReviews, currentReview];
 		if (isLastLevel()) {
 			clearTimers();
-			const digitSpan = acceptedReviews
-				.filter((r) => r.isCorrect)
-				.reduce((max, r) => Math.max(max, levelConfigs[r.level - 1].count), 0);
-			const result: NumbersResult = {
-				correct: correctLevels(),
-				total: levelConfigs.length,
-				digitSpan,
-				reviews: acceptedReviews
-			};
-			sendResults([result]);
+			const trialRows: NumbersTrialRow[] = acceptedReviews.map((r, i) => ({
+				levelIndex: i + 1,
+				level: r.level,
+				digitCount: levelConfigs[r.level - 1].count,
+				mode: levelConfigs[r.level - 1].mode,
+				sequence: JSON.stringify(r.sequence),
+				submitted: JSON.stringify(r.submitted),
+				isCorrect: r.isCorrect,
+				reactionTimeMs: r.reactionTimeMs
+			}));
+			sendResults(trialRows);
 			gameEnd();
 			return;
 		}
