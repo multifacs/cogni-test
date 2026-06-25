@@ -80,7 +80,7 @@ const orderByMap: Record<string, (fields: any) => any> = {
 	swallow: (f) => asc(f.attempt),
 	munsterberg: (f) => asc(f.attempt),
 	campimetry: (f) => asc(f.attempt),
-	attention: (f) => asc(f.attempt),
+	attention: (f) => asc(f.clickIndex),
 	emoji: (f) => asc(f.trialIndex),
 	flanker: (f) => asc(f.trialIndex),
 	letters: (f) => asc(f.roundIndex),

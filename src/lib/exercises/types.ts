@@ -1,4 +1,4 @@
-import type { AttentionResult } from './attention/types';
+import type { AttentionTrialRow } from './attention/types';
 import type { CampimetryResult } from './campimetry/types';
 import type { EmojiTrialRow } from './emoji/types';
 import type { FlankerTrialRow } from './flanker/types';
@@ -24,7 +24,7 @@ export type ExerciseType =
 	| 'wordMorphingExercise';
 
 export type ExerciseResultMap = {
-	attention: AttentionResult;
+	attention: AttentionTrialRow;
 	campimetryExercise: CampimetryResult;
 	emoji: EmojiTrialRow;
 	flanker: FlankerTrialRow;
@@ -38,7 +38,7 @@ export type ExerciseResultMap = {
 };
 
 export type ExerciseResult =
-	| AttentionResult
+	| AttentionTrialRow
 	| CampimetryResult
 	| EmojiTrialRow
 	| FlankerTrialRow
@@ -51,7 +51,7 @@ export type ExerciseResult =
 	| WordMorphingSummaryRow;
 
 export type ExerciseResults =
-	| AttentionResult[]
+	| AttentionTrialRow[]
 	| CampimetryResult[]
 	| EmojiTrialRow[]
 	| FlankerTrialRow[]

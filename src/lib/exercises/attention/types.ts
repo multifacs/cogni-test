@@ -1,7 +1,9 @@
-export type AttentionResult = {
-	n: number;
-	m: number;
-	errors: number;
-	elapsed: number;
-	found: number;
+export type AttentionTrialRow = {
+	clickIndex: number;
+	number: number;
+	isTarget: boolean;
+	isCorrect: boolean;
+	reactionTimeMs: number;
+	totalTargets: number;
+	totalNumbers: number;
 };

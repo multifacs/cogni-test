@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import type { AttentionResult } from './types';
+	import type { AttentionTrialRow } from './types';
+	import type { MetaResult } from '$lib/exercises/types';
 	import { SvelteSet } from 'svelte/reactivity';
 
 	let {
@@ -9,7 +10,7 @@
 		sendResults
 	}: {
 		gameEnd: () => void;
-		sendResults: (results: AttentionResult[]) => void;
+		sendResults: (results: MetaResult) => void;
 	} = $props();
 
 	let n = $state(30);
@@ -22,6 +23,13 @@
 	let startTime = $state(0);
 	let elapsed = $state(0);
 	let intervalId: ReturnType<typeof setInterval> | null = null;
+	let clickLog: {
+		number: number;
+		isTarget: boolean;
+		isCorrect: boolean;
+		reactionTimeMs: number;
+	}[] = [];
+	let lastClickAt = 0;
 
 	function generateTest() {
 		if (m > n) {
@@ -34,6 +42,8 @@
 		const shuffled = [...numbers].sort(() => Math.random() - 0.5);
 		targets = new Set(shuffled.slice(0, m));
 		found = new Set<number>();
+		clickLog = [];
+		lastClickAt = Date.now();
 		stopTimer();
 		elapsed = 0;
 		started = true;
@@ -52,22 +62,29 @@
 
 	function handleClick(num: number) {
 		if (!started) return;
+		const reactionTimeMs = Date.now() - lastClickAt;
+		lastClickAt = Date.now();
+
 		if (targets.has(num)) {
+			clickLog.push({ number: num, isTarget: true, isCorrect: true, reactionTimeMs });
 			found = new Set([...found, num]);
 			if (found.size === targets.size) {
 				stopTimer();
 				started = false;
-				const result: AttentionResult = {
-					n: targets.size,
-					m: found.size,
-					errors,
-					elapsed,
-					found: found.size
-				};
-				sendResults([result]);
+				const trialRows: AttentionTrialRow[] = clickLog.map((c, i) => ({
+					clickIndex: i + 1,
+					number: c.number,
+					isTarget: c.isTarget,
+					isCorrect: c.isCorrect,
+					reactionTimeMs: c.reactionTimeMs,
+					totalTargets: targets.size,
+					totalNumbers: n
+				}));
+				sendResults({ results: trialRows, meta: [String(n), String(m)] });
 				gameEnd();
 			}
 		} else {
+			clickLog.push({ number: num, isTarget: false, isCorrect: false, reactionTimeMs });
 			errors++;
 		}
 	}

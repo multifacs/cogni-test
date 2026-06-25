@@ -5,12 +5,13 @@ import { generate } from 'short-uuid';
 
 export const attentionAttempt = sqliteTable('attention_attempt', {
 	id: text('id').primaryKey().$defaultFn(generate),
-	attempt: integer('attempt').default(1).notNull(),
-	n: integer('n').notNull(),
-	m: integer('m').notNull(),
-	errors: integer('errors').notNull(),
-	elapsed: integer('elapsed').notNull(),
-	found: integer('found').notNull(),
+	clickIndex: integer('click_index').notNull(),
+	number: integer('number').notNull(),
+	isTarget: integer('is_target', { mode: 'boolean' }).notNull(),
+	isCorrect: integer('is_correct', { mode: 'boolean' }).notNull(),
+	reactionTimeMs: integer('reaction_time_ms').notNull(),
+	totalTargets: integer('total_targets').notNull(),
+	totalNumbers: integer('total_numbers').notNull(),
 	sessionId: text('session_id')
 		.notNull()
 		.references(() => session.id),
