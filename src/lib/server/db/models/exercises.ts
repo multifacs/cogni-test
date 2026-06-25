@@ -168,16 +168,18 @@ export const memoryMatchExerciseAttempt = sqliteTable('memory_match_exercise_att
 
 export const nbackExerciseAttempt = sqliteTable('nback_exercise_attempt', {
 	id: text('id').primaryKey().$defaultFn(generate),
-	attempt: integer('attempt').default(1).notNull(),
+	clickIndex: integer('click_index').notNull(),
+	stimIndex: integer('stim_index').notNull(),
+	answer: text('answer').notNull(),
+	truth: integer('truth', { mode: 'boolean' }).notNull(),
+	isCorrect: integer('is_correct', { mode: 'boolean' }).notNull(),
+	rtMs: integer('rt_ms').notNull(),
+	interClickMs: integer('inter_click_ms').notNull(),
 	domain: text('domain').notNull(),
 	nBack: integer('n_back').notNull(),
 	target: text('target').notNull(),
 	durationMs: integer('duration_ms').notNull(),
 	totalStimuli: integer('total_stimuli').notNull(),
-	correct: integer('correct').notNull(),
-	incorrect: integer('incorrect').notNull(),
-	accuracy: integer('accuracy').notNull(),
-	avgRtMs: integer('avg_rt_ms').notNull(),
 	sessionId: text('session_id')
 		.notNull()
 		.references(() => session.id),

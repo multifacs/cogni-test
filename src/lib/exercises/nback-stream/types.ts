@@ -37,14 +37,17 @@ export type FullResult = {
 	};
 };
 
-export type NBackSummaryRow = {
+export type NBackTrialRow = {
+	clickIndex: number;
+	stimIndex: number;
+	answer: string;
+	truth: boolean;
+	isCorrect: boolean;
+	rtMs: number;
+	interClickMs: number;
 	domain: string;
 	nBack: number;
 	target: string;
 	durationMs: number;
 	totalStimuli: number;
-	correct: number;
-	incorrect: number;
-	accuracy: number;
-	avgRtMs: number;
 };

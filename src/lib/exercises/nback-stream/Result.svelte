@@ -1,46 +1,43 @@
 <script lang="ts">
-	import type { NBackSummaryRow } from './types';
+	import ResultsChart from './ResultsChart.svelte';
 	import type { ExerciseResults } from '$lib/exercises/types';
+	import type { NBackTrialRow } from './types';
+	import { formatMs, summary, domainLabel, targetLabel } from './results-adapter';
 
-	let {
-		results,
-		exerciseType,
-		meta
-	}: {
-		results: ExerciseResults;
-		exerciseType?: string;
-		meta?: string[];
-	} = $props();
+	let { results }: { results: ExerciseResults; exerciseType?: string; meta?: string[] } =
+		$props();
+
+	const rows = results as NBackTrialRow[];
+	const s = summary(rows);
 </script>
 
-{#each results as attempt_raw, i (i)}
-	{@const attempt = attempt_raw as NBackSummaryRow}
-	<div class="grid grid-cols-3 gap-4 py-2">
-		<div class="rounded-2xl bg-[#364b6c] p-4 text-center text-white">
-			<span class="mb-2 block opacity-70">Верно</span>
-			<strong class="text-2xl">{attempt.correct}</strong>
-		</div>
-		<div class="rounded-2xl bg-[#364b6c] p-4 text-center text-white">
-			<span class="mb-2 block opacity-70">% точности</span>
-			<strong class="text-2xl">{(attempt.accuracy / 10).toFixed(1)}%</strong>
-		</div>
-		<div class="rounded-2xl bg-[#364b6c] p-4 text-center text-white">
-			<span class="mb-2 block opacity-70">Средний RT</span>
-			<strong class="text-2xl">{attempt.avgRtMs} мс</strong>
-		</div>
+<div class="grid grid-cols-4 gap-2 py-2 sm:gap-4">
+	<div
+		class="flex flex-col items-center justify-center rounded-2xl bg-[#364b6c] p-2 text-white sm:p-4"
+	>
+		<span class="mb-1 block text-xs opacity-70 sm:mb-2 sm:text-sm">Верно</span>
+		<strong class="text-base sm:text-2xl">{s.correctCount}/{s.totalClicks}</strong>
 	</div>
-	<div class="grid grid-cols-3 gap-4 py-2">
-		<div class="rounded-2xl bg-[#364b6c] p-4 text-center text-white">
-			<span class="mb-2 block opacity-70">{attempt.nBack}-back</span>
-			<strong class="text-2xl">{attempt.domain === 'figures' ? 'Фигуры' : 'Числа'}</strong>
-		</div>
-		<div class="rounded-2xl bg-[#364b6c] p-4 text-center text-white">
-			<span class="mb-2 block opacity-70">Стимулов</span>
-			<strong class="text-2xl">{attempt.totalStimuli}</strong>
-		</div>
-		<div class="rounded-2xl bg-[#364b6c] p-4 text-center text-white">
-			<span class="mb-2 block opacity-70">Длительность</span>
-			<strong class="text-2xl">{(attempt.durationMs / 1000).toFixed(0)} с</strong>
-		</div>
+	<div
+		class="flex flex-col items-center justify-center rounded-2xl bg-[#364b6c] p-2 text-white sm:p-4"
+	>
+		<span class="mb-1 block text-xs opacity-70 sm:mb-2 sm:text-sm">Точность</span>
+		<strong class="text-base sm:text-2xl"
+			>{s.totalClicks ? Math.round(s.accuracy * 100) : 0}%</strong
+		>
 	</div>
-{/each}
+	<div
+		class="flex flex-col items-center justify-center rounded-2xl bg-[#364b6c] p-2 text-white sm:p-4"
+	>
+		<span class="mb-1 block text-xs opacity-70 sm:mb-2 sm:text-sm">Среднее время</span>
+		<strong class="text-base sm:text-2xl">{formatMs(s.averageResponseTimeMs)}</strong>
+	</div>
+	<div
+		class="flex flex-col items-center justify-center rounded-2xl bg-[#364b6c] p-2 text-white sm:p-4"
+	>
+		<span class="mb-1 block text-xs opacity-70 sm:mb-2 sm:text-sm">{s.nBack}-back</span>
+		<strong class="text-base sm:text-2xl">{domainLabel(s.domain)}</strong>
+	</div>
+</div>
+
+<ResultsChart trials={rows} />

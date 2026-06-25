@@ -1,25 +1,55 @@
-import type { FullResult } from "./types";
+import type { NBackTrialRow } from './types';
 
-export function toDbAttempts(r: FullResult) {
-  return r.clicks.map((c, i) => ({
-    attempt: i + 1,
-    time: c.rtMs,
-    stage: r.nBack,
-    cards: 0,
-    flips: 0,
-    mistakes: c.isCorrect ? 0 : 1,
-    efficiency: c.rtMs,
-    isCorrect: c.isCorrect,
-    domain: r.domain,
-    target: r.target,
-    interClickMs: c.interClickMs,
-    stimIndex: c.stimIndex
-  }));
+export type { NBackTrialRow } from './types';
+
+export function formatMs(ms: number): string {
+	if (!Number.isFinite(ms)) return '—';
+	if (ms < 1000) return `${Math.round(ms)} мс`;
+	return `${(ms / 1000).toFixed(1)} с`;
 }
 
-export function summary(r: FullResult) {
-  const correct = r.clicks.filter(c => c.isCorrect).length;
-  const incorrect = r.clicks.length - correct;
-  const avgRt = r.clicks.length ? Math.round(r.clicks.reduce((a,c)=>a+c.rtMs,0)/r.clicks.length) : null;
-  return { correct, incorrect, accuracy: r.clicks.length ? +(correct/r.clicks.length).toFixed(3) : 0, avgRtMs: avgRt };
+export function summary(trials: NBackTrialRow[]) {
+	const totalClicks = trials.length;
+	const correctCount = trials.filter((t) => t.isCorrect).length;
+	const incorrectCount = totalClicks - correctCount;
+	const accuracy = totalClicks ? correctCount / totalClicks : 0;
+	const totalDurationMs = trials.reduce((sum, t) => sum + t.rtMs, 0);
+	const averageResponseTimeMs = totalClicks ? Math.round(totalDurationMs / totalClicks) : 0;
+
+	const domain = trials.length > 0 ? trials[0].domain : 'figures';
+	const nBack = trials.length > 0 ? trials[0].nBack : 1;
+	const target = trials.length > 0 ? trials[0].target : 'shape';
+	const durationMs = trials.length > 0 ? trials[0].durationMs : 0;
+	const totalStimuli = trials.length > 0 ? trials[0].totalStimuli : 0;
+
+	return {
+		totalClicks,
+		correctCount,
+		incorrectCount,
+		accuracy,
+		totalDurationMs,
+		averageResponseTimeMs,
+		domain,
+		nBack,
+		target,
+		durationMs,
+		totalStimuli
+	};
+}
+
+export function domainLabel(domain: string): string {
+	return domain === 'figures' ? 'Фигуры' : 'Числа';
+}
+
+export function targetLabel(target: string): string {
+	switch (target) {
+		case 'shape':
+			return 'Форма';
+		case 'color':
+			return 'Цвет';
+		case 'number':
+			return 'Число';
+		default:
+			return target;
+	}
 }

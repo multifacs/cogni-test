@@ -4,7 +4,7 @@ import type { EmojiTrialRow } from './emoji/types';
 import type { FlankerTrialRow } from './flanker/types';
 import type { LettersTrialRow } from './letters/types';
 import type { MemoryMatchSummaryRow } from './memory-match/types';
-import type { NBackSummaryRow } from './nback-stream/types';
+import type { NBackTrialRow } from './nback-stream/types';
 import type { NumbersTrialRow } from './numbers/types';
 import type { PicturesTrialRow } from './pictures/types';
 import type { RavenAttemptRow } from './raven-matrices/types';
@@ -30,7 +30,7 @@ export type ExerciseResultMap = {
 	flanker: FlankerTrialRow;
 	letters: LettersTrialRow;
 	memoryMatchExercise: MemoryMatchSummaryRow;
-	nbackExercise: NBackSummaryRow;
+	nbackExercise: NBackTrialRow;
 	numbers: NumbersTrialRow;
 	pictures: PicturesTrialRow;
 	ravenMatrices: RavenAttemptRow;
@@ -44,7 +44,7 @@ export type ExerciseResult =
 	| FlankerTrialRow
 	| LettersTrialRow
 	| MemoryMatchSummaryRow
-	| NBackSummaryRow
+	| NBackTrialRow
 	| NumbersTrialRow
 	| PicturesTrialRow
 	| RavenAttemptRow
@@ -57,7 +57,7 @@ export type ExerciseResults =
 	| FlankerTrialRow[]
 	| LettersTrialRow[]
 	| MemoryMatchSummaryRow[]
-	| NBackSummaryRow[]
+	| NBackTrialRow[]
 	| NumbersTrialRow[]
 	| PicturesTrialRow[]
 	| RavenAttemptRow[]

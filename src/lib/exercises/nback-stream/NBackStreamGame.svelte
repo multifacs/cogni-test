@@ -1,14 +1,7 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import StreamBoard from './StreamBoard.svelte';
-	import type {
-		Domain,
-		TargetFeature,
-		FullResult,
-		Stimulus,
-		ClickEvent,
-		NBackSummaryRow
-	} from './types';
+	import type { Domain, TargetFeature, Stimulus, ClickEvent, NBackTrialRow } from './types';
 	import { generateSequence } from './logic/generator';
 
 	let {
@@ -16,7 +9,7 @@
 		sendResults
 	}: {
 		gameEnd: () => void;
-		sendResults: (results: NBackSummaryRow[]) => void;
+		sendResults: (results: NBackTrialRow[]) => void;
 	} = $props();
 
 	let domain = $state<Domain>('figures');
@@ -126,38 +119,25 @@
 		clearInterval(tickTimer);
 		phase = 'done';
 		const totalStimuli = seq.length;
-		const correct = clicks.filter((c) => c.isCorrect).length;
-		const incorrect = clicks.length - correct;
-		const avgRt = clicks.length
-			? Math.round(clicks.reduce((a, c) => a + c.rtMs, 0) / clicks.length)
-			: null;
-		const res: FullResult = {
+		const actualDurationMs = Math.min(DURATION_MS, Date.now() - startAt);
+		const actualTarget = domain === 'numbers' ? 'number' : target;
+
+		const trialRows: NBackTrialRow[] = clicks.map((c, i) => ({
+			clickIndex: i + 1,
+			stimIndex: c.stimIndex,
+			answer: c.answer,
+			truth: c.truth,
+			isCorrect: c.isCorrect,
+			rtMs: c.rtMs,
+			interClickMs: c.interClickMs,
 			domain,
 			nBack,
-			target: domain === 'numbers' ? 'number' : target,
-			durationMs: Math.min(DURATION_MS, Date.now() - startAt),
-			clicks,
-			totalStimuli,
-			summary: {
-				correct,
-				incorrect,
-				accuracy: clicks.length ? +(correct / clicks.length).toFixed(3) : 0,
-				avgRtMs: avgRt,
-				misses: 0
-			}
-		};
-		const summaryRow: NBackSummaryRow = {
-			domain: res.domain,
-			nBack: res.nBack,
-			target: res.target,
-			durationMs: res.durationMs,
-			totalStimuli: res.totalStimuli,
-			correct: res.summary.correct,
-			incorrect: res.summary.incorrect,
-			accuracy: Math.round(res.summary.accuracy * 1000),
-			avgRtMs: res.summary.avgRtMs ?? 0
-		};
-		sendResults([summaryRow]);
+			target: actualTarget,
+			durationMs: actualDurationMs,
+			totalStimuli
+		}));
+
+		sendResults(trialRows);
 		gameEnd();
 	}
 
