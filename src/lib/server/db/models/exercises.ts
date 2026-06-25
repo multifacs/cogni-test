@@ -38,11 +38,14 @@ export const emojiAttempt = sqliteTable('emoji_attempt', {
 
 export const lettersAttempt = sqliteTable('letters_attempt', {
 	id: text('id').primaryKey().$defaultFn(generate),
-	attempt: integer('attempt').default(1).notNull(),
-	maxSpan: integer('max_span').notNull(),
-	roundsCompleted: integer('rounds_completed').notNull(),
-	elapsed: integer('elapsed').notNull(),
+	roundIndex: integer('round_index').notNull(),
+	target: text('target').notNull(),
+	submitted: text('submitted').notNull(),
+	isCorrect: integer('is_correct', { mode: 'boolean' }).notNull(),
+	reactionTimeMs: integer('reaction_time_ms').notNull(),
+	letterCount: integer('letter_count').notNull(),
 	timeoutTriggered: integer('time_limit', { mode: 'boolean' }).notNull(),
+	elapsed: integer('elapsed').notNull(),
 	sessionId: text('session_id')
 		.notNull()
 		.references(() => session.id),

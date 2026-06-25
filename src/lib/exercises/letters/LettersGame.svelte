@@ -1,13 +1,14 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
-	import type { LettersResult, RoundEntry } from './types';
+	import { onDestroy, onMount } from 'svelte';
+	import type { LettersTrialRow, RoundEntry } from './types';
 
 	let {
 		gameEnd,
 		sendResults
 	}: {
 		gameEnd: () => void;
-		sendResults: (results: LettersResult[]) => void;
+		sendResults: (results: LettersTrialRow[]) => void;
 	} = $props();
 
 	const LETTERS = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'.split('');
@@ -128,16 +129,76 @@
 		started = false;
 		finished = true;
 		numLetters = START_LENGTH;
-		const result: LettersResult = {
-			maxSpan,
-			roundsCompleted: answerLog.filter((r) => r.isCorrect).length,
-			elapsed,
-			timeoutTriggered
-		};
-		sendResults([result]);
+		const trialRows: LettersTrialRow[] = answerLog.map((r, i) => ({
+			roundIndex: i + 1,
+			target: r.target,
+			submitted: r.submitted,
+			isCorrect: r.isCorrect,
+			reactionTimeMs: r.reactionTimeMs,
+			letterCount: r.letterCount,
+			timeoutTriggered,
+			elapsed
+		}));
+		sendResults(trialRows);
 		gameEnd();
 	}
 
+	function handleKeyDown(e: KeyboardEvent) {
+		const input = e.target as HTMLInputElement;
+		console.log(e);
+
+		const letterMap = new Map<string, string>();
+
+		letterMap.set('KeyQ', 'Й');
+		letterMap.set('KeyW', 'Ц');
+		letterMap.set('KeyE', 'У');
+		letterMap.set('KeyR', 'К');
+		letterMap.set('KeyT', 'Е');
+		letterMap.set('KeyY', 'Н');
+		letterMap.set('KeyU', 'Г');
+		letterMap.set('KeyI', 'Ш');
+		letterMap.set('KeyO', 'Щ');
+		letterMap.set('KeyP', 'З');
+		letterMap.set('BracketLeft', 'Х');
+		letterMap.set('BracketRight', 'Ъ');
+
+		letterMap.set('KeyA', 'Ф');
+		letterMap.set('KeyS', 'Ы');
+		letterMap.set('KeyD', 'В');
+		letterMap.set('KeyF', 'А');
+		letterMap.set('KeyG', 'П');
+		letterMap.set('KeyH', 'Р');
+		letterMap.set('KeyJ', 'О');
+		letterMap.set('KeyK', 'Л');
+		letterMap.set('KeyL', 'Д');
+		letterMap.set('Semicolon', 'Ж');
+		letterMap.set('Quote', 'Э');
+
+		letterMap.set('KeyZ', 'Я');
+		letterMap.set('KeyX', 'Ч');
+		letterMap.set('KeyC', 'С');
+		letterMap.set('KeyV', 'М');
+		letterMap.set('KeyB', 'И');
+		letterMap.set('KeyN', 'Т');
+		letterMap.set('KeyM', 'Ь');
+		letterMap.set('Comma', 'Б');
+		letterMap.set('Period', 'Ю');
+
+		letterMap.set('Backquote', 'Ё');
+
+		const pickedLetter = letterMap.get(e.code);
+		if (pickedLetter && LETTERS.includes(pickedLetter)) {
+			pick(pickedLetter);
+		}
+	}
+
+	onMount(() => {
+		window.addEventListener('keydown', handleKeyDown);
+	});
+
+	onDestroy(() => {
+		window.removeEventListener('keydown', handleKeyDown);
+	});
 </script>
 
 {#if started && showing}
@@ -157,13 +218,13 @@
 		</div>
 
 		<div
-			class="flex max-w-4xl flex-wrap justify-center gap-3 rounded-3xl bg-white/8 p-5 backdrop-blur-[8px]"
+			class="flex max-w-4xl flex-wrap justify-center gap-3 rounded-3xl bg-white/8 p-5 backdrop-blur-sm"
 		>
 			{#each [...lettersToShow] as letter, i (i)}
 				<button
 					type="button"
 					disabled
-					class="min-w-[70px] rounded-2xl bg-gray-100 p-4 text-xl font-bold text-indigo-800"
+					class="min-w-18 rounded-2xl bg-gray-100 p-4 text-xl font-bold text-indigo-800"
 					>{letter}</button
 				>
 			{/each}
@@ -171,7 +232,7 @@
 	</div>
 {:else if started}
 	<div class="flex flex-col items-center justify-center gap-4">
-		<div class="grid max-w-4xl grid-cols-[repeat(3,auto)] justify-center gap-[15px]">
+		<div class="grid max-w-4xl grid-cols-[repeat(3,auto)] justify-center gap-4">
 			<p class="text-center text-base text-white">
 				Время: {elapsed} сек
 			</p>
@@ -183,13 +244,13 @@
 			</p>
 		</div>
 
-		<div class="grid max-w-4xl grid-cols-5 gap-3 rounded-3xl bg-white/8 p-5">
+		<div class="grid max-w-4xl grid-cols-8 gap-3 rounded-3xl bg-white/8 p-5">
 			{#each gridLetters as letter, i (i)}
 				<button
 					type="button"
 					class={userAnswer.includes(letter)
-						? 'h-16 w-16 rounded-2xl !bg-[#4caf50] font-bold !text-black'
-						: 'h-16 w-16 rounded-2xl bg-white font-bold text-indigo-800'}
+						? 'h-16 w-16 rounded-2xl cursor-pointer bg-[#4caf50]! font-bold text-black!'
+						: 'h-16 w-16 rounded-2xl cursor-pointer bg-white font-bold text-indigo-800'}
 					onclick={() => pick(letter)}>{letter}</button
 				>
 			{/each}

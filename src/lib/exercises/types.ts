@@ -2,7 +2,7 @@ import type { AttentionResult } from './attention/types';
 import type { CampimetryResult } from './campimetry/types';
 import type { EmojiTrialRow } from './emoji/types';
 import type { FlankerTrialRow } from './flanker/types';
-import type { LettersResult } from './letters/types';
+import type { LettersTrialRow } from './letters/types';
 import type { MemoryMatchSummaryRow } from './memory-match/types';
 import type { NBackSummaryRow } from './nback-stream/types';
 import type { NumbersResult } from './numbers/types';
@@ -28,7 +28,7 @@ export type ExerciseResultMap = {
 	campimetryExercise: CampimetryResult;
 	emoji: EmojiTrialRow;
 	flanker: FlankerTrialRow;
-	letters: LettersResult;
+	letters: LettersTrialRow;
 	memoryMatchExercise: MemoryMatchSummaryRow;
 	nbackExercise: NBackSummaryRow;
 	numbers: NumbersResult;
@@ -42,7 +42,7 @@ export type ExerciseResult =
 	| CampimetryResult
 	| EmojiTrialRow
 	| FlankerTrialRow
-	| LettersResult
+	| LettersTrialRow
 	| MemoryMatchSummaryRow
 	| NBackSummaryRow
 	| NumbersResult
@@ -55,7 +55,7 @@ export type ExerciseResults =
 	| CampimetryResult[]
 	| EmojiTrialRow[]
 	| FlankerTrialRow[]
-	| LettersResult[]
+	| LettersTrialRow[]
 	| MemoryMatchSummaryRow[]
 	| NBackSummaryRow[]
 	| NumbersResult[]
