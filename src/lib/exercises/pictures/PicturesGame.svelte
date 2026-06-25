@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
-	import type { PicturesResult, AnswerRecord } from './types';
+	import type { PicturesTrialRow } from './types';
 
 	type Option = { value: string; label: string; correct?: boolean };
 	type Question = {
@@ -20,7 +20,7 @@
 		sendResults
 	}: {
 		gameEnd: () => void;
-		sendResults: (results: PicturesResult[]) => void;
+		sendResults: (results: PicturesTrialRow[]) => void;
 	} = $props();
 
 	const calendarNumber = 4;
@@ -145,8 +145,6 @@
 		}
 	];
 
-	const recallQuestions = questions.filter((q) => q.scored);
-
 	let currentIndex = $state(0);
 	let answers = $state<Record<number, string>>({});
 	let finished = $state(false);
@@ -158,13 +156,6 @@
 	const optionForValue = (question: Question, value: string) =>
 		question.options?.find((o) => o.value === value);
 
-	const score = () =>
-		recallQuestions.reduce((total, question) => {
-			const selected = answers[question.id];
-			if (!selected) return total;
-			return optionForValue(question, selected)?.correct ? total + 1 : total;
-		}, 0);
-
 	const answerQuestion = (value: string) => {
 		const question = currentQuestion();
 		const reactionTimeMs = Date.now() - questionShownAt;
@@ -175,23 +166,20 @@
 			questionShownAt = Date.now();
 		} else {
 			finished = true;
-			sendResults([
-				{
-					score: score(),
-					maxScore: recallQuestions.length,
-					normalizedScore: Math.round((score() / recallQuestions.length) * 100),
-					answers: questions.map((q) => {
-						const selectedValue = answers[q.id];
-						const option = selectedValue ? optionForValue(q, selectedValue) : undefined;
-						return {
-							questionId: String(q.id),
-							answer: selectedValue ?? undefined,
-							isCorrect: q.scored ? Boolean(option?.correct) : null,
-							reactionTimeMs: answerTimings[q.id] ?? 0
-						};
-					})
-				}
-			]);
+			const trialRows: PicturesTrialRow[] = questions.map((q, i) => {
+				const selectedValue = answers[q.id];
+				const option = selectedValue ? optionForValue(q, selectedValue) : undefined;
+				return {
+					questionIndex: i + 1,
+					questionId: String(q.id),
+					questionKind: q.kind,
+					scored: q.scored,
+					answer: selectedValue ?? null,
+					isCorrect: q.scored ? Boolean(option?.correct) : null,
+					reactionTimeMs: answerTimings[q.id] ?? 0
+				};
+			});
+			sendResults(trialRows);
 			gameEnd();
 		}
 	};
@@ -206,14 +194,20 @@
 			questionShownAt = Date.now();
 		} else {
 			finished = true;
-			sendResults([
-				{
-					score: score(),
-					maxScore: recallQuestions.length,
-					normalizedScore: Math.round((score() / recallQuestions.length) * 100),
-					answers: []
-				}
-			]);
+			const trialRows: PicturesTrialRow[] = questions.map((q, i) => {
+				const selectedValue = answers[q.id];
+				const option = selectedValue ? optionForValue(q, selectedValue) : undefined;
+				return {
+					questionIndex: i + 1,
+					questionId: String(q.id),
+					questionKind: q.kind,
+					scored: q.scored,
+					answer: selectedValue ?? null,
+					isCorrect: q.scored ? Boolean(option?.correct) : null,
+					reactionTimeMs: answerTimings[q.id] ?? 0
+				};
+			});
+			sendResults(trialRows);
 			gameEnd();
 		}
 	};

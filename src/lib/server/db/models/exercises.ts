@@ -115,10 +115,13 @@ export const ravenAttempt = sqliteTable('raven_attempt', {
 
 export const picturesAttempt = sqliteTable('pictures_attempt', {
 	id: text('id').primaryKey().$defaultFn(generate),
-	attempt: integer('attempt').default(1).notNull(),
-	score: integer('score').notNull(),
-	maxScore: integer('max_score').notNull(),
-	normalizedScore: integer('normalized_score').notNull(),
+	questionIndex: integer('question_index').notNull(),
+	questionId: text('question_id').notNull(),
+	questionKind: text('question_kind').notNull(),
+	scored: integer('scored', { mode: 'boolean' }).notNull(),
+	answer: text('answer'),
+	isCorrect: integer('is_correct'),
+	reactionTimeMs: integer('reaction_time_ms').notNull(),
 	sessionId: text('session_id')
 		.notNull()
 		.references(() => session.id),

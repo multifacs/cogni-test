@@ -1,13 +1,9 @@
-export type AnswerRecord = {
+export type PicturesTrialRow = {
+	questionIndex: number;
 	questionId: string;
-	answer: string | undefined;
+	questionKind: string;
+	scored: boolean;
+	answer: string | null;
 	isCorrect: boolean | null;
 	reactionTimeMs: number;
-};
-
-export type PicturesResult = {
-	score: number;
-	maxScore: number;
-	normalizedScore: number;
-	answers: AnswerRecord[];
 };

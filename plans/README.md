@@ -24,7 +24,7 @@ Base commit: `3fc4a4f`
 | 015 | [Migrate flanker to per-trial DB schema](./015-flanker-per-trial.md) | DONE | Medium | — |
 | 016 | [Migrate letters to per-trial DB schema](./016-letters-per-trial.md) | DONE | Medium | — |
 | 017 | [Migrate numbers to per-trial DB schema](./017-numbers-per-trial.md) | DONE | Medium | — |
-| 018 | [Migrate pictures to per-trial DB schema](./018-pictures-per-trial.md) | TODO | Medium | — |
+| 018 | [Migrate pictures to per-trial DB schema](./018-pictures-per-trial.md) | DONE | Medium | — |
 | 019 | [Migrate attention to per-trial DB schema](./019-attention-per-trial.md) | TODO | Medium | — |
 | 020 | [Migrate nback-stream to per-trial DB schema](./020-nback-per-trial.md) | TODO | Medium | — |
 
