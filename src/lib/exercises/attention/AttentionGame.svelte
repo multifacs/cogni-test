@@ -80,7 +80,7 @@
 					totalTargets: targets.size,
 					totalNumbers: n
 				}));
-				sendResults({ results: trialRows, meta: [String(n), String(m)] });
+				sendResults({ results: trialRows, meta: { n: String(n), m: String(m) } });
 				gameEnd();
 			}
 		} else {

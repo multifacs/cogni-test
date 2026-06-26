@@ -71,5 +71,5 @@ export type ResultInfo = {
 
 export interface MetaResult {
 	results: ExerciseResults;
-	meta: string[];
+	meta: Record<string, string>;
 }
