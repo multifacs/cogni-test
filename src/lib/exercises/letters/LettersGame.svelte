@@ -244,7 +244,7 @@
 			</p>
 		</div>
 
-		<div class="grid max-w-4xl grid-cols-8 gap-3 rounded-3xl bg-white/8 p-5">
+		<div class="flex flex-wrap justify-center max-w-3xl gap-3 rounded-3xl bg-white/8 p-5">
 			{#each gridLetters as letter, i (i)}
 				<button
 					type="button"
