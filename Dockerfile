@@ -35,4 +35,4 @@ COPY --from=builder /app/index.js ./
 EXPOSE 80
 
 # Запускаем сервер
-CMD ["sh", "-c", "npm i --omit=dev && npx drizzle-kit push --force && node index.js"]
+CMD ["sh", "-c", "npm i && npx drizzle-kit push --force && node index.js"]
