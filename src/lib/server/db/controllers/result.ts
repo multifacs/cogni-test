@@ -53,25 +53,27 @@ const attemptTableMap: Record<string, any> = {
 	wordMorphingExercise: wordMorphingExerciseAttempt
 };
 
-const queryTableMap: Record<string, any> = {
-	math: db.query.mathAttempt,
-	stroop: db.query.stroopAttempt,
-	memory: db.query.memoryAttempt,
-	swallow: db.query.swallowAttempt,
-	munsterberg: db.query.munsterbergAttempt,
-	campimetry: db.query.campimetryAttempt,
-	attention: db.query.attentionAttempt,
-	emoji: db.query.emojiAttempt,
-	flanker: db.query.flankerAttempt,
-	letters: db.query.lettersAttempt,
-	memoryMatchExercise: db.query.memoryMatchExerciseAttempt,
-	nbackExercise: db.query.nbackExerciseAttempt,
-	numbers: db.query.numbersAttempt,
-	pictures: db.query.picturesAttempt,
-	ravenMatrices: db.query.ravenAttempt,
-	campimetryExercise: db.query.campimetryExerciseAttempt,
-	wordMorphingExercise: db.query.wordMorphingExerciseAttempt
-};
+function getQueryTableMap(): Record<string, any> {
+	return {
+		math: db.query.mathAttempt,
+		stroop: db.query.stroopAttempt,
+		memory: db.query.memoryAttempt,
+		swallow: db.query.swallowAttempt,
+		munsterberg: db.query.munsterbergAttempt,
+		campimetry: db.query.campimetryAttempt,
+		attention: db.query.attentionAttempt,
+		emoji: db.query.emojiAttempt,
+		flanker: db.query.flankerAttempt,
+		letters: db.query.lettersAttempt,
+		memoryMatchExercise: db.query.memoryMatchExerciseAttempt,
+		nbackExercise: db.query.nbackExerciseAttempt,
+		numbers: db.query.numbersAttempt,
+		pictures: db.query.picturesAttempt,
+		ravenMatrices: db.query.ravenAttempt,
+		campimetryExercise: db.query.campimetryExerciseAttempt,
+		wordMorphingExercise: db.query.wordMorphingExerciseAttempt
+	};
+}
 
 const orderByMap: Record<string, (fields: any) => any> = {
 	math: (f) => asc(f.attempt),
@@ -134,6 +136,7 @@ export async function getResults(sessionType: AnySessionType, userId: string): P
 		orderBy: (fields: any, { desc }: any) => desc(fields.createdAt)
 	});
 
+	const queryTableMap = getQueryTableMap();
 	const attemptTable = queryTableMap[sessionType];
 	if (!attemptTable) throw new Error(`Unknown session type: ${sessionType}`);
 
