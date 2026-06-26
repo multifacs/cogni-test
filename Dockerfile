@@ -1,5 +1,5 @@
 # Используем официальный Node.js-образ
-FROM node:lts-alpine AS builder
+FROM node:lts-slim AS builder
 
 ARG MODE=DEV
 
@@ -21,7 +21,7 @@ COPY . .
 # Собираем SvelteKit-приложение
 RUN npm run build
 
-FROM node:lts-alpine AS runner
+FROM node:lts-slim AS runner
 
 ENV CI=true
 
@@ -35,4 +35,4 @@ COPY --from=builder /app/index.js ./
 EXPOSE 80
 
 # Запускаем сервер
-CMD ["/bin/sh", "-c", "npm i --omit=dev && npx drizzle-kit push --force && node index.js"]
+CMD ["sh", "-c", "npm i --omit=dev && npx drizzle-kit push --force && node index.js"]
