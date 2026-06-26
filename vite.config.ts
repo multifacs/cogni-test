@@ -37,6 +37,9 @@ export default defineConfig({
 	esbuild: {
 		drop: process.env.MODE == 'PROD' ? ['console', 'debugger'] : []
 	},
+	ssr: {
+		external: ['@libsql/client', '@libsql/core', '@libsql/hrana-client', 'onnxruntime-node']
+	},
 	plugins: [sveltekit(), tailwindcss(), mkcert(), inlineOnnxPlugin()],
 	test: {
 		expect: { requireAssertions: true },
