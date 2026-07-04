@@ -1,3 +1,5 @@
+import type { TestType } from './types';
+
 export type TestData = {
 	name: string;
 	title: string;
@@ -43,6 +45,8 @@ export const tests: TestData[] = [
 		img: '/tests/swallow.svg'
 	}
 ];
+
+export const TEST_ORDER: TestType[] = tests.map((t) => t.name as TestType);
 
 type TestLoader = {
 	about: () => Promise<any>;

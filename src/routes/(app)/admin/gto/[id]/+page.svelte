@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
+	import Toast from '$lib/components/ui/Toast.svelte';
 	import type { PageProps } from './$types';
 	import type { GtoEditableMetricDetail } from '$lib/server/db/controllers/gto';
 
@@ -7,6 +8,13 @@
 	let editingName = $state(false);
 	let sessionName = $state(data.session.name);
 	let savingMetrics = $state<Set<string>>(new Set());
+	let toastMessage = $state<string | null>(null);
+	let toastType = $state<'error' | 'success' | 'info'>('info');
+
+	function showToast(message: string, type: 'error' | 'success' | 'info' = 'error') {
+		toastMessage = message;
+		toastType = type;
+	}
 
 	function formatDate(dateStr: string) {
 		return new Date(dateStr).toLocaleString('ru-RU');
@@ -26,41 +34,63 @@
 	async function handleRename() {
 		const form = new FormData();
 		form.set('name', sessionName);
-		await fetch('?/rename', { method: 'POST', body: form });
+		const response = await fetch('?/rename', { method: 'POST', body: form });
+		if (!response.ok) {
+			showToast('Ошибка переименования');
+			return;
+		}
 		editingName = false;
 	}
 
 	async function handleComplete() {
 		const form = new FormData();
-		await fetch('?/complete', { method: 'POST', body: form });
+		const response = await fetch('?/complete', { method: 'POST', body: form });
+		if (!response.ok) {
+			showToast('Ошибка завершения сессии');
+			return;
+		}
 		location.reload();
 	}
 
 	async function submitMetrics(participantId: string, formElement: HTMLFormElement) {
 		savingMetrics = new Set([...savingMetrics, participantId]);
-		const formData = new FormData(formElement);
-		const form = new FormData();
-		form.set('participantId', participantId);
+		try {
+			const formData = new FormData(formElement);
+			const form = new FormData();
+			form.set('participantId', participantId);
 
-		const metrics: Record<string, unknown> = {};
-		const balanceTest = formData.get('balanceTest') as string | null;
-		if (balanceTest) metrics.balanceTest = balanceTest;
+			const metrics: Record<string, unknown> = {};
+			const balanceTest = formData.get('balanceTest') as string | null;
+			if (balanceTest) metrics.balanceTest = balanceTest;
 
-		for (const field of ['mazeQ1', 'mazeQ2', 'mazeQ3', 'mazeVRNumber', 'buttonTestNumber']) {
-			const val = formData.get(field) as string | null;
-			if (val !== null && val !== '') metrics[field] = parseInt(val);
+			for (const field of [
+				'mazeQ1',
+				'mazeQ2',
+				'mazeQ3',
+				'mazeVRNumber',
+				'buttonTestNumber'
+			]) {
+				const val = formData.get(field) as string | null;
+				if (val !== null && val !== '') metrics[field] = parseInt(val);
+			}
+			for (const field of ['mazeVRFileName', 'buttonTestFileName']) {
+				const val = formData.get(field) as string | null;
+				if (val !== null) metrics[field] = val;
+			}
+
+			const response = await fetch('?/updateMetrics', {
+				method: 'POST',
+				body: form
+			});
+
+			if (!response.ok) {
+				showToast('Ошибка сохранения метрик');
+			}
+		} catch {
+			showToast('Ошибка сохранения метрик');
+		} finally {
+			savingMetrics = new Set([...savingMetrics].filter((id) => id !== participantId));
 		}
-		for (const field of ['mazeVRFileName', 'buttonTestFileName']) {
-			const val = formData.get(field) as string | null;
-			if (val !== null) metrics[field] = val;
-		}
-
-		await fetch('?/updateMetrics', {
-			method: 'POST',
-			body: form
-		});
-
-		savingMetrics = new Set([...savingMetrics].filter((id) => id !== participantId));
 	}
 </script>
 
@@ -103,7 +133,7 @@
 			<div class="flex flex-col gap-1">
 				<h3 class="text-sm font-medium">Слова:</h3>
 				<div class="flex gap-2">
-					{#each data.session.words as w}
+					{#each data.session.words as w (w.position)}
 						<span class="rounded-lg bg-gray-700 px-3 py-1 text-sm"
 							>{w.position + 1}. {w.word}</span
 						>
@@ -150,7 +180,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each data.metrics as m, i}
+					{#each data.metrics as m, i (m.participantId)}
 						{@const em = m.editableMetrics as GtoEditableMetricDetail}
 						<tr class="border-b border-gray-700 hover:bg-gray-700">
 							<td class="p-2">{i + 1}</td>
@@ -226,7 +256,9 @@
 								<select name="balanceTest" class="rounded bg-gray-700 p-1 text-xs">
 									<option value="" selected={!em.balanceTest}>—</option>
 									{#each balanceTestOptions as opt}
-										<option value={opt} selected={em.balanceTest === opt}>{opt}</option>
+										<option value={opt} selected={em.balanceTest === opt}
+											>{opt}</option
+										>
 									{/each}
 								</select>
 							</td>
@@ -287,7 +319,7 @@
 								<button
 									class="rounded bg-green-700 px-2 py-1 text-xs hover:bg-green-800 disabled:opacity-50"
 									disabled={savingMetrics.has(m.participantId)}
-									onclick={(e) => {
+									onclick={async (e) => {
 										const row = (e.currentTarget as HTMLElement).closest('tr');
 										if (!row) return;
 										const inputs = row.querySelectorAll(
@@ -296,12 +328,34 @@
 										const fd = new FormData();
 										fd.set('participantId', m.participantId);
 										inputs.forEach((el) => {
-											const input = el as HTMLInputElement | HTMLSelectElement;
+											const input = el as
+												| HTMLInputElement
+												| HTMLSelectElement;
 											if (input.name && input.value) {
 												fd.set(input.name, input.value);
 											}
 										});
-										fetch('?/updateMetrics', { method: 'POST', body: fd });
+										savingMetrics = new Set([
+											...savingMetrics,
+											m.participantId
+										]);
+										try {
+											const response = await fetch('?/updateMetrics', {
+												method: 'POST',
+												body: fd
+											});
+											if (!response.ok) {
+												showToast('Ошибка сохранения метрик');
+											}
+										} catch {
+											showToast('Ошибка сохранения метрик');
+										} finally {
+											savingMetrics = new Set(
+												[...savingMetrics].filter(
+													(id) => id !== m.participantId
+												)
+											);
+										}
 									}}
 								>
 									💾
@@ -318,3 +372,7 @@
 <section class="low-content flex items-center justify-center">
 	<Button color="gray" goto="/admin/gto">← Сессии ГТО-М</Button>
 </section>
+
+{#if toastMessage}
+	<Toast message={toastMessage} type={toastType} onDismiss={() => (toastMessage = null)} />
+{/if}

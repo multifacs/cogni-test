@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { getGtoSessionById } from '$lib/server/db/controllers/gto';
 import { error, redirect } from '@sveltejs/kit';
+import { TEST_ORDER } from '$lib/tests';
 
 export const load: PageServerLoad = async ({ params, cookies, fetch }) => {
 	const userId = cookies.get('user_id');
@@ -19,8 +20,6 @@ export const load: PageServerLoad = async ({ params, cookies, fetch }) => {
 		redirect(307, '/gto');
 	}
 
-	// Load test data for current test (words for munsterberg/memory, silhouettes for campimetry)
-	const TEST_ORDER = ['stroop', 'math', 'munsterberg', 'campimetry', 'memory', 'swallow'] as const;
 	const currentTestType = TEST_ORDER[sessionDetail.currentTestIndex] ?? TEST_ORDER[0];
 
 	const data: {

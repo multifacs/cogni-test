@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
+	import Toast from '$lib/components/ui/Toast.svelte';
 	import { goto } from '$app/navigation';
 
 	let { data } = $props();
@@ -8,6 +9,8 @@
 	let wordInputs = $state<string[]>(Array(data.wordCount).fill(''));
 	let isSubmitting = $state(false);
 	let showDisclaimer = $state(true);
+	let toastMessage = $state<string | null>(null);
+	let toastType = $state<'error' | 'success' | 'info'>('info');
 
 	async function submitWords() {
 		isSubmitting = true;
@@ -28,7 +31,8 @@
 			goto('/gto');
 		} else {
 			const err = await response.json();
-			alert(err.error || 'Ошибка отправки');
+			toastMessage = err.error || 'Ошибка отправки';
+			toastType = 'error';
 		}
 		isSubmitting = false;
 	}
@@ -78,4 +82,8 @@
 			<Button color="green" onclick={() => (showDisclaimer = false)}>Понятно</Button>
 		</div>
 	</Modal>
+{/if}
+
+{#if toastMessage}
+	<Toast message={toastMessage} type={toastType} onDismiss={() => (toastMessage = null)} />
 {/if}

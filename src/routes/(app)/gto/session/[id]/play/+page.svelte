@@ -2,16 +2,15 @@
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
-	import { testRegistry } from '$lib/tests';
+	import { testRegistry, TEST_ORDER } from '$lib/tests';
 	import type { TestType } from '$lib/tests/types';
 
 	let { data } = $props();
 
-	const TEST_ORDER: TestType[] = ['stroop', 'math', 'munsterberg', 'campimetry', 'memory', 'swallow'];
-
 	let currentIndex = $state(data.currentTestIndex || 0);
 	let phase = $state<'instructions' | 'playing'>('instructions');
 	let TestComponent: any = $state(null);
+	let AboutComponent: any = $state(null);
 	let isSaving = $state(false);
 
 	const currentTestType = $derived(TEST_ORDER[currentIndex] ?? TEST_ORDER[0]);
@@ -27,44 +26,62 @@
 		}
 	});
 
+	// Load About component for instructions phase
+	$effect(() => {
+		AboutComponent = null;
+		if (currentTest && phase === 'instructions') {
+			currentTest.about().then((mod: any) => {
+				AboutComponent = mod.default;
+			});
+		}
+	});
+
 	function startTest() {
 		phase = 'playing';
 	}
 
-	async function onGameEnd() {
-		// Test completed, advance to next or finish
+	function onGameEnd() {
+		goto('/gto');
 	}
 
 	async function onSendResults(results: any) {
 		isSaving = true;
 
-		const response = await fetch(`/gto/session/${data.session.id}/words`, {
-			method: 'POST',
-			body: JSON.stringify({ action: 'save-result', testType: currentTestType, results }),
-			headers: { 'Content-Type': 'application/json' }
-		});
-
-		if (!response.ok) {
-			console.error('Failed to save results');
-			isSaving = false;
-			return;
-		}
-
-		// Advance to next test or finish
-		if (currentIndex < TEST_ORDER.length - 1) {
-			currentIndex++;
-			phase = 'instructions';
-		} else {
-			// All tests done — mark completed
-			await fetch(`/gto/session/${data.session.id}/words`, {
+		try {
+			const response = await fetch(`/gto/session/${data.session.id}/play`, {
 				method: 'POST',
-				body: JSON.stringify({ action: 'complete' }),
+				body: JSON.stringify({ action: 'save-result', testType: currentTestType, results }),
 				headers: { 'Content-Type': 'application/json' }
 			});
-			goto(`/gto/session/${data.session.id}/words`);
-		}
 
-		isSaving = false;
+			if (!response.ok) {
+				console.error('Failed to save results');
+				return;
+			}
+
+			// Advance to next test or finish
+			if (currentIndex < TEST_ORDER.length - 1) {
+				currentIndex++;
+				phase = 'instructions';
+
+				// Checkpoint: save progress
+				await fetch(`/gto/session/${data.session.id}/play`, {
+					method: 'POST',
+					body: JSON.stringify({ action: 'checkpoint', currentTestIndex: currentIndex }),
+					headers: { 'Content-Type': 'application/json' }
+				});
+			} else {
+				// All tests done — mark completed
+				await fetch(`/gto/session/${data.session.id}/play`, {
+					method: 'POST',
+					body: JSON.stringify({ action: 'complete' }),
+					headers: { 'Content-Type': 'application/json' }
+				});
+				goto(`/gto/session/${data.session.id}/words`);
+			}
+		} finally {
+			isSaving = false;
+		}
 	}
 </script>
 
@@ -75,9 +92,13 @@
 {#if phase === 'instructions'}
 	<main class="main flex flex-col items-center justify-center gap-4">
 		<h2 class="text-xl">{currentTest?.title ?? currentTestType}</h2>
-		<p class="max-w-md text-center text-gray-400"
-			>Нажмите "Начать" когда будете готовы. Тест начнётся сразу.</p
-		>
+		{#if AboutComponent}
+			<div class="max-w-lg">
+				<AboutComponent />
+			</div>
+		{:else}
+			<p class="max-w-md text-center text-gray-400">Загрузка инструкции...</p>
+		{/if}
 		<Button color="green" onclick={startTest}>Начать</Button>
 	</main>
 
@@ -86,11 +107,7 @@
 	</section>
 {:else if TestComponent && !isSaving}
 	<main class="main flex flex-col items-center justify-evenly">
-		<TestComponent
-			gameEnd={onGameEnd}
-			sendResults={onSendResults}
-			{data}
-		/>
+		<TestComponent gameEnd={onGameEnd} sendResults={onSendResults} {data} />
 	</main>
 
 	<section class="low-content grid grid-cols-3 gap-4">

@@ -100,53 +100,46 @@ export async function createGtoSession(
 	participantIds: string[],
 	words: string[]
 ): Promise<string> {
-	const gtoSessionId = generate();
+	return await db.transaction(async (tx) => {
+		const gtoSessionId = generate();
 
-	await db.insert(gtoSession).values({
-		id: gtoSessionId,
-		name,
-		type
-	});
+		await tx.insert(gtoSession).values({
+			id: gtoSessionId,
+			name,
+			type
+		});
 
-	if (participantIds.length > 0) {
-		await db.insert(gtoSessionParticipant).values(
-			participantIds.map((userId) => ({
+		if (participantIds.length > 0) {
+			const participantRows = participantIds.map((userId) => ({
 				id: generate(),
 				gtoSessionId,
 				userId,
 				hasCompletedTests: false,
 				hasSubmittedWords: false
-			}))
-		);
+			}));
+			await tx.insert(gtoSessionParticipant).values(participantRows);
 
-		// For each participant, create editable metrics row
-		const participants = await db
-			.select({ id: gtoSessionParticipant.id })
-			.from(gtoSessionParticipant)
-			.where(eq(gtoSessionParticipant.gtoSessionId, gtoSessionId));
-
-		if (participants.length > 0) {
-			await db.insert(gtoEditableMetric).values(
-				participants.map((p) => ({
+			await tx.insert(gtoEditableMetric).values(
+				participantRows.map((p) => ({
 					id: generate(),
 					participantId: p.id
 				}))
 			);
 		}
-	}
 
-	if (words.length > 0) {
-		await db.insert(gtoSessionWord).values(
-			words.slice(0, 5).map((word, index) => ({
-				id: generate(),
-				gtoSessionId,
-				word,
-				position: index
-			}))
-		);
-	}
+		if (words.length > 0) {
+			await tx.insert(gtoSessionWord).values(
+				words.slice(0, 5).map((word, index) => ({
+					id: generate(),
+					gtoSessionId,
+					word,
+					position: index
+				}))
+			);
+		}
 
-	return gtoSessionId;
+		return gtoSessionId;
+	});
 }
 
 // ─── 2. getGtoSessions ─────────────────────────────────────────────
@@ -445,10 +438,14 @@ export async function updateEditableMetrics(
 	participantId: string,
 	metrics: EditableMetricUpdate
 ): Promise<void> {
-	await db
+	const result = await db
 		.update(gtoEditableMetric)
 		.set(metrics)
 		.where(eq(gtoEditableMetric.participantId, participantId));
+
+	if (result.rowsAffected === 0) {
+		throw new Error(`Editable metrics not found for participant: ${participantId}`);
+	}
 }
 
 // ─── 10. getGtoSessionMetrics ──────────────────────────────────────
@@ -511,28 +508,135 @@ export type ParticipantMetrics = {
 export async function getGtoSessionMetrics(gtoSessionId: string): Promise<ParticipantMetrics[]> {
 	const sessionDetail = await getGtoSessionById(gtoSessionId);
 
+	if (sessionDetail.participants.length === 0) {
+		return [];
+	}
+
+	const userIds = sessionDetail.participants.map((p) => p.userId);
+
+	// Batch load surveys
+	const surveyRows = userIds.length
+		? await db.select().from(profileSurvey).where(inArray(profileSurvey.userId, userIds))
+		: [];
+	const surveyMap = new Map(surveyRows.map((s) => [s.userId, s as Record<string, unknown>]));
+
+	// Batch load all test sessions for this GTO session
+	const allTestSessions = await db
+		.select()
+		.from(session)
+		.where(and(eq(session.gtoSessionId, gtoSessionId), inArray(session.userId, userIds)));
+
+	const testSessionsByUser = new Map<string, typeof allTestSessions>();
+	for (const ts of allTestSessions) {
+		const list = testSessionsByUser.get(ts.userId) ?? [];
+		list.push(ts);
+		testSessionsByUser.set(ts.userId, list);
+	}
+
+	// Collect all session IDs for each test type
+	const stroopSessionIds: string[] = [];
+	const mathSessionIds: string[] = [];
+	const munsterbergSessionIds: string[] = [];
+	const campimetrySessionIds: string[] = [];
+	const memorySessionIds: string[] = [];
+	const swallowSessionIds: string[] = [];
+
+	for (const ts of allTestSessions) {
+		switch (ts.testType) {
+			case 'stroop':
+				stroopSessionIds.push(ts.id);
+				break;
+			case 'math':
+				mathSessionIds.push(ts.id);
+				break;
+			case 'munsterberg':
+				munsterbergSessionIds.push(ts.id);
+				break;
+			case 'campimetry':
+				campimetrySessionIds.push(ts.id);
+				break;
+			case 'memory':
+				memorySessionIds.push(ts.id);
+				break;
+			case 'swallow':
+				swallowSessionIds.push(ts.id);
+				break;
+		}
+	}
+
+	// Batch load attempts
+	const [
+		stroopAttempts,
+		mathAttempts,
+		munsterbergAttempts,
+		campimetryAttempts,
+		memoryAttempts,
+		swallowAttempts
+	] = await Promise.all([
+		stroopSessionIds.length
+			? db
+					.select()
+					.from(stroopAttempt)
+					.where(inArray(stroopAttempt.sessionId, stroopSessionIds))
+			: [],
+		mathSessionIds.length
+			? db.select().from(mathAttempt).where(inArray(mathAttempt.sessionId, mathSessionIds))
+			: [],
+		munsterbergSessionIds.length
+			? db
+					.select()
+					.from(munsterbergAttempt)
+					.where(inArray(munsterbergAttempt.sessionId, munsterbergSessionIds))
+			: [],
+		campimetrySessionIds.length
+			? db
+					.select()
+					.from(campimetryAttempt)
+					.where(inArray(campimetryAttempt.sessionId, campimetrySessionIds))
+			: [],
+		memorySessionIds.length
+			? db
+					.select()
+					.from(memoryAttempt)
+					.where(inArray(memoryAttempt.sessionId, memorySessionIds))
+			: [],
+		swallowSessionIds.length
+			? db
+					.select()
+					.from(swallowAttempt)
+					.where(inArray(swallowAttempt.sessionId, swallowSessionIds))
+			: []
+	]);
+
+	// Index attempts by sessionId
+	function indexBySessionId<T extends { sessionId: string }>(rows: T[]): Map<string, T[]> {
+		const map = new Map<string, T[]>();
+		for (const row of rows) {
+			const list = map.get(row.sessionId) ?? [];
+			list.push(row);
+			map.set(row.sessionId, list);
+		}
+		return map;
+	}
+
+	const stroopAttemptsMap = indexBySessionId(stroopAttempts);
+	const mathAttemptsMap = indexBySessionId(mathAttempts);
+	const munsterbergAttemptsMap = indexBySessionId(munsterbergAttempts);
+	const campimetryAttemptsMap = indexBySessionId(campimetryAttempts);
+	const memoryAttemptsMap = indexBySessionId(memoryAttempts);
+	const swallowAttemptsMap = indexBySessionId(swallowAttempts);
+
+	// Build per-user metrics
 	const metrics: ParticipantMetrics[] = [];
 
 	for (const participant of sessionDetail.participants) {
 		const age = calculateAge(participant.birthday);
 
-		// Survey fields
-		const [survey] = await db
-			.select()
-			.from(profileSurvey)
-			.where(eq(profileSurvey.userId, participant.userId));
-
 		const missingSurveyFields = computeMissingSurveyFields(
-			survey as Record<string, unknown> | null
+			(surveyMap.get(participant.userId) as Record<string, unknown>) ?? null
 		);
 
-		// Find test sessions for this participant in this GTO session
-		const testSessions = await db
-			.select()
-			.from(session)
-			.where(
-				and(eq(session.gtoSessionId, gtoSessionId), eq(session.userId, participant.userId))
-			);
+		const testSessions = testSessionsByUser.get(participant.userId) ?? [];
 
 		// ─── Stroop ─────────────────────────────────────────────
 		const stroopSession = testSessions.find((s) => s.testType === 'stroop');
@@ -543,11 +647,7 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 		};
 
 		if (stroopSession) {
-			const attempts = await db
-				.select()
-				.from(stroopAttempt)
-				.where(eq(stroopAttempt.sessionId, stroopSession.id));
-
+			const attempts = stroopAttemptsMap.get(stroopSession.id) ?? [];
 			for (const stage of [1, 2, 3] as const) {
 				const stageAttempts = attempts.filter((a) => a.stage === stage);
 				const times = stageAttempts.map((a) => a.time);
@@ -565,11 +665,7 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 		let mathMetrics: SimpleTestMetrics = { meanTime: null, stdDevTime: null, accuracy: 0 };
 
 		if (mathSession) {
-			const attempts = await db
-				.select()
-				.from(mathAttempt)
-				.where(eq(mathAttempt.sessionId, mathSession.id));
-
+			const attempts = mathAttemptsMap.get(mathSession.id) ?? [];
 			const times = attempts.map((a) => a.time);
 			const correctness = attempts.map((a) => a.isCorrect);
 			mathMetrics = {
@@ -589,11 +685,7 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 		};
 
 		if (munsterbergSession) {
-			const attempts = await db
-				.select()
-				.from(munsterbergAttempt)
-				.where(eq(munsterbergAttempt.sessionId, munsterbergSession.id));
-
+			const attempts = munsterbergAttemptsMap.get(munsterbergSession.id) ?? [];
 			const times = attempts.map((a) => a.time);
 			const guessedCount = attempts.filter((a) => a.guessed).length;
 			const totalWordsHidden = attempts.length;
@@ -614,10 +706,7 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 		};
 
 		if (campimetrySession) {
-			const attempts = await db
-				.select()
-				.from(campimetryAttempt)
-				.where(eq(campimetryAttempt.sessionId, campimetrySession.id));
+			const attempts = campimetryAttemptsMap.get(campimetrySession.id) ?? [];
 
 			// Stage 1
 			const stage1Attempts = attempts.filter((a) => a.stage === 1);
@@ -652,11 +741,7 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 		let memoryMetrics: SimpleTestMetrics = { meanTime: null, stdDevTime: null, accuracy: 0 };
 
 		if (memorySession) {
-			const attempts = await db
-				.select()
-				.from(memoryAttempt)
-				.where(eq(memoryAttempt.sessionId, memorySession.id));
-
+			const attempts = memoryAttemptsMap.get(memorySession.id) ?? [];
 			const times = attempts.map((a) => a.time);
 			const correctness = attempts.map((a) => a.isCorrect);
 			memoryMetrics = {
@@ -671,11 +756,7 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 		let swallowMetrics: SimpleTestMetrics = { meanTime: null, stdDevTime: null, accuracy: 0 };
 
 		if (swallowSession) {
-			const attempts = await db
-				.select()
-				.from(swallowAttempt)
-				.where(eq(swallowAttempt.sessionId, swallowSession.id));
-
+			const attempts = swallowAttemptsMap.get(swallowSession.id) ?? [];
 			const times = attempts.map((a) => a.time);
 			const correctness = attempts.map((a) => a.isCorrect);
 			swallowMetrics = {

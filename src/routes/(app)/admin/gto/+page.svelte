@@ -84,7 +84,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							{#each data.users as u}
+							{#each data.users as u (u.id)}
 								<tr class="border-b border-gray-700 hover:bg-gray-700">
 									<td class="p-2">
 										<input

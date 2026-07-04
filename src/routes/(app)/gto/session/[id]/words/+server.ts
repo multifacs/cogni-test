@@ -1,41 +1,19 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { submitWordScore, getGtoSessionWords, markParticipantTestsCompleted } from '$lib/server/db/controllers/gto';
-import { postResult } from '$lib/server/db/controllers/result';
-import { db } from '$lib/server/db';
-import { session } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { submitWordScore, getGtoSessionWords, getGtoSessionById } from '$lib/server/db/controllers/gto';
 
 export const POST: RequestHandler = async ({ request, params, cookies }) => {
 	const userId = cookies.get('user_id');
 	if (!userId) return json({ error: 'Unauthorized' }, { status: 401 });
 
+	// Verify user is a participant of this session
+	const sessionDetail = await getGtoSessionById(params.id);
+	const participant = sessionDetail.participants.find((p) => p.userId === userId);
+	if (!participant) {
+		return json({ error: 'You are not a participant of this session' }, { status: 403 });
+	}
+
 	const body = await request.json();
-	const action = body.action;
-
-	// Action: save individual test result and link to GTO session
-	if (action === 'save-result') {
-		const { testType, results } = body;
-		if (!testType || !results) {
-			return json({ error: 'Missing testType or results' }, { status: 400 });
-		}
-
-		const sessionId = await postResult(results, testType, userId);
-		await db
-			.update(session)
-			.set({ gtoSessionId: params.id })
-			.where(eq(session.id, sessionId));
-
-		return json({ success: true, sessionId });
-	}
-
-	// Action: mark all tests as completed for this participant
-	if (action === 'complete') {
-		await markParticipantTestsCompleted(params.id, userId);
-		return json({ success: true });
-	}
-
-	// Default action: submit word score
 	const { words } = body;
 	if (!words || !Array.isArray(words)) {
 		return json({ error: 'Words array required' }, { status: 400 });
@@ -44,10 +22,7 @@ export const POST: RequestHandler = async ({ request, params, cookies }) => {
 	const sessionWords = await getGtoSessionWords(params.id);
 
 	function normalize(w: string): string {
-		return w
-			.toLowerCase()
-			.replace(/ё/g, 'е')
-			.trim();
+		return w.toLowerCase().replace(/ё/g, 'е').trim();
 	}
 
 	let score = 0;
