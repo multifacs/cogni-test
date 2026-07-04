@@ -4,24 +4,29 @@
 	import type { PageProps } from './$types';
 	import type { ResultInfo } from '$lib/tests/types';
 	import ResultsTable from '$lib/components/ui/gto-m/ResultsTable.svelte';
+	import type { Readable } from 'svelte/store';
 
 	let { data }: PageProps = $props();
 	let session = data.session;
 
+	let connection;
+	let results: Readable<Record<string, ResultInfo> | null>;
+
 	const availableTestsData = getAvailableTestsData();
 
-	const connection = source('/api/getLastTestResults', {
-		options: {
-			body: JSON.stringify({
-				sessionCreatedAt: session?.createdAt,
-				tests: availableTestsData.map((test) => test.name),
-				userId: session?.userId
-			})
-		}
-	});
-
-	const results = connection.select('message').json<Record<string, ResultInfo>>();
-	console.log('results', $results);
+	if (data.userId === session?.adminId) {
+		connection = source('/api/getLastTestResults', {
+			options: {
+				body: JSON.stringify({
+					sessionCreatedAt: session?.createdAt,
+					tests: availableTestsData.map((test) => test.name),
+					userId: session?.userId
+				})
+			}
+		});
+		results = connection.select('message').json<Record<string, ResultInfo>>();
+		console.log('results', $results);
+	}
 
 	function getAvailableTestsData() {
 		let result = [];

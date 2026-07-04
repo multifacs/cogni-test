@@ -11,10 +11,15 @@ export const load: PageServerLoad = async ({ cookies, params }) => {
 
 	const sessionId = params.id;
 
-    const session = await getSessionById(sessionId);
+	const session = await getSessionById(sessionId);
+
+	if (!session) {
+		console.error('no session data provided');
+		redirect(307, '/');
+	}
 
 	return {
 		userId,
-        session
+		session
 	};
 };
