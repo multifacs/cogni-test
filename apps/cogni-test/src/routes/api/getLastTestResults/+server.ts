@@ -53,6 +53,8 @@ async function getLastResults(sessionCreatedAt: string, tests: string[], userId:
 export const POST: RequestHandler = async ({ request }) => {
 	const { sessionCreatedAt, tests, userId } = await request.json();
 
+	const pingDelaySeconds = 5;
+
 	return produce(async function start({ emit }) {
 		let interval = setInterval(async () => {
 			let results = await getLastResults(sessionCreatedAt, tests, userId);
@@ -66,7 +68,7 @@ export const POST: RequestHandler = async ({ request }) => {
 					clearInterval(interval);
 				};
 			}
-		}, 5000);
+		}, pingDelaySeconds * 1000);
 
 		return function cancel() {
 			clearInterval(interval);
