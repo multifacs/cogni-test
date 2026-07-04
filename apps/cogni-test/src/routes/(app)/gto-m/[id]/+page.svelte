@@ -25,7 +25,6 @@
 			}
 		});
 		results = connection.select('message').json<Record<string, ResultInfo>>();
-		console.log('results', $results);
 	}
 
 	function getAvailableTestsData() {

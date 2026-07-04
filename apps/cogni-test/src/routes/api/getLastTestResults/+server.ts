@@ -25,7 +25,6 @@ async function getLastResults(sessionCreatedAt: string, tests: string[], userId:
 	for (const test of tests) {
 		try {
 			const res = await getLastResult(test as keyof TestResultMap, userId);
-			console.log('called getLastResult for', test, '. Result:', res);
 
 			if (!res) {
 				continue;
@@ -35,12 +34,10 @@ async function getLastResults(sessionCreatedAt: string, tests: string[], userId:
 			const sessionCreatedAtDate = new Date(sessionCreatedAt);
 
 			if (resCreatedAtDate.getTime() < sessionCreatedAtDate.getTime()) {
-				console.log('result is older than session', test, res);
 				continue;
 			}
 
 			results[test] = res;
-			console.log('added result', test, res);
 		} catch (error) {
 			console.error(error);
 			continue;
@@ -61,7 +58,6 @@ export const POST: RequestHandler = async ({ request }) => {
 			console.log('results from db:', results);
 
 			const { error } = emit('message', JSON.stringify(results));
-			console.log('sent to client:', JSON.stringify(results));
 			if (error) {
 				console.error('Error sending results to client:', error);
 				return function cancel() {
