@@ -5,8 +5,8 @@
 		label,
 		value = $bindable(),
 		type = 'value',
-		options = [], // для select
-		isBoolean = false, // для checkbox (да/нет)
+		options = [],
+		isBoolean = false,
 		min,
 		max,
 		form,
@@ -94,8 +94,10 @@
 		}
 	});
 
-	function ensureTrailingEmptyRow(rows: { text: string; choice: string }[]) {
+	function ensureTrailingEmptyRow(rows: { text: string; choice: string }[] | undefined) {
 		if (type !== 'custom-choice') return;
+
+		if (!rows) return [{ text: '', choice: options[0]?.value ?? '' }];
 
 		const last = rows[rows.length - 1];
 
@@ -110,7 +112,9 @@
 		if (type !== 'custom-choice') return;
 
 		isInternalUpdate = true;
-		let newRows = rows.map((row, i) => (i === index ? { ...row, text: newText } : row));
+		const newRows = (rows ?? []).map((row, i) =>
+			i === index ? { ...row, text: newText } : row
+		);
 
 		rows = ensureTrailingEmptyRow(newRows);
 		queueMicrotask(() => {
@@ -122,7 +126,9 @@
 		if (type !== 'custom-choice') return;
 
 		isInternalUpdate = true;
-		let newRows = rows.map((row, i) => (i === index ? { ...row, choice: newChoice } : row));
+		const newRows = (rows ?? []).map((row, i) =>
+			i === index ? { ...row, choice: newChoice } : row
+		);
 
 		rows = ensureTrailingEmptyRow(newRows);
 		queueMicrotask(() => {
@@ -134,9 +140,9 @@
 		if (type !== 'custom-choice') return;
 
 		isInternalUpdate = true;
-		rows = rows.filter((_, i) => i !== index);
+		rows = (rows ?? []).filter((_, i) => i !== index);
 
-		if (rows.length === 0) {
+		if (!rows || rows.length === 0) {
 			rows = [{ text: '', choice: options[0]?.value ?? '' }];
 		}
 		queueMicrotask(() => {
@@ -147,7 +153,7 @@
 	// Обновляем value при изменении rows
 	$effect(() => {
 		if (type !== 'custom-choice') return;
-		const stringValue = rowsToString(rows);
+		const stringValue = rowsToString(rows ?? []);
 
 		if (value !== stringValue) {
 			isInternalUpdate = true;
@@ -161,139 +167,137 @@
 	});
 
 	const showSelect = $derived(options.length > 0);
+
+	const baseInputClasses =
+		'w-full rounded-lg border bg-gray-700 text-gray-100 px-3 py-2 text-sm transition-colors duration-200 outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500';
+
+	const selectClasses =
+		'w-full cursor-pointer rounded-lg border bg-gray-700 border-gray-600 text-gray-100 px-3 py-2 text-sm appearance-none transition-colors duration-200 outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500';
+
+	const numberClasses =
+		'flex-1 rounded-lg border bg-gray-700 border-gray-600 text-gray-100 px-3 py-2 text-sm outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500';
 </script>
 
-<tr
-	class="grid grid-cols-2 items-center border-b border-b-blue-400 p-3 transition-colors last:border-b-0"
-	class:gap-2={!span}
-	class:max-md:grid-cols-1={!omit}
->
-	<td
-		class="text-sm whitespace-break-spaces text-blue-100"
-		class:col-span-2={span}
-		class:font-semibold={span}
+{#if span}
+	<!-- Section header row -->
+	<div class="bg-gray-800/50 px-4 py-2">
+		<span class="font-semibold text-gray-300 text-sm">{label}</span>
+	</div>
+{:else}
+	<div
+		class="flex flex-col gap-1 border-b border-gray-700 p-3 transition-colors duration-200 last:border-b-0 md:flex-row md:items-center md:gap-4"
 	>
-		{label}
-	</td>
+		<div
+			class="flex shrink-0 items-start text-sm text-gray-300 md:w-1/3 {omit
+				? 'md:sr-only'
+				: ''}"
+		>
+			{label}
+		</div>
 
-	<td class="flex items-center gap-2 text-sm text-blue-100" class:collapse={span}>
-		{#if type === 'input'}
-			<input
-				type="text"
-				bind:value
-				class="w-full rounded-sm border border-blue-300 bg-white px-3 py-2 text-blue-100
-				placeholder-blue-400
-				transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400"
-				placeholder="Введите..."
-				{form}
-			/>
-		{:else if type === 'value'}
-			{value}
-		{:else if type === 'choice'}
-			{#if isBoolean}
-				<select
-					bind:value
-					class="w-full cursor-pointer rounded-sm border p-2
-					text-blue-100 transition outline-none open:cursor-pointer open:text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-400"
-					class:border-blue-300={value != null}
-					class:border-orange-400={value == null}
-					class:border-2={value == null}
-					class:shadow-[0px_0px_5px_2px_rgba(249,_115,_22,_0.5)]={value == null}
-				>
-					<option class="text-gray-700" value={null} disabled selected hidden
-						>Выберите вариант...</option
-					>
-					<option value={false}>Нет</option>
-					<option value={true}>Да</option>
-				</select>
-			{:else}
-				<select
-					bind:value
-					class="w-full cursor-pointer truncate rounded-sm border p-2
-					text-blue-100 transition outline-none open:cursor-pointer open:text-gray-900 invalid:text-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-400"
-					placeholder="Выберите..."
-					class:border-blue-300={value != null}
-					class:border-orange-400={value == null}
-					class:border-2={value == null}
-					class:shadow-[0px_0px_5px_2px_rgba(249,_115,_22,_0.5)]={value == null}
-				>
-					<option class="text-gray-700" value={null} disabled selected hidden
-						>Выберите вариант...</option
-					>
-					{#each options as opt}
-						<option value={opt.value}>{opt.label}</option>
-					{/each}
-				</select>
-			{/if}
-		{:else if type === 'range'}
-			<div class="flex w-full items-center gap-2">
+		<div class="flex-1 text-sm text-gray-100">
+			{#if type === 'input'}
 				<input
-					type="number"
+					type="text"
 					bind:value
-					{min}
-					{max}
-					class="flex-1 rounded-sm border p-2 text-blue-100
-					outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+					class="{baseInputClasses} border-gray-600"
 					placeholder="Введите..."
-					class:border-blue-300={value != null}
-					class:border-orange-400={value == null}
-					class:border-2={value == null}
-					class:shadow-[0px_0px_5px_2px_rgba(249,_115,_22,_0.5)]={value == null}
+					{form}
 				/>
-				<span class="text-xs text-blue-500">
-					{min} – {max}
-				</span>
-			</div>
-		{:else if type === 'custom-choice'}
-			<div class="flex w-full flex-col gap-2">
-				{#each rows as row, i}
-					<div class="flex items-center gap-2">
-						<input
-							type="text"
-							value={row.text}
-							oninput={(e) => updateText(i, e.currentTarget.value)}
-							class="rounded-sm border border-blue-300 p-2 text-ellipsis
-							text-blue-100 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
-							class:flex-1={showSelect}
-							class:w-full={!showSelect}
-							placeholder="Введите текст..."
-						/>
+			{:else if type === 'value'}
+				<span class="text-sm text-gray-100">{value}</span>
+			{:else if type === 'choice'}
+				{#if isBoolean}
+					<select
+						bind:value
+						class={selectClasses}
+						class:border-amber-500={value == null}
+						class:focus:ring-amber-500={value == null}
+						class:focus:border-amber-500={value == null}
+					>
+						<option value={null} disabled selected hidden class="text-gray-500">
+							Выберите вариант...
+						</option>
+						<option value={false}>Нет</option>
+						<option value={true}>Да</option>
+					</select>
+				{:else}
+					<select
+						bind:value
+						class={selectClasses}
+						class:border-amber-500={value == null}
+						class:focus:ring-amber-500={value == null}
+						class:focus:border-amber-500={value == null}
+					>
+						<option value={null} disabled selected hidden class="text-gray-500">
+							Выберите вариант...
+						</option>
+						{#each options as opt}
+							<option value={opt.value}>{opt.label}</option>
+						{/each}
+					</select>
+				{/if}
+			{:else if type === 'range'}
+				<div class="flex w-full items-center gap-3">
+					<input
+						type="number"
+						bind:value
+						{min}
+						{max}
+						class={numberClasses}
+						class:border-amber-500={value == null}
+						placeholder="Введите..."
+					/>
+					<span class="text-xs text-gray-400 shrink-0">
+						{min} – {max}
+					</span>
+				</div>
+			{:else if type === 'custom-choice'}
+				<div class="flex w-full flex-col gap-2">
+					{#each rows ?? [] as row, i}
+						<div class="flex items-center gap-2">
+							<input
+								type="text"
+								value={row.text}
+								oninput={(e) => updateText(i, e.currentTarget.value)}
+								class="{numberClasses} border-gray-600"
+								class:flex-1={showSelect}
+								class:w-full={!showSelect}
+								placeholder="Введите текст..."
+							/>
 
-						{#if showSelect}
-							<select
-								value={row.choice}
-								onchange={(e) => updateChoice(i, e.currentTarget.value)}
-								class="flex-1 rounded-sm border border-blue-300 p-2 text-ellipsis
-									text-blue-100 outline-none open:text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
-							>
-								<option value="">(без выбора)</option>
-								{#each options as opt}
-									<option value={opt.value}>{opt.label}</option>
-								{/each}
-							</select>
-						{/if}
+							{#if showSelect}
+								<select
+									value={row.choice}
+									onchange={(e) => updateChoice(i, e.currentTarget.value)}
+									class="flex-1 {selectClasses}"
+								>
+									<option value="">(без выбора)</option>
+									{#each options as opt}
+										<option value={opt.value}>{opt.label}</option>
+									{/each}
+								</select>
+							{/if}
 
-						{#if row.text.trim() !== ''}
-							<button
-								type="button"
-								onclick={() => removeRow(i)}
-								class="cursor-pointer font-bold text-red-500 hover:text-red-600"
-							>
-								✕
-							</button>
-						{/if}
-					</div>
-				{/each}
-			</div>
-		{:else if type === 'custom'}
-			{#if children}
-				{@render children()}
-			{:else}
-				{value}
+							{#if row.text.trim() !== ''}
+								<button
+									type="button"
+									onclick={() => removeRow(i)}
+									class="cursor-pointer font-bold text-red-400 transition-colors duration-200 hover:text-red-300 shrink-0"
+								>
+									✕
+								</button>
+							{/if}
+						</div>
+					{/each}
+				</div>
+			{:else if type === 'custom'}
+				{#if children}
+					{@render children()}
+				{:else}
+					<span class="text-sm text-gray-100">{value}</span>
+				{/if}
 			{/if}
-		{/if}
-		<!-- {#if (value == null) && type !== 'custom-choice'}
-			<span class="fond-bold text-2xl text-red-500 [text-shadow:0_0_10px_#ef4444]">!</span>
-		{/if} -->
-	</td>
-</tr>
+		</div>
+	</div>
+{/if}

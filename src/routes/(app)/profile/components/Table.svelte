@@ -1,15 +1,11 @@
-<script>
-	let { children } = $props();
+<script lang="ts">
+	import type { Snippet } from 'svelte';
+
+	let { children }: { children: Snippet } = $props();
 </script>
 
-<div class="min-w-full">
-	<div
-		class="overflow-x-auto rounded-sm border border-blue-200"
-	>
-		<table class="min-w-full">
-			<tbody class="">
-				{@render children()}
-			</tbody>
-		</table>
+<div class="w-full overflow-hidden rounded-lg border border-gray-700 bg-gray-900 shadow-lg">
+	<div class="flex w-full flex-col">
+		{@render children()}
 	</div>
 </div>
