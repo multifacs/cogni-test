@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { sqliteTable, integer, text, check } from 'drizzle-orm/sqlite-core';
+import { gtoSession } from './models/gto';
 import { generate } from 'short-uuid';
 
 export function enumCheck(column: any, values: string[]) {
@@ -29,6 +30,7 @@ export const session = sqliteTable('session', {
 	userId: text('user_id')
 		.notNull()
 		.references(() => user.id),
+	gtoSessionId: text('gto_session_id').references(() => gtoSession.id),
 	createdAt: text('created_at')
 		.default(sql`CURRENT_TIMESTAMP`)
 		.notNull()
@@ -64,3 +66,4 @@ export const pushSubscriptions = sqliteTable('push_subscriptions', {
 export * from './models/tests';
 export * from './models/survey';
 export * from './models/exercises';
+export * from './models/gto';

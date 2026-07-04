@@ -10,6 +10,7 @@
 	<div class="flex w-full max-w-xs flex-col gap-4">
 		<Button color="green" goto="/admin/notifications">Управление уведомлениями</Button>
 		<Button color="gray" goto="/admin/db">База пользователей</Button>
+		<Button color="blue" goto="/admin/gto">Сессии ГТО-М</Button>
 	</div>
 </main>
 <section class="low-content flex items-center justify-center">
