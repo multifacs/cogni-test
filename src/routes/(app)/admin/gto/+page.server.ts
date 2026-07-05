@@ -3,13 +3,20 @@ import { fail } from '@sveltejs/kit';
 import {
 	getAuthorizedUsers,
 	getGtoSessions,
-	createGtoSession
+	createGtoSession,
+	getWordSets,
+	generateWordSets,
+	deleteWordSet
 } from '$lib/server/db/controllers/gto';
+import { filterWords } from '$lib/words';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 export const load: PageServerLoad = async () => {
 	const users = await getAuthorizedUsers();
 	const sessions = await getGtoSessions();
-	return { users, sessions };
+	const wordSets = await getWordSets();
+	return { users, sessions, wordSets };
 };
 
 export const actions: Actions = {
@@ -39,5 +46,31 @@ export const actions: Actions = {
 			words
 		);
 		return { success: true, gtoSessionId };
+	},
+	generateWordSets: async ({ request }) => {
+		const data = await request.formData();
+		const countRaw = data.get('count') as string;
+		const count = parseInt(countRaw, 10);
+		if (!count || count < 1) {
+			return fail(400, { error: 'Invalid count' });
+		}
+
+		const wordsPath = join(process.cwd(), 'static', 'words');
+		let text: string;
+		try {
+			text = readFileSync(wordsPath, 'utf-8');
+		} catch {
+			return fail(500, { error: 'Не удалось прочитать файл слов' });
+		}
+		const allWords = filterWords(text);
+		await generateWordSets(count, allWords);
+		return { success: true };
+	},
+	deleteWordSet: async ({ request }) => {
+		const data = await request.formData();
+		const id = data.get('id') as string;
+		if (!id) return fail(400, { error: 'ID required' });
+		await deleteWordSet(id);
+		return { success: true };
 	}
 };
