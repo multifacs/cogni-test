@@ -9,8 +9,6 @@ import {
 	deleteWordSet
 } from '$lib/server/db/controllers/gto';
 import { filterWords } from '$lib/words';
-import { readFileSync } from 'fs';
-import { join } from 'path';
 
 export const load: PageServerLoad = async () => {
 	const users = await getAuthorizedUsers();
@@ -47,7 +45,7 @@ export const actions: Actions = {
 		);
 		return { success: true, gtoSessionId };
 	},
-	generateWordSets: async ({ request }) => {
+	generateWordSets: async ({ request, fetch }) => {
 		const data = await request.formData();
 		const countRaw = data.get('count') as string;
 		const count = parseInt(countRaw, 10);
@@ -55,13 +53,11 @@ export const actions: Actions = {
 			return fail(400, { error: 'Invalid count' });
 		}
 
-		const wordsPath = join(process.cwd(), 'static', 'words');
-		let text: string;
-		try {
-			text = readFileSync(wordsPath, 'utf-8');
-		} catch {
+		const response = await fetch('/words');
+		if (!response.ok) {
 			return fail(500, { error: 'Не удалось прочитать файл слов' });
 		}
+		const text = await response.text();
 		const allWords = filterWords(text);
 		await generateWordSets(count, allWords);
 		return { success: true };
