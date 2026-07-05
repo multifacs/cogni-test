@@ -183,7 +183,6 @@ export type GtoSessionDetail = {
 	name: string;
 	type: string;
 	status: string;
-	currentTestIndex: number;
 	createdAt: string;
 	participants: GtoSessionParticipantDetail[];
 	words: { word: string; position: number }[];
@@ -198,6 +197,7 @@ export type GtoSessionParticipantDetail = {
 	sex: 'male' | 'female';
 	hasCompletedTests: boolean;
 	hasSubmittedWords: boolean;
+	currentTestIndex: number;
 	wordScore: number | null;
 	editableMetrics: GtoEditableMetricDetail;
 };
@@ -228,6 +228,7 @@ export async function getGtoSessionById(id: string): Promise<GtoSessionDetail> {
 			userId: gtoSessionParticipant.userId,
 			hasCompletedTests: gtoSessionParticipant.hasCompletedTests,
 			hasSubmittedWords: gtoSessionParticipant.hasSubmittedWords,
+			currentTestIndex: gtoSessionParticipant.currentTestIndex,
 			wordScore: gtoSessionParticipant.wordScore,
 			firstname: user.firstname,
 			lastname: user.lastname,
@@ -257,6 +258,7 @@ export async function getGtoSessionById(id: string): Promise<GtoSessionDetail> {
 		sex: row.sex,
 		hasCompletedTests: row.hasCompletedTests,
 		hasSubmittedWords: row.hasSubmittedWords,
+		currentTestIndex: row.currentTestIndex,
 		wordScore: row.wordScore,
 		editableMetrics: {
 			id: row.metricId,
@@ -286,7 +288,6 @@ export async function getGtoSessionById(id: string): Promise<GtoSessionDetail> {
 		name: gtoSessionRow.name,
 		type: gtoSessionRow.type,
 		status: gtoSessionRow.status,
-		currentTestIndex: gtoSessionRow.currentTestIndex,
 		createdAt: gtoSessionRow.createdAt,
 		participants,
 		words: wordRows
@@ -323,6 +324,7 @@ export type ActiveGtoSessionForUser = {
 	name: string;
 	hasCompletedTests: boolean;
 	hasSubmittedWords: boolean;
+	currentTestIndex: number;
 };
 
 export async function getActiveGtoSessionsForUser(
@@ -333,7 +335,8 @@ export async function getActiveGtoSessionsForUser(
 			gtoSessionId: gtoSessionParticipant.gtoSessionId,
 			name: gtoSession.name,
 			hasCompletedTests: gtoSessionParticipant.hasCompletedTests,
-			hasSubmittedWords: gtoSessionParticipant.hasSubmittedWords
+			hasSubmittedWords: gtoSessionParticipant.hasSubmittedWords,
+			currentTestIndex: gtoSessionParticipant.currentTestIndex
 		})
 		.from(gtoSessionParticipant)
 		.innerJoin(gtoSession, eq(gtoSession.id, gtoSessionParticipant.gtoSessionId))

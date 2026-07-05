@@ -4,8 +4,8 @@ import { markParticipantTestsCompleted, getGtoSessionById } from '$lib/server/db
 import { postResult } from '$lib/server/db/controllers/result';
 import { db } from '$lib/server/db';
 import { session } from '$lib/server/db/schema';
-import { gtoSession } from '$lib/server/db/models/gto';
-import { eq } from 'drizzle-orm';
+import { gtoSessionParticipant } from '$lib/server/db/models/gto';
+import { eq, and } from 'drizzle-orm';
 
 export const POST: RequestHandler = async ({ request, params, cookies }) => {
 	const userId = cookies.get('user_id');
@@ -42,18 +42,23 @@ export const POST: RequestHandler = async ({ request, params, cookies }) => {
 		}
 	}
 
-	// Action: checkpoint — update currentTestIndex
+	// Action: checkpoint — update currentTestIndex on participant
 	if (action === 'checkpoint') {
 		const { currentTestIndex } = body;
 		if (typeof currentTestIndex !== 'number') {
 			return json({ error: 'currentTestIndex required' }, { status: 400 });
 		}
 		const result = await db
-			.update(gtoSession)
+			.update(gtoSessionParticipant)
 			.set({ currentTestIndex })
-			.where(eq(gtoSession.id, params.id));
+			.where(
+				and(
+					eq(gtoSessionParticipant.gtoSessionId, params.id),
+					eq(gtoSessionParticipant.userId, userId)
+				)
+			);
 		if (result.rowsAffected === 0) {
-			return json({ error: 'Session not found' }, { status: 404 });
+			return json({ error: 'Participant not found' }, { status: 404 });
 		}
 		return json({ success: true });
 	}

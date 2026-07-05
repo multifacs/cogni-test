@@ -10,7 +10,6 @@ export const gtoSession = sqliteTable(
 		name: text('name').notNull(),
 		type: text('type').notNull().default('cognitive-age'),
 		status: text('status').notNull().default('active'),
-		currentTestIndex: integer('current_test_index').notNull().default(0),
 		createdAt: text('created_at')
 			.default(sql`CURRENT_TIMESTAMP`)
 			.notNull()
@@ -37,6 +36,7 @@ export const gtoSessionParticipant = sqliteTable(
 		hasSubmittedWords: integer('has_submitted_words', { mode: 'boolean' })
 			.notNull()
 			.default(false),
+		currentTestIndex: integer('current_test_index').notNull().default(0),
 		wordScore: integer('word_score'),
 		createdAt: text('created_at')
 			.default(sql`CURRENT_TIMESTAMP`)

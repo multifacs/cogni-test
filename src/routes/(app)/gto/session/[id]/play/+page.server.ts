@@ -20,7 +20,7 @@ export const load: PageServerLoad = async ({ params, cookies, fetch }) => {
 		redirect(307, '/gto');
 	}
 
-	const currentTestType = TEST_ORDER[sessionDetail.currentTestIndex] ?? TEST_ORDER[0];
+	const currentTestType = TEST_ORDER[participant.currentTestIndex] ?? TEST_ORDER[0];
 
 	const data: {
 		session: typeof sessionDetail;
@@ -32,7 +32,7 @@ export const load: PageServerLoad = async ({ params, cookies, fetch }) => {
 	} = {
 		session: sessionDetail,
 		participant,
-		currentTestIndex: sessionDetail.currentTestIndex,
+		currentTestIndex: participant.currentTestIndex,
 		currentTestType
 	};
 

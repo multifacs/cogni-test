@@ -1,21 +1,25 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
+	import { TEST_ORDER } from '$lib/tests';
 
 	let { data } = $props();
 
 	let showDisclaimer = $state(false);
 	let disclaimerType = $state<'tests' | 'words'>('tests');
-	let selectedSessionId = $state('');
+	let selectedSession = $state<{ gtoSessionId: string; currentTestIndex: number }>({
+		gtoSessionId: '',
+		currentTestIndex: 0
+	});
 
-	function showTestDisclaimer(sessionId: string) {
-		selectedSessionId = sessionId;
+	function showTestDisclaimer(sessionId: string, currentTestIndex: number) {
+		selectedSession = { gtoSessionId: sessionId, currentTestIndex };
 		disclaimerType = 'tests';
 		showDisclaimer = true;
 	}
 
 	function showWordsDisclaimer(sessionId: string) {
-		selectedSessionId = sessionId;
+		selectedSession = { gtoSessionId: sessionId, currentTestIndex: 0 };
 		disclaimerType = 'words';
 		showDisclaimer = true;
 	}
@@ -23,9 +27,9 @@
 	function confirmAction() {
 		showDisclaimer = false;
 		if (disclaimerType === 'tests') {
-			window.location.href = `/gto/session/${selectedSessionId}/play`;
+			window.location.href = `/gto/session/${selectedSession.gtoSessionId}/play`;
 		} else {
-			window.location.href = `/gto/session/${selectedSessionId}/words`;
+			window.location.href = `/gto/session/${selectedSession.gtoSessionId}/words`;
 		}
 	}
 </script>
@@ -43,9 +47,17 @@
 				<div class="rounded-lg bg-gray-800 p-4">
 					<h2 class="mb-3 text-xl font-semibold">{session.name}</h2>
 					{#if !session.hasCompletedTests}
-						<Button color="blue" onclick={() => showTestDisclaimer(session.gtoSessionId)}
-							>Начать тестирование</Button
+						{#if session.currentTestIndex > 0}
+							<p class="mb-2 text-sm text-gray-400">
+								Пройдено тестов: {session.currentTestIndex} из {TEST_ORDER.length}
+							</p>
+						{/if}
+						<Button
+							color="blue"
+							onclick={() => showTestDisclaimer(session.gtoSessionId, session.currentTestIndex)}
 						>
+							{session.currentTestIndex > 0 ? 'Продолжить тестирование' : 'Начать тестирование'}
+						</Button>
 					{:else if !session.hasSubmittedWords}
 						<Button color="yellow" onclick={() => showWordsDisclaimer(session.gtoSessionId)}
 							>Заполнить последовательность слов</Button
@@ -72,7 +84,7 @@
 		{#snippet header()}
 			<h2 class="text-2xl text-white">
 				{#if disclaimerType === 'tests'}
-					Начать тестирование?
+					{selectedSession.currentTestIndex > 0 ? 'Продолжить тестирование?' : 'Начать тестирование?'}
 				{:else}
 					Заполнить последовательность слов?
 				{/if}
@@ -81,7 +93,11 @@
 		<div class="flex flex-col gap-4">
 			<p class="text-white">
 				{#if disclaimerType === 'tests'}
-					Вам предстоит пройти 6 когнитивных тестов подряд. Убедитесь, что у вас есть достаточно времени и вас ничего не отвлекает.
+					{#if selectedSession.currentTestIndex > 0}
+						Вы прошли {selectedSession.currentTestIndex} из {TEST_ORDER.length} тестов. Продолжить со следующего?
+					{:else}
+						Вам предстоит пройти {TEST_ORDER.length} когнитивных тестов подряд. Убедитесь, что у вас есть достаточно времени и вас ничего не отвлекает.
+					{/if}
 				{:else}
 					Отправить слова можно только один раз. Второй попытки не будет. Убедитесь, что вы готовы.
 				{/if}
