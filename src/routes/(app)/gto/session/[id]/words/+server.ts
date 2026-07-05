@@ -1,6 +1,15 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { submitWordScore, getGtoSessionWords, getGtoSessionById } from '$lib/server/db/controllers/gto';
+import {
+	submitWordScore,
+	getGtoSessionWords,
+	getGtoSessionById,
+	saveWordResponses,
+	getWordSetWords
+} from '$lib/server/db/controllers/gto';
+import { db } from '$lib/server/db';
+import { gtoSessionParticipant, gtoWordResponse } from '$lib/server/db/schema';
+import { eq } from 'drizzle-orm';
 
 export const POST: RequestHandler = async ({ request, params, cookies }) => {
 	const userId = cookies.get('user_id');
@@ -19,23 +28,35 @@ export const POST: RequestHandler = async ({ request, params, cookies }) => {
 		return json({ error: 'Words array required' }, { status: 400 });
 	}
 
-	const sessionWords = await getGtoSessionWords(params.id);
+	if (participant.wordSetId) {
+		const sessionWords = await getWordSetWords(participant.wordSetId);
 
-	function normalize(w: string): string {
-		return w.toLowerCase().replace(/ё/g, 'е').trim();
-	}
+		function normalize(w: string): string {
+			return w.toLowerCase().replace(/ё/g, 'е').trim();
+		}
 
-	let score = 0;
-	for (let i = 0; i < sessionWords.length; i++) {
-		const correct = normalize(sessionWords[i].word);
-		const submitted = normalize(words[i] || '');
-		if (correct === submitted) score++;
-	}
+		let score = 0;
+		for (let i = 0; i < sessionWords.length; i++) {
+			const correct = normalize(sessionWords[i]);
+			const submitted = normalize(words[i] || '');
+			if (correct === submitted) score++;
+		}
 
-	try {
-		await submitWordScore(params.id, userId, score);
-		return json({ success: true, score });
-	} catch (e: any) {
-		return json({ error: e.message }, { status: 400 });
+		try {
+			await submitWordScore(params.id, userId, score);
+			return json({ success: true, score });
+		} catch (e: any) {
+			return json({ error: e.message }, { status: 400 });
+		}
+	} else {
+		// Free input mode — save responses without checking, mark as submitted
+		// Delete old responses first (prevents duplicates on re-submission)
+		await db.delete(gtoWordResponse).where(eq(gtoWordResponse.participantId, participant.id));
+		await saveWordResponses(participant.id, words);
+		await db
+			.update(gtoSessionParticipant)
+			.set({ hasSubmittedWords: true })
+			.where(eq(gtoSessionParticipant.id, participant.id));
+		return json({ success: true, score: null });
 	}
 };

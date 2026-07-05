@@ -18,7 +18,8 @@ export const user = sqliteTable(
 		sex: text('sex').$type<'male' | 'female'>().notNull(),
 		createdAt: text('created_at')
 			.default(sql`CURRENT_TIMESTAMP`)
-			.notNull()
+			.notNull(),
+		lastActiveAt: text('last_active_at')
 	},
 	(table) => [check('sex_check', enumCheck(table.sex, ['male', 'female']))]
 );

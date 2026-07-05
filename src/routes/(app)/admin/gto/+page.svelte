@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
 	import { filterWords, pickRandom } from '$lib/words';
+	import { missingFieldLabels } from '$lib/survey-field-labels';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -42,9 +43,61 @@
 		selectedUsers = new Set(selectedUsers); // trigger reactivity
 	}
 
-	function formatDate(dateStr: string) {
+	function formatDate(dateStr: string | null) {
+		if (!dateStr) return '—';
 		return new Date(dateStr).toLocaleString('ru-RU');
 	}
+
+	// Word sets
+	let wordSetsOpen = $state(false);
+	let generateCount = $state(5);
+	let isGeneratingSets = $state(false);
+	let deletingSetId = $state<string | null>(null);
+
+	async function handleGenerateWordSets() {
+		if (generateCount < 1) return;
+		isGeneratingSets = true;
+		const form = new FormData();
+		form.set('count', String(generateCount));
+		try {
+			await fetch('?/generateWordSets', { method: 'POST', body: form });
+			location.reload();
+		} catch {
+			isGeneratingSets = false;
+		}
+	}
+
+	async function handleDeleteWordSet(id: string) {
+		deletingSetId = id;
+		try {
+			await fetch(`/api/word-sets/${id}`, { method: 'DELETE' });
+			location.reload();
+		} catch {
+			deletingSetId = null;
+		}
+	}
+
+	// Search and filter
+	let searchQuery = $state('');
+	let filterRecent = $state(false);
+
+	const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+	let filteredUsers = $derived(
+		data.users.filter((u) => {
+			const q = searchQuery.toLowerCase().trim();
+			if (q) {
+				const text = `${u.firstname} ${u.lastname} ${u.id} ${u.sex === 'male' ? 'М' : 'Ж'} ${u.missingSurveyFields.length} ${u.gtoId || ''}`.toLowerCase();
+				if (!text.includes(q)) return false;
+			}
+			if (filterRecent) {
+				if (!u.lastActiveAt) return false;
+				const la = new Date(u.lastActiveAt);
+				if (la < sevenDaysAgo) return false;
+			}
+			return true;
+		})
+	);
 </script>
 
 <section class="banner">
@@ -53,6 +106,86 @@
 
 <main class="main overflow-auto p-4">
 	<div class="flex flex-col gap-6">
+		<!-- Word Sets -->
+		<div class="flex flex-col gap-2">
+			<button
+				class="flex items-center gap-2 text-left text-xl font-semibold"
+				onclick={() => (wordSetsOpen = !wordSetsOpen)}
+			>
+				<span>{wordSetsOpen ? '▼' : '▶'}</span>
+				<span>Сеты слов</span>
+			</button>
+
+			{#if wordSetsOpen}
+				<div class="flex flex-col gap-3">
+					{#if data.wordSets.length > 0}
+						<div class="overflow-x-auto">
+							<table class="w-full text-sm">
+								<thead>
+									<tr class="border-b border-gray-600">
+										<th class="p-2 text-left">#</th>
+										<th class="p-2 text-left">Слово 1</th>
+										<th class="p-2 text-left">Слово 2</th>
+										<th class="p-2 text-left">Слово 3</th>
+										<th class="p-2 text-left">Слово 4</th>
+										<th class="p-2 text-left">Слово 5</th>
+										<th class="p-2 text-left">Дата</th>
+										<th class="p-2 text-left"></th>
+									</tr>
+								</thead>
+								<tbody>
+									{#each data.wordSets as ws}
+										<tr class="border-b border-gray-700 hover:bg-gray-700">
+											<td class="p-2">{ws.setNumber}</td>
+											<td class="p-2">{ws.words[0]}</td>
+											<td class="p-2">{ws.words[1]}</td>
+											<td class="p-2">{ws.words[2]}</td>
+											<td class="p-2">{ws.words[3]}</td>
+											<td class="p-2">{ws.words[4]}</td>
+											<td class="p-2 text-xs opacity-60">
+												{formatDate(ws.createdAt)}
+											</td>
+											<td class="p-2">
+												<Button
+													color="red"
+													kind="small"
+													disabled={deletingSetId === ws.id}
+													onclick={() => handleDeleteWordSet(ws.id)}
+												>
+													{deletingSetId === ws.id ? '...' : '✕'}
+												</Button>
+											</td>
+										</tr>
+									{/each}
+								</tbody>
+							</table>
+						</div>
+					{:else}
+						<p class="text-sm opacity-60">Нет сгенерированных сетов слов</p>
+					{/if}
+
+				<div class="flex items-center gap-2">
+					<label class="text-sm" for="generate-count">Количество сетов:</label>
+					<input
+						id="generate-count"
+						type="number"
+						min="1"
+						max="50"
+						bind:value={generateCount}
+						class="w-20 rounded-lg bg-gray-700 p-2 text-white"
+					/>
+						<Button
+							color="blue"
+							onclick={handleGenerateWordSets}
+							disabled={isGeneratingSets}
+						>
+							{isGeneratingSets ? 'Генерация...' : 'Сгенерировать'}
+						</Button>
+					</div>
+				</div>
+			{/if}
+		</div>
+
 		<!-- Create session form -->
 		<form method="POST" action="?/create" class="flex flex-col gap-4">
 			<h2 class="text-xl font-semibold">Создать сессию</h2>
@@ -93,7 +226,19 @@
 			{/each}
 
 			<div class="flex flex-col gap-2">
-				<h3 class="text-lg font-medium">Выберите участников</h3>
+				<div class="flex flex-wrap items-center gap-3">
+					<h3 class="text-lg font-medium">Выберите участников</h3>
+					<input
+						type="text"
+						placeholder="Поиск..."
+						bind:value={searchQuery}
+						class="rounded-lg bg-gray-700 px-3 py-1 text-sm text-white"
+					/>
+					<label class="flex items-center gap-1 text-sm">
+						<input type="checkbox" bind:checked={filterRecent} />
+						Недавно вошедшие
+					</label>
+				</div>
 				<div class="overflow-x-auto">
 					<table class="w-full text-sm">
 						<thead>
@@ -103,11 +248,13 @@
 								<th class="p-2 text-left">Имя</th>
 								<th class="p-2 text-left">Фамилия</th>
 								<th class="p-2 text-left">Пол</th>
+								<th class="p-2 text-left">ГТО-М ID</th>
 								<th class="p-2 text-left">Незаполненные поля</th>
+								<th class="p-2 text-left">Последняя активность</th>
 							</tr>
 						</thead>
 						<tbody>
-							{#each data.users as u (u.id)}
+							{#each filteredUsers as u (u.id)}
 								<tr class="border-b border-gray-700 hover:bg-gray-700">
 									<td class="p-2">
 										<input
@@ -120,11 +267,13 @@
 									<td class="p-2">{u.firstname}</td>
 									<td class="p-2">{u.lastname}</td>
 									<td class="p-2">{u.sex === 'male' ? 'М' : 'Ж'}</td>
-									<td class="p-2 text-xs"
-										>{u.missingSurveyFields.length > 0
+									<td class="p-2">{u.gtoId || '—'}</td>
+									<td class="p-2 text-xs" title={missingFieldLabels(u.missingSurveyFields)}>
+										{u.missingSurveyFields.length > 0
 											? u.missingSurveyFields.length + ' полей'
-											: '✓'}</td
-									>
+											: '✓'}
+									</td>
+									<td class="p-2 text-xs opacity-60">{formatDate(u.lastActiveAt)}</td>
 								</tr>
 							{/each}
 						</tbody>
@@ -157,9 +306,17 @@
 								<span
 									class="rounded-full px-2 py-1 text-xs {s.status === 'active'
 										? 'bg-green-800 text-green-200'
-										: 'bg-gray-600 text-gray-300'}"
+										: s.status === 'paused'
+											? 'bg-yellow-800 text-yellow-200'
+											: 'bg-gray-600 text-gray-300'}"
 								>
-									{s.status === 'active' ? 'Активна' : 'Завершена'}
+									{#if s.status === 'active'}
+										Активна
+									{:else if s.status === 'paused'}
+										На паузе
+									{:else}
+										Завершена
+									{/if}
 								</span>
 								<span class="text-sm">{s.participantCount} участников</span>
 							</div>

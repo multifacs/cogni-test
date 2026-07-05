@@ -91,6 +91,9 @@
 
 {#if phase === 'instructions'}
 	<main class="main flex flex-col items-center justify-center gap-4">
+		{#if currentIndex > 0}
+			<p class="text-sm text-yellow-400">Вы вышли из теста. Продолжите с последнего.</p>
+		{/if}
 		<h2 class="text-xl">{currentTest?.title ?? currentTestType}</h2>
 		{#if AboutComponent}
 			<div class="max-w-lg">

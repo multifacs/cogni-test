@@ -44,20 +44,11 @@
 	{:else}
 		<div class="flex w-full max-w-xs flex-col gap-4">
 			{#each data.activeSessions as session}
-				<div class="rounded-lg bg-gray-800 p-4">
-					<h2 class="mb-3 text-xl font-semibold">{session.name}</h2>
+			<div class="rounded-lg bg-gray-800 p-4">
+				<h2 class="mb-3 text-xl font-semibold">{session.name}</h2>
+				{#if session.status === 'paused'}
 					{#if !session.hasCompletedTests}
-						{#if session.currentTestIndex > 0}
-							<p class="mb-2 text-sm text-gray-400">
-								Пройдено тестов: {session.currentTestIndex} из {TEST_ORDER.length}
-							</p>
-						{/if}
-						<Button
-							color="blue"
-							onclick={() => showTestDisclaimer(session.gtoSessionId, session.currentTestIndex)}
-						>
-							{session.currentTestIndex > 0 ? 'Продолжить тестирование' : 'Начать тестирование'}
-						</Button>
+						<p class="mb-2 text-sm text-yellow-400">Сессия приостановлена</p>
 					{:else if !session.hasSubmittedWords}
 						<Button color="yellow" onclick={() => showWordsDisclaimer(session.gtoSessionId)}
 							>Заполнить последовательность слов</Button
@@ -67,7 +58,28 @@
 							>Вы завершили электронную часть. Ожидайте результатов.</p
 						>
 					{/if}
-				</div>
+				{:else if !session.hasCompletedTests}
+					{#if session.currentTestIndex > 0}
+						<p class="mb-2 text-sm text-gray-400">
+							Пройдено тестов: {session.currentTestIndex} из {TEST_ORDER.length}
+						</p>
+					{/if}
+					<Button
+						color="blue"
+						onclick={() => showTestDisclaimer(session.gtoSessionId, session.currentTestIndex)}
+					>
+						{session.currentTestIndex > 0 ? 'Продолжить тестирование' : 'Начать тестирование'}
+					</Button>
+				{:else if !session.hasSubmittedWords}
+					<Button color="yellow" onclick={() => showWordsDisclaimer(session.gtoSessionId)}
+						>Заполнить последовательность слов</Button
+					>
+				{:else}
+					<p class="text-gray-400"
+						>Вы завершили электронную часть. Ожидайте результатов.</p
+					>
+				{/if}
+			</div>
 			{/each}
 		</div>
 	{/if}

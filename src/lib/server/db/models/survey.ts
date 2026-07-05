@@ -17,6 +17,8 @@ export const profileSurvey = sqliteTable(
 		currentCityType: text('current_city_type').$type<
 			'capital' | 'municipality' | 'city' | 'town' | 'village'
 		>(), // текущее место проживания
+		gtoId: text('gto_id'), // ГТО-М ID
+		email: text('email'), // E-mail
 
 		// Tab 2: Образование и опыт работы
 		education: text('education').$type<

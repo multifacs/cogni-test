@@ -15,7 +15,7 @@ export const gtoSession = sqliteTable(
 			.notNull()
 	},
 	(table) => [
-		check('gto_session_status_check', enumCheck(table.status, ['active', 'completed'])),
+		check('gto_session_status_check', enumCheck(table.status, ['active', 'paused', 'completed'])),
 		check('gto_session_type_check', enumCheck(table.type, ['cognitive-age']))
 	]
 );
@@ -38,6 +38,7 @@ export const gtoSessionParticipant = sqliteTable(
 			.default(false),
 		currentTestIndex: integer('current_test_index').notNull().default(0),
 		wordScore: integer('word_score'),
+		wordSetId: text('word_set_id').references(() => gtoWordSet.id),
 		createdAt: text('created_at')
 			.default(sql`CURRENT_TIMESTAMP`)
 			.notNull()
@@ -77,7 +78,9 @@ export const gtoEditableMetric = sqliteTable(
 		mazeVRNumber: integer('maze_vr_number'),
 		mazeVRFileName: text('maze_vr_file_name'),
 		buttonTestNumber: integer('button_test_number'),
-		buttonTestFileName: text('button_test_file_name')
+		buttonTestFileName: text('button_test_file_name'),
+		logic: integer('logic'),
+		wordSetNumber: integer('word_set_number'),
 	},
 	(table) => [
 		check(
@@ -91,6 +94,35 @@ export const gtoEditableMetric = sqliteTable(
 			'button_test_number_check',
 			sql`${table.buttonTestNumber} >= 0 AND ${table.buttonTestNumber} <= 20`
 		),
+		check('logic_check', sql`${table.logic} >= 0 AND ${table.logic} <= 1`),
 		unique('gto_editable_metric_participant_id_unique').on(table.participantId)
 	]
+);
+
+export const gtoWordSet = sqliteTable(
+	'gto_word_set',
+	{
+		id: text('id').primaryKey().$defaultFn(generate),
+		setNumber: integer('set_number').notNull(),
+		word1: text('word1').notNull(),
+		word2: text('word2').notNull(),
+		word3: text('word3').notNull(),
+		word4: text('word4').notNull(),
+		word5: text('word5').notNull(),
+		createdAt: text('created_at')
+			.default(sql`CURRENT_TIMESTAMP`)
+			.notNull()
+	}
+);
+
+export const gtoWordResponse = sqliteTable(
+	'gto_word_response',
+	{
+		id: text('id').primaryKey().$defaultFn(generate),
+		participantId: text('participant_id')
+			.notNull()
+			.references(() => gtoSessionParticipant.id),
+		position: integer('position').notNull(),
+		word: text('word').notNull()
+	}
 );

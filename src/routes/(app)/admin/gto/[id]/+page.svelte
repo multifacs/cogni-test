@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
 	import Toast from '$lib/components/ui/Toast.svelte';
+	import { missingFieldLabels } from '$lib/survey-field-labels';
 	import type { PageProps } from './$types';
 	import type { GtoEditableMetricDetail } from '$lib/server/db/controllers/gto';
 
@@ -52,6 +53,36 @@
 		location.reload();
 	}
 
+	async function handlePause() {
+		const form = new FormData();
+		const response = await fetch('?/pause', { method: 'POST', body: form });
+		if (!response.ok) {
+			showToast('Ошибка приостановки сессии');
+			return;
+		}
+		location.reload();
+	}
+
+	async function handleResume() {
+		const form = new FormData();
+		const response = await fetch('?/resume', { method: 'POST', body: form });
+		if (!response.ok) {
+			showToast('Ошибка возобновления сессии');
+			return;
+		}
+		location.reload();
+	}
+
+	async function assignWordSet(participantId: string, wordSetId: string) {
+		const form = new FormData();
+		form.set('participantId', participantId);
+		form.set('wordSetId', wordSetId);
+		const response = await fetch('?/assignWordSet', { method: 'POST', body: form });
+		if (!response.ok) {
+			showToast('Ошибка назначения сета слов');
+		}
+	}
+
 	async function submitMetrics(participantId: string, formElement: HTMLFormElement) {
 		savingMetrics = new Set([...savingMetrics, participantId]);
 		try {
@@ -68,7 +99,9 @@
 				'mazeQ2',
 				'mazeQ3',
 				'mazeVRNumber',
-				'buttonTestNumber'
+				'buttonTestNumber',
+				'logic',
+				'wordSetNumber'
 			]) {
 				const val = formData.get(field) as string | null;
 				if (val !== null && val !== '') metrics[field] = parseInt(val);
@@ -118,9 +151,17 @@
 		<span
 			class="rounded-full px-3 py-1 text-sm {data.session.status === 'active'
 				? 'bg-green-800 text-green-200'
-				: 'bg-gray-600 text-gray-300'}"
+				: data.session.status === 'paused'
+					? 'bg-yellow-800 text-yellow-200'
+					: 'bg-gray-600 text-gray-300'}"
 		>
-			{data.session.status === 'active' ? 'Активна' : 'Завершена'}
+			{#if data.session.status === 'active'}
+				Активна
+			{:else if data.session.status === 'paused'}
+				На паузе
+			{:else}
+				Завершена
+			{/if}
 		</span>
 	</div>
 	<p class="text-sm opacity-60">{formatDate(data.session.createdAt)}</p>
@@ -142,9 +183,17 @@
 			</div>
 		{/if}
 
-		<!-- Complete button -->
+		<!-- Session control buttons -->
 		{#if data.session.status === 'active'}
-			<Button color="red" onclick={handleComplete}>Завершить сессию</Button>
+			<div class="flex gap-2">
+				<Button color="yellow" onclick={handlePause}>Приостановить</Button>
+				<Button color="red" onclick={handleComplete}>Завершить сессию</Button>
+			</div>
+		{:else if data.session.status === 'paused'}
+			<div class="flex gap-2">
+				<Button color="green" onclick={handleResume}>Возобновить</Button>
+				<Button color="red" onclick={handleComplete}>Завершить сессию</Button>
+			</div>
 		{/if}
 
 		<!-- Metrics table -->
@@ -154,6 +203,7 @@
 					<tr class="border-b border-gray-600 text-left">
 						<th class="p-2">#</th>
 						<th class="p-2">ID</th>
+						<th class="p-2">ГТО-М ID</th>
 						<th class="p-2">Имя</th>
 						<th class="p-2">Фамилия</th>
 						<th class="p-2">Пол</th>
@@ -175,7 +225,11 @@
 						<th class="p-2">Лаб. Q2</th>
 						<th class="p-2">Лаб. Q3</th>
 						<th class="p-2">Лаб. VR</th>
+						<th class="p-2">Лаб. файл</th>
 						<th class="p-2">Кнопочки</th>
+						<th class="p-2">Кн. файл</th>
+						<th class="p-2">Логика</th>
+						<th class="p-2">Сет слов</th>
 						<th class="p-2"></th>
 					</tr>
 				</thead>
@@ -187,15 +241,14 @@
 							<td class="p-2 font-mono text-xs opacity-60"
 								>{m.participantId.slice(0, 8)}...</td
 							>
+							<td class="p-2 text-xs">{data.gtoIdMap.get(m.userId) || '—'}</td>
 							<td class="p-2">{m.firstname}</td>
 							<td class="p-2">{m.lastname}</td>
 							<td class="p-2">{m.sex === 'male' ? 'М' : 'Ж'}</td>
 							<td class="p-2">{m.age}</td>
-							<td class="p-2"
-								>{m.missingSurveyFields.length > 0
-									? m.missingSurveyFields.length
-									: '✓'}</td
-							>
+							<td class="p-2" title={missingFieldLabels(m.missingSurveyFields)}>
+								{m.missingSurveyFields.length > 0 ? m.missingSurveyFields.length : '✓'}
+							</td>
 
 							<!-- Stroop stage 1 -->
 							<td class="p-2">{fmt(m.stroop.stage1.meanTime)}</td>
@@ -306,6 +359,15 @@
 							</td>
 							<td class="p-2">
 								<input
+									type="text"
+									name="mazeVRFileName"
+									value={em.mazeVRFileName ?? ''}
+									class="w-20 rounded bg-gray-700 p-1 text-xs"
+									placeholder="Файл"
+								/>
+							</td>
+							<td class="p-2">
+								<input
 									type="number"
 									name="buttonTestNumber"
 									min="0"
@@ -314,6 +376,48 @@
 									class="w-14 rounded bg-gray-700 p-1 text-xs"
 									placeholder="Кн#"
 								/>
+							</td>
+							<td class="p-2">
+								<input
+									type="text"
+									name="buttonTestFileName"
+									value={em.buttonTestFileName ?? ''}
+									class="w-20 rounded bg-gray-700 p-1 text-xs"
+									placeholder="Файл"
+								/>
+							</td>
+							<td class="p-2">
+								<input
+									type="number"
+									name="logic"
+									min="0"
+									max="1"
+									value={em.logic ?? ''}
+									class="w-12 rounded bg-gray-700 p-1 text-xs"
+									placeholder="Лог"
+								/>
+							</td>
+							<td class="p-2">
+								<select
+									name="wordSetNumber"
+									class="w-14 rounded bg-gray-700 p-1 text-xs"
+									onchange={(e) => {
+										const target = e.currentTarget as HTMLSelectElement;
+										const wordSetId = target.value;
+										if (wordSetId) {
+											assignWordSet(m.participantId, wordSetId);
+										}
+									}}
+								>
+									<option value="" selected={!data.wordSetIdMap.get(m.participantId)}>—</option>
+									{#each data.wordSets as ws}
+										<option
+											value={ws.id}
+											selected={data.wordSetIdMap.get(m.participantId) === ws.id}
+											>{ws.setNumber}</option
+										>
+									{/each}
+								</select>
 							</td>
 							<td class="p-2">
 								<button

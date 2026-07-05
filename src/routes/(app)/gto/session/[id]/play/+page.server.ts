@@ -10,6 +10,10 @@ export const load: PageServerLoad = async ({ params, cookies, fetch }) => {
 	const sessionDetail = await getGtoSessionById(params.id);
 	if (!sessionDetail) error(404, 'Сессия не найдена');
 
+	if (sessionDetail.status === 'paused') {
+		redirect(307, '/gto');
+	}
+
 	const participant = sessionDetail.participants.find((p) => p.userId === userId);
 	if (!participant) error(403, 'Вы не являетесь участником этой сессии');
 

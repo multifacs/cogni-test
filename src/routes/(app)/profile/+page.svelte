@@ -183,8 +183,18 @@
 								]}
 								value={u.sex}
 							/> -->
-							<TableRow label="Пол" type="value" value={formatSex(u.sex)} omit />
-							<TableRow
+						<TableRow label="Пол" type="value" value={formatSex(u.sex)} omit />
+						<TableRow
+							label="ГТО-М ID"
+							type="input"
+							bind:value={$profileSurveyStore.gtoId}
+						></TableRow>
+						<TableRow
+							label="E-mail"
+							type="input"
+							bind:value={$profileSurveyStore.email}
+						></TableRow>
+						<TableRow
 								label="Населенный пункт, в котором вы прожили большую часть жизни"
 								type="custom"
 							>

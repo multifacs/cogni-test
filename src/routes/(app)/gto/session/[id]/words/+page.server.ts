@@ -1,5 +1,9 @@
 import type { PageServerLoad } from './$types';
-import { getGtoSessionById, getGtoSessionWords } from '$lib/server/db/controllers/gto';
+import {
+	getGtoSessionById,
+	getGtoSessionWords,
+	getWordSetWords
+} from '$lib/server/db/controllers/gto';
 import { error, redirect } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ params, cookies }) => {
@@ -20,11 +24,19 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 		redirect(307, '/gto');
 	}
 
-	const words = await getGtoSessionWords(params.id);
+	if (participant.wordSetId) {
+		const words = await getWordSetWords(participant.wordSetId);
+		return {
+			sessionId: params.id,
+			sessionName: sessionDetail.name,
+			wordCount: words.length
+		};
+	}
 
 	return {
 		sessionId: params.id,
 		sessionName: sessionDetail.name,
-		wordCount: words.length
+		wordCount: 5,
+		freeInput: true
 	};
 };

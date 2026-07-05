@@ -25,6 +25,8 @@
 
 		subscribed = await isSubscribed();
 		showModal = !subscribed;
+
+		fetch('/api/ping', { method: 'POST' }).catch(() => {});
 	});
 
 	async function subscribe() {

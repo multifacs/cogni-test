@@ -4,7 +4,9 @@ import {
 	gtoSession,
 	gtoSessionParticipant,
 	gtoSessionWord,
-	gtoEditableMetric
+	gtoEditableMetric,
+	gtoWordSet,
+	gtoWordResponse
 } from '$lib/server/db/models/gto';
 import {
 	stroopAttempt,
@@ -16,6 +18,9 @@ import {
 } from '$lib/server/db/models/tests';
 import { generate } from 'short-uuid';
 import { eq, and, desc, asc, sql, inArray } from 'drizzle-orm';
+import { missingFieldLabels } from '$lib/survey-field-labels';
+
+export { missingFieldLabels as computeMissingSurveyFieldLabels };
 
 // ─── Survey field list (mirrors user.ts) ────────────────────────────
 
@@ -51,10 +56,10 @@ const SURVEY_FIELDS = [
 	'smoking',
 	'alcohol',
 	'sports',
-	'isGamer'
+	'isGamer',
+	'gtoId',
+	'email'
 ] as const;
-
-// ─── Math helpers ───────────────────────────────────────────────────
 
 function mean(arr: number[]): number | null {
 	if (arr.length === 0) return null;
@@ -199,6 +204,7 @@ export type GtoSessionParticipantDetail = {
 	hasSubmittedWords: boolean;
 	currentTestIndex: number;
 	wordScore: number | null;
+	wordSetId: string | null;
 	editableMetrics: GtoEditableMetricDetail;
 };
 
@@ -212,6 +218,8 @@ export type GtoEditableMetricDetail = {
 	mazeVRFileName: string | null;
 	buttonTestNumber: number | null;
 	buttonTestFileName: string | null;
+	logic: number | null;
+	wordSetNumber: number | null;
 };
 
 export async function getGtoSessionById(id: string): Promise<GtoSessionDetail> {
@@ -230,6 +238,7 @@ export async function getGtoSessionById(id: string): Promise<GtoSessionDetail> {
 			hasSubmittedWords: gtoSessionParticipant.hasSubmittedWords,
 			currentTestIndex: gtoSessionParticipant.currentTestIndex,
 			wordScore: gtoSessionParticipant.wordScore,
+			wordSetId: gtoSessionParticipant.wordSetId,
 			firstname: user.firstname,
 			lastname: user.lastname,
 			birthday: user.birthday,
@@ -242,7 +251,9 @@ export async function getGtoSessionById(id: string): Promise<GtoSessionDetail> {
 			mazeVRNumber: gtoEditableMetric.mazeVRNumber,
 			mazeVRFileName: gtoEditableMetric.mazeVRFileName,
 			buttonTestNumber: gtoEditableMetric.buttonTestNumber,
-			buttonTestFileName: gtoEditableMetric.buttonTestFileName
+			buttonTestFileName: gtoEditableMetric.buttonTestFileName,
+			logic: gtoEditableMetric.logic,
+			wordSetNumber: gtoEditableMetric.wordSetNumber
 		})
 		.from(gtoSessionParticipant)
 		.innerJoin(user, eq(user.id, gtoSessionParticipant.userId))
@@ -260,6 +271,7 @@ export async function getGtoSessionById(id: string): Promise<GtoSessionDetail> {
 		hasSubmittedWords: row.hasSubmittedWords,
 		currentTestIndex: row.currentTestIndex,
 		wordScore: row.wordScore,
+		wordSetId: row.wordSetId,
 		editableMetrics: {
 			id: row.metricId,
 			balanceTest: row.balanceTest,
@@ -269,7 +281,9 @@ export async function getGtoSessionById(id: string): Promise<GtoSessionDetail> {
 			mazeVRNumber: row.mazeVRNumber,
 			mazeVRFileName: row.mazeVRFileName,
 			buttonTestNumber: row.buttonTestNumber,
-			buttonTestFileName: row.buttonTestFileName
+			buttonTestFileName: row.buttonTestFileName,
+			logic: row.logic,
+			wordSetNumber: row.wordSetNumber
 		}
 	}));
 
@@ -317,11 +331,34 @@ export async function completeGtoSession(id: string): Promise<void> {
 	}
 }
 
+export async function pauseGtoSession(id: string): Promise<void> {
+	const result = await db
+		.update(gtoSession)
+		.set({ status: 'paused' })
+		.where(eq(gtoSession.id, id));
+
+	if (result.rowsAffected === 0) {
+		throw new Error(`GTO session not found: ${id}`);
+	}
+}
+
+export async function resumeGtoSession(id: string): Promise<void> {
+	const result = await db
+		.update(gtoSession)
+		.set({ status: 'active' })
+		.where(eq(gtoSession.id, id));
+
+	if (result.rowsAffected === 0) {
+		throw new Error(`GTO session not found: ${id}`);
+	}
+}
+
 // ─── 6. getActiveGtoSessionsForUser ────────────────────────────────
 
 export type ActiveGtoSessionForUser = {
 	gtoSessionId: string;
 	name: string;
+	status: string;
 	hasCompletedTests: boolean;
 	hasSubmittedWords: boolean;
 	currentTestIndex: number;
@@ -334,13 +371,19 @@ export async function getActiveGtoSessionsForUser(
 		.select({
 			gtoSessionId: gtoSessionParticipant.gtoSessionId,
 			name: gtoSession.name,
+			status: gtoSession.status,
 			hasCompletedTests: gtoSessionParticipant.hasCompletedTests,
 			hasSubmittedWords: gtoSessionParticipant.hasSubmittedWords,
 			currentTestIndex: gtoSessionParticipant.currentTestIndex
 		})
 		.from(gtoSessionParticipant)
 		.innerJoin(gtoSession, eq(gtoSession.id, gtoSessionParticipant.gtoSessionId))
-		.where(and(eq(gtoSessionParticipant.userId, userId), eq(gtoSession.status, 'active')));
+		.where(
+			and(
+				eq(gtoSessionParticipant.userId, userId),
+				inArray(gtoSession.status, ['active', 'paused'])
+			)
+		);
 
 	return rows;
 }
@@ -435,6 +478,8 @@ export type EditableMetricUpdate = Partial<{
 	mazeVRFileName: string;
 	buttonTestNumber: number;
 	buttonTestFileName: string;
+	logic: number;
+	wordSetNumber: number;
 }>;
 
 export async function updateEditableMetrics(
@@ -799,6 +844,8 @@ export type AuthorizedUser = {
 	lastname: string;
 	sex: string;
 	createdAt: string;
+	lastActiveAt: string | null;
+	gtoId: string | null;
 	missingSurveyFields: string[];
 };
 
@@ -810,6 +857,8 @@ export async function getAuthorizedUsers(): Promise<AuthorizedUser[]> {
 			lastname: user.lastname,
 			sex: user.sex,
 			createdAt: user.createdAt,
+			lastActiveAt: user.lastActiveAt,
+			gtoId: profileSurvey.gtoId,
 			survey: profileSurvey
 		})
 		.from(user)
@@ -822,6 +871,8 @@ export async function getAuthorizedUsers(): Promise<AuthorizedUser[]> {
 		lastname: row.lastname,
 		sex: row.sex,
 		createdAt: row.createdAt,
+		lastActiveAt: row.lastActiveAt,
+		gtoId: row.gtoId,
 		missingSurveyFields: computeMissingSurveyFields(
 			row.survey as Record<string, unknown> | null
 		)
@@ -846,4 +897,132 @@ export async function getGtoSessionWords(gtoSessionId: string): Promise<GtoSessi
 		.orderBy(asc(gtoSessionWord.position));
 
 	return words;
+}
+
+// ─── 13. Word set helpers ─────────────────────────────────────────
+
+export type GtoWordSetListItem = {
+	id: string;
+	setNumber: number;
+	words: string[];
+	createdAt: string;
+};
+
+export async function getWordSets(): Promise<GtoWordSetListItem[]> {
+	const rows = await db.select().from(gtoWordSet).orderBy(desc(gtoWordSet.createdAt));
+	return rows.map((r) => ({
+		id: r.id,
+		setNumber: r.setNumber,
+		words: [r.word1, r.word2, r.word3, r.word4, r.word5],
+		createdAt: r.createdAt
+	}));
+}
+
+export async function generateWordSets(count: number, allWords: string[]): Promise<void> {
+	function pickRandom(arr: string[], n: number): string[] {
+		const shuffled = [...arr].sort(() => 0.5 - Math.random());
+		return shuffled.slice(0, n);
+	}
+
+	const existing = await db
+		.select({ max: sql<number>`COALESCE(MAX(${gtoWordSet.setNumber}), 0)` })
+		.from(gtoWordSet);
+	let startNumber = (existing[0]?.max ?? 0) + 1;
+
+	const toInsert = [];
+	for (let i = 0; i < count; i++) {
+		const words = pickRandom(allWords, 5);
+		toInsert.push({
+			id: generate(),
+			setNumber: startNumber + i,
+			word1: words[0],
+			word2: words[1],
+			word3: words[2],
+			word4: words[3],
+			word5: words[4]
+		});
+	}
+
+	if (toInsert.length > 0) {
+		await db.insert(gtoWordSet).values(toInsert);
+	}
+}
+
+export async function deleteWordSet(id: string): Promise<void> {
+	// Check if any participant references this word set
+	const [referenced] = await db
+		.select({ id: gtoSessionParticipant.id })
+		.from(gtoSessionParticipant)
+		.where(eq(gtoSessionParticipant.wordSetId, id))
+		.limit(1);
+	if (referenced) {
+		throw new Error('Cannot delete word set: it is assigned to one or more participants');
+	}
+	await db.delete(gtoWordSet).where(eq(gtoWordSet.id, id));
+}
+
+export async function assignWordSet(participantId: string, wordSetId: string): Promise<void> {
+	await db
+		.update(gtoSessionParticipant)
+		.set({ wordSetId })
+		.where(eq(gtoSessionParticipant.id, participantId));
+}
+
+/**
+ * @todo Wire this into the admin word set assignment flow:
+ * When admin assigns a word set to a participant who has already submitted
+ * free-form responses, call this to retroactively compute the word score.
+ */
+export async function computeAndSaveWordScore(participantId: string): Promise<void> {
+	const [participant] = await db
+		.select({ wordSetId: gtoSessionParticipant.wordSetId })
+		.from(gtoSessionParticipant)
+		.where(eq(gtoSessionParticipant.id, participantId));
+
+	if (!participant?.wordSetId) return;
+
+	const [set] = await db.select().from(gtoWordSet).where(eq(gtoWordSet.id, participant.wordSetId));
+	if (!set) return;
+
+	const responses = await db
+		.select()
+		.from(gtoWordResponse)
+		.where(eq(gtoWordResponse.participantId, participantId))
+		.orderBy(asc(gtoWordResponse.position));
+
+	const correctWords = [set.word1, set.word2, set.word3, set.word4, set.word5];
+	function normalize(w: string): string {
+		return w.toLowerCase().replace(/ё/g, 'е').trim();
+	}
+
+	let score = 0;
+	for (let i = 0; i < correctWords.length; i++) {
+		const correct = normalize(correctWords[i]);
+		const submitted = normalize(responses[i]?.word ?? '');
+		if (correct === submitted) score++;
+	}
+
+	await db
+		.update(gtoSessionParticipant)
+		.set({ wordScore: score, hasSubmittedWords: true })
+		.where(eq(gtoSessionParticipant.id, participantId));
+}
+
+export async function saveWordResponses(
+	participantId: string,
+	words: string[]
+): Promise<void> {
+	const rows = words.map((word, position) => ({
+		id: generate(),
+		participantId,
+		position,
+		word
+	}));
+	await db.insert(gtoWordResponse).values(rows);
+}
+
+export async function getWordSetWords(wordSetId: string): Promise<string[]> {
+	const [set] = await db.select().from(gtoWordSet).where(eq(gtoWordSet.id, wordSetId));
+	if (!set) return [];
+	return [set.word1, set.word2, set.word3, set.word4, set.word5];
 }
