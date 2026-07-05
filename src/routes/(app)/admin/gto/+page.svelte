@@ -27,7 +27,7 @@
 			}
 			const text = await response.text();
 			const allWords = filterWords(text);
-			wordsInput = pickRandom(allWords, 5).join(', ');
+			wordsInput = pickRandom(allWords, 5).join(',');
 		} finally {
 			isGenerating = false;
 		}
@@ -159,7 +159,7 @@
 										? 'bg-green-800 text-green-200'
 										: 'bg-gray-600 text-gray-300'}"
 								>
-									{ s.status === 'active' ? 'Активна' : 'Завершена' }
+									{s.status === 'active' ? 'Активна' : 'Завершена'}
 								</span>
 								<span class="text-sm">{s.participantCount} участников</span>
 							</div>

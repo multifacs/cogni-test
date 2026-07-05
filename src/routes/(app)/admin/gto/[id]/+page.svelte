@@ -326,6 +326,7 @@
 											'input[name], select[name]'
 										);
 										const fd = new FormData();
+										fd.set('action', 'updateMetrics');
 										fd.set('participantId', m.participantId);
 										inputs.forEach((el) => {
 											const input = el as
@@ -340,8 +341,8 @@
 											m.participantId
 										]);
 										try {
-											const response = await fetch('?/updateMetrics', {
-												method: 'POST',
+											const response = await fetch('', {
+												method: 'PATCH',
 												body: fd
 											});
 											if (!response.ok) {
