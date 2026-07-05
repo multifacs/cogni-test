@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
+	import { filterWords, pickRandom } from '$lib/words';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -14,6 +15,23 @@
 	const min = String(now.getMinutes()).padStart(2, '0');
 	let sessionName = $state(`Сессия ГТО-М ${dd}/${mm}/${yy} ${hh}-${min}`);
 	let wordsInput = $state('');
+	let isGenerating = $state(false);
+
+	async function generateRandomWords() {
+		isGenerating = true;
+		try {
+			const response = await fetch('/words');
+			if (!response.ok) {
+				console.error('Failed to load words');
+				return;
+			}
+			const text = await response.text();
+			const allWords = filterWords(text);
+			wordsInput = pickRandom(allWords, 5).join(', ');
+		} finally {
+			isGenerating = false;
+		}
+	}
 
 	function toggleUser(id: string) {
 		if (selectedUsers.has(id)) {
@@ -51,9 +69,14 @@
 			</div>
 
 			<div class="flex flex-col gap-2">
-				<label class="text-sm font-medium" for="words-input"
-					>Слова для последовательности (через запятую, до 5)</label
-				>
+				<div class="flex items-center justify-between">
+					<label class="text-sm font-medium" for="words-input"
+						>Слова для последовательности (через запятую, до 5)</label
+					>
+					<Button color="blue" onclick={generateRandomWords} disabled={isGenerating}>
+						{isGenerating ? 'Генерация...' : '🎲 Случайные'}
+					</Button>
+				</div>
 				<textarea
 					id="words-input"
 					name="words"
