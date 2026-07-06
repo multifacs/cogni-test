@@ -33,9 +33,10 @@
 	const balanceTestOptions = ['0-15', '15-30', '30-45', '45-60', '60+'] as const;
 
 	async function handleRename() {
-		const form = new FormData();
-		form.set('name', sessionName);
-		const response = await fetch('?/rename', { method: 'POST', body: form });
+		const fd = new FormData();
+		fd.set('action', 'rename');
+		fd.set('name', sessionName);
+		const response = await fetch('', { method: 'PATCH', body: fd });
 		if (!response.ok) {
 			showToast('Ошибка переименования');
 			return;
@@ -44,8 +45,9 @@
 	}
 
 	async function handleComplete() {
-		const form = new FormData();
-		const response = await fetch('?/complete', { method: 'POST', body: form });
+		const fd = new FormData();
+		fd.set('action', 'complete');
+		const response = await fetch('', { method: 'PATCH', body: fd });
 		if (!response.ok) {
 			showToast('Ошибка завершения сессии');
 			return;
@@ -54,8 +56,9 @@
 	}
 
 	async function handlePause() {
-		const form = new FormData();
-		const response = await fetch('?/pause', { method: 'POST', body: form });
+		const fd = new FormData();
+		fd.set('action', 'pause');
+		const response = await fetch('', { method: 'PATCH', body: fd });
 		if (!response.ok) {
 			showToast('Ошибка приостановки сессии');
 			return;
@@ -64,8 +67,9 @@
 	}
 
 	async function handleResume() {
-		const form = new FormData();
-		const response = await fetch('?/resume', { method: 'POST', body: form });
+		const fd = new FormData();
+		fd.set('action', 'resume');
+		const response = await fetch('', { method: 'PATCH', body: fd });
 		if (!response.ok) {
 			showToast('Ошибка возобновления сессии');
 			return;
@@ -74,55 +78,15 @@
 	}
 
 	async function assignWordSet(participantId: string, wordSetId: string) {
-		const form = new FormData();
-		form.set('participantId', participantId);
-		form.set('wordSetId', wordSetId);
-		const response = await fetch('?/assignWordSet', { method: 'POST', body: form });
+		const fd = new FormData();
+		fd.set('action', 'assignWordSet');
+		fd.set('participantId', participantId);
+		fd.set('wordSetId', wordSetId);
+		const response = await fetch('', { method: 'PATCH', body: fd });
 		if (!response.ok) {
 			showToast('Ошибка назначения сета слов');
-		}
-	}
-
-	async function submitMetrics(participantId: string, formElement: HTMLFormElement) {
-		savingMetrics = new Set([...savingMetrics, participantId]);
-		try {
-			const formData = new FormData(formElement);
-			const form = new FormData();
-			form.set('participantId', participantId);
-
-			const metrics: Record<string, unknown> = {};
-			const balanceTest = formData.get('balanceTest') as string | null;
-			if (balanceTest) metrics.balanceTest = balanceTest;
-
-			for (const field of [
-				'mazeQ1',
-				'mazeQ2',
-				'mazeQ3',
-				'mazeVRNumber',
-				'buttonTestNumber',
-				'logic',
-				'wordSetNumber'
-			]) {
-				const val = formData.get(field) as string | null;
-				if (val !== null && val !== '') metrics[field] = parseInt(val);
-			}
-			for (const field of ['mazeVRFileName', 'buttonTestFileName']) {
-				const val = formData.get(field) as string | null;
-				if (val !== null) metrics[field] = val;
-			}
-
-			const response = await fetch('?/updateMetrics', {
-				method: 'POST',
-				body: form
-			});
-
-			if (!response.ok) {
-				showToast('Ошибка сохранения метрик');
-			}
-		} catch {
-			showToast('Ошибка сохранения метрик');
-		} finally {
-			savingMetrics = new Set([...savingMetrics].filter((id) => id !== participantId));
+		} else {
+			location.reload();
 		}
 	}
 </script>
@@ -247,7 +211,9 @@
 							<td class="p-2">{m.sex === 'male' ? 'М' : 'Ж'}</td>
 							<td class="p-2">{m.age}</td>
 							<td class="p-2" title={missingFieldLabels(m.missingSurveyFields)}>
-								{m.missingSurveyFields.length > 0 ? m.missingSurveyFields.length : '✓'}
+								{m.missingSurveyFields.length > 0
+									? m.missingSurveyFields.length
+									: '✓'}
 							</td>
 
 							<!-- Stroop stage 1 -->
@@ -308,7 +274,7 @@
 							<td class="p-2">
 								<select name="balanceTest" class="rounded bg-gray-700 p-1 text-xs">
 									<option value="" selected={!em.balanceTest}>—</option>
-									{#each balanceTestOptions as opt}
+									{#each balanceTestOptions as opt (opt)}
 										<option value={opt} selected={em.balanceTest === opt}
 											>{opt}</option
 										>
@@ -409,12 +375,15 @@
 										}
 									}}
 								>
-									<option value="" selected={!data.wordSetIdMap.get(m.participantId)}>—</option>
-									{#each data.wordSets as ws}
+									<option
+										value=""
+										selected={!data.wordSetIdMap.get(m.participantId)}>—</option
+									>
+									{#each data.wordSets as ws (ws.id)}
 										<option
 											value={ws.id}
-											selected={data.wordSetIdMap.get(m.participantId) === ws.id}
-											>{ws.setNumber}</option
+											selected={data.wordSetIdMap.get(m.participantId) ===
+												ws.id}>{ws.setNumber}</option
 										>
 									{/each}
 								</select>
