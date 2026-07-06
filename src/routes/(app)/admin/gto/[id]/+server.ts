@@ -66,11 +66,14 @@ export const PATCH: RequestHandler = async ({ request, params, cookies }) => {
 					'wordSetNumber'
 				]) {
 					const val = data.get(field) as string | null;
-					if (val !== null && val !== '') metrics[field] = parseInt(val, 10);
+					if (val !== null && val !== '') {
+						const parsed = parseInt(val, 10);
+						if (!isNaN(parsed)) metrics[field] = parsed;
+					}
 				}
 				for (const field of ['mazeVRFileName', 'buttonTestFileName']) {
 					const val = data.get(field) as string | null;
-					if (val !== null) metrics[field] = val;
+					if (val !== null && val !== '') metrics[field] = val;
 				}
 
 				await updateEditableMetrics(participantId, metrics);

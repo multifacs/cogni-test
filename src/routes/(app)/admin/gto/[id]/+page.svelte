@@ -405,7 +405,7 @@
 											const input = el as
 												| HTMLInputElement
 												| HTMLSelectElement;
-											if (input.name && input.value) {
+											if (input.name && input.name !== 'wordSetNumber' && input.value) {
 												fd.set(input.name, input.value);
 											}
 										});
