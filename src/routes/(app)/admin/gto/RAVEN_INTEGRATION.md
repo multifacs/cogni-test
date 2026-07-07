@@ -7,15 +7,18 @@
 ## 1. Обзор
 
 ### Что добавляем
+
 - **Название:** Матрицы Равена
 - **Позиция в последовательности:** 7-й элемент (после `swallow`)
 - **Тип:** Exercise (`src/lib/exercises/raven-matrices/`)
 - **Связь с сессией:** Через таблицу `session` (поле `gtoSessionId`) и таблицу `ravenAttempt`
 
 ### Зачем
+
 Методика прогрессивных матриц Равена — стандартный инструмент оценки флюидного интеллекта. Включение её в ГТО-М позволяет получать единообразные метрики по всем основным когнитивным доменам в рамках одной сессии.
 
 ### Ключевое ограничение
+
 Raven **остаётся exercise**. Не нужно переносить его код в `src/lib/tests/`, конвертировать в полноценный test или дублировать генераторы. Он подключается в существующую оркестрацию GTO через расширение типов и ленивую загрузку компонентов.
 
 ---
@@ -23,31 +26,35 @@ Raven **остаётся exercise**. Не нужно переносить его
 ## 2. Архитектурные решения
 
 ### 2.1. Raven — exercise
+
 - **Решение:** Не переносить код из `src/lib/exercises/raven-matrices/`.
 - **Обоснование:**
-  - У exercise уже есть свои `About.svelte`, `Playground.svelte`, `Result.svelte`, генератор задач и адаптер метрик (`results-adapter.ts`).
-  - Перенос привёл бы к дублированию логики генерации матриц и привязки к SVG-отрисовке.
-  - Система `testRegistry` и `testLoaders` поддерживает загрузку компонентов из любого пути, а не только из `src/lib/tests/<name>/`.
+    - У exercise уже есть свои `About.svelte`, `Playground.svelte`, `Result.svelte`, генератор задач и адаптер метрик (`results-adapter.ts`).
+    - Перенос привёл бы к дублированию логики генерации матриц и привязки к SVG-отрисовке.
+    - Система `testRegistry` и `testLoaders` поддерживает загрузку компонентов из любого пути, а не только из `src/lib/tests/<name>/`.
 
 ### 2.2. Переиспользование `postResult`
+
 - **Решение:** Не изменять `src/routes/(app)/gto/session/[id]/play/+server.ts`.
 - **Обоснование:**
-  - Метод `postResult` в контроллере результатов уже принимает тип `'ravenMatrices'` и сериализует/сохраняет его в таблицу `ravenAttempt`.
-  - GTO endpoint (`+server.ts`) вызывает `postResult(action.testType, ...)` динамически, поэтому достаточно добавить `'ravenMatrices'` в `TestType` и `TEST_ORDER`.
+    - Метод `postResult` в контроллере результатов уже принимает тип `'ravenMatrices'` и сериализует/сохраняет его в таблицу `ravenAttempt`.
+    - GTO endpoint (`+server.ts`) вызывает `postResult(action.testType, ...)` динамически, поэтому достаточно добавить `'ravenMatrices'` в `TestType` и `TEST_ORDER`.
 
 ### 2.3. Добавление в `TestType` и `TEST_ORDER`
+
 - **Решение:** Внести `'ravenMatrices'` в `TestType` и в массив `tests[]` из `src/lib/tests/index.ts`.
 - **Обоснование:**
-  - Это минимальная точка входа. `+page.svelte` для прохождения тестов (`play`) опирается на `TEST_ORDER`, чтобы определить порядок и прогресс.
-  - `TestResultMap` связывает `'ravenMatrices'` с типом `RavenFullResult`, что сохраняет типобезопасность при отправке результатов.
-  - `testLoaders` для `'ravenMatrices'` будут использовать `import()` из директории `exercises/raven-matrices/`, что позволяет не менять динамическую загрузку компонентов.
+    - Это минимальная точка входа. `+page.svelte` для прохождения тестов (`play`) опирается на `TEST_ORDER`, чтобы определить порядок и прогресс.
+    - `TestResultMap` связывает `'ravenMatrices'` с типом `RavenFullResult`, что сохраняет типобезопасность при отправке результатов.
+    - `testLoaders` для `'ravenMatrices'` будут использовать `import()` из директории `exercises/raven-matrices/`, что позволяет не менять динамическую загрузку компонентов.
 
 ### 2.4. Безопасность расширения `testLoaders`
+
 - **Решение:** Добавить ленивый импорт компонентов Raven в объект `testLoaders`.
 - **Обоснование:**
-  - Все текущие тесты загружаются через функции `() => import('./<test>/...')`.
-  - Для Raven формат аналогичный: `() => import('../exercises/raven-matrices/About.svelte')`.
-  - Компонент `Playground.svelte` из Raven получит на вход те же пропсы (`gameEnd`, `sendResults`, `data`), что и остальные тесты.
+    - Все текущие тесты загружаются через функции `() => import('./<test>/...')`.
+    - Для Raven формат аналогичный: `() => import('../exercises/raven-matrices/About.svelte')`.
+    - Компонент `Playground.svelte` из Raven получит на вход те же пропсы (`gameEnd`, `sendResults`, `data`), что и остальные тесты.
 
 ---
 
@@ -129,7 +136,7 @@ export const tests: TestData[] = [
 		name: 'ravenMatrices',
 		title: 'Матрицы Равена',
 		path: '', // exercise не имеет отдельной about-страницы; опускаем или ставим '/'
-		img: ''  // можно позже добавить изображение
+		img: '' // можно позже добавить изображение
 	}
 ];
 ```
@@ -190,6 +197,7 @@ if (currentTestType === 'ravenMatrices') {
 ```
 
 > **Параметры генерации:**
+>
 > - `count: 12` — разумное количество заданий для одной сессии. При необходимости настраивается.
 > - Опции (`RavenTestGenerationOptions`) позволяют управлять сложностью, классами задач и семействами правил.
 
@@ -246,7 +254,10 @@ export type RavenDifficultyBreakdown = {
 	level3: RavenDifficultyLevelMetrics;
 };
 
-export type RavenTaskClassBreakdown = Record<string, { correct: number; total: number; label: string }>;
+export type RavenTaskClassBreakdown = Record<
+	string,
+	{ correct: number; total: number; label: string }
+>;
 
 export type RavenMetrics = {
 	totalQuestions: number;
@@ -306,10 +317,7 @@ const [
 ] = await Promise.all([
 	// ... existing 6 queries ...
 	ravenSessionIds.length
-		? db
-				.select()
-				.from(ravenAttempt)
-				.where(inArray(ravenAttempt.sessionId, ravenSessionIds))
+		? db.select().from(ravenAttempt).where(inArray(ravenAttempt.sessionId, ravenSessionIds))
 		: []
 ]);
 ```
@@ -390,6 +398,7 @@ if (ravenSession) {
 
 > **Импорт `TASK_CLASS_LABELS` и `TaskClass`:**
 > В начало `gto.ts` добавить:
+>
 > ```ts
 > import { TASK_CLASS_LABELS } from '$lib/exercises/raven-matrices/results-adapter';
 > import type { TaskClass } from '$lib/exercises/raven-matrices/types';
@@ -439,15 +448,21 @@ if (ravenSession) {
 		<div class="mt-1 grid grid-cols-3 gap-2 text-xs">
 			<div>
 				<span class="text-gray-500">Легкие</span>
-				<div class="tabular-nums">{m.raven.byDifficulty.level1.correct}/{m.raven.byDifficulty.level1.total}</div>
+				<div class="tabular-nums">
+					{m.raven.byDifficulty.level1.correct}/{m.raven.byDifficulty.level1.total}
+				</div>
 			</div>
 			<div>
 				<span class="text-gray-500">Средние</span>
-				<div class="tabular-nums">{m.raven.byDifficulty.level2.correct}/{m.raven.byDifficulty.level2.total}</div>
+				<div class="tabular-nums">
+					{m.raven.byDifficulty.level2.correct}/{m.raven.byDifficulty.level2.total}
+				</div>
 			</div>
 			<div>
 				<span class="text-gray-500">Сложные</span>
-				<div class="tabular-nums">{m.raven.byDifficulty.level3.correct}/{m.raven.byDifficulty.level3.total}</div>
+				<div class="tabular-nums">
+					{m.raven.byDifficulty.level3.correct}/{m.raven.byDifficulty.level3.total}
+				</div>
 			</div>
 		</div>
 	</div>
@@ -496,11 +511,14 @@ export type RavenDifficultyBreakdown = {
 ### `RavenTaskClassBreakdown`
 
 ```ts
-export type RavenTaskClassBreakdown = Record<string, {
-	correct: number;
-	total: number;
-	label: string;
-}>;
+export type RavenTaskClassBreakdown = Record<
+	string,
+	{
+		correct: number;
+		total: number;
+		label: string;
+	}
+>;
 ```
 
 ### `RavenMetrics`
@@ -531,7 +549,7 @@ export type ParticipantMetrics = {
 ```ts
 export type TestType =
 	// ... existing ...
-	| 'ravenMatrices';
+	'ravenMatrices';
 ```
 
 ### Обновление `TestResultMap`
@@ -550,15 +568,19 @@ export type TestResultMap = {
 Админская карточка Raven на странице деталей сессии (`/admin/gto/[id]`) должна отображать следующие данные:
 
 ### 5.1. Общие метрики
+
 - **Количество ответов:** `correctCount / totalQuestions`
 - **Точность:** `accuracy` (в процентах, с цветовой индикацией — зелёный ≥80%, жёлтый 50–79%, красный <50%)
 - **Среднее время ответа:** `averageResponseTimeMs` (в секундах, `toFixed(2)`)
 
 ### 5.2. Распределение по сложности
+
 Raven использует три уровня сложности (`DifficultyLevel = 1 | 2 | 3`). Для каждого уровня выводится:
+
 - Количество правильных ответов / общее количество заданий этого уровня.
 
 Пример строки:
+
 ```
 Легкие:  5/6
 Средние: 3/4
@@ -566,11 +588,14 @@ Raven использует три уровня сложности (`DifficultyLe
 ```
 
 ### 5.3. Распределение по классам задач
+
 Каждое задание Raven принадлежит к одному из `TaskClass`. Необходимо сгруппировать попытки по `taskClass` и отобразить:
+
 - **Название класса:** через `TASK_CLASS_LABELS`, например, `attribute_reasoning` → `Признаки`.
 - **Результат:** `correct / total` для этого класса.
 
 Пример:
+
 ```
 Признаки:       3/3
 Строки/столбцы: 2/4
@@ -581,14 +606,14 @@ Raven использует три уровня сложности (`DifficultyLe
 
 ## 6. Что НЕ меняется
 
-| Файл / модуль | Почему не меняется |
-|---------------|-------------------|
-| `src/routes/(app)/gto/session/[id]/play/+server.ts` | Универсальный `POST`-обработчик уже делает `postResult(action.testType, ...)`, а контроллер результатов поддерживает `'ravenMatrices'`. |
-| `src/lib/server/db/models/exercises.ts` | Таблица `ravenAttempt` уже существует со всеми необходимыми полями (`taskClass`, `difficultyLevel`, `isCorrect`, `responseTimeMs` и др.). |
-| `src/lib/server/db/schema.ts` | Схема не требует миграций; FK `gto_session_id` в таблице `session` уже связывает Raven-сессии с GTO. |
-| `src/routes/(app)/admin/gto/[id]/+page.server.ts` | Загрузка данных происходит через `getGtoSessionMetrics()`, достаточно добавить `raven` в возвращаемый объект из контроллера. |
-| `src/lib/exercises/raven-matrices/*` | Исходный код exercise не трогаем; со стороны GTO мы только ссылаемся на его компоненты и типы. |
-| Порядок остальных тестов | `stroop`, `math`, `munsterberg`, `campimetry`, `memory`, `swallow` остаются на прежних местах. Raven вставляется строго после `swallow`. |
+| Файл / модуль                                       | Почему не меняется                                                                                                                        |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/routes/(app)/gto/session/[id]/play/+server.ts` | Универсальный `POST`-обработчик уже делает `postResult(action.testType, ...)`, а контроллер результатов поддерживает `'ravenMatrices'`.   |
+| `src/lib/server/db/models/exercises.ts`             | Таблица `ravenAttempt` уже существует со всеми необходимыми полями (`taskClass`, `difficultyLevel`, `isCorrect`, `responseTimeMs` и др.). |
+| `src/lib/server/db/schema.ts`                       | Схема не требует миграций; FK `gto_session_id` в таблице `session` уже связывает Raven-сессии с GTO.                                      |
+| `src/routes/(app)/admin/gto/[id]/+page.server.ts`   | Загрузка данных происходит через `getGtoSessionMetrics()`, достаточно добавить `raven` в возвращаемый объект из контроллера.              |
+| `src/lib/exercises/raven-matrices/*`                | Исходный код exercise не трогаем; со стороны GTO мы только ссылаемся на его компоненты и типы.                                            |
+| Порядок остальных тестов                            | `stroop`, `math`, `munsterberg`, `campimetry`, `memory`, `swallow` остаются на прежних местах. Raven вставляется строго после `swallow`.  |
 
 ---
 
@@ -617,6 +642,7 @@ npm run check
 ```
 
 Убедиться, что:
+
 - `TestType` и `TestResultMap` не обрывают существующие type guards.
 - `ParticipantMetrics` используется в `+page.svelte` админки без ошибок доступа к полю `raven`.
 
@@ -625,24 +651,24 @@ npm run check
 1. Создать новую сессию ГТО-М, добавить участника.
 2. Пройти первые 6 шагов (или схитрить через `currentTestIndex` в базе).
 3. Дойти до шага «Матрицы Равена».
-   - Экран инструкции (`About.svelte`) должен загрузиться.
-   - После нажатия «Начать» должен загрузиться `Playground.svelte`.
-   - Задания должны быть сгенерированы и отображены.
+    - Экран инструкции (`About.svelte`) должен загрузиться.
+    - После нажатия «Начать» должен загрузиться `Playground.svelte`.
+    - Задания должны быть сгенерированы и отображены.
 4. Пройти задания (или пропустить/завершить).
 5. Убедиться, что:
-   - В таблицу `ravenAttempt` попали записи с `sessionId`, соответствующим сессии пользователя.
-   - `currentTestIndex` увеличился.
-   - После Raven начался этап слов (`/words`), если это был последний тест.
+    - В таблицу `ravenAttempt` попали записи с `sessionId`, соответствующим сессии пользователя.
+    - `currentTestIndex` увеличился.
+    - После Raven начался этап слов (`/words`), если это был последний тест.
 
 ### 8.3. Проверка админки
 
 1. Открыть детали сессии (`/admin/gto/[id]`).
 2. Развернуть карточку участника.
 3. Убедиться, что:
-   - Появилась карточка «Матрицы Равена» с фиолетовым/индиговым заголовком.
-   - Общие метрики (точность, среднее время) отображаются корректно.
-   - Блоки «По сложности» и «По классу задач» заполнены (если участник уже прошёл Raven).
-   - Если Raven ещё не пройден — карточка отображает нули/прочерки без ошибок интерфейса.
+    - Появилась карточка «Матрицы Равена» с фиолетовым/индиговым заголовком.
+    - Общие метрики (точность, среднее время) отображаются корректно.
+    - Блоки «По сложности» и «По классу задач» заполнены (если участник уже прошёл Raven).
+    - Если Raven ещё не пройден — карточка отображает нули/прочерки без ошибок интерфейса.
 
 ### 8.4. Линтинг
 
@@ -654,12 +680,12 @@ npm run lint
 
 ## 9. Потенциальные риски
 
-| Риск | Вероятность | Митигация |
-|------|-------------|-----------|
-| `Playground.svelte` Raven принимает иные пропсы | Средняя | Проверить сигнатуру пропсов; при необходимости создать тонкую обёртку-адаптер в `play/+page.svelte` или скорректировать `testLoaders`. |
-| `generateRavenTest({ count: 12 })` занимает слишком много времени | Низкая | Включить вариативность count в настройки сессии или сделать предгенерацию асинхронной. |
-| Дублирование `ravenAttempt` при повторном прохождении | Низкая | Проверить, не сбрасывается ли `currentTestIndex` назад; если да — результат сохранится под той же сессией, что может создать несколько записей. Логика `postResult` контроллера результатов должна обрабатывать уникальность `sessionId`. |
+| Риск                                                              | Вероятность | Митигация                                                                                                                                                                                                                                 |
+| ----------------------------------------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Playground.svelte` Raven принимает иные пропсы                   | Средняя     | Проверить сигнатуру пропсов; при необходимости создать тонкую обёртку-адаптер в `play/+page.svelte` или скорректировать `testLoaders`.                                                                                                    |
+| `generateRavenTest({ count: 12 })` занимает слишком много времени | Низкая      | Включить вариативность count в настройки сессии или сделать предгенерацию асинхронной.                                                                                                                                                    |
+| Дублирование `ravenAttempt` при повторном прохождении             | Низкая      | Проверить, не сбрасывается ли `currentTestIndex` назад; если да — результат сохранится под той же сессией, что может создать несколько записей. Логика `postResult` контроллера результатов должна обрабатывать уникальность `sessionId`. |
 
 ---
 
-*Документ составлен на основе текущего состояния репозитория. При изменении контрактов `Playground.svelte` Raven или схемы `ravenAttempt` данный план следует пересмотреть.*
+_Документ составлен на основе текущего состояния репозитория. При изменении контрактов `Playground.svelte` Raven или схемы `ravenAttempt` данный план следует пересмотреть._

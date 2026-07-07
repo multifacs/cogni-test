@@ -1,64 +1,114 @@
-# Patching Deeply-Nested Svelte Files
+# Patching Svelte Files in opencode
 
-When using the `patch` tool on `.svelte` files with deeply-nested HTML (8+ levels of tabs), follow these rules to avoid silent match failures.
+This guide explains why `edit` operations on `.svelte` files frequently fail and how to make them reliable.
 
-## The Problem
+## How opencode's Edit Tools Work
 
-The `patch` tool uses fuzzy string matching to find `old_string` in the file. With deeply-nested Svelte/HTML:
+opencode uses three different editing tools depending on the model:
 
-1. **Whitespace drift accumulates.** Each line may be off by a tab or space. Across 30+ lines, the cumulative difference exceeds the fuzzy matcher's tolerance and the patch silently does nothing.
+| Tool | Models | Matching strategy |
+|------|--------|-------------------|
+| `edit` (V1) | Claude, Gemini, non-GPT | 8-level fuzzy cascade: Simple → LineTrimmed → BlockAnchor → WhitespaceNormalized → IndentationFlexible → EscapeNormalized → TrimmedBoundary → ContextAware |
+| `apply_patch` | GPT models (except GPT-4) | `*** Begin Patch` / `*** End Patch` format with `@@` hunks; 4-level seek: exact → rstrip → trim → normalized |
+| `edit` (V2/core) | Some contexts | **Exact match only** — `content.indexOf(oldString)`, no fuzzy fallback |
 
-2. **Tab/space ambiguity.** The file uses hard tabs, but the text you type into `old_string` may not preserve exact tab counts. Reading `read_file` output, it's easy to miscount tab depth by 1–2 levels on deeply nested lines.
+Model routing logic from the registry:
+- GPT models **except** `gpt-4` and `gpt-*-oss` → `apply_patch`
+- All other models → `edit` (V1)
 
-3. **Large `old_string` blocks fail.** Matching an entire card component (40+ lines) almost never works. The matcher needs a tight, unambiguous anchor.
+You don't control which tool is used; you control whether your `old_string` can be matched by all of them.
 
-## What Works
+## Myth: CRLF Causes Failures
 
-### Use small, unique anchor points (2–5 lines)
+**False.** opencode's `edit` tool automatically normalizes line endings before matching:
 
-Instead of matching an entire block, find a **unique comment or short HTML fragment** nearby and use that as the `old_string`:
+1. Detect the file's line ending (LF or CRLF)
+2. Convert `\r\n` → `\n` in both `oldString` and `newString`
+3. Convert back to the file's original line ending for the replacement
+
+CRLF vs LF mismatch **does not** cause edit failures. Don't waste time converting line endings.
+
+## The Real Root Causes
+
+### #1: Multiple matches (the primary killer)
+
+Every replacer in V1 `edit` requires the match to be **unique**:
 
 ```
-✅ Good — small, unique, easy to match:
-old_string: the line "<!-- Editable metrics section -->" + 2 lines after it
-
-❌ Bad — 40-line card component with 10 levels of tab nesting
+if (firstIndex !== lastIndex) → SKIP — not unique!
 ```
 
-### Patch in small steps
+In Svelte files with repetitive components (e.g., 13 identical `options={[{ label: 'Никогда', value: 'never' }]}` blocks or 23 `type="choice"` TableRows), even fuzzy replacers find multiple identical matches and refuse to apply.
 
-Break a large insertion into multiple small patches:
-1. First patch: insert a comment marker at a unique location
-2. Second patch: expand around the marker
+**This is the single most common cause of edit failure in `.svelte` files.**
 
-### Verify after every patch
+### #2: Disproportionate match refusal
 
-Run `read_file` on the affected region after patching to confirm the change actually applied. Don't chain multiple patches assuming earlier ones succeeded.
+If a fuzzy replacer matches a block much larger than `oldString`, the edit is rejected as a safety guard:
 
-### For `.ts` files, large patches work fine
+- Matched block has ≥ max(oldLines + 3, oldLines × 2) lines
+- OR matched text is > max(oldLength + 500, oldLength × 4) characters
 
-TypeScript files have shallower nesting and simpler structure. The fuzzy matcher handles 30+ line `old_string` blocks reliably.
+### #3: BlockAnchor similarity threshold < 0.65
+
+The BlockAnchorReplacer computes Levenshtein distance on middle lines. If similarity falls below 0.65, no match is found.
+
+### #4: V2 core edit has no fuzzy matching
+
+If your request hits the V2 code path, only an exact `indexOf` match works. No whitespace tolerance, no trimming, no fuzzy fallback.
+
+## What Actually Works
+
+### Include a unique identifier inside `old_string`
+
+The single most reliable strategy. Add a unique label, comment, or attribute that appears nowhere else in the file:
+
+```
+✅ Good — unique comment guarantees single match:
+old_string: "<!-- Raven Matrices card -->\n\t\t\t\t<div class=\"metrics-card\">"
+
+❌ Bad — generic pattern appears 23 times in the file:
+old_string: "<TableRow type=\"choice\" options={...}>"
+```
+
+### Don't fear large blocks
+
+40-line blocks work fine if they contain unique content. The old advice "small anchors only" was wrong about the root cause. Large blocks fail when they contain **repeating patterns**, not because of their size.
+
+```
+✅ Good — 40 lines with a unique header comment:
+old_string: "<!-- Section: Behavioral Metrics -->\n...40 lines..."
+
+❌ Bad — 5 lines that appear verbatim in 12 places:
+old_string: "<div class=\"card\">\n\t<h3>Title</h3>\n</div>"
+```
+
+### Small anchors still help
+
+2–5 line anchors work well because short fragments are more likely to be unique. But the reason isn't "fuzzy matching can't handle large blocks" — it's that short fragments have a higher chance of appearing only once.
+
+### For `apply_patch`: use `@@` context markers
+
+When the model uses `apply_patch`, include surrounding context lines in `@@` hunks. The 4-level seek algorithm (exact → rstrip → trim → normalized) uses context to disambiguate location.
+
+### Verify after every edit
+
+Run `read_file` on the affected region after patching to confirm the change actually applied. Don't chain multiple edits assuming earlier ones succeeded.
 
 ## Escaping a Broken State
 
-If a patch partially applied (wrong indentation, extra `</div>` tags):
+If an edit partially applied (wrong indentation, extra tags, malformed markup):
 
-1. **Run `npm run format`** — Prettier will fix indentation but won't fix structural DOM errors (wrong number of closing tags).
+1. **Run `npm run format`** — Prettier fixes indentation but won't fix structural errors (wrong number of closing tags).
 2. **Check the diff** — `git diff` shows exactly what changed vs the committed state.
-3. **Revert and retry** — If the nesting is hopelessly tangled, `git checkout -- <file>` and start over with a better patch strategy.
+3. **Revert and retry** — If the nesting is hopelessly tangled, `git checkout -- <file>` and start over with a better anchor strategy.
 
-## Concrete Example
+## Quick Reference
 
-Adding a new metrics card inside an existing grid in `+page.svelte`:
-
-```
-✅ Strategy that worked:
-   old_string = "<!-- Editable metrics section -->\n\t\t\t\t<div\n\t\t\t\t\tclass=\"rounded-lg..."
-   new_string = "<!-- Raven Matrices -->\n...entire new card...\n\n\t\t\t\t<!-- Editable metrics section -->\n\t\t\t\t<div..."
-
-❌ Strategy that failed:
-   old_string = entire 50-line Swallow card closing + 3 </div> tags
-   new_string = same 50 lines + Raven card inserted
-```
-
-The small anchor (`<!-- Editable metrics section -->`) is unique in the file and only 3 lines — the fuzzy matcher finds it every time.
+| Problem | Solution | Why |
+|---------|----------|-----|
+| Edit fails with "multiple matches" | Add a unique comment/label inside `old_string` | Makes the match unambiguous for all replacer levels |
+| Edit silently does nothing on large block | Check that the block contains unique content; if not, reduce to a unique sub-anchor | Disproportionate match guard or multiple matches |
+| Apply patch fails to locate hunk | Add `@@` context lines above and below the change | Helps the 4-level seek algorithm disambiguate |
+| Edit works for `.ts` but not `.svelte` | `.svelte` files have more repetitive patterns; use unique identifiers | Same tool, different file structure |
+| V2 edit fails with "not found" | Ensure `old_string` is an exact byte-for-byte match | V2 has zero fuzzy tolerance |
