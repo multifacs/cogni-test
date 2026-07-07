@@ -191,23 +191,6 @@
 
 <main class="main overflow-auto p-4">
 	<div class="flex flex-col gap-4">
-		<!-- Words -->
-		{#if data.session.words.length > 0}
-			<div class="flex flex-col gap-2">
-				<h3 class="text-sm font-semibold uppercase tracking-wider text-gray-400">Слова</h3>
-				<div class="flex flex-wrap gap-2">
-					{#each data.session.words as w (w.position)}
-						<span
-							class="inline-flex items-center gap-1 rounded-lg bg-indigo-900/40 px-3 py-1.5 text-sm font-medium text-indigo-200"
-						>
-							<span class="text-xs text-indigo-400">{w.position + 1}.</span>
-							{w.word}
-						</span>
-					{/each}
-				</div>
-			</div>
-		{/if}
-
 		<!-- Session control buttons -->
 		{#if data.session.status === 'active'}
 			<div class="flex gap-2">

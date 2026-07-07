@@ -3,7 +3,6 @@ import { session, user, profileSurvey } from '$lib/server/db/schema';
 import {
 	gtoSession,
 	gtoSessionParticipant,
-	gtoSessionWord,
 	gtoEditableMetric,
 	gtoWordSet,
 	gtoWordResponse
@@ -102,8 +101,7 @@ function computeMissingSurveyFields(survey: Record<string, unknown> | null): str
 export async function createGtoSession(
 	name: string,
 	type: string,
-	participantIds: string[],
-	words: string[]
+	participantIds: string[]
 ): Promise<string> {
 	return await db.transaction(async (tx) => {
 		const gtoSessionId = generate();
@@ -128,17 +126,6 @@ export async function createGtoSession(
 				participantRows.map((p) => ({
 					id: generate(),
 					participantId: p.id
-				}))
-			);
-		}
-
-		if (words.length > 0) {
-			await tx.insert(gtoSessionWord).values(
-				words.slice(0, 5).map((word, index) => ({
-					id: generate(),
-					gtoSessionId,
-					word,
-					position: index
 				}))
 			);
 		}
@@ -190,7 +177,6 @@ export type GtoSessionDetail = {
 	status: string;
 	createdAt: string;
 	participants: GtoSessionParticipantDetail[];
-	words: { word: string; position: number }[];
 };
 
 export type GtoSessionParticipantDetail = {
@@ -288,23 +274,13 @@ export async function getGtoSessionById(id: string): Promise<GtoSessionDetail> {
 	}));
 
 	// Words
-	const wordRows = await db
-		.select({
-			word: gtoSessionWord.word,
-			position: gtoSessionWord.position
-		})
-		.from(gtoSessionWord)
-		.where(eq(gtoSessionWord.gtoSessionId, id))
-		.orderBy(asc(gtoSessionWord.position));
-
 	return {
 		id: gtoSessionRow.id,
 		name: gtoSessionRow.name,
 		type: gtoSessionRow.type,
 		status: gtoSessionRow.status,
 		createdAt: gtoSessionRow.createdAt,
-		participants,
-		words: wordRows
+		participants
 	};
 }
 
@@ -879,27 +855,7 @@ export async function getAuthorizedUsers(): Promise<AuthorizedUser[]> {
 	}));
 }
 
-// ─── 12. getGtoSessionWords ────────────────────────────────────────
-
-export type GtoSessionWordItem = {
-	word: string;
-	position: number;
-};
-
-export async function getGtoSessionWords(gtoSessionId: string): Promise<GtoSessionWordItem[]> {
-	const words = await db
-		.select({
-			word: gtoSessionWord.word,
-			position: gtoSessionWord.position
-		})
-		.from(gtoSessionWord)
-		.where(eq(gtoSessionWord.gtoSessionId, gtoSessionId))
-		.orderBy(asc(gtoSessionWord.position));
-
-	return words;
-}
-
-// ─── 13. Word set helpers ─────────────────────────────────────────
+// ─── 12. Word set helpers ─────────────────────────────────────────
 
 export type GtoWordSetListItem = {
 	id: string;
@@ -948,6 +904,58 @@ export async function generateWordSets(count: number, allWords: string[]): Promi
 	}
 }
 
+export async function createWordSet(words: string[]): Promise<GtoWordSetListItem> {
+	if (words.length !== 5 || words.some((w) => !w.trim())) {
+		throw new Error('Word set must have exactly 5 non-empty words');
+	}
+	const existing = await db
+		.select({ max: sql<number>`COALESCE(MAX(${gtoWordSet.setNumber}), 0)` })
+		.from(gtoWordSet);
+	const setNumber = (existing[0]?.max ?? 0) + 1;
+	const [row] = await db
+		.insert(gtoWordSet)
+		.values({
+			id: generate(),
+			setNumber,
+			word1: words[0].trim().toLowerCase(),
+			word2: words[1].trim().toLowerCase(),
+			word3: words[2].trim().toLowerCase(),
+			word4: words[3].trim().toLowerCase(),
+			word5: words[4].trim().toLowerCase()
+		})
+		.returning();
+	return {
+		id: row.id,
+		setNumber: row.setNumber,
+		words: [row.word1, row.word2, row.word3, row.word4, row.word5],
+		createdAt: row.createdAt
+	};
+}
+
+export async function updateWordSet(id: string, words: string[]): Promise<GtoWordSetListItem> {
+	if (words.length !== 5 || words.some((w) => !w.trim())) {
+		throw new Error('Word set must have exactly 5 non-empty words');
+	}
+	const [row] = await db
+		.update(gtoWordSet)
+		.set({
+			word1: words[0].trim().toLowerCase(),
+			word2: words[1].trim().toLowerCase(),
+			word3: words[2].trim().toLowerCase(),
+			word4: words[3].trim().toLowerCase(),
+			word5: words[4].trim().toLowerCase()
+		})
+		.where(eq(gtoWordSet.id, id))
+		.returning();
+	if (!row) throw new Error('Word set not found');
+	return {
+		id: row.id,
+		setNumber: row.setNumber,
+		words: [row.word1, row.word2, row.word3, row.word4, row.word5],
+		createdAt: row.createdAt
+	};
+}
+
 export async function deleteWordSet(id: string): Promise<void> {
 	// Check if any participant references this word set
 	const [referenced] = await db
@@ -981,7 +989,10 @@ export async function computeAndSaveWordScore(participantId: string): Promise<vo
 
 	if (!participant?.wordSetId) return;
 
-	const [set] = await db.select().from(gtoWordSet).where(eq(gtoWordSet.id, participant.wordSetId));
+	const [set] = await db
+		.select()
+		.from(gtoWordSet)
+		.where(eq(gtoWordSet.id, participant.wordSetId));
 	if (!set) return;
 
 	const responses = await db
@@ -1008,10 +1019,7 @@ export async function computeAndSaveWordScore(participantId: string): Promise<vo
 		.where(eq(gtoSessionParticipant.id, participantId));
 }
 
-export async function saveWordResponses(
-	participantId: string,
-	words: string[]
-): Promise<void> {
+export async function saveWordResponses(participantId: string, words: string[]): Promise<void> {
 	const rows = words.map((word, position) => ({
 		id: generate(),
 		participantId,

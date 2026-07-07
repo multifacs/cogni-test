@@ -1,9 +1,5 @@
 import type { PageServerLoad } from './$types';
-import {
-	getGtoSessionById,
-	getGtoSessionWords,
-	getWordSetWords
-} from '$lib/server/db/controllers/gto';
+import { getGtoSessionById, getWordSetWords } from '$lib/server/db/controllers/gto';
 import { error, redirect } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ params, cookies }) => {
@@ -24,19 +20,14 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 		redirect(307, '/gto');
 	}
 
-	if (participant.wordSetId) {
-		const words = await getWordSetWords(participant.wordSetId);
-		return {
-			sessionId: params.id,
-			sessionName: sessionDetail.name,
-			wordCount: words.length
-		};
+	if (!participant.wordSetId) {
+		error(400, 'Сет слов не назначен. Обратитесь к администратору.');
 	}
 
+	const words = await getWordSetWords(participant.wordSetId);
 	return {
 		sessionId: params.id,
 		sessionName: sessionDetail.name,
-		wordCount: 5,
-		freeInput: true
+		wordCount: words.length
 	};
 };
