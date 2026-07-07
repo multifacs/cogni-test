@@ -6,7 +6,9 @@ import {
 	updateEditableMetrics,
 	pauseGtoSession,
 	resumeGtoSession,
-	assignWordSet
+	assignWordSet,
+	addParticipant,
+	removeParticipant
 } from '$lib/server/db/controllers/gto';
 
 export const PATCH: RequestHandler = async ({ request, params, cookies }) => {
@@ -77,6 +79,19 @@ export const PATCH: RequestHandler = async ({ request, params, cookies }) => {
 				}
 
 				await updateEditableMetrics(participantId, metrics);
+				return json({ success: true });
+			}
+			case 'addParticipant': {
+				const userId = data.get('userId') as string;
+				if (!userId) return json({ error: 'User ID required' }, { status: 400 });
+				await addParticipant(params.id, userId);
+				return json({ success: true });
+			}
+			case 'removeParticipant': {
+				const participantId = data.get('participantId') as string;
+				if (!participantId)
+					return json({ error: 'Participant ID required' }, { status: 400 });
+				await removeParticipant(participantId);
 				return json({ success: true });
 			}
 			default:

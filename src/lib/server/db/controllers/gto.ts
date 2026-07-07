@@ -4,8 +4,7 @@ import {
 	gtoSession,
 	gtoSessionParticipant,
 	gtoEditableMetric,
-	gtoWordSet,
-	gtoWordResponse
+	gtoWordSet
 } from '$lib/server/db/models/gto';
 import {
 	stroopAttempt,
@@ -16,7 +15,7 @@ import {
 	swallowAttempt
 } from '$lib/server/db/models/tests';
 import { generate } from 'short-uuid';
-import { eq, and, desc, asc, sql, inArray } from 'drizzle-orm';
+import { eq, and, desc, sql, inArray } from 'drizzle-orm';
 import { missingFieldLabels } from '$lib/survey-field-labels';
 
 export { missingFieldLabels as computeMissingSurveyFieldLabels };
@@ -976,57 +975,31 @@ export async function assignWordSet(participantId: string, wordSetId: string): P
 		.where(eq(gtoSessionParticipant.id, participantId));
 }
 
-/**
- * @todo Wire this into the admin word set assignment flow:
- * When admin assigns a word set to a participant who has already submitted
- * free-form responses, call this to retroactively compute the word score.
- */
-export async function computeAndSaveWordScore(participantId: string): Promise<void> {
-	const [participant] = await db
-		.select({ wordSetId: gtoSessionParticipant.wordSetId })
-		.from(gtoSessionParticipant)
-		.where(eq(gtoSessionParticipant.id, participantId));
-
-	if (!participant?.wordSetId) return;
-
-	const [set] = await db
-		.select()
-		.from(gtoWordSet)
-		.where(eq(gtoWordSet.id, participant.wordSetId));
-	if (!set) return;
-
-	const responses = await db
-		.select()
-		.from(gtoWordResponse)
-		.where(eq(gtoWordResponse.participantId, participantId))
-		.orderBy(asc(gtoWordResponse.position));
-
-	const correctWords = [set.word1, set.word2, set.word3, set.word4, set.word5];
-	function normalize(w: string): string {
-		return w.toLowerCase().replace(/ё/g, 'е').trim();
-	}
-
-	let score = 0;
-	for (let i = 0; i < correctWords.length; i++) {
-		const correct = normalize(correctWords[i]);
-		const submitted = normalize(responses[i]?.word ?? '');
-		if (correct === submitted) score++;
-	}
-
-	await db
-		.update(gtoSessionParticipant)
-		.set({ wordScore: score, hasSubmittedWords: true })
-		.where(eq(gtoSessionParticipant.id, participantId));
+export async function addParticipant(sessionId: string, userId: string): Promise<string> {
+	const participantId = generate();
+	await db.transaction(async (tx) => {
+		await tx.insert(gtoSessionParticipant).values({
+			id: participantId,
+			gtoSessionId: sessionId,
+			userId,
+			hasCompletedTests: false,
+			hasSubmittedWords: false
+		});
+		await tx.insert(gtoEditableMetric).values({
+			id: generate(),
+			participantId
+		});
+	});
+	return participantId;
 }
 
-export async function saveWordResponses(participantId: string, words: string[]): Promise<void> {
-	const rows = words.map((word, position) => ({
-		id: generate(),
-		participantId,
-		position,
-		word
-	}));
-	await db.insert(gtoWordResponse).values(rows);
+export async function removeParticipant(participantId: string): Promise<void> {
+	await db.transaction(async (tx) => {
+		await tx
+			.delete(gtoEditableMetric)
+			.where(eq(gtoEditableMetric.participantId, participantId));
+		await tx.delete(gtoSessionParticipant).where(eq(gtoSessionParticipant.id, participantId));
+	});
 }
 
 export async function getWordSetWords(wordSetId: string): Promise<string[]> {

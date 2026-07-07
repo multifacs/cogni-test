@@ -6,7 +6,8 @@ import { inArray } from 'drizzle-orm';
 import {
 	getGtoSessionById,
 	getGtoSessionMetrics,
-	getWordSets
+	getWordSets,
+	getAuthorizedUsers
 } from '$lib/server/db/controllers/gto';
 
 export const load: PageServerLoad = async ({ params }) => {
@@ -16,6 +17,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	}
 	const metrics = await getGtoSessionMetrics(params.id);
 	const wordSets = await getWordSets();
+	const authorizedUsers = await getAuthorizedUsers();
 
 	const userIds = sessionDetail.participants.map((p) => p.userId);
 	const surveys = userIds.length
@@ -25,14 +27,13 @@ export const load: PageServerLoad = async ({ params }) => {
 				.where(inArray(profileSurvey.userId, userIds))
 		: [];
 	const gtoIdMap = new Map(surveys.map((s) => [s.userId, s.gtoId]));
-	const wordSetIdMap = new Map(
-		sessionDetail.participants.map((p) => [p.id, p.wordSetId])
-	);
+	const wordSetIdMap = new Map(sessionDetail.participants.map((p) => [p.id, p.wordSetId]));
 
 	return {
 		session: sessionDetail,
 		metrics,
 		wordSets,
+		authorizedUsers,
 		gtoIdMap,
 		wordSetIdMap
 	};

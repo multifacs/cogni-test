@@ -15,7 +15,10 @@ export const gtoSession = sqliteTable(
 			.notNull()
 	},
 	(table) => [
-		check('gto_session_status_check', enumCheck(table.status, ['active', 'paused', 'completed'])),
+		check(
+			'gto_session_status_check',
+			enumCheck(table.status, ['active', 'paused', 'completed'])
+		),
 		check('gto_session_type_check', enumCheck(table.type, ['cognitive-age']))
 	]
 );
@@ -49,21 +52,6 @@ export const gtoSessionParticipant = sqliteTable(
 	]
 );
 
-export const gtoSessionWord = sqliteTable(
-	'gto_session_word',
-	{
-		id: text('id').primaryKey().$defaultFn(generate),
-		gtoSessionId: text('gto_session_id')
-			.notNull()
-			.references(() => gtoSession.id),
-		word: text('word').notNull(),
-		position: integer('position').notNull()
-	},
-	(table) => [
-		check('position_check', sql`${table.position} >= 0 AND ${table.position} <= 4`)
-	]
-);
-
 export const gtoEditableMetric = sqliteTable(
 	'gto_editable_metric',
 	{
@@ -80,7 +68,7 @@ export const gtoEditableMetric = sqliteTable(
 		buttonTestNumber: integer('button_test_number'),
 		buttonTestFileName: text('button_test_file_name'),
 		logic: integer('logic'),
-		wordSetNumber: integer('word_set_number'),
+		wordSetNumber: integer('word_set_number')
 	},
 	(table) => [
 		check(
@@ -99,30 +87,15 @@ export const gtoEditableMetric = sqliteTable(
 	]
 );
 
-export const gtoWordSet = sqliteTable(
-	'gto_word_set',
-	{
-		id: text('id').primaryKey().$defaultFn(generate),
-		setNumber: integer('set_number').notNull(),
-		word1: text('word1').notNull(),
-		word2: text('word2').notNull(),
-		word3: text('word3').notNull(),
-		word4: text('word4').notNull(),
-		word5: text('word5').notNull(),
-		createdAt: text('created_at')
-			.default(sql`CURRENT_TIMESTAMP`)
-			.notNull()
-	}
-);
-
-export const gtoWordResponse = sqliteTable(
-	'gto_word_response',
-	{
-		id: text('id').primaryKey().$defaultFn(generate),
-		participantId: text('participant_id')
-			.notNull()
-			.references(() => gtoSessionParticipant.id),
-		position: integer('position').notNull(),
-		word: text('word').notNull()
-	}
-);
+export const gtoWordSet = sqliteTable('gto_word_set', {
+	id: text('id').primaryKey().$defaultFn(generate),
+	setNumber: integer('set_number').notNull(),
+	word1: text('word1').notNull(),
+	word2: text('word2').notNull(),
+	word3: text('word3').notNull(),
+	word4: text('word4').notNull(),
+	word5: text('word5').notNull(),
+	createdAt: text('created_at')
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull()
+});

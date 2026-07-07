@@ -13,6 +13,9 @@
 	let toastMessage = $state<string | null>(null);
 	let toastType = $state<'error' | 'success' | 'info'>('info');
 	let expandedParticipant = $state<string | null>(null);
+	let addingParticipant = $state(false);
+	let participantSearch = $state('');
+	let removingParticipant = $state<string | null>(null);
 
 	function showToast(message: string, type: 'error' | 'success' | 'info' = 'error') {
 		toastMessage = message;
@@ -98,6 +101,35 @@
 		}
 	}
 
+	async function handleAddParticipant(userId: string) {
+		const fd = new FormData();
+		fd.set('action', 'addParticipant');
+		fd.set('userId', userId);
+		const response = await fetch('', { method: 'PATCH', body: fd });
+		if (!response.ok) {
+			showToast('Ошибка добавления участника');
+		} else {
+			showToast('Участник добавлен', 'success');
+			participantSearch = '';
+			await refreshData();
+		}
+	}
+
+	async function handleRemoveParticipant(participantId: string) {
+		const fd = new FormData();
+		fd.set('action', 'removeParticipant');
+		fd.set('participantId', participantId);
+		const response = await fetch('', { method: 'PATCH', body: fd });
+		if (!response.ok) {
+			showToast('Ошибка удаления участника');
+		} else {
+			showToast('Участник удалён', 'success');
+			removingParticipant = null;
+			expandedParticipant = null;
+			await refreshData();
+		}
+	}
+
 	async function handleSaveMetrics(participantId: string, metrics: Record<string, string>) {
 		const fd = new FormData();
 		fd.set('action', 'updateMetrics');
@@ -144,6 +176,22 @@
 
 	let statusStyle = $derived(
 		statusConfig[data.session.status as keyof typeof statusConfig] ?? statusConfig.completed
+	);
+
+	let currentParticipantIds = $derived(new Set(data.session.participants.map((p) => p.userId)));
+
+	let availableUsers = $derived(
+		data.authorizedUsers
+			.filter((u) => !currentParticipantIds.has(u.id))
+			.filter((u) => {
+				if (!participantSearch) return true;
+				const q = participantSearch.toLowerCase();
+				return (
+					u.lastname.toLowerCase().includes(q) ||
+					u.firstname.toLowerCase().includes(q) ||
+					(u.gtoId ?? '').toLowerCase().includes(q)
+				);
+			})
 	);
 </script>
 
@@ -203,6 +251,85 @@
 				<Button color="red" onclick={handleComplete}>Завершить сессию</Button>
 			</div>
 		{/if}
+
+		<!-- Add participant -->
+		<div class="rounded-xl border border-gray-700 bg-gray-800/30 p-4">
+			<button
+				class="flex w-full items-center justify-between text-left"
+				onclick={() => (addingParticipant = !addingParticipant)}
+			>
+				<span class="font-semibold">Добавить участника</span>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					class="h-5 w-5 text-gray-400 transition-transform {addingParticipant
+						? 'rotate-180'
+						: ''}"
+					viewBox="0 0 20 20"
+					fill="currentColor"
+				>
+					<path
+						fill-rule="evenodd"
+						d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+						clip-rule="evenodd"
+					/>
+				</svg>
+			</button>
+			{#if addingParticipant}
+				<div class="mt-3 flex flex-col gap-3">
+					<input
+						type="text"
+						bind:value={participantSearch}
+						placeholder="Поиск по имени или ГТО-М ID..."
+						class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
+					/>
+					{#if availableUsers.length === 0}
+						<p class="py-2 text-center text-sm text-gray-500">
+							{participantSearch
+								? 'Ничего не найдено'
+								: 'Все авторизованные пользователи уже в сессии'}
+						</p>
+					{:else}
+						<div class="max-h-60 overflow-y-auto rounded-lg border border-gray-700">
+							{#each availableUsers as u (u.id)}
+								<button
+									class="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-700"
+									onclick={() => handleAddParticipant(u.id)}
+								>
+									<span
+										class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-600 text-xs font-bold text-gray-300"
+									>
+										{u.lastname[0]}
+									</span>
+									<div class="flex min-w-0 flex-1 flex-col">
+										<span class="truncate text-sm font-medium"
+											>{u.lastname} {u.firstname}</span
+										>
+										<span class="text-xs text-gray-400">
+											{u.sex === 'male' ? 'М' : 'Ж'} · {u.age} лет
+											{#if u.gtoId}
+												· ГТО-М: {u.gtoId}
+											{/if}
+										</span>
+									</div>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										class="h-5 w-5 shrink-0 text-green-500"
+										viewBox="0 0 20 20"
+										fill="currentColor"
+									>
+										<path
+											fill-rule="evenodd"
+											d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+											clip-rule="evenodd"
+										/>
+									</svg>
+								</button>
+							{/each}
+						</div>
+					{/if}
+				</div>
+			{/if}
+		</div>
 
 		<!-- Participants -->
 		{#if data.metrics.length === 0}
@@ -274,6 +401,51 @@
 									>
 										Слова: {m.wordScore}/5
 									</span>
+								{/if}
+								<!-- Remove participant -->
+								{#if removingParticipant === m.participantId}
+									<div class="flex items-center gap-1">
+										<button
+											class="rounded px-2 py-0.5 text-xs text-red-300 transition-colors hover:bg-red-900/40"
+											onclick={(e) => {
+												e.stopPropagation();
+												handleRemoveParticipant(m.participantId);
+											}}
+										>
+											Удалить
+										</button>
+										<button
+											class="rounded px-2 py-0.5 text-xs text-gray-400 transition-colors hover:bg-gray-700"
+											onclick={(e) => {
+												e.stopPropagation();
+												removingParticipant = null;
+											}}
+										>
+											Отмена
+										</button>
+									</div>
+								{:else}
+									<button
+										class="rounded p-1 text-gray-500 transition-colors hover:bg-red-900/30 hover:text-red-400"
+										onclick={(e) => {
+											e.stopPropagation();
+											removingParticipant = m.participantId;
+										}}
+										aria-label="Удалить участника"
+									>
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											class="h-4 w-4"
+											viewBox="0 0 20 20"
+											fill="currentColor"
+										>
+											<path
+												fill-rule="evenodd"
+												d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+												clip-rule="evenodd"
+											/>
+										</svg>
+									</button>
 								{/if}
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
