@@ -735,6 +735,104 @@
 												</div>
 											</div>
 										</div>
+
+										<!-- Raven -->
+										<div class="rounded-lg bg-gray-900/50 p-3">
+											<h4
+												class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-400"
+											>
+												Матрицы Равена
+											</h4>
+											<div class="flex flex-col gap-1 text-sm">
+												<div class="flex items-center gap-2">
+													<span
+														class="w-20 shrink-0 text-xs text-gray-400"
+														>Всего</span
+													>
+													<span class="tabular-nums"
+														>{m.raven.correctCount}/{m.raven
+															.totalQuestions}</span
+													>
+												</div>
+												<div class="flex items-center gap-2">
+													<span
+														class="w-20 shrink-0 text-xs text-gray-400"
+														>Точность</span
+													>
+													<span
+														class="tabular-nums {m.raven.accuracy >= 0.8
+															? 'text-green-400'
+															: m.raven.accuracy >= 0.5
+																? 'text-yellow-400'
+																: 'text-red-400'}"
+													>
+														{pct(m.raven.accuracy)}
+													</span>
+												</div>
+												<div class="flex items-center gap-2">
+													<span
+														class="w-20 shrink-0 text-xs text-gray-400"
+														>Среднее</span
+													>
+													<span class="tabular-nums"
+														>{fmt(
+															m.raven.averageResponseTimeMs / 1000
+														)}с</span
+													>
+												</div>
+											</div>
+
+											<div class="mt-2 border-t border-gray-700 pt-2">
+												<span class="text-xs text-gray-400"
+													>По сложности</span
+												>
+												<div class="mt-1 grid grid-cols-3 gap-2 text-xs">
+													<div>
+														<span class="text-gray-500">Легкие</span>
+														<div class="tabular-nums">
+															{m.raven.byDifficulty.level1.correct}/{m
+																.raven.byDifficulty.level1.total}
+														</div>
+													</div>
+													<div>
+														<span class="text-gray-500">Средние</span>
+														<div class="tabular-nums">
+															{m.raven.byDifficulty.level2.correct}/{m
+																.raven.byDifficulty.level2.total}
+														</div>
+													</div>
+													<div>
+														<span class="text-gray-500">Сложные</span>
+														<div class="tabular-nums">
+															{m.raven.byDifficulty.level3.correct}/{m
+																.raven.byDifficulty.level3.total}
+														</div>
+													</div>
+												</div>
+											</div>
+
+											{#if Object.keys(m.raven.byTaskClass).length > 0}
+												<div class="mt-2 border-t border-gray-700 pt-2">
+													<span class="text-xs text-gray-400"
+														>По классу задач</span
+													>
+													<div class="mt-1 flex flex-col gap-0.5 text-xs">
+														{#each Object.entries(m.raven.byTaskClass) as [tc, info] (tc)}
+															<div
+																class="flex items-center justify-between"
+															>
+																<span class="text-gray-500"
+																	>{info.label}</span
+																>
+																<span class="tabular-nums"
+																	>{info.correct}/{info.total}</span
+																>
+															</div>
+														{/each}
+													</div>
+												</div>
+											{/if}
+										</div>
 									</div>
 
 									<!-- Editable metrics section -->

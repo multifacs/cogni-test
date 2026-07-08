@@ -4,6 +4,7 @@ import type { MunsterbergResult } from './munsterberg/types';
 import type { MemoryResult } from './memory/types';
 import type { SwallowResult } from './swallow/types';
 import type { CampimetryResult } from './campimetry/types';
+import type { RavenFullResult } from '$lib/exercises/raven-matrices/types';
 
 export { type TestData } from './index';
 
@@ -13,7 +14,8 @@ export type TestType =
 	| 'munsterberg'
 	| 'memory'
 	| 'swallow'
-	| 'campimetry';
+	| 'campimetry'
+	| 'ravenMatrices';
 
 export type TestResultMap = {
 	math: MathResult;
@@ -22,6 +24,7 @@ export type TestResultMap = {
 	memory: MemoryResult;
 	swallow: SwallowResult;
 	campimetry: CampimetryResult;
+	ravenMatrices: RavenFullResult;
 };
 
 export type RegularResult =
@@ -50,4 +53,3 @@ export interface MetaResult {
 	results: RegularResults;
 	meta: string[];
 }
-

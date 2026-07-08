@@ -14,6 +14,9 @@ import {
 	memoryAttempt,
 	swallowAttempt
 } from '$lib/server/db/models/tests';
+import { ravenAttempt } from '$lib/server/db/models/exercises';
+import { TASK_CLASS_LABELS } from '$lib/exercises/raven-matrices/results-adapter';
+import type { TaskClass } from '$lib/exercises/raven-matrices/types';
 import { generate } from 'short-uuid';
 import { eq, and, desc, sql, inArray } from 'drizzle-orm';
 import { missingFieldLabels } from '$lib/survey-field-labels';
@@ -510,6 +513,32 @@ export type CampimetryMetrics = {
 	stage2Breakdown: CampimetryBreakdown;
 };
 
+export type RavenDifficultyLevelMetrics = {
+	correct: number;
+	total: number;
+	accuracy: number;
+};
+
+export type RavenDifficultyBreakdown = {
+	level1: RavenDifficultyLevelMetrics;
+	level2: RavenDifficultyLevelMetrics;
+	level3: RavenDifficultyLevelMetrics;
+};
+
+export type RavenTaskClassBreakdown = Record<
+	string,
+	{ correct: number; total: number; label: string }
+>;
+
+export type RavenMetrics = {
+	totalQuestions: number;
+	correctCount: number;
+	accuracy: number;
+	averageResponseTimeMs: number;
+	byDifficulty: RavenDifficultyBreakdown;
+	byTaskClass: RavenTaskClassBreakdown;
+};
+
 export type ParticipantMetrics = {
 	participantId: string;
 	userId: string;
@@ -524,6 +553,7 @@ export type ParticipantMetrics = {
 	campimetry: CampimetryMetrics;
 	memory: SimpleTestMetrics;
 	swallow: SimpleTestMetrics;
+	raven: RavenMetrics;
 	editableMetrics: GtoEditableMetricDetail;
 	wordScore: number | null;
 };
@@ -563,6 +593,7 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 	const campimetrySessionIds: string[] = [];
 	const memorySessionIds: string[] = [];
 	const swallowSessionIds: string[] = [];
+	const ravenSessionIds: string[] = [];
 
 	for (const ts of allTestSessions) {
 		switch (ts.testType) {
@@ -584,6 +615,9 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 			case 'swallow':
 				swallowSessionIds.push(ts.id);
 				break;
+			case 'ravenMatrices':
+				ravenSessionIds.push(ts.id);
+				break;
 		}
 	}
 
@@ -594,7 +628,8 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 		munsterbergAttempts,
 		campimetryAttempts,
 		memoryAttempts,
-		swallowAttempts
+		swallowAttempts,
+		ravenAttempts
 	] = await Promise.all([
 		stroopSessionIds.length
 			? db
@@ -628,6 +663,9 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 					.select()
 					.from(swallowAttempt)
 					.where(inArray(swallowAttempt.sessionId, swallowSessionIds))
+			: [],
+		ravenSessionIds.length
+			? db.select().from(ravenAttempt).where(inArray(ravenAttempt.sessionId, ravenSessionIds))
 			: []
 	]);
 
@@ -648,6 +686,7 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 	const campimetryAttemptsMap = indexBySessionId(campimetryAttempts);
 	const memoryAttemptsMap = indexBySessionId(memoryAttempts);
 	const swallowAttemptsMap = indexBySessionId(swallowAttempts);
+	const ravenAttemptsMap = indexBySessionId(ravenAttempts);
 
 	// Build per-user metrics
 	const metrics: ParticipantMetrics[] = [];
@@ -789,6 +828,68 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 			};
 		}
 
+		// ─── Raven ──────────────────────────────────────────────
+		const ravenSession = testSessions.find((s) => s.testType === 'ravenMatrices');
+		let ravenMetrics: RavenMetrics = {
+			totalQuestions: 0,
+			correctCount: 0,
+			accuracy: 0,
+			averageResponseTimeMs: 0,
+			byDifficulty: {
+				level1: { correct: 0, total: 0, accuracy: 0 },
+				level2: { correct: 0, total: 0, accuracy: 0 },
+				level3: { correct: 0, total: 0, accuracy: 0 }
+			},
+			byTaskClass: {}
+		};
+
+		if (ravenSession) {
+			const attempts = ravenAttemptsMap.get(ravenSession.id) ?? [];
+			const totalQuestions = attempts.length;
+			const correctCount = attempts.filter((a) => a.isCorrect).length;
+			const totalDurationMs = attempts.reduce((sum, a) => sum + a.responseTimeMs, 0);
+			const avgTime = totalQuestions ? Math.round(totalDurationMs / totalQuestions) : 0;
+
+			const byDifficulty: RavenDifficultyBreakdown = {
+				level1: { correct: 0, total: 0, accuracy: 0 },
+				level2: { correct: 0, total: 0, accuracy: 0 },
+				level3: { correct: 0, total: 0, accuracy: 0 }
+			};
+
+			for (const a of attempts) {
+				const lvl = a.difficultyLevel as 1 | 2 | 3;
+				if (lvl >= 1 && lvl <= 3) {
+					const key = `level${lvl}` as const;
+					byDifficulty[key].total++;
+					if (a.isCorrect) byDifficulty[key].correct++;
+				}
+			}
+
+			for (const key of ['level1', 'level2', 'level3'] as const) {
+				const d = byDifficulty[key];
+				d.accuracy = d.total > 0 ? d.correct / d.total : 0;
+			}
+
+			const byTaskClass: RavenTaskClassBreakdown = {};
+			for (const a of attempts) {
+				const label = TASK_CLASS_LABELS[a.taskClass as TaskClass] ?? a.taskClass;
+				if (!byTaskClass[a.taskClass]) {
+					byTaskClass[a.taskClass] = { correct: 0, total: 0, label };
+				}
+				byTaskClass[a.taskClass].total++;
+				if (a.isCorrect) byTaskClass[a.taskClass].correct++;
+			}
+
+			ravenMetrics = {
+				totalQuestions,
+				correctCount,
+				accuracy: totalQuestions ? correctCount / totalQuestions : 0,
+				averageResponseTimeMs: avgTime,
+				byDifficulty,
+				byTaskClass
+			};
+		}
+
 		metrics.push({
 			participantId: participant.id,
 			userId: participant.userId,
@@ -803,6 +904,7 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 			campimetry: campimetryMetrics,
 			memory: memoryMetrics,
 			swallow: swallowMetrics,
+			raven: ravenMetrics,
 			editableMetrics: participant.editableMetrics,
 			wordScore: participant.wordScore
 		});
