@@ -33,6 +33,7 @@
 		children,
 		onclick = undefined,
 		goto = undefined,
+		invalidateAll = false,
 		disabled = false,
 		type = null,
 		class: className = '',
@@ -44,6 +45,7 @@
 		children: Snippet;
 		onclick?: OnclickType;
 		goto?: string;
+		invalidateAll?: boolean;
 		disabled?: boolean;
 		type?: TypeType;
 		class?: string;
@@ -53,7 +55,7 @@
 	let resolvedOnclick = $derived(
 		goto
 			? () => {
-					gotoSvelte(resolve(goto));
+					gotoSvelte(resolve(goto), { invalidateAll });
 				}
 			: onclick
 	);

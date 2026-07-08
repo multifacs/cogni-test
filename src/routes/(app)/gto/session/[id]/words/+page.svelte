@@ -28,7 +28,7 @@
 		});
 
 		if (response.ok) {
-			goto('/gto');
+			goto('/gto', { invalidateAll: true });
 		} else {
 			const err = await response.json();
 			toastMessage = err.error || 'Ошибка отправки';
@@ -67,7 +67,7 @@
 </main>
 
 <section class="low-content flex items-center justify-center">
-	<Button color="red" goto="/gto">Выйти</Button>
+	<Button color="red" goto="/gto" invalidateAll>Выйти</Button>
 </section>
 
 {#if showDisclaimer}

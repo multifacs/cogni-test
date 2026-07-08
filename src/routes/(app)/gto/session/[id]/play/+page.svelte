@@ -4,6 +4,7 @@
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import { testRegistry, TEST_ORDER } from '$lib/tests';
 	import type { TestType } from '$lib/tests/types';
+	import { resolve } from '$app/paths';
 
 	let { data } = $props();
 
@@ -16,6 +17,7 @@
 	const currentTestType = $derived(TEST_ORDER[currentIndex] ?? TEST_ORDER[0]);
 	const currentTest = $derived(testRegistry[currentTestType]);
 	const progress = $derived(`${currentIndex + 1} / ${TEST_ORDER.length}`);
+	const progressPercent = $derived(Math.round(((currentIndex + 1) / TEST_ORDER.length) * 100));
 
 	$effect(() => {
 		TestComponent = null;
@@ -40,9 +42,7 @@
 		phase = 'playing';
 	}
 
-	function onGameEnd() {
-		goto('/gto');
-	}
+	function onGameEnd() {}
 
 	async function onSendResults(results: any) {
 		isSaving = true;
@@ -59,25 +59,22 @@
 				return;
 			}
 
-			// Advance to next test or finish
 			if (currentIndex < TEST_ORDER.length - 1) {
 				currentIndex++;
 				phase = 'instructions';
 
-				// Checkpoint: save progress
 				await fetch(`/gto/session/${data.session.id}/play`, {
 					method: 'POST',
 					body: JSON.stringify({ action: 'checkpoint', currentTestIndex: currentIndex }),
 					headers: { 'Content-Type': 'application/json' }
 				});
 			} else {
-				// All tests done — mark completed
 				await fetch(`/gto/session/${data.session.id}/play`, {
 					method: 'POST',
 					body: JSON.stringify({ action: 'complete' }),
 					headers: { 'Content-Type': 'application/json' }
 				});
-				goto(`/gto/session/${data.session.id}/words`);
+				goto(resolve(`/gto/session/${data.session.id}/words`), { invalidateAll: true });
 			}
 		} finally {
 			isSaving = false;
@@ -86,14 +83,25 @@
 </script>
 
 <section class="banner">
-	<h1 class="text-2xl font-bold">Тест {progress}: {currentTest?.title ?? currentTestType}</h1>
+	<div class="flex w-full flex-col items-center gap-1">
+		<h1 class="text-2xl font-bold">Тест {progress}: {currentTest?.title ?? currentTestType}</h1>
+		<!-- Mini progress bar -->
+		<div class="flex w-full max-w-sm items-center gap-2">
+			<div class="h-1 flex-1 overflow-hidden rounded-full bg-gray-700">
+				<div
+					class="h-full rounded-full bg-blue-500 transition-all duration-500"
+					style="width: {progressPercent}%"
+				></div>
+			</div>
+			<span class="shrink-0 text-xs tabular-nums text-gray-400"
+				>{currentIndex + 1}/{TEST_ORDER.length}</span
+			>
+		</div>
+	</div>
 </section>
 
 {#if phase === 'instructions'}
 	<main class="main flex flex-col items-center justify-center gap-4">
-		{#if currentIndex > 0}
-			<p class="text-sm text-yellow-400">Вы вышли из теста. Продолжите с последнего.</p>
-		{/if}
 		<h2 class="text-xl">{currentTest?.title ?? currentTestType}</h2>
 		{#if AboutComponent}
 			<div class="max-w-lg">
@@ -106,7 +114,7 @@
 	</main>
 
 	<section class="low-content flex items-center justify-center">
-		<Button color="red" goto="/gto">Выйти</Button>
+		<Button color="red" goto="/gto" invalidateAll>Выйти</Button>
 	</section>
 {:else if TestComponent && !isSaving}
 	<main class="main flex flex-col items-center justify-evenly">
@@ -115,7 +123,7 @@
 
 	<section class="low-content grid grid-cols-3 gap-4">
 		<div></div>
-		<Button color="red" goto="/gto">Выйти</Button>
+		<Button color="red" goto="/gto" invalidateAll>Выйти</Button>
 		<div></div>
 	</section>
 {:else}
@@ -126,7 +134,7 @@
 
 	<section class="low-content grid grid-cols-3 gap-4">
 		<div></div>
-		<Button color="red" goto="/gto">Выйти</Button>
+		<Button color="red" goto="/gto" invalidateAll>Выйти</Button>
 		<div></div>
 	</section>
 {/if}
