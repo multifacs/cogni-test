@@ -16,7 +16,14 @@
 	let addingParticipant = $state(false);
 	let participantSearch = $state('');
 	let metricsSearch = $state('');
+	let menuOpen = $state(false);
 	let removingParticipant = $state<string | null>(null);
+
+	function closeMenuOutside(e: MouseEvent) {
+		if (menuOpen && !(e.target as HTMLElement).closest('.session-menu')) {
+			menuOpen = false;
+		}
+	}
 
 	function showToast(message: string, type: 'error' | 'success' | 'info' = 'error') {
 		toastMessage = message;
@@ -63,6 +70,7 @@
 			showToast('Ошибка завершения сессии');
 			return;
 		}
+		menuOpen = false;
 		await refreshData();
 	}
 
@@ -74,6 +82,7 @@
 			showToast('Ошибка приостановки сессии');
 			return;
 		}
+		menuOpen = false;
 		await refreshData();
 	}
 
@@ -85,6 +94,20 @@
 			showToast('Ошибка возобновления сессии');
 			return;
 		}
+		menuOpen = false;
+		await refreshData();
+	}
+
+	async function handleRestore() {
+		const fd = new FormData();
+		fd.set('action', 'resume');
+		const response = await fetch('', { method: 'PATCH', body: fd });
+		if (!response.ok) {
+			showToast('Ошибка восстановления сессии');
+			return;
+		}
+		showToast('Сессия восстановлена', 'success');
+		menuOpen = false;
 		await refreshData();
 	}
 
@@ -208,6 +231,8 @@
 	);
 </script>
 
+<svelte:window onclick={closeMenuOutside} />
+
 <section class="banner">
 	<div class="flex items-center justify-center gap-3">
 		{#if editingName}
@@ -252,16 +277,149 @@
 
 <main class="main overflow-auto p-4">
 	<div class="flex flex-col gap-4">
-		<!-- Session control buttons -->
-		{#if data.session.status === 'active'}
-			<div class="flex gap-2">
-				<Button color="yellow" onclick={handlePause}>Приостановить</Button>
-				<Button color="red" onclick={handleComplete}>Завершить сессию</Button>
+		<!-- Session control menu -->
+		{#if data.session.status !== 'completed'}
+			<div class="session-menu relative self-start">
+				<button
+					class="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-700 hover:text-white"
+					onclick={() => (menuOpen = !menuOpen)}
+					aria-label="Действия с сессией"
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						class="h-5 w-5"
+						viewBox="0 0 20 20"
+						fill="currentColor"
+					>
+						<path
+							d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"
+						/>
+					</svg>
+				</button>
+				{#if menuOpen}
+					<div
+						class="absolute left-0 top-full z-10 mt-1 min-w-[200px] rounded-lg border border-gray-700 bg-gray-800 py-1 shadow-xl"
+					>
+						{#if data.session.status === 'active'}
+							<button
+								class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-yellow-300 transition-colors hover:bg-gray-700"
+								onclick={handlePause}
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									class="h-4 w-4"
+									viewBox="0 0 20 20"
+									fill="currentColor"
+								>
+									<path
+										fill-rule="evenodd"
+										d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"
+										clip-rule="evenodd"
+									/>
+								</svg>
+								Приостановить
+							</button>
+							<button
+								class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-300 transition-colors hover:bg-gray-700"
+								onclick={handleComplete}
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									class="h-4 w-4"
+									viewBox="0 0 20 20"
+									fill="currentColor"
+								>
+									<path
+										fill-rule="evenodd"
+										d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+										clip-rule="evenodd"
+									/>
+								</svg>
+								Завершить сессию
+							</button>
+						{:else if data.session.status === 'paused'}
+							<button
+								class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-green-300 transition-colors hover:bg-gray-700"
+								onclick={handleResume}
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									class="h-4 w-4"
+									viewBox="0 0 20 20"
+									fill="currentColor"
+								>
+									<path
+										fill-rule="evenodd"
+										d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+										clip-rule="evenodd"
+									/>
+								</svg>
+								Возобновить
+							</button>
+							<button
+								class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-300 transition-colors hover:bg-gray-700"
+								onclick={handleComplete}
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									class="h-4 w-4"
+									viewBox="0 0 20 20"
+									fill="currentColor"
+								>
+									<path
+										fill-rule="evenodd"
+										d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+										clip-rule="evenodd"
+									/>
+								</svg>
+								Завершить сессию
+							</button>
+						{/if}
+					</div>
+				{/if}
 			</div>
-		{:else if data.session.status === 'paused'}
-			<div class="flex gap-2">
-				<Button color="green" onclick={handleResume}>Возобновить</Button>
-				<Button color="red" onclick={handleComplete}>Завершить сессию</Button>
+		{:else}
+			<div class="session-menu relative self-start">
+				<button
+					class="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-700 hover:text-white"
+					onclick={() => (menuOpen = !menuOpen)}
+					aria-label="Действия с сессией"
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						class="h-5 w-5"
+						viewBox="0 0 20 20"
+						fill="currentColor"
+					>
+						<path
+							d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"
+						/>
+					</svg>
+				</button>
+				{#if menuOpen}
+					<div
+						class="absolute left-0 top-full z-10 mt-1 min-w-[200px] rounded-lg border border-gray-700 bg-gray-800 py-1 shadow-xl"
+					>
+						<button
+							class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-green-300 transition-colors hover:bg-gray-700"
+							onclick={handleRestore}
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								class="h-4 w-4"
+								viewBox="0 0 20 20"
+								fill="currentColor"
+							>
+								<path
+									fill-rule="evenodd"
+									d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+									clip-rule="evenodd"
+								/>
+							</svg>
+							Восстановить сессию
+						</button>
+					</div>
+				{/if}
 			</div>
 		{/if}
 
