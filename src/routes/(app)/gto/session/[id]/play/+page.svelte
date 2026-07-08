@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import { testRegistry, TEST_ORDER } from '$lib/tests';
@@ -9,6 +9,13 @@
 	let { data } = $props();
 
 	let currentIndex = $state(data.currentTestIndex || 0);
+
+	// Keep currentIndex in sync when server data is reloaded (after invalidation)
+	$effect(() => {
+		if (data.currentTestIndex !== undefined) {
+			currentIndex = data.currentTestIndex;
+		}
+	});
 	let phase = $state<'instructions' | 'playing'>('instructions');
 	let TestComponent: any = $state(null);
 	let AboutComponent: any = $state(null);
@@ -68,6 +75,10 @@
 					body: JSON.stringify({ action: 'checkpoint', currentTestIndex: currentIndex }),
 					headers: { 'Content-Type': 'application/json' }
 				});
+
+				// Re-run server load to get test-specific data (words, silhouettes, etc.)
+				// for the new currentTestIndex
+				await invalidateAll();
 			} else {
 				await fetch(`/gto/session/${data.session.id}/play`, {
 					method: 'POST',
@@ -84,7 +95,7 @@
 
 <section class="banner">
 	<div class="flex w-full flex-col items-center gap-1">
-		<h1 class="text-2xl font-bold">Тест {progress}: {currentTest?.title ?? currentTestType}</h1>
+		<h1 class="text-2xl font-bold">{progress}: {currentTest?.title ?? currentTestType}</h1>
 		<!-- Mini progress bar -->
 		<div class="flex w-full max-w-sm items-center gap-2">
 			<div class="h-1 flex-1 overflow-hidden rounded-full bg-gray-700">
