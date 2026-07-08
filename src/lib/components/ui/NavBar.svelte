@@ -13,6 +13,11 @@
 			text: 'Возраст'
 		},
 		{
+			href: '/gto',
+			icon: '🏆',
+			text: 'ГТО-М'
+		},
+		{
 			href: '/exercises',
 			icon: '📊',
 			text: 'Тренажер'

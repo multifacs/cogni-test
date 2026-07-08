@@ -80,6 +80,14 @@ cogni-test's adapter is selected via `BUILD` env var:
 
 ## Known Issues
 
+### Svelte file edit failures
+
+Subagent edit operations on `.svelte` files frequently fail — the root cause is **multiple matches**, not whitespace or CRLF. See `PATCHING_SVELTE.md` for the full analysis and strategies. Key rules:
+
+- Always include a **unique identifier** (label text, comment) inside `old_string`
+- Don't rely on whitespace/tab matching — opencode normalizes it automatically
+- If an edit fails with "multiple matches", add more unique surrounding context
+
 ### Windows: `Expand-Archive` module auto-load failure
 
 On Windows, opencode's Grep/Glob/Skill tools may emit this error on every invocation:

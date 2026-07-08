@@ -1,3 +1,5 @@
+import type { TestType } from './types';
+
 export type TestData = {
 	name: string;
 	title: string;
@@ -41,8 +43,16 @@ export const tests: TestData[] = [
 		title: 'Тест «Ласточка»',
 		path: '/tests/swallow/about',
 		img: '/tests/swallow.svg'
+	},
+	{
+		name: 'ravenMatrices',
+		title: 'Матрицы Равена',
+		path: '',
+		img: ''
 	}
 ];
+
+export const TEST_ORDER: TestType[] = tests.map((t) => t.name as TestType);
 
 type TestLoader = {
 	about: () => Promise<any>;
@@ -80,6 +90,11 @@ const testLoaders: Record<string, TestLoader> = {
 		about: () => import('./swallow/About.svelte'),
 		playground: () => import('./swallow/Playground.svelte'),
 		resultsChart: () => import('./swallow/ResultsChart.svelte')
+	},
+	ravenMatrices: {
+		about: () => import('../exercises/raven-matrices/About.svelte'),
+		playground: () => import('../exercises/raven-matrices/GtoAdapter.svelte'),
+		resultsChart: () => import('../exercises/raven-matrices/Result.svelte')
 	}
 };
 
