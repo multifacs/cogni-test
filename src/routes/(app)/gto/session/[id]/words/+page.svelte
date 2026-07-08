@@ -28,14 +28,7 @@
 		});
 
 		if (response.ok) {
-			const result = await response.json();
-			if (result.pending) {
-				toastMessage = 'Слова сохранены. Результат будет доступен после назначения сета слов администратором.';
-				toastType = 'info';
-				// Stay on page so user sees the toast; they can navigate away manually
-			} else {
-				goto('/gto', { invalidateAll: true });
-			}
+			goto('/gto', { invalidateAll: true });
 		} else {
 			const err = await response.json();
 			toastMessage = err.error || 'Ошибка отправки';
