@@ -41,6 +41,9 @@
 <section class="banner">
 	<h1 class="text-2xl font-bold">Последовательность слов</h1>
 	<p class="text-gray-400">{data.sessionName}</p>
+	{#if !data.hasWordSet}
+		<p class="text-sm text-yellow-400">Сет слов ещё не назначен — введите слова, и результат будет посчитан после назначения</p>
+	{/if}
 </section>
 
 <main class="main flex flex-col items-center justify-center gap-4">

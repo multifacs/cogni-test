@@ -41,6 +41,7 @@ export const gtoSessionParticipant = sqliteTable(
 			.default(false),
 		currentTestIndex: integer('current_test_index').notNull().default(0),
 		wordScore: integer('word_score'),
+		submittedWords: text('submitted_words'), // JSON array of words the participant typed
 		wordSetId: text('word_set_id').references(() => gtoWordSet.id),
 		createdAt: text('created_at')
 			.default(sql`CURRENT_TIMESTAMP`)

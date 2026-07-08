@@ -9,6 +9,7 @@
 		"start": "npx drizzle-kit push --force && node index.js",
 		"preview": "cross-env MODE=LOCAL DATABASE_URL=file:sqlite.db vite preview --host",
 		"init-db-dev": "cross-env DATABASE_URL=file:sqlite.db npx drizzle-kit push --force",
+		"clear-db-dev": "rm -f sqlite.db sqlite.db-shm sqlite.db-wal && npm run init-db-dev",
 		"dev": "cross-env DATABASE_URL=file:sqlite.db vite dev",
 		"host": "cross-env MODE=LOCAL DATABASE_URL=file:sqlite.db vite --host",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -16,6 +17,7 @@
 		"prepare": "svelte-kit sync || echo ''",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
+		"seed-dev": "cross-env DATABASE_URL=file:sqlite.db vitest run src/lib/server/db/seed-users.test.ts",
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run"
 	},

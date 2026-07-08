@@ -21,7 +21,10 @@ export const user = sqliteTable(
 			.notNull(),
 		lastActiveAt: text('last_active_at')
 	},
-	(table) => [check('sex_check', enumCheck(table.sex, ['male', 'female']))]
+	(table) => [
+		check('sex_check', enumCheck(table.sex, ['male', 'female'])),
+		check('lastname_length', sql`length(${table.lastname}) = 2`)
+	]
 );
 
 export const session = sqliteTable('session', {

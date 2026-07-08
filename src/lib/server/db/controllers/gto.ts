@@ -192,6 +192,7 @@ export type GtoSessionParticipantDetail = {
 	hasSubmittedWords: boolean;
 	currentTestIndex: number;
 	wordScore: number | null;
+	submittedWords: string[] | null;
 	wordSetId: string | null;
 	editableMetrics: GtoEditableMetricDetail;
 };
@@ -226,6 +227,7 @@ export async function getGtoSessionById(id: string): Promise<GtoSessionDetail> {
 			hasSubmittedWords: gtoSessionParticipant.hasSubmittedWords,
 			currentTestIndex: gtoSessionParticipant.currentTestIndex,
 			wordScore: gtoSessionParticipant.wordScore,
+			submittedWords: gtoSessionParticipant.submittedWords,
 			wordSetId: gtoSessionParticipant.wordSetId,
 			firstname: user.firstname,
 			lastname: user.lastname,
@@ -259,6 +261,7 @@ export async function getGtoSessionById(id: string): Promise<GtoSessionDetail> {
 		hasSubmittedWords: row.hasSubmittedWords,
 		currentTestIndex: row.currentTestIndex,
 		wordScore: row.wordScore,
+		submittedWords: row.submittedWords ? JSON.parse(row.submittedWords) : null,
 		wordSetId: row.wordSetId,
 		editableMetrics: {
 			id: row.metricId,
@@ -366,6 +369,41 @@ export async function getActiveGtoSessionsForUser(
 	return rows;
 }
 
+// ─── 6b. getCompletedGtoSessionsForUser ────────────────────────────
+
+export type CompletedGtoSessionForUser = {
+	gtoSessionId: string;
+	name: string;
+	status: string;
+	createdAt: string;
+	hasCompletedTests: boolean;
+	hasSubmittedWords: boolean;
+	currentTestIndex: number;
+	wordScore: number | null;
+};
+
+export async function getCompletedGtoSessionsForUser(
+	userId: string
+): Promise<CompletedGtoSessionForUser[]> {
+	const rows = await db
+		.select({
+			gtoSessionId: gtoSessionParticipant.gtoSessionId,
+			name: gtoSession.name,
+			status: gtoSession.status,
+			createdAt: gtoSession.createdAt,
+			hasCompletedTests: gtoSessionParticipant.hasCompletedTests,
+			hasSubmittedWords: gtoSessionParticipant.hasSubmittedWords,
+			currentTestIndex: gtoSessionParticipant.currentTestIndex,
+			wordScore: gtoSessionParticipant.wordScore
+		})
+		.from(gtoSessionParticipant)
+		.innerJoin(gtoSession, eq(gtoSession.id, gtoSessionParticipant.gtoSessionId))
+		.where(and(eq(gtoSessionParticipant.userId, userId), eq(gtoSession.status, 'completed')))
+		.orderBy(desc(gtoSession.createdAt));
+
+	return rows;
+}
+
 // ─── 7. markParticipantTestsCompleted ──────────────────────────────
 
 export async function markParticipantTestsCompleted(
@@ -443,6 +481,109 @@ export async function submitWordScore(
 			throw new Error('Word score already submitted for this participant');
 		}
 	}
+}
+
+// ─── 8b. saveSubmittedWords ──────────────────────────────────────
+// Stores the participant's typed words. If a word set is assigned, also scores them.
+// If no word set is assigned yet, stores words for later scoring.
+
+export async function saveSubmittedWords(
+	gtoSessionId: string,
+	userId: string,
+	words: string[]
+): Promise<{ score: number | null; pending: boolean }> {
+	const [participant] = await db
+		.select()
+		.from(gtoSessionParticipant)
+		.where(
+			and(
+				eq(gtoSessionParticipant.gtoSessionId, gtoSessionId),
+				eq(gtoSessionParticipant.userId, userId)
+			)
+		);
+
+	if (!participant) {
+		throw new Error(`Participant not found for session ${gtoSessionId} and user ${userId}`);
+	}
+	if (participant.hasSubmittedWords) {
+		throw new Error('Words already submitted for this participant');
+	}
+
+	const wordsJson = JSON.stringify(words);
+
+	if (participant.wordSetId) {
+		// Word set already assigned — score now
+		const sessionWords = await getWordSetWords(participant.wordSetId);
+		function normalize(w: string): string {
+			return w.toLowerCase().replace(/ё/g, 'е').trim();
+		}
+		let score = 0;
+		for (let i = 0; i < sessionWords.length; i++) {
+			const correct = normalize(sessionWords[i]);
+			const submitted = normalize(words[i] || '');
+			if (correct === submitted) score++;
+		}
+
+		await db
+			.update(gtoSessionParticipant)
+			.set({
+				submittedWords: wordsJson,
+				wordScore: score,
+				hasSubmittedWords: true
+			})
+			.where(eq(gtoSessionParticipant.id, participant.id));
+
+		return { score, pending: false };
+	} else {
+		// No word set yet — store words, mark as submitted but score is pending
+		await db
+			.update(gtoSessionParticipant)
+			.set({
+				submittedWords: wordsJson,
+				hasSubmittedWords: true
+			})
+			.where(eq(gtoSessionParticipant.id, participant.id));
+
+		return { score: null, pending: true };
+	}
+}
+
+// ─── 8c. rescoreSubmittedWords ───────────────────────────────────
+// Called when admin assigns a word set to a participant who already submitted words.
+// Computes and saves the score.
+
+export async function rescoreSubmittedWords(
+	participantId: string,
+	wordSetId: string
+): Promise<number> {
+	const [participant] = await db
+		.select()
+		.from(gtoSessionParticipant)
+		.where(eq(gtoSessionParticipant.id, participantId));
+
+	if (!participant || !participant.submittedWords) {
+		return 0;
+	}
+
+	const words: string[] = JSON.parse(participant.submittedWords);
+	const sessionWords = await getWordSetWords(wordSetId);
+
+	function normalize(w: string): string {
+		return w.toLowerCase().replace(/ё/g, 'е').trim();
+	}
+	let score = 0;
+	for (let i = 0; i < sessionWords.length; i++) {
+		const correct = normalize(sessionWords[i]);
+		const submitted = normalize(words[i] || '');
+		if (correct === submitted) score++;
+	}
+
+	await db
+		.update(gtoSessionParticipant)
+		.set({ wordScore: score, wordSetId })
+		.where(eq(gtoSessionParticipant.id, participantId));
+
+	return score;
 }
 
 // ─── 9. updateEditableMetrics ──────────────────────────────────────
@@ -556,6 +697,7 @@ export type ParticipantMetrics = {
 	raven: RavenMetrics;
 	editableMetrics: GtoEditableMetricDetail;
 	wordScore: number | null;
+	submittedWords: string[] | null;
 };
 
 export async function getGtoSessionMetrics(gtoSessionId: string): Promise<ParticipantMetrics[]> {
@@ -906,7 +1048,8 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 			swallow: swallowMetrics,
 			raven: ravenMetrics,
 			editableMetrics: participant.editableMetrics,
-			wordScore: participant.wordScore
+			wordScore: participant.wordScore,
+			submittedWords: participant.submittedWords
 		});
 	}
 
