@@ -4,6 +4,7 @@ on: workflow_dispatch
 
 jobs:
     deploy:
+        name: Deploy Cogni-Test
         runs-on: ubuntu-latest
 
         permissions:
@@ -41,6 +42,15 @@ jobs:
                     echo "PROFILE=dev" >> $GITHUB_ENV
                   fi
 
+            - name: Verify Docker network exists
+              env:
+                  DOCKER_HOST: ssh://${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}
+              run: |
+                  if ! docker network inspect "${{ vars.NETWORK_NAME }}" >/dev/null 2>&1; then
+                    echo "::error::Docker network '${{ vars.NETWORK_NAME }}' not found"
+                    exit 1
+                  fi
+
             - name: Deploy using DOCKER_HOST
               env:
                   DOCKER_HOST: ssh://${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}
@@ -49,6 +59,7 @@ jobs:
                   PRIVATE_VAPID_KEY: ${{ secrets.PRIVATE_VAPID_KEY }}
                   MODE: ${{ env.MODE }}
                   ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+                  NETWORK_NAME: ${{ vars.NETWORK_NAME }}
               run: |
                   # Теперь все docker команды выполняются на удаленном сервере
                   docker compose --profile ${{ env.PROFILE }} up -d --pull always --remove-orphans --force-recreate --wait --wait-timeout 30

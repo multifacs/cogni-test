@@ -6,7 +6,8 @@ on:
     workflow_dispatch:
 
 jobs:
-    deploy:
+    build:
+        name: Build Cogni-Test Image
         runs-on: ubuntu-latest
 
         permissions:

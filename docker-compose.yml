@@ -1,21 +1,4 @@
 services:
-    traefik:
-        image: traefik:v3
-        profiles:
-            - 'traefik'
-        container_name: traefik
-        restart: always
-        ports:
-            - '80:80'
-            - '443:443'
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock:ro
-            - /root/cogni-test/acme:/acme
-            - /root/cogni-test/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
-            - /root/cogni-test/traefik/dynamic:/etc/traefik/dynamic:ro
-        networks:
-            - cogni-network
-
     cogni-test-dev:
         build:
             context: .
@@ -77,24 +60,7 @@ services:
             - 'traefik.http.routers.cogni-test.tls.certresolver=letsencrypt'
             - 'traefik.http.services.cogni-test.loadbalancer.server.port=80'
 
-    drizzle-gateway:
-        image: ghcr.io/drizzle-team/gateway:latest
-        profiles:
-            - 'web-db'
-        container_name: drizzle-gate
-        restart: always
-        ports:
-            - '4983:4983'
-        environment:
-            - PORT=4983
-            - STORE_PATH=/database
-            - MASTERPASS=2001nikita
-        volumes:
-            - drizzle-gateway:/app
-            - /root/cogni-test/data/:/database
-
-volumes:
-    drizzle-gateway:
-
 networks:
     cogni-network:
+        name: ${NETWORK_NAME}
+        external: true
