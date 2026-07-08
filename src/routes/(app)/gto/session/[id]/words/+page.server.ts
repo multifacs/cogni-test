@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { getGtoSessionById, getWordSetWords } from '$lib/server/db/controllers/gto';
+import { getGtoSessionById } from '$lib/server/db/controllers/gto';
 import { error, redirect } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ params, cookies }) => {
@@ -20,14 +20,12 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 		redirect(307, '/gto');
 	}
 
-	if (!participant.wordSetId) {
-		error(400, 'Сет слов не назначен. Обратитесь к администратору.');
-	}
-
-	const words = await getWordSetWords(participant.wordSetId);
+	// Always allow word input — if no word set assigned, they type freely
+	const wordCount = participant.wordSetId ? 5 : 5; // still show 5 inputs regardless
 	return {
 		sessionId: params.id,
 		sessionName: sessionDetail.name,
-		wordCount: words.length
+		wordCount,
+		hasWordSet: !!participant.wordSetId
 	};
 };

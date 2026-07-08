@@ -8,7 +8,8 @@ import {
 	resumeGtoSession,
 	assignWordSet,
 	addParticipant,
-	removeParticipant
+	removeParticipant,
+	rescoreSubmittedWords
 } from '$lib/server/db/controllers/gto';
 
 export const PATCH: RequestHandler = async ({ request, params, cookies }) => {
@@ -47,6 +48,8 @@ export const PATCH: RequestHandler = async ({ request, params, cookies }) => {
 					);
 				}
 				await assignWordSet(participantId, wordSetId);
+				// Auto-score if participant already submitted words
+				await rescoreSubmittedWords(participantId, wordSetId);
 				return json({ success: true });
 			}
 			case 'updateMetrics': {

@@ -28,7 +28,14 @@
 		});
 
 		if (response.ok) {
-			goto('/gto', { invalidateAll: true });
+			const result = await response.json();
+			if (result.pending) {
+				toastMessage = 'Слова сохранены. Результат будет доступен после назначения сета слов администратором.';
+				toastType = 'info';
+				// Stay on page so user sees the toast; they can navigate away manually
+			} else {
+				goto('/gto', { invalidateAll: true });
+			}
 		} else {
 			const err = await response.json();
 			toastMessage = err.error || 'Ошибка отправки';
@@ -41,6 +48,9 @@
 <section class="banner">
 	<h1 class="text-2xl font-bold">Последовательность слов</h1>
 	<p class="text-gray-400">{data.sessionName}</p>
+	{#if !data.hasWordSet}
+		<p class="text-sm text-yellow-400">Сет слов ещё не назначен — введите слова, и результат будет посчитан после назначения</p>
+	{/if}
 </section>
 
 <main class="main flex flex-col items-center justify-center gap-4">

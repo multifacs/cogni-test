@@ -602,6 +602,13 @@
 									>
 										Слова: {m.wordScore}/5
 									</span>
+								{:else if m.submittedWords}
+									<span
+										class="rounded-full bg-yellow-900/40 px-2 py-0.5 text-xs text-yellow-300"
+										title={m.submittedWords.join(', ')}
+									>
+										Слова: ожидает сета
+									</span>
 								{/if}
 								<!-- Remove participant -->
 								{#if removingParticipant === m.participantId}
