@@ -369,6 +369,41 @@ export async function getActiveGtoSessionsForUser(
 	return rows;
 }
 
+// ─── 6b. getCompletedGtoSessionsForUser ────────────────────────────
+
+export type CompletedGtoSessionForUser = {
+	gtoSessionId: string;
+	name: string;
+	status: string;
+	createdAt: string;
+	hasCompletedTests: boolean;
+	hasSubmittedWords: boolean;
+	currentTestIndex: number;
+	wordScore: number | null;
+};
+
+export async function getCompletedGtoSessionsForUser(
+	userId: string
+): Promise<CompletedGtoSessionForUser[]> {
+	const rows = await db
+		.select({
+			gtoSessionId: gtoSessionParticipant.gtoSessionId,
+			name: gtoSession.name,
+			status: gtoSession.status,
+			createdAt: gtoSession.createdAt,
+			hasCompletedTests: gtoSessionParticipant.hasCompletedTests,
+			hasSubmittedWords: gtoSessionParticipant.hasSubmittedWords,
+			currentTestIndex: gtoSessionParticipant.currentTestIndex,
+			wordScore: gtoSessionParticipant.wordScore
+		})
+		.from(gtoSessionParticipant)
+		.innerJoin(gtoSession, eq(gtoSession.id, gtoSessionParticipant.gtoSessionId))
+		.where(and(eq(gtoSessionParticipant.userId, userId), eq(gtoSession.status, 'completed')))
+		.orderBy(desc(gtoSession.createdAt));
+
+	return rows;
+}
+
 // ─── 7. markParticipantTestsCompleted ──────────────────────────────
 
 export async function markParticipantTestsCompleted(
