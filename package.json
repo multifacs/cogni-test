@@ -17,6 +17,7 @@
 		"prepare": "svelte-kit sync || echo ''",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
+		"seed-dev": "cross-env DATABASE_URL=file:sqlite.db vitest run src/lib/server/db/seed-users.test.ts",
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run"
 	},
