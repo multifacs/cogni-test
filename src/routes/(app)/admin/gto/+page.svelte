@@ -285,7 +285,7 @@
 								</div>
 								<div class="flex min-w-0 flex-1 flex-col">
 									<span class="truncate text-sm font-medium"
-										>{u.lastname} {u.firstname}</span
+																		>{u.firstname} {u.lastname}</span
 									>
 									<span class="text-xs text-gray-400">
 										{u.sex === 'male' ? 'М' : 'Ж'}

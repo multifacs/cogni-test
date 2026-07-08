@@ -15,6 +15,7 @@
 	let expandedParticipant = $state<string | null>(null);
 	let addingParticipant = $state(false);
 	let participantSearch = $state('');
+	let metricsSearch = $state('');
 	let removingParticipant = $state<string | null>(null);
 
 	function showToast(message: string, type: 'error' | 'success' | 'info' = 'error') {
@@ -193,6 +194,18 @@
 				);
 			})
 	);
+
+	let filteredMetrics = $derived(
+		data.metrics.filter((m) => {
+			if (!metricsSearch) return true;
+			const q = metricsSearch.toLowerCase();
+			return (
+				m.firstname.toLowerCase().includes(q) ||
+				m.lastname.toLowerCase().includes(q) ||
+				(data.gtoIdMap.get(m.userId) ?? '').toLowerCase().includes(q)
+			);
+		})
+	);
 </script>
 
 <section class="banner">
@@ -298,11 +311,11 @@
 									<span
 										class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-600 text-xs font-bold text-gray-300"
 									>
-										{u.lastname[0]}
+										{u.firstname[0]}
 									</span>
 									<div class="flex min-w-0 flex-1 flex-col">
 										<span class="truncate text-sm font-medium"
-											>{u.lastname} {u.firstname}</span
+																			>{u.firstname} {u.lastname}</span
 										>
 										<span class="text-xs text-gray-400">
 											{u.sex === 'male' ? 'М' : 'Ж'} · {u.age} лет
@@ -351,8 +364,38 @@
 				<p>Нет участников в этой сессии</p>
 			</div>
 		{:else}
-			<div class="flex flex-col gap-3">
-				{#each data.metrics as m, i (m.participantId)}
+			<div class="flex items-center gap-3">
+				<h2 class="text-lg font-semibold">Участники</h2>
+				<span class="text-sm text-gray-400"
+					>({filteredMetrics.length}/{data.metrics.length})</span
+				>
+				<div class="flex-1"></div>
+				<div class="relative">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						class="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400"
+						viewBox="0 0 20 20"
+						fill="currentColor"
+					>
+						<path
+							fill-rule="evenodd"
+							d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+							clip-rule="evenodd"
+						/>
+					</svg>
+					<input
+						type="text"
+						placeholder="Поиск участников..."
+						bind:value={metricsSearch}
+						class="rounded-lg bg-gray-700 py-2 pl-8 pr-3 text-sm"
+					/>
+				</div>
+			</div>
+			{#if filteredMetrics.length === 0}
+				<p class="py-4 text-center text-sm text-gray-400">Участники не найдены</p>
+			{:else}
+				<div class="flex flex-col gap-3">
+					{#each filteredMetrics as m, i (m.participantId)}
 					{@const em = m.editableMetrics as GtoEditableMetricDetail}
 					{@const isExpanded = expandedParticipant === m.participantId}
 					{@const isSaving = savingMetrics.has(m.participantId)}
@@ -370,9 +413,9 @@
 							</span>
 							<div class="flex min-w-0 flex-1 flex-col">
 								<span class="truncate font-medium">
-									{m.lastname}
-									{m.firstname}
-								</span>
+																{m.firstname}
+																{m.lastname}
+															</span>
 								<span class="text-xs text-gray-400">
 									{m.sex === 'male' ? 'М' : 'Ж'} · {m.age} лет
 									{#if data.gtoIdMap.get(m.userId)}
@@ -1058,7 +1101,8 @@
 						{/if}
 					</div>
 				{/each}
-			</div>
+				</div>
+			{/if}
 		{/if}
 	</div>
 </main>
