@@ -23,11 +23,6 @@
 			text: 'Тренажер'
 		},
 		{
-			href: '/materials',
-			icon: '📚',
-			text: 'Долголетие'
-		},
-		{
 			href: '/profile',
 			icon: '⚙️',
 			text: 'Профиль'
@@ -35,9 +30,7 @@
 	];
 </script>
 
-<nav
-	class="flex w-full justify-around text-white"
->
+<nav class="flex w-full justify-around text-white">
 	{#each paths as path}
 		<a
 			href={path.href}
