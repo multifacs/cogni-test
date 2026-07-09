@@ -19,6 +19,13 @@
 	// GTO session integration: read gtoSessionId from URL params
 	const gtoSessionId = $derived(page.url.searchParams.get('gtoSessionId') ?? undefined);
 
+	// Back URL: in GTO mode go to about page, otherwise exercise page
+	const backUrl = $derived(
+		gtoSessionId
+			? `/exercises/${slug}/about?gtoSessionId=${gtoSessionId}`
+			: `/exercises/${slug}`
+	);
+
 	$effect(() => {
 		// Reset game state when the exercise changes (e.g. GTO navigating between tests)
 		isGameRunning = true;
@@ -65,7 +72,7 @@
 			const result = await response.json();
 
 			if (result.nextTestUrl) {
-				// Navigate to next test in GTO sequence
+				// Navigate to next test's about page in GTO sequence
 				goto(result.nextTestUrl);
 			} else {
 				// All tests done — go to words page
@@ -96,7 +103,7 @@
 
 	{#if isGameEnd}
 		<section class="low-content grid grid-cols-2 gap-4">
-			<Button color="red" goto={gtoSessionId ? '/gto' : `/exercises/${slug}`}>Назад</Button>
+			<Button color="red" goto={backUrl}>Назад</Button>
 			{#if gtoSessionId}
 				<Button color="blue" goto="/gto">К сессиям ГТО</Button>
 			{:else if exercise?.result}
@@ -108,7 +115,7 @@
 	{:else}
 		<section class="low-content grid grid-cols-3 gap-4">
 			<div></div>
-			<Button color="red" goto={gtoSessionId ? '/gto' : `/exercises/${slug}`}>Назад</Button>
+			<Button color="red" goto={backUrl}>Назад</Button>
 			<div></div>
 		</section>
 	{/if}
@@ -120,7 +127,7 @@
 
 	<section class="low-content grid grid-cols-3 gap-4">
 		<div></div>
-		<Button color="red" goto={gtoSessionId ? '/gto' : `/exercises/${slug}`}>Назад</Button>
+		<Button color="red" goto={backUrl}>Назад</Button>
 		<div></div>
 	</section>
 {/if}

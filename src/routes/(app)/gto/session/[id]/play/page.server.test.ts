@@ -44,7 +44,7 @@ describe('GTO play page server', () => {
 		mockSessionDetail.participants[0].hasSubmittedWords = false;
 	});
 
-	it('redirects to the first test playground with gtoSessionId', async () => {
+	it('redirects to the first test about page with gtoSessionId', async () => {
 		const { load } = await import('./+page.server');
 
 		mockSessionDetail.participants[0].currentTestIndex = 0;
@@ -56,7 +56,7 @@ describe('GTO play page server', () => {
 			} as any);
 		} catch (e: any) {
 			expect(e.status).toBe(307);
-			expect(e.location).toBe(`${GTO_TEST_ORDER[0].route}/playground?gtoSessionId=sess-1`);
+			expect(e.location).toBe(`${GTO_TEST_ORDER[0].route}/about?gtoSessionId=sess-1`);
 		}
 	});
 
@@ -74,12 +74,12 @@ describe('GTO play page server', () => {
 		} catch (e: any) {
 			expect(e.status).toBe(307);
 			expect(e.location).toBe(
-				`${GTO_TEST_ORDER[mathIndex].route}/playground?gtoSessionId=sess-1`
+				`${GTO_TEST_ORDER[mathIndex].route}/about?gtoSessionId=sess-1`
 			);
 		}
 	});
 
-	it('redirects to raven-matrices exercise route for ravenMatrices test type', async () => {
+	it('redirects to raven-matrices exercise about page for ravenMatrices test type', async () => {
 		const { load } = await import('./+page.server');
 
 		const ravenIndex = GTO_TEST_ORDER.findIndex((e) => e.type === 'ravenMatrices');
@@ -92,7 +92,7 @@ describe('GTO play page server', () => {
 			} as any);
 		} catch (e: any) {
 			expect(e.status).toBe(307);
-			expect(e.location).toBe(`/exercises/raven-matrices/playground?gtoSessionId=sess-1`);
+			expect(e.location).toBe(`/exercises/raven-matrices/about?gtoSessionId=sess-1`);
 		}
 	});
 

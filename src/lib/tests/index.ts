@@ -108,15 +108,15 @@ export const GTO_TEST_ORDER: { type: string; route: string }[] = [
 ];
 
 /**
- * Given a test type from the GTO battery, return the playground URL
+ * Given a test type from the GTO battery, return the about page URL
  * with the gtoSessionId param appended.
  */
-export function gtoTestPlaygroundUrl(
+export function gtoTestAboutUrl(
 	testType: string,
 	index: number,
 	gtoSessionId: string
 ): string {
 	const entry = GTO_TEST_ORDER[index] ?? GTO_TEST_ORDER.find((e) => e.type === testType);
 	if (!entry) return '/gto';
-	return `${entry.route}/playground?gtoSessionId=${gtoSessionId}`;
+	return `${entry.route}/about?gtoSessionId=${gtoSessionId}`;
 }

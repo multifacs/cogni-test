@@ -6,7 +6,7 @@ import { db } from '$lib/server/db';
 import { session } from '$lib/server/db/schema';
 import { gtoSessionParticipant } from '$lib/server/db/models/gto';
 import { eq, and } from 'drizzle-orm';
-import { GTO_TEST_ORDER, gtoTestPlaygroundUrl } from '$lib/tests';
+import { GTO_TEST_ORDER, gtoTestAboutUrl } from '$lib/tests';
 
 export const POST: RequestHandler = async ({ request, params, cookies }) => {
 	const userId = cookies.get('user_id');
@@ -56,7 +56,7 @@ export const POST: RequestHandler = async ({ request, params, cookies }) => {
 			nextTestIndex: nextIdx,
 			nextTestUrl:
 				nextIdx < GTO_TEST_ORDER.length
-					? gtoTestPlaygroundUrl(GTO_TEST_ORDER[nextIdx].type, nextIdx, params.id)
+					? gtoTestAboutUrl(GTO_TEST_ORDER[nextIdx].type, nextIdx, params.id)
 					: null
 		});
 	}

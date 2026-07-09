@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { getGtoSessionById } from '$lib/server/db/controllers/gto';
 import { error, redirect } from '@sveltejs/kit';
-import { GTO_TEST_ORDER, gtoTestPlaygroundUrl } from '$lib/tests';
+import { GTO_TEST_ORDER, gtoTestAboutUrl } from '$lib/tests';
 
 export const load: PageServerLoad = async ({ params, cookies }) => {
 	const userId = cookies.get('user_id');
@@ -27,6 +27,6 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 	const currentTestType =
 		GTO_TEST_ORDER[participant.currentTestIndex]?.type ?? GTO_TEST_ORDER[0].type;
 
-	// Redirect to the actual test/exercise playground with gtoSessionId param
-	redirect(307, gtoTestPlaygroundUrl(currentTestType, participant.currentTestIndex, params.id));
+	// Redirect to the test/exercise about page with gtoSessionId param
+	redirect(307, gtoTestAboutUrl(currentTestType, participant.currentTestIndex, params.id));
 };
