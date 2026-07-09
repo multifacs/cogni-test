@@ -161,3 +161,18 @@ const exerciseLoaders: Record<string, ExerciseLoader> = {
 export const exerciseRegistry: Record<string, ExerciseData & ExerciseLoader> = Object.fromEntries(
 	exercises.map((e) => [e.name, { ...e, ...exerciseLoaders[e.name] }])
 );
+
+/** Map exercise URL slug to the testType stored in the DB session table. */
+export const EXERCISE_SLUG_TO_TEST_TYPE: Record<string, string> = {
+	attention: 'attention',
+	campimetry: 'campimetry',
+	emoji: 'emoji',
+	flanker: 'flanker',
+	letters: 'letters',
+	'memory-match': 'memoryMatchExercise',
+	'nback-stream': 'nbackExercise',
+	numbers: 'numbers',
+	pictures: 'pictures',
+	'raven-matrices': 'ravenMatrices',
+	'word-morphing': 'wordMorphingExercise'
+};

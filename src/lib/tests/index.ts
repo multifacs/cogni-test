@@ -44,13 +44,6 @@ export const tests: TestData[] = [
 		title: 'Тест «Ласточка»',
 		path: '/tests/swallow/about',
 		img: '/tests/swallow.svg'
-	},
-	{
-		name: 'ravenMatrices',
-		title: 'Матрицы Равена',
-		path: '',
-		img: '',
-		hidden: true
 	}
 ];
 
@@ -92,14 +85,38 @@ const testLoaders: Record<string, TestLoader> = {
 		about: () => import('./swallow/About.svelte'),
 		playground: () => import('./swallow/Playground.svelte'),
 		resultsChart: () => import('./swallow/ResultsChart.svelte')
-	},
-	ravenMatrices: {
-		about: () => import('../exercises/raven-matrices/About.svelte'),
-		playground: () => import('../exercises/raven-matrices/GtoAdapter.svelte'),
-		resultsChart: () => import('../exercises/raven-matrices/Result.svelte')
 	}
 };
 
 export const testRegistry: Record<string, TestData & TestLoader> = Object.fromEntries(
 	tests.map((t) => [t.name, { ...t, ...testLoaders[t.name] }])
 );
+
+/**
+ * GTO test order — includes all tests in the GTO battery,
+ * even those that live under /exercises/ (e.g. ravenMatrices).
+ * Maps each test type to its playground route prefix.
+ */
+export const GTO_TEST_ORDER: { type: string; route: string }[] = [
+	{ type: 'stroop', route: '/tests/stroop' },
+	{ type: 'math', route: '/tests/math' },
+	{ type: 'munsterberg', route: '/tests/munsterberg' },
+	{ type: 'campimetry', route: '/tests/campimetry' },
+	{ type: 'memory', route: '/tests/memory' },
+	{ type: 'swallow', route: '/tests/swallow' },
+	{ type: 'ravenMatrices', route: '/exercises/raven-matrices' }
+];
+
+/**
+ * Given a test type from the GTO battery, return the playground URL
+ * with the gtoSessionId param appended.
+ */
+export function gtoTestPlaygroundUrl(
+	testType: string,
+	index: number,
+	gtoSessionId: string
+): string {
+	const entry = GTO_TEST_ORDER[index] ?? GTO_TEST_ORDER.find((e) => e.type === testType);
+	if (!entry) return '/gto';
+	return `${entry.route}/playground?gtoSessionId=${gtoSessionId}`;
+}
