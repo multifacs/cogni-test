@@ -18,7 +18,6 @@
 
 <section class="banner">
 	<h1 class="text-2xl font-bold">{data.session.name}</h1>
-	<p class="text-sm opacity-60">Результаты тестирования</p>
 </section>
 
 <main class="main overflow-auto p-4">

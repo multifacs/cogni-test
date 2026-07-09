@@ -88,7 +88,7 @@
 </script>
 
 <section class="banner">
-	<h1 class="text-2xl font-bold">Сессия ГТО-М</h1>
+	<h1 class="text-2xl font-bold">Сессии ГТО-М</h1>
 </section>
 
 <main class="main overflow-auto p-4">
