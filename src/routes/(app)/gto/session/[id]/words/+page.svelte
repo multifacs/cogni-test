@@ -18,11 +18,7 @@
 		const response = await fetch(`/gto/session/${data.sessionId}/words`, {
 			method: 'POST',
 			body: JSON.stringify({
-				words: wordInputs.map((w) =>
-					w
-						.toLowerCase()
-						.replace(/ё/g, 'е')
-				)
+				words: wordInputs.map((w) => w.toLowerCase().replace(/ё/g, 'е'))
 			}),
 			headers: { 'Content-Type': 'application/json' }
 		});
@@ -42,7 +38,9 @@
 	<h1 class="text-2xl font-bold">Последовательность слов</h1>
 	<p class="text-gray-400">{data.sessionName}</p>
 	{#if !data.hasWordSet}
-		<p class="text-sm text-yellow-400">Сет слов ещё не назначен — введите слова, и результат будет посчитан после назначения</p>
+		<p class="text-sm text-yellow-400">
+			Сет слов ещё не назначен — введите слова, и результат будет посчитан после назначения
+		</p>
 	{/if}
 </section>
 
@@ -50,20 +48,22 @@
 	<div class="flex w-full max-w-xs flex-col gap-3">
 		{#each wordInputs as _, i}
 			<div class="flex flex-col gap-1">
-				<label for="word-{i}" class="text-sm text-gray-400"
-					>{i + 1}-е слово</label
-				>
+				<label for="word-{i}" class="text-sm text-gray-400">{i + 1}-е слово</label>
 				<input
 					id="word-{i}"
 					type="text"
 					bind:value={wordInputs[i]}
-					class="rounded-lg bg-gray-800 px-3 py-2 text-white outline-none ring-1 ring-gray-600 focus:ring-blue-500"
+					class="rounded-lg bg-gray-800 px-3 py-2 text-white ring-1 ring-gray-600 outline-none focus:ring-blue-500"
 					placeholder="Введите слово"
 				/>
 			</div>
 		{/each}
 
-		<Button color="green" onclick={submitWords} disabled={isSubmitting || wordInputs.some((w) => !w.trim())}>
+		<Button
+			color="green"
+			onclick={submitWords}
+			disabled={isSubmitting || wordInputs.some((w) => !w.trim())}
+		>
 			{isSubmitting ? 'Отправка...' : 'Отправить'}
 		</Button>
 	</div>
@@ -80,7 +80,8 @@
 		{/snippet}
 		<div class="flex flex-col gap-4">
 			<p class="text-white">
-				Отправить слова можно только один раз. Второй попытки не будет. Убедитесь, что вы готовы.
+				Пройдите тест на долгосрочную память в самом конце исследования. Отправить слова
+				можно только один раз. Второй попытки не будет. Убедитесь, что вы готовы.
 			</p>
 			<Button color="green" onclick={() => (showDisclaimer = false)}>Понятно</Button>
 		</div>
