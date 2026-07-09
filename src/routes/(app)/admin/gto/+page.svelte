@@ -293,7 +293,7 @@
 								</div>
 								<div class="flex min-w-0 flex-1 flex-col">
 									<span class="truncate text-sm font-medium"
-																		>{u.firstname} {u.lastname}</span
+										>{u.firstname} {u.lastname}</span
 									>
 									<span class="text-xs text-gray-400">
 										{u.sex === 'male' ? 'М' : 'Ж'}
@@ -331,6 +331,6 @@
 </main>
 
 <section class="low-content flex items-center justify-center gap-3">
-	<Button color="gray" goto="/admin/gto/word-sets">Сеты слов</Button>
-	<Button color="gray" goto="/admin">← Админка</Button>
+	<Button color="blue" goto="/admin/gto/word-sets">Сеты слов</Button>
+	<Button color="red" goto="/admin">Админка</Button>
 </section>
