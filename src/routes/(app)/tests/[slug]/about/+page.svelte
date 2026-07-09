@@ -35,12 +35,10 @@
 		</div>
 	</main>
 
-	<section class="low-content grid grid-cols-3 gap-4">
+	<section class="low-content grid {gtoSessionId ? 'grid-cols-2' : 'grid-cols-3'} gap-4">
 		<Button color="red" goto={gtoSessionId ? '/gto' : '/tests'}>Назад</Button>
 		<Button color="green" goto={playgroundUrl}>Начать</Button>
-		{#if gtoSessionId}
-			<div></div>
-		{:else}
+		{#if !gtoSessionId}
 			<Button color="blue" goto={`/tests/${slug}/results`}>История</Button>
 		{/if}
 	</section>
