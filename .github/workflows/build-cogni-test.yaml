@@ -6,7 +6,8 @@ on:
     workflow_dispatch:
 
 jobs:
-    deploy:
+    build:
+        name: Build Cogni-Test Image
         runs-on: ubuntu-latest
 
         permissions:
@@ -42,7 +43,7 @@ jobs:
             - name: Build and push
               uses: docker/build-push-action@v7
               with:
-                  context: ./apps/cogni-test
+                  context: .
                   push: true
                   tags: |
                       ghcr.io/${{ github.repository }}/cogni-test:${{ env.TAG }}

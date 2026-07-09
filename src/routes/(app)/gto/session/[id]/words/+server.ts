@@ -1,0 +1,32 @@
+import { json } from '@sveltejs/kit';
+import type { RequestHandler } from './$types';
+import { saveSubmittedWords, getGtoSessionById } from '$lib/server/db/controllers/gto';
+
+export const POST: RequestHandler = async ({ request, params, cookies }) => {
+	const userId = cookies.get('user_id');
+	if (!userId) return json({ error: 'Unauthorized' }, { status: 401 });
+
+	// Verify user is a participant of this session
+	const sessionDetail = await getGtoSessionById(params.id);
+	const participant = sessionDetail.participants.find((p) => p.userId === userId);
+	if (!participant) {
+		return json({ error: 'You are not a participant of this session' }, { status: 403 });
+	}
+
+	const body = await request.json();
+	const { words } = body;
+	if (!words || !Array.isArray(words)) {
+		return json({ error: 'Words array required' }, { status: 400 });
+	}
+
+	try {
+		const result = await saveSubmittedWords(params.id, userId, words);
+		return json({
+			success: true,
+			score: result.score,
+			pending: result.pending
+		});
+	} catch (e: any) {
+		return json({ error: e.message }, { status: 400 });
+	}
+};

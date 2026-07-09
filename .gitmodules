@@ -1,0 +1,4 @@
+[submodule "src/lib/server/age/models"]
+	path = src/lib/server/age/models
+	url = https://github.com/multifacs/AgePredAPI.git
+	branch = onnx
