@@ -1247,6 +1247,19 @@ export async function removeParticipant(participantId: string): Promise<void> {
 	});
 }
 
+// ─── getLatestActiveGtoSession ──────────────────────────────────────
+
+export async function getLatestActiveGtoSession(): Promise<{ id: string; name: string } | null> {
+	const [row] = await db
+		.select({ id: gtoSession.id, name: gtoSession.name })
+		.from(gtoSession)
+		.where(eq(gtoSession.status, 'active'))
+		.orderBy(desc(gtoSession.createdAt))
+		.limit(1);
+
+	return row ?? null;
+}
+
 export async function getWordSetWords(wordSetId: string): Promise<string[]> {
 	const [set] = await db.select().from(gtoWordSet).where(eq(gtoWordSet.id, wordSetId));
 	if (!set) return [];
