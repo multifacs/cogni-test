@@ -6,6 +6,7 @@ import { db } from '$lib/server/db';
 import { session } from '$lib/server/db/schema';
 import { gtoSessionParticipant } from '$lib/server/db/models/gto';
 import { eq, and } from 'drizzle-orm';
+import { GTO_TEST_ORDER, gtoTestAboutUrl } from '$lib/tests';
 
 export const POST: RequestHandler = async ({ request, params, cookies }) => {
 	const userId = cookies.get('user_id');
@@ -29,7 +30,35 @@ export const POST: RequestHandler = async ({ request, params, cookies }) => {
 		const sessionId = await postResult(results, testType, userId);
 		await db.update(session).set({ gtoSessionId: params.id }).where(eq(session.id, sessionId));
 
-		return json({ success: true, sessionId });
+		// Advance checkpoint: find next test index
+		const currentIdx = GTO_TEST_ORDER.findIndex((e) => e.type === testType);
+		const nextIdx = currentIdx + 1;
+
+		if (nextIdx >= GTO_TEST_ORDER.length) {
+			// All tests done
+			await markParticipantTestsCompleted(params.id, userId);
+		} else {
+			// Update checkpoint to next test
+			await db
+				.update(gtoSessionParticipant)
+				.set({ currentTestIndex: nextIdx })
+				.where(
+					and(
+						eq(gtoSessionParticipant.gtoSessionId, params.id),
+						eq(gtoSessionParticipant.userId, userId)
+					)
+				);
+		}
+
+		return json({
+			success: true,
+			sessionId,
+			nextTestIndex: nextIdx,
+			nextTestUrl:
+				nextIdx < GTO_TEST_ORDER.length
+					? gtoTestAboutUrl(GTO_TEST_ORDER[nextIdx].type, nextIdx, params.id)
+					: null
+		});
 	}
 
 	// Action: mark all tests as completed for this participant

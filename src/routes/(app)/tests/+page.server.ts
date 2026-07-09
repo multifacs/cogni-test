@@ -17,9 +17,12 @@ export const load: PageServerLoad = async ({ cookies }) => {
 	let predictedAge: number | null = null;
 	let testSessionCounts: Record<string, number> = {};
 
+	// Visible tests (exclude hidden ones like ravenMatrices which are only for GTO)
+	const visibleTests = tests.filter((t) => !t.hidden);
+
 	// If the user is not logged in, return minimal data
 	if (!userId) {
-		return { tests };
+		return { tests: visibleTests };
 	}
 
 	// Fetch features used for age prediction
@@ -38,7 +41,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 
 	// Data returned here is available as `data` in +page.svelte
 	return {
-		tests,
+		tests: visibleTests,
 		userId,
 		predictedAge,
 		testSessionCounts

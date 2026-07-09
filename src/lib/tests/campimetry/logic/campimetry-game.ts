@@ -31,10 +31,10 @@ export class CampimetryGame {
 			colors.push(this.allColors[i + randomChoice]);
 		}
 		NUM_OF_COLORS -= 3;
-		
+
 		const restOfColors = this.allColors.slice(0, 4);
 		shuffle(restOfColors);
-		
+
 		colors.push(...restOfColors.slice(0, NUM_OF_COLORS));
 		shuffle(colors);
 		console.log(colors);
@@ -129,5 +129,13 @@ export class CampimetryGame {
 	 */
 	public isGameOver(): boolean {
 		return this.currentTaskIndex >= this.tasks.length;
+	}
+
+	public getTotalTasks(): number {
+		return this.tasks.length;
+	}
+
+	public getCurrentTaskNumber(): number {
+		return this.currentTaskIndex + 1;
 	}
 }

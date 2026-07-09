@@ -1,7 +1,8 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
-	import { TEST_ORDER, testRegistry } from '$lib/tests';
+	import { GTO_TEST_ORDER, testRegistry } from '$lib/tests';
+	import { exerciseRegistry } from '$lib/exercises';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { onMount } from 'svelte';
@@ -71,9 +72,14 @@
 	}
 
 	function getProgressLabel(index: number): string {
-		const testType = TEST_ORDER[index];
-		const test = testRegistry[testType];
-		return test?.title ?? testType;
+		const entry = GTO_TEST_ORDER[index];
+		if (!entry) return '';
+		const test = testRegistry[entry.type];
+		if (test) return test.title;
+		// For exercises (e.g. ravenMatrices), look up by exercise slug from route
+		const exerciseSlug = entry.route.split('/').pop() ?? '';
+		const exercise = exerciseRegistry[exerciseSlug];
+		return exercise?.title ?? entry.type;
 	}
 
 	function formatDate(dateStr: string) {
@@ -82,7 +88,7 @@
 </script>
 
 <section class="banner">
-	<h1 class="text-2xl font-bold">Сессия ГТО-М</h1>
+	<h1 class="text-2xl font-bold">Сессии ГТО-М</h1>
 </section>
 
 <main class="main overflow-auto p-4">
@@ -115,7 +121,7 @@
 					{#each data.activeSessions as session (session.gtoSessionId)}
 						{@const ss = getStatusStyle(session.status)}
 						{@const progress = session.currentTestIndex}
-						{@const total = TEST_ORDER.length}
+						{@const total = GTO_TEST_ORDER.length}
 						{@const percent = Math.round((progress / total) * 100)}
 						<div
 							class="flex flex-col gap-4 rounded-xl border border-gray-700 bg-gray-800/50 p-4 transition-colors"
@@ -176,8 +182,12 @@
 										</div>
 										<!-- Test list -->
 										<div class="flex flex-col gap-1">
-											{#each TEST_ORDER as testType, i (testType)}
-												{@const test = testRegistry[testType]}
+											{#each GTO_TEST_ORDER as entry, i (entry.type)}
+												{@const test =
+													testRegistry[entry.type] ??
+													exerciseRegistry[
+														entry.route.split('/').pop() ?? ''
+													]}
 												{@const done = i < progress}
 												{@const current = i === progress}
 												<div
@@ -215,7 +225,7 @@
 																? 'text-gray-400'
 																: 'text-gray-500'}
 													>
-														{i + 1}. {test?.title ?? testType}
+														{i + 1}. {test?.title ?? entry.type}
 													</span>
 												</div>
 											{/each}
@@ -350,7 +360,7 @@
 			<p class="text-white">
 				{#if disclaimerType === 'tests'}
 					{#if selectedSession.currentTestIndex > 0}
-						Вы прошли {selectedSession.currentTestIndex} из {TEST_ORDER.length}
+						Вы прошли {selectedSession.currentTestIndex} из {GTO_TEST_ORDER.length}
 						тестов.
 						<br /><br />
 						Следующий тест:
@@ -361,7 +371,7 @@
 						<br /><br />
 						Продолжить?
 					{:else}
-						Вам предстоит пройти {TEST_ORDER.length} когнитивных тестов подряд. Убедитесь,
+						Вам предстоит пройти {GTO_TEST_ORDER.length} когнитивных тестов подряд. Убедитесь,
 						что у вас есть достаточно времени и вас ничего не отвлекает.
 					{/if}
 				{:else}

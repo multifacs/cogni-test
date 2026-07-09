@@ -217,6 +217,14 @@
 					<h3 class="text-lg font-medium">Участники</h3>
 					<span class="text-sm text-gray-400">({selectedUsers.size} выбрано)</span>
 					<div class="flex-1"></div>
+					<Button
+						color="green"
+						type="submit"
+						disabled={selectedUsers.size === 0 || isCreating}
+						class="shrink-0"
+					>
+						{isCreating ? 'Создание...' : `Создать (${selectedUsers.size})`}
+					</Button>
 					<div class="relative">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"

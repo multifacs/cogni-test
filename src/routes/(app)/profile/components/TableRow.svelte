@@ -181,9 +181,13 @@
 			<input
 				type="text"
 				bind:value
-				class="w-full rounded-sm border border-blue-300 bg-white px-3 py-2 text-blue-100
+				class="w-full rounded-sm border px-3 py-2 text-blue-100
 				placeholder-blue-400
 				transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400"
+				class:border-blue-300={value != null}
+				class:border-red-500={value == null}
+				class:border-2={value == null}
+				class:shadow-[0px_0px_5px_2px_rgba(239,_68,_68,_0.5)]={value == null}
 				placeholder="Введите..."
 				{form}
 			/>

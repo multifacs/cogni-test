@@ -2,11 +2,15 @@
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { exerciseRegistry } from '$lib/exercises';
+	import { page } from '$app/state';
 
 	const { data } = $props();
 	const slug = $derived(data.slug);
 	const exercise = $derived(exerciseRegistry[slug]);
 	let Component: any = $state(null);
+
+	// GTO session integration
+	const gtoSessionId = $derived(page.url.searchParams.get('gtoSessionId') ?? undefined);
 
 	$effect(() => {
 		Component = null;
@@ -16,6 +20,12 @@
 			});
 		}
 	});
+
+	const playgroundUrl = $derived(
+		gtoSessionId
+			? `/exercises/${slug}/playground?gtoSessionId=${gtoSessionId}`
+			: `/exercises/${slug}/playground`
+	);
 </script>
 
 {#if Component}
@@ -31,16 +41,16 @@
 			<Button color="red" goto="/exercises">Назад</Button>
 			<div></div>
 		</section>
-	{:else if exercise?.result}
+	{:else if exercise?.result && !gtoSessionId}
 		<section class="low-content grid grid-cols-3 gap-4">
 			<Button color="red" goto="/exercises">Назад</Button>
-			<Button color="green" goto={`/exercises/${slug}/playground`}>Начать</Button>
+			<Button color="green" goto={playgroundUrl}>Начать</Button>
 			<Button color="blue" goto={`/exercises/${slug}/results`}>История</Button>
 		</section>
 	{:else}
 		<section class="low-content grid grid-cols-2 gap-4">
-			<Button color="red" goto="/exercises">Назад</Button>
-			<Button color="green" goto={`/exercises/${slug}/playground`}>Начать</Button>
+			<Button color="red" goto={gtoSessionId ? '/gto' : '/exercises'}>Назад</Button>
+			<Button color="green" goto={playgroundUrl}>Начать</Button>
 		</section>
 	{/if}
 {:else}

@@ -132,9 +132,17 @@
 </script>
 
 {#if isGameRunning}
+	<!-- Progress bar -->
+	<div class="mx-auto mb-2 h-1.5 w-4/5 max-w-96 overflow-hidden rounded-full bg-gray-200">
+		<div
+			class="h-full rounded-full bg-blue-500 transition-all duration-300"
+			style={`width: ${(game.getCurrentTaskNumber() / game.getTotalTasks()) * 100}%`}
+		></div>
+	</div>
+
 	<div class="background" style={`background-color: ${currentBackgroundColor.toString()}`}>
 		<div
-			class="max-xs:w-16 max-xs:h-16 h-32 w-32 mask-contain"
+			class="silhouette max-xs:w-16 max-xs:h-16 h-32 w-32 mask-contain"
 			style={`
         background-color: ${currentSilhouetteColor.toString()};
         mask-image: url(${data.silhouettes[currentSilhouette]});
@@ -142,43 +150,65 @@
         `}
 		></div>
 	</div>
-	<div class="flex gap-2">
-		<Button color="green" onclick={changeColor}
-			>{currentStage == 1 ? 'Проявить фигуру' : 'Скрыть фигуру'}</Button
-		>
-		{#if currentStage == 2}
-			<Button color="blue" onclick={handleAnswer}>Больше не видно</Button>
-		{/if}
-	</div>
 	{#if currentStage == 1}
-		<div class="row flex w-4/5 max-w-96 justify-between">
-			{#each silhouettes as s}
-				<button
-					aria-label={`${s} button`}
-					class="max-xs:w-16 max-xs:h-16 h-[100px] w-[100px] cursor-pointer touch-none bg-white mask-contain select-none"
-					disabled={!delta}
-					style={`
+		<div class="flex justify-center">
+			<Button color="green" onclick={changeColor}>Проявить фигуру</Button>
+		</div>
+	{:else}
+		<div class="flex justify-center gap-2">
+			<Button color="green" onclick={changeColor}>Скрыть фигуру</Button>
+			<Button color="blue" onclick={handleAnswer}>Больше не видно</Button>
+		</div>
+	{/if}
+	<div
+		class="silhouette-choices row flex w-4/5 max-w-96 justify-between {currentStage != 1
+			? 'invisible'
+			: ''}"
+	>
+		{#each silhouettes as s}
+			<button
+				aria-label={`${s} button`}
+				class="choice-btn max-xs:w-16 max-xs:h-16 h-[100px] w-[100px] cursor-pointer touch-none bg-white mask-contain select-none rounded-xl
+					ring-2 ring-transparent hover:ring-gray-400 active:ring-gray-600 transition-[ring-color] duration-150 disabled:opacity-40 disabled:ring-transparent"
+				disabled={!delta}
+				style={`
                     mask-image: url(${data.silhouettes[s]});
                     -webkit-mask-image: url(${data.silhouettes[s]});
                     `}
-					onclick={() => {
-						if (s == currentSilhouette) {
-							handleAnswer();
-						}
-					}}
-				></button>
-			{/each}
-		</div>
-		<p class="text-center">
+				onclick={() => {
+					if (s == currentSilhouette) {
+						handleAnswer();
+					}
+				}}
+			></button>
+		{/each}
+	</div>
+	<p class="text-center">
+		{#if currentStage == 1}
 			Изменяйте оттенок, пока силуэт не станет различимым, а затем выберите правильный силуэт.
-		</p>
-	{:else}
-		<p class="text-center">
-			Изменяйте оттенок, пока силуэт не перестанет быть виден. Затем нажмите "Больне не видно".
-		</p>
-	{/if}
+		{:else}
+			Изменяйте оттенок, пока силуэт не перестанет быть виден. Затем нажмите "Больне не
+			видно".
+		{/if}
+	</p>
 {:else}
-	<h1>Тест окончен</h1>
+	<div class="flex flex-col items-center gap-4 py-8">
+		<svg
+			class="h-16 w-16 text-green-600"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="2"
+			viewBox="0 0 24 24"
+		>
+			<path
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+			/>
+		</svg>
+		<h1 class="text-2xl font-bold">Тест окончен</h1>
+		<p class="text-gray-500">Результаты отправлены</p>
+	</div>
 {/if}
 
 <style>
@@ -187,7 +217,16 @@
 		justify-content: center;
 		align-items: center;
 		aspect-ratio: 1 / 1;
-		margin: 10px 0;
+		margin: 10px auto;
+		border-radius: 1.5rem;
+		box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.08);
+		overflow: hidden;
+	}
+
+	.silhouette {
+	}
+
+	.silhouette-choices {
 	}
 
 	/* Вертикальная ориентация */
@@ -195,7 +234,7 @@
 		.background {
 			width: 70vw;
 			height: 70vw;
-			/* например, квадрат по ширине */
+			border-radius: 1.5rem;
 		}
 	}
 
@@ -204,7 +243,6 @@
 		.background {
 			width: 50vh;
 			height: 50vh;
-			/* квадрат по высоте */
 		}
 	}
 </style>

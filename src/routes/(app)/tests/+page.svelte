@@ -51,7 +51,7 @@
 
 <section class="banner">
 	<h1 class="font-bold max-md:hidden">Определение когнитивного возраста</h1>
-	<h2 class="font-bold md:hidden">Определение когнитивного возраста</h2>
+	<h2 class="font-bold md:hidden">Когнитивный возраст</h2>
 </section>
 <main class="main flex flex-col gap-3">
 	{#if runAllMode}
