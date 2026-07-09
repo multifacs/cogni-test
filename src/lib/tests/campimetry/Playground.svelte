@@ -142,41 +142,43 @@
         `}
 		></div>
 	</div>
-	<div class="flex gap-2">
-		<Button color="green" onclick={changeColor}
-			>{currentStage == 1 ? 'Проявить фигуру' : 'Скрыть фигуру'}</Button
-		>
-		{#if currentStage == 2}
-			<Button color="blue" onclick={handleAnswer}>Больше не видно</Button>
-		{/if}
-	</div>
 	{#if currentStage == 1}
-		<div class="row flex w-4/5 max-w-96 justify-between">
-			{#each silhouettes as s}
-				<button
-					aria-label={`${s} button`}
-					class="max-xs:w-16 max-xs:h-16 h-[100px] w-[100px] cursor-pointer touch-none bg-white mask-contain select-none"
-					disabled={!delta}
-					style={`
+		<div class="flex justify-center">
+			<Button color="green" onclick={changeColor}>Проявить фигуру</Button>
+		</div>
+	{:else}
+		<div class="flex gap-2">
+			<Button color="green" onclick={changeColor}>Скрыть фигуру</Button>
+			<Button color="blue" onclick={handleAnswer}>Больше не видно</Button>
+		</div>
+	{/if}
+	<div
+		class="row flex w-4/5 max-w-96 justify-between {currentStage != 1 ? 'invisible' : ''}"
+	>
+		{#each silhouettes as s}
+			<button
+				aria-label={`${s} button`}
+				class="max-xs:w-16 max-xs:h-16 h-[100px] w-[100px] cursor-pointer touch-none bg-white mask-contain select-none"
+				disabled={!delta}
+				style={`
                     mask-image: url(${data.silhouettes[s]});
                     -webkit-mask-image: url(${data.silhouettes[s]});
                     `}
-					onclick={() => {
-						if (s == currentSilhouette) {
-							handleAnswer();
-						}
-					}}
-				></button>
-			{/each}
-		</div>
-		<p class="text-center">
+				onclick={() => {
+					if (s == currentSilhouette) {
+						handleAnswer();
+					}
+				}}
+			></button>
+		{/each}
+	</div>
+	<p class="text-center">
+		{#if currentStage == 1}
 			Изменяйте оттенок, пока силуэт не станет различимым, а затем выберите правильный силуэт.
-		</p>
-	{:else}
-		<p class="text-center">
+		{:else}
 			Изменяйте оттенок, пока силуэт не перестанет быть виден. Затем нажмите "Больне не видно".
-		</p>
-	{/if}
+		{/if}
+	</p>
 {:else}
 	<h1>Тест окончен</h1>
 {/if}
