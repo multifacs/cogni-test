@@ -5,6 +5,7 @@ export type TestData = {
 	title: string;
 	path: string;
 	img: string;
+	hidden?: boolean;
 };
 
 export const tests: TestData[] = [
@@ -48,7 +49,8 @@ export const tests: TestData[] = [
 		name: 'ravenMatrices',
 		title: 'Матрицы Равена',
 		path: '',
-		img: ''
+		img: '',
+		hidden: true
 	}
 ];
 
