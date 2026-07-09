@@ -10,6 +10,14 @@
 	// Grid settings
 	const GRID_COLS = 9;
 	const GRID_ROWS = 11;
+
+	// Calculate cell size to fit available width on mobile
+	// Border accounting: 1px outer grid border + 1px per cell border on each side
+	// Total width = GRID_COLS * CELL_W + (GRID_COLS + 1) * 1 (borders)
+	const BORDER_PX = 1;
+	const TOTAL_BORDER_W = (GRID_COLS + 1) * BORDER_PX;
+	const PADDING = 32; // 1rem padding on each side from .main
+
 	let CELL_W = $state(42);
 	let CELL_H = $state(42);
 
@@ -35,11 +43,23 @@
 
 	onMount(() => {
 		words = data.words;
-		if (innerWidth < 400) {
-			CELL_W = 30;
-			CELL_H = 23;
-		}
 		resetGame();
+	});
+
+	function recalcCellSize() {
+		if (innerWidth <= 0) return;
+		const available = innerWidth - PADDING;
+		const desktopW = 42;
+		const calculatedW = Math.floor((available - TOTAL_BORDER_W) / GRID_COLS);
+		// Use calculated size on small screens, cap at desktop default on larger
+		CELL_W = Math.min(calculatedW, desktopW);
+		// Proportional height: on desktop 1:1, on narrower screens slightly shorter
+		CELL_H = CELL_W >= desktopW ? desktopW : Math.floor(CELL_W * 0.85);
+	}
+
+	// Recalculate when viewport changes
+	$effect(() => {
+		if (innerWidth > 0) recalcCellSize();
 	});
 
 	function getRandomLetter() {
