@@ -35,6 +35,7 @@
 
 	onMount(() => {
 		prepareTest();
+		start();
 	});
 
 	function prepareTest() {
@@ -118,40 +119,7 @@
 	}
 </script>
 
-{#if !isStarted}
-	<section
-		class="flex w-full max-w-3xl flex-col items-center justify-center gap-3 rounded-2xl border border-slate-300/30 bg-linear-to-br from-orange-50 to-blue-50 p-4 text-slate-800 shadow-lg"
-	>
-		<div class="flex flex-col items-center justify-center gap-1">
-			<h1 class="text-3xl leading-tight text-gray-900">Матрицы Равена</h1>
-			<p class="max-w-prose text-base leading-relaxed text-slate-500">
-				В каждом задании одна ячейка матрицы скрыта. Найдите правило и выберите недостающий
-				вариант.
-			</p>
-		</div>
-
-		<div class="flex flex-wrap gap-2" aria-label="Параметры теста">
-			<span
-				class="rounded-full bg-white/70 px-3 py-1.5 text-sm text-slate-700 ring-1 ring-slate-300/20"
-				>{options.count ?? 10} заданий</span
-			>
-			<span
-				class="rounded-full bg-white/70 px-3 py-1.5 text-sm text-slate-700 ring-1 ring-slate-300/20"
-				>{options.answerCount ?? 6} вариантов</span
-			>
-			<span
-				class="rounded-full bg-white/70 px-3 py-1.5 text-sm text-slate-700 ring-1 ring-slate-300/20"
-				>случайная смесь</span
-			>
-		</div>
-
-		<button
-			class="cursor-pointer rounded-xl border-0 bg-slate-800 px-4 py-3 font-extrabold text-white"
-			type="button"
-			onclick={start}>Начать</button
-		>
-	</section>
-{:else if currentTask}
+{#if currentTask}
 	<section
 		class="mx-auto flex w-full max-w-4xl flex-col items-center justify-center gap-2 text-slate-800"
 	>

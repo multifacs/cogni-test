@@ -15,6 +15,8 @@
 	let expandedParticipant = $state<string | null>(null);
 	let addingParticipant = $state(false);
 	let participantSearch = $state('');
+	let filterRecent = $state(false);
+	const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 	let metricsSearch = $state('');
 	let menuOpen = $state(false);
 	let removingParticipant = $state<string | null>(null);
@@ -208,6 +210,11 @@
 		data.authorizedUsers
 			.filter((u) => !currentParticipantIds.has(u.id))
 			.filter((u) => {
+				if (filterRecent) {
+					if (!u.lastActiveAt) return false;
+					const la = new Date(u.lastActiveAt);
+					if (la < sevenDaysAgo) return false;
+				}
 				if (!participantSearch) return true;
 				const q = participantSearch.toLowerCase();
 				return (
@@ -272,7 +279,6 @@
 			{statusStyle.label}
 		</span>
 	</div>
-	<p class="text-sm opacity-60">{formatDate(data.session.createdAt)}</p>
 </section>
 
 <main class="main overflow-auto p-4">
@@ -447,12 +453,18 @@
 			</button>
 			{#if addingParticipant}
 				<div class="mt-3 flex flex-col gap-3">
-					<input
-						type="text"
-						bind:value={participantSearch}
-						placeholder="Поиск по имени или ГТО-М ID..."
-						class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
-					/>
+					<div class="flex items-center gap-3">
+						<input
+							type="text"
+							bind:value={participantSearch}
+							placeholder="Поиск по имени или ГТО-М ID..."
+							class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
+						/>
+						<label class="flex items-center gap-1.5 text-sm whitespace-nowrap">
+							<input type="checkbox" bind:checked={filterRecent} class="rounded" />
+							Недавно вошедшие
+						</label>
+					</div>
 					{#if availableUsers.length === 0}
 						<p class="py-2 text-center text-sm text-gray-500">
 							{participantSearch
@@ -911,6 +923,22 @@
 															{pct(m.memory.accuracy)}
 														</span>
 													</div>
+													<div class="flex items-center gap-2">
+														<span
+															class="w-16 shrink-0 text-xs text-gray-400"
+															>Точность</span
+														>
+														<span
+															class="tabular-nums {m.memory
+																.accuracy >= 0.8
+																? 'text-green-400'
+																: m.memory.accuracy >= 0.5
+																	? 'text-yellow-400'
+																	: 'text-red-400'}"
+														>
+															{pct(m.memory.accuracy)}
+														</span>
+													</div>
 												</div>
 											</div>
 
@@ -1324,7 +1352,7 @@
 </main>
 
 <section class="low-content flex items-center justify-center">
-	<Button color="gray" goto="/admin/gto">← Сессии ГТО-М</Button>
+	<Button color="red" goto="/admin/gto">Сессии ГТО-М</Button>
 </section>
 
 {#if toastMessage}

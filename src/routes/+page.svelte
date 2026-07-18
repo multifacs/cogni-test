@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
 	import { profileSurveyStore, userStore } from '$lib/stores/user.js';
+	import { resolve } from '$app/paths';
 
 	import Button from '$lib/components/ui/Button.svelte';
 	import DateInput from '$lib/components/ui/login-form/DateInput.svelte';
@@ -11,7 +12,7 @@
 
 	let firstname = $state('');
 	let lastname = $state('');
-	let birthdate = $state('31.01.2001');
+	let birthdate = $state('');
 	let sex = $state<'male' | 'female'>('male');
 
 	let firstnameError = $state('');
@@ -90,7 +91,7 @@
 		/>
 		<label for="consent" class="select-none">
 			Согласен(а) на
-			<a href="/consent" class="underline hover:opacity-80" target="_blank">
+			<a href={resolve('/consent')} class="underline hover:opacity-80" target="_blank">
 				обработку персональных данных
 			</a>
 		</label>
