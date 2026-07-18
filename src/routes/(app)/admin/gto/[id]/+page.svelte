@@ -923,6 +923,22 @@
 															{pct(m.memory.accuracy)}
 														</span>
 													</div>
+													<div class="flex items-center gap-2">
+														<span
+															class="w-16 shrink-0 text-xs text-gray-400"
+															>Точность</span
+														>
+														<span
+															class="tabular-nums {m.memory
+																.accuracy >= 0.8
+																? 'text-green-400'
+																: m.memory.accuracy >= 0.5
+																	? 'text-yellow-400'
+																	: 'text-red-400'}"
+														>
+															{pct(m.memory.accuracy)}
+														</span>
+													</div>
 												</div>
 											</div>
 
@@ -1304,6 +1320,25 @@
 													</Button>
 												</div>
 											</form>
+										</div>
+										<div
+											class="rounded-lg border border-gray-700 bg-gray-900/30 p-4"
+										>
+											<h2
+												class="mb-3 text-xs font-semibold uppercase tracking-wider text-white"
+											>
+												Выбранные слова:
+											</h2>
+											<p class="text-white text-center">
+												{data.wordSets
+													.find(
+														(ws) =>
+															data.wordSetIdMap.get(
+																m.participantId
+															) === ws.id
+													)
+													?.words.join(', ')}
+											</p>
 										</div>
 									</div>
 								</div>
