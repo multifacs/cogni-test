@@ -1302,14 +1302,7 @@
 												Выбранные слова:
 											</h2>
 											<p class="text-white text-center">
-												{data.wordSets
-													.find(
-														(ws) =>
-															data.wordSetIdMap.get(
-																m.participantId
-															) === ws.id
-													)
-													?.words.join(', ')}
+												{m.submittedWords?.join(', ')}
 											</p>
 										</div>
 									</div>
