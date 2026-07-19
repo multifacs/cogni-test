@@ -1,4 +1,5 @@
 import { json } from '@sveltejs/kit';
+import { getSpreadsheet } from '$lib/server/gto';
 import type { RequestHandler } from './$types';
 import {
 	updateGtoSessionName,
@@ -103,4 +104,16 @@ export const PATCH: RequestHandler = async ({ request, params, cookies }) => {
 	} catch {
 		return json({ error: 'Internal server error' }, { status: 500 });
 	}
+};
+
+export const POST: RequestHandler = async ({ request, cookies }) => {
+	const loggedInAdmin = cookies.get('logged_in_admin') === 'true';
+	if (!loggedInAdmin) {
+		return json({ error: 'Unauthorized' }, { status: 403 });
+	}
+
+	const metrics = await request.json();
+
+	const workbook = getSpreadsheet(metrics);
+	return json(workbook);
 };

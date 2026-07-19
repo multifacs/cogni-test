@@ -3,8 +3,12 @@
 	import Toast from '$lib/components/ui/Toast.svelte';
 	import { missingFieldLabels } from '$lib/survey-field-labels';
 	import { invalidateAll } from '$app/navigation';
+	import * as XLSX from 'xlsx';
 	import type { PageProps } from './$types';
-	import type { GtoEditableMetricDetail } from '$lib/server/db/controllers/gto';
+	import type {
+		GtoEditableMetricDetail,
+		ParticipantMetrics
+	} from '$lib/server/db/controllers/gto';
 
 	let { data }: PageProps = $props();
 	let editingName = $state(false);
@@ -176,6 +180,24 @@
 			showToast('Ошибка сохранения метрик');
 		} finally {
 			savingMetrics = new Set([...savingMetrics].filter((id) => id !== participantId));
+		}
+	}
+
+	async function exportMetrics(metrics: ParticipantMetrics[], outputName: string) {
+		try {
+			const responce = await fetch('', {
+				method: 'POST',
+				body: JSON.stringify(metrics),
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+
+			const workbook = await responce.json();
+
+			XLSX.writeFile(workbook, `${outputName}.xlsx`, { compression: true });
+		} catch {
+			showToast('Ошибка экспорта результатов');
 		}
 	}
 
@@ -1338,6 +1360,12 @@
 							{/if}
 						</div>
 					{/each}
+				</div>
+				<!-- TODO: should style it better or even move it somewhere else in the UI? -->
+				<div class="flex flex-col gap-2">
+					<Button color="green" onclick={() => exportMetrics(data.metrics, sessionName)}
+						>Экспорт результатов</Button
+					>
 				</div>
 			{/if}
 		{/if}

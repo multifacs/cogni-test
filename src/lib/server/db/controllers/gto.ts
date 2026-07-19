@@ -693,7 +693,7 @@ export type ParticipantMetrics = {
 	munsterberg: MunsterbergMetrics;
 	campimetry: CampimetryMetrics;
 	memory: SimpleTestMetrics;
-	swallow: SimpleTestMetrics;
+	swallow: SimpleTestMetrics & { totalTime: number };
 	raven: RavenMetrics;
 	editableMetrics: GtoEditableMetricDetail;
 	wordScore: number | null;
@@ -957,7 +957,12 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 
 		// ─── Swallow ────────────────────────────────────────────
 		const swallowSession = testSessions.find((s) => s.testType === 'swallow');
-		let swallowMetrics: SimpleTestMetrics = { meanTime: null, stdDevTime: null, accuracy: 0 };
+		let swallowMetrics: SimpleTestMetrics & { totalTime: number } = {
+			meanTime: null,
+			stdDevTime: null,
+			accuracy: 0,
+			totalTime: 0
+		};
 
 		if (swallowSession) {
 			const attempts = swallowAttemptsMap.get(swallowSession.id) ?? [];
@@ -966,7 +971,8 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 			swallowMetrics = {
 				meanTime: mean(times),
 				stdDevTime: stdDev(times),
-				accuracy: accuracy(correctness, attempts.length)
+				accuracy: accuracy(correctness, attempts.length),
+				totalTime: times.reduce((sum, v) => sum + v, 0)
 			};
 		}
 
