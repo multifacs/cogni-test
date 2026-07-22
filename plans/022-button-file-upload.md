@@ -432,3 +432,68 @@ Stop and report back (do not improvise) if:
 - The `parsedButtonFiles` Map is ephemeral — it resets on page navigation. For persisting across navigations, consider storing in `sessionStorage` as a future enhancement.
 - No server-side file storage is needed anymore — this is a pure client-side feature.
 - The `<details>` element is a progressive disclosure pattern that keeps the UI clean when no files are loaded.
+
+---
+
+## Итоги реализации
+
+**Дата**: 2026-07-22
+**Статус**: Реализовано с архитектурными отклонениями (в лучшую сторону)
+
+### Что совпадает с планом
+
+- ✅ Клиентский парсинг .xls/.xlsx вместо серверного
+- ✅ `<input type="file" accept=".xls,.xlsx" multiple>` в UI
+- ✅ Секция `<details>` «Файлы кнопочных тестов» с количеством пар
+- ✅ Кнопка «Очистить все»
+- ✅ Удалён серверный `parseButtonFile()`, `FILES_DIR`, `isNumber()`
+- ✅ Удалены `import fs` / `import path` из gto-кода
+- ✅ `static/button-files/` больше не используется
+- ✅ Парсинг стимулов (числа → скорость, `x` → ошибка, `-` → пропуск)
+
+### Что реализовано иначе (улучшения)
+
+| Что в плане | Что в реальности | Почему лучше |
+|---|---|---|
+| Парсинг одной строки `rawData[3].slice(4)` — 1 участник = 1 файл | `parseButtonFile()` парсит все строки с 3-й, собирая массив участников по `buttonId` | Закрывает открытый вопрос №1: один XLS содержит 10+ участников |
+| Ключ Map = `buttonTestFileName` (напр. `"010907л"`) | Ключ = `fileNumber` (напр. `"010907"`), participants по `buttonId` внутри | Закрывает открытый вопрос №2: составной ключ не нужен |
+| `$state<Map>` в компоненте (эфемерный) | `localforage` — данные сохраняются в IndexedDB | Решает проблему из Maintenance notes (переживает навигацию) |
+| `ButtonTestResult` с `avgReaction` + `accuracy` | `ButtonParticipantResult` с `avgReaction`, `accuracy` + `buttonId` | Логичное расширение для мульти-участников |
+| Все типы и функции в `+page.svelte` | Вынесено в `$lib/client/gto-button-data.ts` | Лучшая архитектура, тестируемость, переиспользование |
+| UI: «Левая: 123мс / Правая: 456мс» | UI: список `fileNumber` с «л+п», выбор участника через dropdown | Практичнее — admin выбирает конкретного участника |
+| Шаги 4-5: POST-хендлер + `getSpreadsheet()` с `buttonTestData` | Весь экспорт на клиенте, без серверного участия | Упрощение: нет сетевого round-trip, нет серверной генерации Excel |
+| `showToast()` при ошибке валидации имени файла | Файлы с некорректным именем молча скипаются (`console.warn`) | Минорная потеря — нет visual feedback при плохом имени |
+
+### Существенные расхождения
+
+- **Формула `avgReaction`**: план — `reactionsSum / validCellsCount`; реальность — `reactionsSum / (validCellsCount - incorrectReactionsCount)` (среднее только по правильным реакциям, что корректнее). Добавлена защита: если все реакции ошибочные → `avgReaction = null`.
+- **Шаги 4 и 5** (серверный экспорт с `buttonTestData`) — **пропущены**: `+server.ts` остался без POST-хендлера, `src/lib/server/gto/index.ts` не существует (удалён/реорганизован ранее). Экспорт полностью на клиенте.
+- **Типы `ButtonTestData` / `ButtonTestResult` из `$lib/server/gto`** — не экспортируются, модуль не существует. Заменены на `$lib/client/gto-button-data.ts` с `ParsedButtonFile`, `StoredButtonPair`, `ButtonParticipantResult`.
+
+### Тестирование
+
+- `src/lib/client/gto-button-data.test.ts` — 7 тестов для `parseStimulusRow` (числа, `x`, `-`, пустые, все ошибки, нули, смешанные)
+- Нет тестов на `parseButtonFile()` и `uploadButtonFiles()` (интеграционный код с `FileList`/`ArrayBuffer`)
+
+### Критерии выполнения
+
+| Критерий | Статус |
+|---|---|
+| `parseButtonTestFile()` и filesystem импорты удалены | ✅ |
+| Клиентский парсинг работает аналогично серверному | ✅ (и лучше — поддерживает нескольких участников) |
+| Upload UI показывает данные | ✅ (и сохраняет в IndexedDB) |
+| Экспорт включает button test данные | ✅ (полностью на клиенте) |
+| Файлы вне scope не модифицированы | ⚠️ Создан `src/lib/client/gto-button-data.ts` (архитектурное улучшение) |
+| `+server.ts` обновлён для `buttonTestData` | ❌ Не актуально — подход изменён, POST не нужен |
+| `src/lib/server/gto/index.ts` очищен | ⚠️ Файл не существует — удалён/реорганизован ранее |
+
+### Открытые вопросы — статус
+
+| № | Вопрос | Статус |
+|---|---|---|
+| 1 | Один файл = несколько участников | ✅ Решено: `parseButtonFile()` парсит все строки по `buttonId` |
+| 2 | Ключ маппинга | ✅ Решено: `fileNumber` + `buttonId` внутри |
+| 3 | Парсинг по строкам | ✅ Решено: цикл `for (let i = 3; ...)` |
+| 4 | Готовые метрики (Успешность,%) | ⬜ Открыт: не используется, всегда пересчёт из стимулов |
+| 5 | Заголовок «Правая рука» в `*л.xls` | ⬜ Открыт: не уточнено |
+| 6 | Структура ButtonTestData | ✅ Решено: `StoredButtonPair` с `left`/`right` `ParsedButtonFile` |
