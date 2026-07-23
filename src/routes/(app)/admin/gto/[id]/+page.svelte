@@ -11,12 +11,13 @@
 	} from '$lib/server/db/controllers/gto';
 	import {
 		uploadButtonFiles,
-		getAvailableFileNumbers,
 		getParticipantIdsForFile,
 		getResultForParticipant,
 		clearAllButtonData,
 		loadAllButtonData,
-		type StoredButtonPair
+		getFileNumbersWithStatus,
+		type StoredButtonPair,
+		type FileNumberStatus
 	} from '$lib/client/gto-button-data';
 	import { onMount } from 'svelte';
 
@@ -34,7 +35,10 @@
 	let metricsSearch = $state('');
 	let menuOpen = $state(false);
 	let removingParticipant = $state<string | null>(null);
-	let availableFileNumbers = $state<string[]>([]);
+	let fileNumbersWithStatus = $state<FileNumberStatus[]>([]);
+	let availableFileNumbers = $derived(
+		fileNumbersWithStatus.filter((f) => f.hasLeft && f.hasRight).map((f) => f.fileNumber)
+	);
 	let buttonDataLoaded = $state<Map<string, StoredButtonPair>>(new Map());
 	let uploadingFiles = $state(false);
 	let participantButtonIds = $state<Map<string, number[]>>(new Map());
@@ -57,7 +61,7 @@
 	}
 
 	onMount(async () => {
-		availableFileNumbers = await getAvailableFileNumbers();
+		fileNumbersWithStatus = await getFileNumbersWithStatus();
 		buttonDataLoaded = await loadAllButtonData();
 		// Pre-load button IDs for all existing file selections
 		for (const fn of availableFileNumbers) {
@@ -1499,11 +1503,11 @@
 				<details class="rounded-lg border border-gray-700 bg-gray-900/30 p-4" open>
 					<summary class="cursor-pointer text-sm font-medium text-gray-300">
 						Файлы кнопочных тестов
-						{#if availableFileNumbers.length > 0}
+						{#if fileNumbersWithStatus.length > 0}
 							<span
 								class="ml-2 rounded-full bg-blue-900/60 px-2 py-0.5 text-xs text-blue-300"
 							>
-								{availableFileNumbers.length} пар
+								{fileNumbersWithStatus.length} файлов
 							</span>
 						{/if}
 					</summary>
@@ -1525,47 +1529,56 @@
 									multiple
 									class="block text-sm text-gray-300 file:mr-2 file:rounded-lg file:border-0 file:bg-gray-700 file:px-3 file:py-1.5 file:text-sm file:text-gray-300 hover:file:bg-gray-600"
 									disabled={uploadingFiles}
-									onchange={async (e) => {
-										const files = (e.target as HTMLInputElement).files;
-										if (files && files.length > 0) {
-											uploadingFiles = true;
-											try {
-												availableFileNumbers =
-													await uploadButtonFiles(files);
-												buttonDataLoaded = await loadAllButtonData();
-												for (const fn of availableFileNumbers) {
-													await loadButtonIdsForFile(fn);
-												}
-												showToast(
-													`Загружено файлов: ${files.length}`,
-													'success'
-												);
-											} catch {
-												showToast('Ошибка загрузки файлов');
-											} finally {
-												uploadingFiles = false;
+								onchange={async (e) => {
+									const files = (e.target as HTMLInputElement).files;
+									if (files && files.length > 0) {
+										uploadingFiles = true;
+										try {
+											fileNumbersWithStatus = await uploadButtonFiles(files);
+											buttonDataLoaded = await loadAllButtonData();
+											for (const fn of availableFileNumbers) {
+												await loadButtonIdsForFile(fn);
 											}
+											showToast(
+												`Загружено файлов: ${files.length}`,
+												'success'
+											);
+										} catch {
+											showToast('Ошибка загрузки файлов');
+										} finally {
+											uploadingFiles = false;
 										}
-									}}
+									}
+								}}
 								/>
 							</label>
 						</div>
-						{#if availableFileNumbers.length > 0}
+						{#if fileNumbersWithStatus.length > 0}
 							<div class="space-y-1">
 								<p class="text-xs text-gray-400">
-									Доступные файлы (есть пара л+п):
+									Загруженные файлы:
 								</p>
-								{#each availableFileNumbers as fn (fn)}
+								{#each fileNumbersWithStatus as fs (fs.fileNumber)}
 									<div class="flex items-center gap-2 text-xs text-gray-300">
-										<span class="font-mono">{fn}</span>
-										<span class="text-green-400">л+п</span>
+										<span class="font-mono">{fs.fileNumber}</span>
+										{#if fs.hasLeft && fs.hasRight}
+											<span class="text-green-400">л+п</span>
+										{:else}
+											{#if !fs.hasLeft && !fs.hasRight}
+												<span class="text-red-400">файлы не загружены</span>
+											{:else}
+												<span class="text-yellow-400">
+													{fs.hasLeft ? 'не хватает файла п' : 'не хватает файла л'}
+												</span>
+											{/if}
+										{/if}
 									</div>
 								{/each}
 								<button
 									class="text-xs text-red-400 hover:text-red-300"
 									onclick={async () => {
 										await clearAllButtonData();
-										availableFileNumbers = [];
+										fileNumbersWithStatus = [];
 										buttonDataLoaded = new Map();
 										participantButtonIds = new Map();
 										showToast('Файлы очищены', 'info');

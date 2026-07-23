@@ -70,6 +70,12 @@ export type StoredButtonPair = {
 	right: ParsedButtonFile;
 };
 
+export type FileNumberStatus = {
+	fileNumber: string;
+	hasLeft: boolean;
+	hasRight: boolean;
+};
+
 // ─── Localforage store ───────────────────────────────────────────────
 
 const buttonStore = localforage.createInstance({ name: 'gto-buttons' });
@@ -106,7 +112,7 @@ export function parseButtonFile(
 
 // ─── Upload helpers ──────────────────────────────────────────────────
 
-export async function uploadButtonFiles(fileList: FileList): Promise<string[]> {
+export async function uploadButtonFiles(fileList: FileList): Promise<FileNumberStatus[]> {
 	const filenameRegex = /^(.+)([лп])\.xlsx?$/i;
 
 	for (const file of fileList) {
@@ -132,7 +138,7 @@ export async function uploadButtonFiles(fileList: FileList): Promise<string[]> {
 		await buttonStore.setItem(key, pair);
 	}
 
-	return getAvailableFileNumbers();
+	return getFileNumbersWithStatus();
 }
 
 // ─── Query functions ──────────────────────────────────────────────────
@@ -146,13 +152,34 @@ export async function getAvailableFileNumbers(): Promise<string[]> {
 	const complete: string[] = [];
 	for (const key of keys) {
 		const pair: StoredButtonPair | null = await buttonStore.getItem(key);
-		if (pair && pair.left?.participants && pair.right?.participants) {
+		if (pair && pair.left?.participants?.length > 0 && pair.right?.participants?.length > 0) {
 			const fileNumber = key.replace('gto-button-', '');
 			complete.push(fileNumber);
 		}
 	}
 	complete.sort((a, b) => a.localeCompare(b));
 	return complete;
+}
+
+export async function getFileNumbersWithStatus(): Promise<FileNumberStatus[]> {
+	const keys: string[] = [];
+	await buttonStore.iterate((_, key) => {
+		if (key.startsWith('gto-button-')) keys.push(key);
+	});
+
+	const results: FileNumberStatus[] = [];
+	for (const key of keys) {
+		const pair: StoredButtonPair | null = await buttonStore.getItem(key);
+		if (!pair) continue;
+		const fileNumber = key.replace('gto-button-', '');
+		results.push({
+			fileNumber,
+			hasLeft: pair.left?.participants?.length > 0,
+			hasRight: pair.right?.participants?.length > 0
+		});
+	}
+	results.sort((a, b) => a.fileNumber.localeCompare(b.fileNumber));
+	return results;
 }
 
 export async function getParticipantIdsForFile(fileNumber: string): Promise<number[]> {
