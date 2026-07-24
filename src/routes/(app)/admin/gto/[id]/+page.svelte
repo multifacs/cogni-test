@@ -225,8 +225,8 @@
 				[
 					'ID',
 					'Имя',
-					'Email',
 					'Возраст',
+					'Email',
 					'Средняя скорость Струпа Часть 2',
 					'Корректность Струпа Часть 2',
 					'Средняя скорость моторной реакции правая рука',
@@ -273,8 +273,8 @@
 				data.push({
 					ID: m.participantId,
 					Name: m.firstname,
-					Email: m.email,
 					Age: m.age,
+					Email: m.email,
 					StroopStage2MeanTime: m.stroop.stage2.meanTime,
 					StroopStage2Accuracy: m.stroop.stage2.accuracy,
 					AvgReactionRight: avgReactionRight,
