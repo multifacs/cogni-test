@@ -223,7 +223,7 @@
 		try {
 			const HEADERS = [
 				[
-					'ID',
+					'ГТО-М ID',
 					'Имя',
 					'Возраст',
 					'Email',
@@ -249,7 +249,7 @@
 				]
 			];
 
-			const data = [];
+			const rows = [];
 			for (const m of metrics) {
 				let avgReactionRight: number | null = null;
 				let accuracyRight: number | null = null;
@@ -270,8 +270,8 @@
 					accuracyRight = result.right?.accuracy ?? null;
 				}
 
-				data.push({
-					ID: m.participantId,
+				rows.push({
+					ID: data.gtoIdMap.get(m.userId) ?? '',
 					Name: m.firstname,
 					Age: m.age,
 					Email: m.email,
@@ -300,7 +300,7 @@
 				});
 			}
 
-			const worksheet = XLSX.utils.json_to_sheet(data);
+			const worksheet = XLSX.utils.json_to_sheet(rows);
 			const workbook = XLSX.utils.book_new();
 			XLSX.utils.sheet_add_aoa(worksheet, HEADERS, { origin: 'A1' });
 			XLSX.utils.book_append_sheet(workbook, worksheet, 'Результаты ГТО-М');
