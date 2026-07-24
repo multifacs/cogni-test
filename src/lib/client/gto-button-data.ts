@@ -7,46 +7,47 @@ export function parseStimulusRow(cells: (string | number | undefined | null)[]):
 	avgReaction: number | null;
 	accuracy: number | null;
 } {
+	const totalStimuli = cells.length;
+	if (totalStimuli === 0) {
+		return { avgReaction: null, accuracy: null };
+	}
+
 	let reactionsSum = 0;
-	let incorrectReactionsCount = 0;
-	let validCellsCount = 0;
+	let numericCellsCount = 0;
+	let correctCount = 0;
 
 	for (const cell of cells) {
-		if (cell === null || cell === undefined) continue;
+		if (cell === null || cell === undefined) {
+			continue;
+		}
 
 		if (typeof cell === 'number') {
 			reactionsSum += cell;
-			validCellsCount++;
+			numericCellsCount++;
+			correctCount++;
 			continue;
 		}
 
 		const str = String(cell).trim();
-		if (str === '' || str === '-') {
+		if (str === '-') {
+			correctCount++;
 			continue;
 		}
-		if (str.toLowerCase() === 'x') {
-			incorrectReactionsCount++;
-			validCellsCount++;
+		if (str.toLowerCase() === 'x' || str === '') {
 			continue;
 		}
 
 		const asNum = Number(str);
 		if (!isNaN(asNum)) {
 			reactionsSum += asNum;
-			validCellsCount++;
+			numericCellsCount++;
+			correctCount++;
 		}
 	}
 
-	if (validCellsCount === 0) {
-		return { avgReaction: null, accuracy: null };
-	}
-
 	return {
-		avgReaction:
-			validCellsCount > incorrectReactionsCount
-				? reactionsSum / (validCellsCount - incorrectReactionsCount)
-				: null,
-		accuracy: (validCellsCount - incorrectReactionsCount) / validCellsCount
+		avgReaction: numericCellsCount > 0 ? reactionsSum / numericCellsCount : null,
+		accuracy: correctCount / totalStimuli
 	};
 }
 
