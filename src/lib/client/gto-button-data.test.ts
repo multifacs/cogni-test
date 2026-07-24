@@ -51,7 +51,7 @@ describe('parseStimulusRow', () => {
 		expect(result.accuracy).toBeCloseTo(2 / 3, 2);
 	});
 
-	test('dash cells are skipped', () => {
+	test('dash cells count as correct omissions', () => {
 		expect.assertions(2);
 		const result = parseStimulusRow([572, '-', 881]);
 		expect(result.avgReaction).toBeCloseTo((572 + 881) / 2, 2);
@@ -72,11 +72,11 @@ describe('parseStimulusRow', () => {
 		expect(result.accuracy).toBe(0);
 	});
 
-	test('mixed: [572, "-", "x", 881, "", 772] → avgReaction≈741.67, accuracy≈0.75', () => {
+	test('mixed: [572, "-", "x", 881, "", 772] → avgReaction≈741.67, accuracy≈0.667', () => {
 		expect.assertions(2);
 		const result = parseStimulusRow([572, '-', 'x', 881, '', 772]);
 		expect(result.avgReaction).toBeCloseTo((572 + 881 + 772) / 3, 2);
-		expect(result.accuracy).toBeCloseTo(3 / 4, 2);
+		expect(result.accuracy).toBeCloseTo(4 / 6, 2);
 	});
 
 	test('all zero values → avgReaction is 0, accuracy is 1', () => {
@@ -84,6 +84,20 @@ describe('parseStimulusRow', () => {
 		const result = parseStimulusRow([0, 0, 0]);
 		expect(result.avgReaction).toBe(0);
 		expect(result.accuracy).toBe(1);
+	});
+
+	test('all dashes → avgReaction is null, accuracy is 1', () => {
+		expect.assertions(2);
+		const result = parseStimulusRow(['-', '-', '-']);
+		expect(result.avgReaction).toBeNull();
+		expect(result.accuracy).toBe(1);
+	});
+
+	test('dashes with one x → avgReaction is null, accuracy≈0.667', () => {
+		expect.assertions(2);
+		const result = parseStimulusRow(['-', 'x', '-']);
+		expect(result.avgReaction).toBeNull();
+		expect(result.accuracy).toBeCloseTo(2 / 3, 2);
 	});
 });
 
