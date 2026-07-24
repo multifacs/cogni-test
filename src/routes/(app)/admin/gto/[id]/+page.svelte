@@ -20,11 +20,12 @@
 		type FileNumberStatus
 	} from '$lib/client/gto-button-data';
 	import { onMount } from 'svelte';
+	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 
 	let { data }: PageProps = $props();
 	let editingName = $state(false);
 	let sessionName = $state(data.session.name);
-	let savingMetrics = $state<Set<string>>(new Set());
+	let savingMetrics = new SvelteSet<string>();
 	let toastMessage = $state<string | null>(null);
 	let toastType = $state<'error' | 'success' | 'info'>('info');
 	let expandedParticipant = $state<string | null>(null);
@@ -39,9 +40,10 @@
 	let availableFileNumbers = $derived(
 		fileNumbersWithStatus.filter((f) => f.hasLeft && f.hasRight).map((f) => f.fileNumber)
 	);
-	let buttonDataLoaded = $state<Map<string, StoredButtonPair>>(new Map());
+	let buttonDataLoaded = new SvelteMap<string, StoredButtonPair>();
 	let uploadingFiles = $state(false);
-	let participantButtonIds = $state<Map<string, number[]>>(new Map());
+	let participantButtonIds = new SvelteMap<string, number[]>();
+	let selectedButtonFile = new SvelteMap<string, string>();
 
 	function closeMenuOutside(e: MouseEvent) {
 		if (menuOpen && !(e.target as HTMLElement).closest('.session-menu')) {
@@ -57,12 +59,12 @@
 	async function loadButtonIdsForFile(fileNumber: string) {
 		if (!fileNumber || !availableFileNumbers.includes(fileNumber)) return;
 		const ids = await getParticipantIdsForFile(fileNumber);
-		participantButtonIds = new Map([...participantButtonIds, [fileNumber, ids]]);
+		participantButtonIds.set(fileNumber, ids);
 	}
 
 	onMount(async () => {
 		fileNumbersWithStatus = await getFileNumbersWithStatus();
-		buttonDataLoaded = await loadAllButtonData();
+		buttonDataLoaded = new SvelteMap(await loadAllButtonData());
 		// Pre-load button IDs for all existing file selections
 		for (const fn of availableFileNumbers) {
 			await loadButtonIdsForFile(fn);
@@ -200,7 +202,7 @@
 		for (const [key, value] of Object.entries(metrics)) {
 			if (value) fd.set(key, value);
 		}
-		savingMetrics = new Set([...savingMetrics, participantId]);
+		savingMetrics.add(participantId);
 		try {
 			const response = await fetch('', { method: 'PATCH', body: fd });
 			if (!response.ok) {
@@ -208,11 +210,12 @@
 			} else {
 				showToast('Метрики сохранены', 'success');
 				await refreshData();
+				selectedButtonFile.delete(participantId);
 			}
 		} catch {
 			showToast('Ошибка сохранения метрик');
 		} finally {
-			savingMetrics = new Set([...savingMetrics].filter((id) => id !== participantId));
+			savingMetrics.delete(participantId);
 		}
 	}
 
@@ -222,6 +225,7 @@
 				[
 					'ID',
 					'Имя',
+					'Email',
 					'Возраст',
 					'Средняя скорость Струпа Часть 2',
 					'Корректность Струпа Часть 2',
@@ -269,6 +273,7 @@
 				data.push({
 					ID: m.participantId,
 					Name: m.firstname,
+					Email: m.email,
 					Age: m.age,
 					StroopStage2MeanTime: m.stroop.stage2.meanTime,
 					StroopStage2Accuracy: m.stroop.stage2.accuracy,
@@ -695,6 +700,8 @@
 						{@const em = m.editableMetrics as GtoEditableMetricDetail}
 						{@const isExpanded = expandedParticipant === m.participantId}
 						{@const isSaving = savingMetrics.has(m.participantId)}
+						{@const effectiveButtonFile =
+							selectedButtonFile.get(m.participantId) ?? em.buttonTestFileName}
 						<div
 							class="rounded-xl border border-gray-700 bg-gray-800/50 transition-colors"
 						>
@@ -1363,17 +1370,28 @@
 															if (val) {
 																loadButtonIdsForFile(val);
 															}
+															// Update local override
+															if (val) {
+																selectedButtonFile.set(
+																	m.participantId,
+																	val
+																);
+															} else {
+																selectedButtonFile.delete(
+																	m.participantId
+																);
+															}
 														}}
 													>
 														<option
 															value=""
-															selected={!em.buttonTestFileName}
+															selected={!effectiveButtonFile}
 															>—</option
 														>
 														{#each availableFileNumbers as fn (fn)}
 															<option
 																value={fn}
-																selected={em.buttonTestFileName ===
+																selected={effectiveButtonFile ===
 																	fn}>{fn}</option
 															>
 														{/each}
@@ -1388,9 +1406,9 @@
 													<select
 														name="buttonTestNumber"
 														class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
-														disabled={!em.buttonTestFileName ||
+														disabled={!effectiveButtonFile ||
 															!availableFileNumbers.includes(
-																em.buttonTestFileName
+																effectiveButtonFile
 															)}
 													>
 														<option
@@ -1398,8 +1416,8 @@
 															selected={em.buttonTestNumber == null}
 															>—</option
 														>
-														{#if em.buttonTestFileName && participantButtonIds.has(em.buttonTestFileName)}
-															{#each participantButtonIds.get(em.buttonTestFileName) ?? [] as btnId (btnId)}
+														{#if effectiveButtonFile && participantButtonIds.has(effectiveButtonFile)}
+															{#each participantButtonIds.get(effectiveButtonFile) ?? [] as btnId (btnId)}
 																<option
 																	value={btnId}
 																	selected={em.buttonTestNumber ===
@@ -1529,35 +1547,36 @@
 									multiple
 									class="block text-sm text-gray-300 file:mr-2 file:rounded-lg file:border-0 file:bg-gray-700 file:px-3 file:py-1.5 file:text-sm file:text-gray-300 hover:file:bg-gray-600"
 									disabled={uploadingFiles}
-								onchange={async (e) => {
-									const files = (e.target as HTMLInputElement).files;
-									if (files && files.length > 0) {
-										uploadingFiles = true;
-										try {
-											fileNumbersWithStatus = await uploadButtonFiles(files);
-											buttonDataLoaded = await loadAllButtonData();
-											for (const fn of availableFileNumbers) {
-												await loadButtonIdsForFile(fn);
+									onchange={async (e) => {
+										const files = (e.target as HTMLInputElement).files;
+										if (files && files.length > 0) {
+											uploadingFiles = true;
+											try {
+												fileNumbersWithStatus =
+													await uploadButtonFiles(files);
+												buttonDataLoaded = new SvelteMap(
+													await loadAllButtonData()
+												);
+												for (const fn of availableFileNumbers) {
+													await loadButtonIdsForFile(fn);
+												}
+												showToast(
+													`Загружено файлов: ${files.length}`,
+													'success'
+												);
+											} catch {
+												showToast('Ошибка загрузки файлов');
+											} finally {
+												uploadingFiles = false;
 											}
-											showToast(
-												`Загружено файлов: ${files.length}`,
-												'success'
-											);
-										} catch {
-											showToast('Ошибка загрузки файлов');
-										} finally {
-											uploadingFiles = false;
 										}
-									}
-								}}
+									}}
 								/>
 							</label>
 						</div>
 						{#if fileNumbersWithStatus.length > 0}
 							<div class="space-y-1">
-								<p class="text-xs text-gray-400">
-									Загруженные файлы:
-								</p>
+								<p class="text-xs text-gray-400">Загруженные файлы:</p>
 								{#each fileNumbersWithStatus as fs (fs.fileNumber)}
 									<div class="flex items-center gap-2 text-xs text-gray-300">
 										<span class="font-mono">{fs.fileNumber}</span>
@@ -1568,7 +1587,9 @@
 												<span class="text-red-400">файлы не загружены</span>
 											{:else}
 												<span class="text-yellow-400">
-													{fs.hasLeft ? 'не хватает файла п' : 'не хватает файла л'}
+													{fs.hasLeft
+														? 'не хватает файла п'
+														: 'не хватает файла л'}
 												</span>
 											{/if}
 										{/if}
@@ -1579,8 +1600,8 @@
 									onclick={async () => {
 										await clearAllButtonData();
 										fileNumbersWithStatus = [];
-										buttonDataLoaded = new Map();
-										participantButtonIds = new Map();
+										buttonDataLoaded.clear();
+										participantButtonIds.clear();
 										showToast('Файлы очищены', 'info');
 									}}
 								>

@@ -685,6 +685,7 @@ export type ParticipantMetrics = {
 	userId: string;
 	firstname: string;
 	lastname: string;
+	email: string | null;
 	sex: string;
 	age: number;
 	missingSurveyFields: string[];
@@ -1038,11 +1039,14 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 			};
 		}
 
+		const survey = surveyMap.get(participant.userId) as Record<string, unknown> | undefined;
+
 		metrics.push({
 			participantId: participant.id,
 			userId: participant.userId,
 			firstname: participant.firstname,
 			lastname: participant.lastname,
+			email: (survey?.email as string | null) ?? null,
 			sex: participant.sex,
 			age,
 			missingSurveyFields,
