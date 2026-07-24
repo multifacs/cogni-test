@@ -74,7 +74,8 @@
 		"onnxruntime-node": "^1.26.0",
 		"short-uuid": "^6.0.3",
 		"uuid": "^14.0.0",
-		"web-push": "^3.6.7"
+		"web-push": "^3.6.7",
+		"xlsx": "^0.18.5"
 	},
 	"allowScripts": {
 		"esbuild@0.18.20": true,

@@ -3,13 +3,29 @@
 	import Toast from '$lib/components/ui/Toast.svelte';
 	import { missingFieldLabels } from '$lib/survey-field-labels';
 	import { invalidateAll } from '$app/navigation';
+	import * as XLSX from 'xlsx';
 	import type { PageProps } from './$types';
-	import type { GtoEditableMetricDetail } from '$lib/server/db/controllers/gto';
+	import type {
+		GtoEditableMetricDetail,
+		ParticipantMetrics
+	} from '$lib/server/db/controllers/gto';
+	import {
+		uploadButtonFiles,
+		getParticipantIdsForFile,
+		getResultForParticipant,
+		clearAllButtonData,
+		loadAllButtonData,
+		getFileNumbersWithStatus,
+		type StoredButtonPair,
+		type FileNumberStatus
+	} from '$lib/client/gto-button-data';
+	import { onMount } from 'svelte';
+	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 
 	let { data }: PageProps = $props();
 	let editingName = $state(false);
 	let sessionName = $state(data.session.name);
-	let savingMetrics = $state<Set<string>>(new Set());
+	let savingMetrics = new SvelteSet<string>();
 	let toastMessage = $state<string | null>(null);
 	let toastType = $state<'error' | 'success' | 'info'>('info');
 	let expandedParticipant = $state<string | null>(null);
@@ -20,6 +36,14 @@
 	let metricsSearch = $state('');
 	let menuOpen = $state(false);
 	let removingParticipant = $state<string | null>(null);
+	let fileNumbersWithStatus = $state<FileNumberStatus[]>([]);
+	let availableFileNumbers = $derived(
+		fileNumbersWithStatus.filter((f) => f.hasLeft && f.hasRight).map((f) => f.fileNumber)
+	);
+	let buttonDataLoaded = new SvelteMap<string, StoredButtonPair>();
+	let uploadingFiles = $state(false);
+	let participantButtonIds = new SvelteMap<string, number[]>();
+	let selectedButtonFile = new SvelteMap<string, string>();
 
 	function closeMenuOutside(e: MouseEvent) {
 		if (menuOpen && !(e.target as HTMLElement).closest('.session-menu')) {
@@ -31,6 +55,21 @@
 		toastMessage = message;
 		toastType = type;
 	}
+
+	async function loadButtonIdsForFile(fileNumber: string) {
+		if (!fileNumber || !availableFileNumbers.includes(fileNumber)) return;
+		const ids = await getParticipantIdsForFile(fileNumber);
+		participantButtonIds.set(fileNumber, ids);
+	}
+
+	onMount(async () => {
+		fileNumbersWithStatus = await getFileNumbersWithStatus();
+		buttonDataLoaded = new SvelteMap(await loadAllButtonData());
+		// Pre-load button IDs for all existing file selections
+		for (const fn of availableFileNumbers) {
+			await loadButtonIdsForFile(fn);
+		}
+	});
 
 	function formatDate(dateStr: string) {
 		return new Date(dateStr).toLocaleString('ru-RU');
@@ -163,7 +202,7 @@
 		for (const [key, value] of Object.entries(metrics)) {
 			if (value) fd.set(key, value);
 		}
-		savingMetrics = new Set([...savingMetrics, participantId]);
+		savingMetrics.add(participantId);
 		try {
 			const response = await fetch('', { method: 'PATCH', body: fd });
 			if (!response.ok) {
@@ -171,11 +210,103 @@
 			} else {
 				showToast('Метрики сохранены', 'success');
 				await refreshData();
+				selectedButtonFile.delete(participantId);
 			}
 		} catch {
 			showToast('Ошибка сохранения метрик');
 		} finally {
-			savingMetrics = new Set([...savingMetrics].filter((id) => id !== participantId));
+			savingMetrics.delete(participantId);
+		}
+	}
+
+	async function exportMetrics(metrics: ParticipantMetrics[], outputName: string) {
+		try {
+			const HEADERS = [
+				[
+					'ID',
+					'Имя',
+					'Возраст',
+					'Email',
+					'Средняя скорость Струпа Часть 2',
+					'Корректность Струпа Часть 2',
+					'Средняя скорость моторной реакции правая рука',
+					'Корректность моторной реакции правая рука',
+					'Средняя скорость моторной реакции левая рука',
+					'Корректность моторной реакции левая рука',
+					'Средняя скорость теста на память',
+					'Корректность теста на память',
+					'Средняя скорость теста «Ласточка»',
+					'Время прохождения теста «Ласточка»',
+					'Количество верных слов',
+					'Метрика «Равновесие»',
+					'Метрика «Лабиринт»',
+					'Метрика Мюнстерберга',
+					'Средняя скорость Струпа Часть 3',
+					'Корректность Струпа Часть 3',
+					'Средняя скорость теста «Матрица Равена»',
+					'Корректность «Матриц Равена»',
+					'Метрика «Логика»'
+				]
+			];
+
+			const data = [];
+			for (const m of metrics) {
+				let avgReactionRight: number | null = null;
+				let accuracyRight: number | null = null;
+				let avgReactionLeft: number | null = null;
+				let accuracyLeft: number | null = null;
+
+				if (
+					m.editableMetrics.buttonTestFileName &&
+					m.editableMetrics.buttonTestNumber != null
+				) {
+					const result = await getResultForParticipant(
+						m.editableMetrics.buttonTestFileName,
+						m.editableMetrics.buttonTestNumber
+					);
+					avgReactionLeft = result.left?.avgReaction ?? null;
+					accuracyLeft = result.left?.accuracy ?? null;
+					avgReactionRight = result.right?.avgReaction ?? null;
+					accuracyRight = result.right?.accuracy ?? null;
+				}
+
+				data.push({
+					ID: m.participantId,
+					Name: m.firstname,
+					Age: m.age,
+					Email: m.email,
+					StroopStage2MeanTime: m.stroop.stage2.meanTime,
+					StroopStage2Accuracy: m.stroop.stage2.accuracy,
+					AvgReactionRight: avgReactionRight,
+					AccuracyRight: accuracyRight,
+					AvgReactionLeft: avgReactionLeft,
+					AccuracyLeft: accuracyLeft,
+					MemoryMeanTime: m.memory.meanTime,
+					MemoryAccuracy: m.memory.accuracy,
+					SwallowMeanTime: m.swallow.meanTime,
+					SwallowTotalTime: m.swallow.totalTime,
+					WordScore: m.wordScore,
+					BalanceTest: m.editableMetrics.balanceTest,
+					Maze:
+						(m.editableMetrics.mazeQ1 ?? 0) +
+						(m.editableMetrics.mazeQ2 ?? 0) +
+						(m.editableMetrics.mazeQ3 ?? 0),
+					Munsterberg: m.munsterberg.fractionGuessed,
+					StroopStage3MeanTime: m.stroop.stage3.meanTime,
+					StroopStage3Accuracy: m.stroop.stage3.accuracy,
+					RavenMeanTime: m.raven.averageResponseTimeMs,
+					RavenAccuracy: m.raven.accuracy,
+					Logic: m.editableMetrics.logic
+				});
+			}
+
+			const worksheet = XLSX.utils.json_to_sheet(data);
+			const workbook = XLSX.utils.book_new();
+			XLSX.utils.sheet_add_aoa(worksheet, HEADERS, { origin: 'A1' });
+			XLSX.utils.book_append_sheet(workbook, worksheet, 'Результаты ГТО-М');
+			XLSX.writeFile(workbook, `${outputName}.xlsx`, { compression: true });
+		} catch {
+			showToast('Ошибка экспорта результатов');
 		}
 	}
 
@@ -569,6 +700,8 @@
 						{@const em = m.editableMetrics as GtoEditableMetricDetail}
 						{@const isExpanded = expandedParticipant === m.participantId}
 						{@const isSaving = savingMetrics.has(m.participantId)}
+						{@const effectiveButtonFile =
+							selectedButtonFile.get(m.participantId) ?? em.buttonTestFileName}
 						<div
 							class="rounded-xl border border-gray-700 bg-gray-800/50 transition-colors"
 						>
@@ -1222,32 +1355,77 @@
 													/>
 												</label>
 
-												<!-- Button test -->
-												<label class="flex flex-col gap-1">
-													<span class="text-xs text-gray-400"
-														>Кнопочки №</span
-													>
-													<input
-														type="number"
-														name="buttonTestNumber"
-														min="0"
-														max="20"
-														value={em.buttonTestNumber ?? ''}
-														class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
-														placeholder="0–20"
-													/>
-												</label>
+												<!-- Button test file -->
 												<label class="flex flex-col gap-1">
 													<span class="text-xs text-gray-400"
 														>Кнопочки файл</span
 													>
-													<input
-														type="text"
+													<select
 														name="buttonTestFileName"
-														value={em.buttonTestFileName ?? ''}
 														class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
-														placeholder="Имя файла"
-													/>
+														onchange={(e) => {
+															const target =
+																e.currentTarget as HTMLSelectElement;
+															const val = target.value;
+															if (val) {
+																loadButtonIdsForFile(val);
+															}
+															// Update local override
+															if (val) {
+																selectedButtonFile.set(
+																	m.participantId,
+																	val
+																);
+															} else {
+																selectedButtonFile.delete(
+																	m.participantId
+																);
+															}
+														}}
+													>
+														<option
+															value=""
+															selected={!effectiveButtonFile}
+															>—</option
+														>
+														{#each availableFileNumbers as fn (fn)}
+															<option
+																value={fn}
+																selected={effectiveButtonFile ===
+																	fn}>{fn}</option
+															>
+														{/each}
+													</select>
+												</label>
+
+												<!-- Button test number -->
+												<label class="flex flex-col gap-1">
+													<span class="text-xs text-gray-400"
+														>Кнопочки №</span
+													>
+													<select
+														name="buttonTestNumber"
+														class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
+														disabled={!effectiveButtonFile ||
+															!availableFileNumbers.includes(
+																effectiveButtonFile
+															)}
+													>
+														<option
+															value=""
+															selected={em.buttonTestNumber == null}
+															>—</option
+														>
+														{#if effectiveButtonFile && participantButtonIds.has(effectiveButtonFile)}
+															{#each participantButtonIds.get(effectiveButtonFile) ?? [] as btnId (btnId)}
+																<option
+																	value={btnId}
+																	selected={em.buttonTestNumber ===
+																		btnId}>{btnId}</option
+																>
+															{/each}
+														{/if}
+													</select>
 												</label>
 
 												<!-- Logic -->
@@ -1338,6 +1516,106 @@
 							{/if}
 						</div>
 					{/each}
+				</div>
+				<!-- Button test file upload -->
+				<details class="rounded-lg border border-gray-700 bg-gray-900/30 p-4" open>
+					<summary class="cursor-pointer text-sm font-medium text-gray-300">
+						Файлы кнопочных тестов
+						{#if fileNumbersWithStatus.length > 0}
+							<span
+								class="ml-2 rounded-full bg-blue-900/60 px-2 py-0.5 text-xs text-blue-300"
+							>
+								{fileNumbersWithStatus.length} файлов
+							</span>
+						{/if}
+					</summary>
+					<div class="mt-3 space-y-3">
+						<div
+							class="rounded-lg border border-yellow-800/50 bg-yellow-900/20 p-2 text-xs text-yellow-300"
+						>
+							Данные кнопочных тестов хранятся только в этом браузере. Другие
+							администраторы не увидят загруженные файлы.
+						</div>
+						<div class="flex flex-wrap items-end gap-3">
+							<label class="flex flex-col gap-1">
+								<span class="text-xs text-gray-400"
+									>Загрузить файлы (.xls, .xlsx)</span
+								>
+								<input
+									type="file"
+									accept=".xls,.xlsx"
+									multiple
+									class="block text-sm text-gray-300 file:mr-2 file:rounded-lg file:border-0 file:bg-gray-700 file:px-3 file:py-1.5 file:text-sm file:text-gray-300 hover:file:bg-gray-600"
+									disabled={uploadingFiles}
+									onchange={async (e) => {
+										const files = (e.target as HTMLInputElement).files;
+										if (files && files.length > 0) {
+											uploadingFiles = true;
+											try {
+												fileNumbersWithStatus =
+													await uploadButtonFiles(files);
+												buttonDataLoaded = new SvelteMap(
+													await loadAllButtonData()
+												);
+												for (const fn of availableFileNumbers) {
+													await loadButtonIdsForFile(fn);
+												}
+												showToast(
+													`Загружено файлов: ${files.length}`,
+													'success'
+												);
+											} catch {
+												showToast('Ошибка загрузки файлов');
+											} finally {
+												uploadingFiles = false;
+											}
+										}
+									}}
+								/>
+							</label>
+						</div>
+						{#if fileNumbersWithStatus.length > 0}
+							<div class="space-y-1">
+								<p class="text-xs text-gray-400">Загруженные файлы:</p>
+								{#each fileNumbersWithStatus as fs (fs.fileNumber)}
+									<div class="flex items-center gap-2 text-xs text-gray-300">
+										<span class="font-mono">{fs.fileNumber}</span>
+										{#if fs.hasLeft && fs.hasRight}
+											<span class="text-green-400">л+п</span>
+										{:else}
+											{#if !fs.hasLeft && !fs.hasRight}
+												<span class="text-red-400">файлы не загружены</span>
+											{:else}
+												<span class="text-yellow-400">
+													{fs.hasLeft
+														? 'не хватает файла п'
+														: 'не хватает файла л'}
+												</span>
+											{/if}
+										{/if}
+									</div>
+								{/each}
+								<button
+									class="text-xs text-red-400 hover:text-red-300"
+									onclick={async () => {
+										await clearAllButtonData();
+										fileNumbersWithStatus = [];
+										buttonDataLoaded.clear();
+										participantButtonIds.clear();
+										showToast('Файлы очищены', 'info');
+									}}
+								>
+									Очистить все
+								</button>
+							</div>
+						{/if}
+					</div>
+				</details>
+				<!-- TODO: should style it better or even move it somewhere else in the UI? -->
+				<div class="flex flex-col gap-2">
+					<Button color="green" onclick={() => exportMetrics(data.metrics, sessionName)}
+						>Экспорт результатов</Button
+					>
 				</div>
 			{/if}
 		{/if}

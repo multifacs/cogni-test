@@ -1,0 +1,164 @@
+Шапка таблицы результатов:
+1. ID
+2. Имя
+3. Возраст
+4. Средняя скорость Струпа Часть 2
+5. Корректность Струпа Часть 2
+6. Средняя скорость моторной реакции правая рука (тут есть эксельки которые отдельно нужно обработать, внутри информация о номере кнопки, принадлежащей испытуемому, и начало названия файла для правой и левой руки)
+Вот код обработки всех очных тестов (обработку кнопочек выделила жирным):
+#@title Обработка данных очных тестов
+import pandas as pd
+from gspread_dataframe import get_as_dataframe
+import numpy as np
+import os
+
+def process_excel(path, participant_id):
+    try:
+        df = pd.read_excel(path, header=None)
+        # Находим строку, где первый столбец совпадает с ID участника
+        for idx, row in df.iterrows():
+            if str(row[0]).strip() == str(participant_id).strip():
+                iteration_cells = row[4:]  # начиная с 5-го столбца
+                valid_cells = iteration_cells[iteration_cells.notna()]
+                if len(valid_cells) == 0:
+                    return None, None
+
+                # Выделяем числовые значения
+                numeric_values = pd.to_numeric(valid_cells, errors='coerce').dropna()
+                if len(numeric_values) == 0:
+                    speed_avg = None
+                else:
+                    speed_avg = numeric_values.mean()
+
+                # Для корректности: считаем количество "x"
+                incorrect_count = (valid_cells == 'x').sum()
+                total_count = len(valid_cells)
+                correctness = (total_count - incorrect_count) / total_count if total_count > 0 else None
+
+                return speed_avg, correctness
+    except Exception as e:
+        print(f"Ошибка при чтении Excel-файла {path}: {e}")
+    return None, None
+
+def process_rav_lab_knop_data(spreadsheet):
+    """
+    Обрабатывает данные из листа "Равновесие+Лабиринт+Кнопочки" и файлы на основе столбца "Файл".
+    """
+    # Подключаемся к листу
+    sheet = spreadsheet.worksheet("Равновесие+Лабиринт+Кнопочки")
+    data = get_as_dataframe(sheet, evaluate_formulas=True)  # Все данные читаются как строки
+
+    # Убираем пустые строки
+    data.dropna(how='all', inplace=True)
+
+    # Список для сохранения обработанных данных
+    processed_data = []
+
+    for i in data['ID'].index.tolist():
+        # Инициализируем значения
+        id_ = np.nan
+        balance = np.nan
+        labyrinth_sum = np.nan
+        at_button_left_avg = np.nan
+        at_button_right_avg = np.nan
+        ct_button_left_count = np.nan
+        ct_button_right_count = np.nan
+        hand_diff = np.nan
+        words = np.nan
+        logics = np.nan
+
+        if type(data['ID'].iloc[i]):
+          id_ = data['ID'].iloc[i]
+
+        if str(data['Равновесие'].iloc[i]) != 'nan':
+          balance = int(data['Равновесие'].iloc[i][0])
+          if balance > 3:
+            balance = (balance - 4) * 0.75
+
+        if str(data['Слова'].iloc[i]) != 'nan':
+          words = data['Слова'].iloc[i]
+
+        if str(data['Логика'].iloc[i]) != 'nan':
+          logics = data['Логика'].iloc[i]
+
+        if str(data['Лабиринт1'].iloc[i]) != 'nan' and str(data['Лабиринт2'].iloc[i]) != 'nan' and str(data['Лабиринт3'].iloc[i]) != 'nan':
+          labyrinth_sum = int(str(data['Лабиринт1'].iloc[i])[0]) + int(str(data['Лабиринт2'].iloc[i])[0]) + int(str(data['Лабиринт3'].iloc[i])[0])
+
+        if str(data['Кнопка'].iloc[i]) != 'nan' and str(data['Файл'].iloc[i]) != 'nan':
+          file_name = str(data['Файл'].iloc[i])
+          button = str(data['Кнопка'].iloc[i])
+          txt_path = f"drive/MyDrive/ГТО/{file_name}.txt"
+          if os.path.exists(txt_path) and button:
+              try:
+                file_data = pd.read_csv(txt_path, sep='\s+', engine='python', header=0)
+                if button in file_data.columns:
+                  relevant_column = file_data[button]
+                  last_15_rows = relevant_column.iloc[-12:]
+                  prev_15_rows = relevant_column.iloc[-24:-12]
+
+                  at_button_left_avg = last_15_rows[(last_15_rows != 0) & (last_15_rows != 1000)].mean()
+                  at_button_right_avg = prev_15_rows[(prev_15_rows != 0) & (prev_15_rows != 1000)].mean()
+
+                  ct_button_left_count = (len(last_15_rows) - (last_15_rows == 1000).sum()) / len(last_15_rows)
+                  ct_button_right_count = (len(prev_15_rows) - (prev_15_rows == 1000).sum()) / len(prev_15_rows)
+
+                  hand_diff = at_button_left_avg - at_button_right_avg
+              except Exception as e:
+                print(f"[{i}]. Файл: {file_name}. Ошибка при чтении TXT-файла: {e}")
+          else:
+              left_path = f"drive/MyDrive/ГТО/{file_name}л.xls"
+              right_path = f"drive/MyDrive/ГТО/{file_name}п.xls"
+
+              if os.path.exists(left_path):
+                at_button_left_avg, ct_button_left_count = process_excel(left_path, button)
+              #else:
+                #print(f"file {file_name} doesn't exist")
+
+              if os.path.exists(right_path):
+                at_button_right_avg, ct_button_right_count = process_excel(right_path, button)
+
+              if at_button_left_avg is not None and at_button_right_avg is not None:
+                hand_diff = at_button_left_avg - at_button_right_avg
+
+        # Сохраняем обработанные данные
+        processed_data.append({
+            "ID": id_,
+            "Равновесие": balance if balance != np.nan else np.nan,
+            "Лабиринт": labyrinth_sum if labyrinth_sum != np.nan else np.nan,
+            "AT_Button_Left": at_button_left_avg if at_button_left_avg != np.nan else np.nan,
+            "AT_Button_Right": at_button_right_avg if at_button_right_avg != np.nan else np.nan,
+            "CR_Button_Left": ct_button_left_count if ct_button_left_count != np.nan else np.nan,
+            "CR_Button_Right": ct_button_right_count if ct_button_right_count != np.nan else np.nan,
+            "Разница": hand_diff if hand_diff != np.nan else np.nan,
+            "Слова": words if words != np.nan else np.nan,
+            "Логика": logics if logics != np.nan else np.nan,
+        })
+
+    # Конвертируем в DataFrame
+    final_processed_data = pd.DataFrame(processed_data)
+
+    # Отладка: Выводим количество успешно обработанных строк
+    print(f"Обработано строк: {len(processed_data)}")
+    return final_processed_data
+
+# Пример использования
+processed_data = process_rav_lab_knop_data(spreadsheet)
+processed_data
+
+7. Корректность моторной реакции правая рука
+8. Средняя скорость моторной реакции левая рука
+9. Корректность моторной реакции левая рука
+10. Средняя скорость теста на память
+11. Корректность теста на память
+12. Средняя скорость теста «Ласточка»
+13. Количество оставшихся жизней в тесте «Ласточка»
+14. Время прохождения теста «Ласточка»
+15. Количество верных слов в «Последовательности слов»
+16. Метрика теста «Равновесие»
+17. Метрика теста «Лабиринт» (сумма Лабиринт Q1,2,3)
+18. Метрика теста Мюнстерберга (процент найденных слов)
+19. Средняя скорость Струпа Часть 3
+20. Корректность Струпа Часть 3
+21. Средняя скорость теста «Матрица Равена»
+22. Корректность «Матриц Равена»
+23. Метрика «Логики»
