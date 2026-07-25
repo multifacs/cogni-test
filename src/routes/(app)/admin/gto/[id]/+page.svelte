@@ -1415,10 +1415,14 @@
 														Номер файла без расширения и суффикса (напр.
 														010907)
 													</p>
-													{#if effectiveButtonFile && !availableFileNumbers.includes(effectiveButtonFile) && !fileNumbersWithStatus.some((f) => f.fileNumber === effectiveButtonFile)}
+													{#if effectiveButtonFile && !availableFileNumbers.includes(effectiveButtonFile)}
 														<p class="text-xs text-amber-400 mt-1">
-															Файл не загружен — результаты моторной
-															реакции будут недоступны до загрузки
+															{#if fileNumbersWithStatus.some((f) => f.fileNumber === effectiveButtonFile)}
+																Сначала загрузите оба файла (л и п)
+															{:else}
+																Файл не загружен — результаты моторной
+																реакции будут недоступны до загрузки
+															{/if}
 														</p>
 													{/if}
 												</label>
