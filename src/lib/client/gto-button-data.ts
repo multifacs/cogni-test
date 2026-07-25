@@ -1,74 +1,32 @@
 import * as XLSX from 'xlsx';
 import localforage from 'localforage';
+import {
+	parseStimulusRow,
+	formatSpeed,
+	formatAccuracy,
+	type Hand,
+	type ButtonParticipantResult,
+	type ParsedButtonFile,
+	type FullStimulusInfo
+} from '$lib/shared/button-metrics';
 
-// ─── Pure parsing ───────────────────────────────────────────────────
-
-export function parseStimulusRow(cells: (string | number | undefined | null)[]): {
-	avgReaction: number | null;
-	accuracy: number | null;
-} {
-	const totalStimuli = cells.length;
-	if (totalStimuli === 0) {
-		return { avgReaction: null, accuracy: null };
-	}
-
-	let reactionsSum = 0;
-	let numericCellsCount = 0;
-	let correctCount = 0;
-
-	for (const cell of cells) {
-		if (cell === null || cell === undefined) {
-			continue;
-		}
-
-		if (typeof cell === 'number') {
-			reactionsSum += cell;
-			numericCellsCount++;
-			correctCount++;
-			continue;
-		}
-
-		const str = String(cell).trim();
-		if (str === '-') {
-			correctCount++;
-			continue;
-		}
-		if (str.toLowerCase() === 'x' || str === '') {
-			continue;
-		}
-
-		const asNum = Number(str);
-		if (!isNaN(asNum)) {
-			reactionsSum += asNum;
-			numericCellsCount++;
-			correctCount++;
-		}
-	}
-
-	return {
-		avgReaction: numericCellsCount > 0 ? reactionsSum / numericCellsCount : null,
-		accuracy: correctCount / totalStimuli
-	};
-}
+export {
+	parseStimulusRow,
+	formatSpeed,
+	formatAccuracy,
+	type Hand,
+	type ButtonParticipantResult,
+	type ParsedButtonFile,
+	type FullStimulusInfo
+};
 
 // ─── Data structures ──────────────────────────────────────────────────
 
-export type ButtonParticipantResult = {
-	buttonId: number;
-	avgReaction: number | null;
-	accuracy: number | null;
-};
-
-export type ParsedButtonFile = {
-	fileNumber: string;
-	hand: 'left' | 'right';
-	participants: ButtonParticipantResult[];
-	uploadedAt: number;
-};
+export type ClientParsedButtonFile = ParsedButtonFile & { uploadedAt: number };
 
 export type StoredButtonPair = {
-	left: ParsedButtonFile;
-	right: ParsedButtonFile;
+	left: ClientParsedButtonFile;
+	right: ClientParsedButtonFile;
 };
 
 export type FileNumberStatus = {
@@ -87,7 +45,7 @@ export function parseButtonFile(
 	buffer: ArrayBuffer,
 	fileNumber: string,
 	hand: 'left' | 'right'
-): ParsedButtonFile {
+): ClientParsedButtonFile {
 	const workbook = XLSX.read(buffer, { type: 'array' });
 	const sheet = workbook.Sheets[workbook.SheetNames[0]];
 	const rows: unknown[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
