@@ -16,6 +16,7 @@
 		clearAllButtonData,
 		loadAllButtonData,
 		getFileNumbersWithStatus,
+		hasOldFormatData,
 		type StoredButtonPair,
 		type FileNumberStatus
 	} from '$lib/client/gto-button-data';
@@ -68,6 +69,13 @@
 		// Pre-load button IDs for all existing file selections
 		for (const fn of availableFileNumbers) {
 			await loadButtonIdsForFile(fn);
+		}
+		// Check for old format data
+		if (await hasOldFormatData()) {
+			showToast(
+				'Некоторые файлы кнопочного теста в старом формате — перезагрузите их',
+				'info'
+			);
 		}
 	});
 
@@ -251,23 +259,27 @@
 
 			const rows = [];
 			for (const m of metrics) {
-				let avgReactionRight: number | null = null;
-				let accuracyRight: number | null = null;
-				let avgReactionLeft: number | null = null;
-				let accuracyLeft: number | null = null;
+				let avgReactionRight: number | string | null = null;
+				let accuracyRight: number | string | null = null;
+				let avgReactionLeft: number | string | null = null;
+				let accuracyLeft: number | string | null = null;
 
-				if (
+				const hasDbButton =
 					m.editableMetrics.buttonTestFileName &&
-					m.editableMetrics.buttonTestNumber != null
-				) {
+					m.editableMetrics.buttonTestNumber != null;
+				if (hasDbButton) {
 					const result = await getResultForParticipant(
-						m.editableMetrics.buttonTestFileName,
+						m.editableMetrics.buttonTestFileName!,
 						m.editableMetrics.buttonTestNumber
 					);
-					avgReactionLeft = result.left?.avgReaction ?? null;
-					accuracyLeft = result.left?.accuracy ?? null;
-					avgReactionRight = result.right?.avgReaction ?? null;
-					accuracyRight = result.right?.accuracy ?? null;
+					avgReactionLeft =
+						result.left?.avgReaction ?? (hasDbButton ? 'файл не загружен' : null);
+					accuracyLeft =
+						result.left?.accuracy ?? (hasDbButton ? 'файл не загружен' : null);
+					avgReactionRight =
+						result.right?.avgReaction ?? (hasDbButton ? 'файл не загружен' : null);
+					accuracyRight =
+						result.right?.accuracy ?? (hasDbButton ? 'файл не загружен' : null);
 				}
 
 				rows.push({
@@ -1360,42 +1372,59 @@
 													<span class="text-xs text-gray-400"
 														>Кнопочки файл</span
 													>
-													<select
+													<input
+														type="text"
 														name="buttonTestFileName"
+														list="button-file-opts-{m.participantId}"
 														class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
-														onchange={(e) => {
-															const target =
-																e.currentTarget as HTMLSelectElement;
-															const val = target.value;
-															if (val) {
-																loadButtonIdsForFile(val);
-															}
-															// Update local override
+														value={effectiveButtonFile ?? ''}
+														oninput={(e) => {
+															const val = (
+																e.currentTarget as HTMLInputElement
+															).value.trim();
 															if (val) {
 																selectedButtonFile.set(
 																	m.participantId,
 																	val
 																);
+																if (
+																	availableFileNumbers.includes(
+																		val
+																	) ||
+																	fileNumbersWithStatus.some(
+																		(f) => f.fileNumber === val
+																	)
+																) {
+																	loadButtonIdsForFile(val);
+																}
 															} else {
 																selectedButtonFile.delete(
 																	m.participantId
 																);
 															}
 														}}
+													/>
+													<datalist
+														id="button-file-opts-{m.participantId}"
 													>
-														<option
-															value=""
-															selected={!effectiveButtonFile}
-															>—</option
-														>
 														{#each availableFileNumbers as fn (fn)}
-															<option
-																value={fn}
-																selected={effectiveButtonFile ===
-																	fn}>{fn}</option
-															>
+															<option value={fn}></option>
 														{/each}
-													</select>
+													</datalist>
+													<p class="text-xs text-gray-500 mt-1">
+														Номер файла без расширения и суффикса (напр.
+														010907)
+													</p>
+													{#if effectiveButtonFile && !availableFileNumbers.includes(effectiveButtonFile)}
+														<p class="text-xs text-amber-400 mt-1">
+															{#if fileNumbersWithStatus.some((f) => f.fileNumber === effectiveButtonFile)}
+																Сначала загрузите оба файла (л и п)
+															{:else}
+																Файл не загружен — результаты моторной
+																реакции будут недоступны до загрузки
+															{/if}
+														</p>
+													{/if}
 												</label>
 
 												<!-- Button test number -->
@@ -1403,29 +1432,24 @@
 													<span class="text-xs text-gray-400"
 														>Кнопочки №</span
 													>
-													<select
+													<input
+														type="number"
 														name="buttonTestNumber"
+														list="button-num-opts-{m.participantId}"
 														class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
-														disabled={!effectiveButtonFile ||
-															!availableFileNumbers.includes(
-																effectiveButtonFile
-															)}
+														min="1"
+														max="20"
+														value={em.buttonTestNumber ?? ''}
+													/>
+													<datalist
+														id="button-num-opts-{m.participantId}"
 													>
-														<option
-															value=""
-															selected={em.buttonTestNumber == null}
-															>—</option
-														>
 														{#if effectiveButtonFile && participantButtonIds.has(effectiveButtonFile)}
 															{#each participantButtonIds.get(effectiveButtonFile) ?? [] as btnId (btnId)}
-																<option
-																	value={btnId}
-																	selected={em.buttonTestNumber ===
-																		btnId}>{btnId}</option
-																>
+																<option value={btnId}></option>
 															{/each}
 														{/if}
-													</select>
+													</datalist>
 												</label>
 
 												<!-- Logic -->
