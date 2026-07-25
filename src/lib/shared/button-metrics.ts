@@ -69,11 +69,21 @@ export type ButtonParticipantResult = {
 	accuracy: number | null;
 };
 
+export type RawButtonParticipant = {
+	buttonId: number;
+	stimulusCells: (string | number | undefined | null)[];
+};
+
 export type ParsedButtonFile = {
 	fileNumber: string;
 	hand: Hand;
-	participants: ButtonParticipantResult[];
+	participants: RawButtonParticipant[];
 };
+
+export function computeFromRaw(raw: RawButtonParticipant): ButtonParticipantResult {
+	const { avgReaction, accuracy } = parseStimulusRow(raw.stimulusCells);
+	return { buttonId: raw.buttonId, avgReaction, accuracy };
+}
 
 export type FullStimulusInfo = {
 	buttonId: number;

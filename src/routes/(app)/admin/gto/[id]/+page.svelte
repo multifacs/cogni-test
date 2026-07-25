@@ -16,6 +16,7 @@
 		clearAllButtonData,
 		loadAllButtonData,
 		getFileNumbersWithStatus,
+		hasOldFormatData,
 		type StoredButtonPair,
 		type FileNumberStatus
 	} from '$lib/client/gto-button-data';
@@ -68,6 +69,13 @@
 		// Pre-load button IDs for all existing file selections
 		for (const fn of availableFileNumbers) {
 			await loadButtonIdsForFile(fn);
+		}
+		// Check for old format data
+		if (await hasOldFormatData()) {
+			showToast(
+				'Некоторые файлы кнопочного теста в старом формате — перезагрузите их',
+				'info'
+			);
 		}
 	});
 
@@ -251,24 +259,28 @@
 
 			const rows = [];
 			for (const m of metrics) {
-				let avgReactionRight: number | null = null;
-				let accuracyRight: number | null = null;
-				let avgReactionLeft: number | null = null;
-				let accuracyLeft: number | null = null;
+			let avgReactionRight: number | string | null = null;
+			let accuracyRight: number | string | null = null;
+			let avgReactionLeft: number | string | null = null;
+			let accuracyLeft: number | string | null = null;
 
-				if (
-					m.editableMetrics.buttonTestFileName &&
-					m.editableMetrics.buttonTestNumber != null
-				) {
-					const result = await getResultForParticipant(
-						m.editableMetrics.buttonTestFileName,
-						m.editableMetrics.buttonTestNumber
-					);
-					avgReactionLeft = result.left?.avgReaction ?? null;
-					accuracyLeft = result.left?.accuracy ?? null;
-					avgReactionRight = result.right?.avgReaction ?? null;
-					accuracyRight = result.right?.accuracy ?? null;
-				}
+			const hasDbButton =
+				m.editableMetrics.buttonTestFileName &&
+				m.editableMetrics.buttonTestNumber != null;
+			if (hasDbButton) {
+				const result = await getResultForParticipant(
+					m.editableMetrics.buttonTestFileName!,
+					m.editableMetrics.buttonTestNumber
+				);
+				avgReactionLeft =
+					result.left?.avgReaction ?? (hasDbButton ? 'файл не загружен' : null);
+				accuracyLeft =
+					result.left?.accuracy ?? (hasDbButton ? 'файл не загружен' : null);
+				avgReactionRight =
+					result.right?.avgReaction ?? (hasDbButton ? 'файл не загружен' : null);
+				accuracyRight =
+					result.right?.accuracy ?? (hasDbButton ? 'файл не загружен' : null);
+			}
 
 				rows.push({
 					ID: data.gtoIdMap.get(m.userId) ?? '',
@@ -1396,6 +1408,13 @@
 															>
 														{/each}
 													</select>
+													{#if em.buttonTestFileName && !fileNumbersWithStatus.some((f) => f.fileNumber === em.buttonTestFileName)}
+														<p class="text-xs text-amber-400 mt-1">
+															Файл «{em.buttonTestFileName}» указан в
+															базе, но не загружен. Загрузите файл,
+															чтобы увидеть результаты.
+														</p>
+													{/if}
 												</label>
 
 												<!-- Button test number -->
@@ -1403,29 +1422,36 @@
 													<span class="text-xs text-gray-400"
 														>Кнопочки №</span
 													>
-													<select
-														name="buttonTestNumber"
-														class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
-														disabled={!effectiveButtonFile ||
-															!availableFileNumbers.includes(
-																effectiveButtonFile
-															)}
-													>
-														<option
-															value=""
-															selected={em.buttonTestNumber == null}
-															>—</option
+													<div class="flex items-center gap-2">
+														<select
+															name="buttonTestNumber"
+															class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
+															disabled={!effectiveButtonFile ||
+																!availableFileNumbers.includes(
+																	effectiveButtonFile
+																)}
 														>
-														{#if effectiveButtonFile && participantButtonIds.has(effectiveButtonFile)}
-															{#each participantButtonIds.get(effectiveButtonFile) ?? [] as btnId (btnId)}
-																<option
-																	value={btnId}
-																	selected={em.buttonTestNumber ===
-																		btnId}>{btnId}</option
-																>
-															{/each}
+															<option
+																value=""
+																selected={em.buttonTestNumber ==
+																	null}>—</option
+															>
+															{#if effectiveButtonFile && participantButtonIds.has(effectiveButtonFile)}
+																{#each participantButtonIds.get(effectiveButtonFile) ?? [] as btnId (btnId)}
+																	<option
+																		value={btnId}
+																		selected={em.buttonTestNumber ===
+																			btnId}>{btnId}</option
+																	>
+																{/each}
+															{/if}
+														</select>
+														{#if em.buttonTestNumber != null && effectiveButtonFile && !availableFileNumbers.includes(effectiveButtonFile)}
+															<span class="text-xs text-gray-400"
+																>({em.buttonTestNumber} в базе)</span
+															>
 														{/if}
-													</select>
+													</div>
 												</label>
 
 												<!-- Logic -->

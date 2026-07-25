@@ -6,8 +6,8 @@ import {
 	formatSpeed,
 	formatAccuracy,
 	type Hand,
-	type ButtonParticipantResult,
 	type ParsedButtonFile,
+	type RawButtonParticipant,
 	type FullStimulusInfo
 } from '../src/lib/shared/button-metrics';
 
@@ -33,7 +33,7 @@ function parseFile(filePath: string): {
 	const fileNumber = match[1];
 	const hand: Hand = match[2].toLowerCase() === '\u043B' ? 'left' : 'right';
 
-	const participants: ButtonParticipantResult[] = [];
+	const participants: RawButtonParticipant[] = [];
 	const fullInfo: FullStimulusInfo[] = [];
 
 	for (let i = 3; i < rows.length; i++) {
@@ -47,7 +47,7 @@ function parseFile(filePath: string): {
 		const stimulusCells = row.slice(4) as (string | number | undefined | null)[];
 		const { avgReaction, accuracy } = parseStimulusRow(stimulusCells);
 
-		participants.push({ buttonId, avgReaction, accuracy });
+		participants.push({ buttonId, stimulusCells });
 
 		const stimuli: string[] = [];
 		const numericReactions: number[] = [];

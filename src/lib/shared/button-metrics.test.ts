@@ -1,5 +1,33 @@
 import { describe, test, expect } from 'vitest';
-import { parseStimulusRow, formatSpeed, formatAccuracy } from './button-metrics';
+import { parseStimulusRow, formatSpeed, formatAccuracy, computeFromRaw } from './button-metrics';
+
+// ... existing tests ...
+
+describe('computeFromRaw', () => {
+	test('numeric cells → correct avgReaction and accuracy', () => {
+		expect.assertions(2);
+		const raw = { buttonId: 1, stimulusCells: [572, 881, 772] };
+		const result = computeFromRaw(raw);
+		expect(result.avgReaction).toBeCloseTo((572 + 881 + 772) / 3, 2);
+		expect(result.accuracy).toBe(1);
+	});
+
+	test('mixed cells (numbers, x, dash) → correct results', () => {
+		expect.assertions(2);
+		const raw = { buttonId: 2, stimulusCells: [572, '-', 'x', 881] };
+		const result = computeFromRaw(raw);
+		expect(result.avgReaction).toBeCloseTo((572 + 881) / 2, 2);
+		expect(result.accuracy).toBeCloseTo(3 / 4, 2);
+	});
+
+	test('empty cells → both null', () => {
+		expect.assertions(2);
+		const raw = { buttonId: 3, stimulusCells: [] };
+		const result = computeFromRaw(raw);
+		expect(result.avgReaction).toBeNull();
+		expect(result.accuracy).toBeNull();
+	});
+});
 
 describe('parseStimulusRow', () => {
 	test('all numeric cells → correct average and 100% accuracy', () => {

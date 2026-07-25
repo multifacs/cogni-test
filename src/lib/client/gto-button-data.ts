@@ -1,22 +1,24 @@
 import * as XLSX from 'xlsx';
 import localforage from 'localforage';
 import {
-	parseStimulusRow,
 	formatSpeed,
 	formatAccuracy,
+	computeFromRaw,
 	type Hand,
 	type ButtonParticipantResult,
 	type ParsedButtonFile,
+	type RawButtonParticipant,
 	type FullStimulusInfo
 } from '$lib/shared/button-metrics';
 
 export {
-	parseStimulusRow,
 	formatSpeed,
 	formatAccuracy,
+	computeFromRaw,
 	type Hand,
 	type ButtonParticipantResult,
 	type ParsedButtonFile,
+	type RawButtonParticipant,
 	type FullStimulusInfo
 };
 
@@ -50,7 +52,7 @@ export function parseButtonFile(
 	const sheet = workbook.Sheets[workbook.SheetNames[0]];
 	const rows: unknown[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-	const participants: ButtonParticipantResult[] = [];
+	const participants: RawButtonParticipant[] = [];
 
 	for (let i = 3; i < rows.length; i++) {
 		const row = rows[i];
@@ -61,9 +63,7 @@ export function parseButtonFile(
 		if (isNaN(buttonId)) continue;
 
 		const stimulusCells = row.slice(4) as (string | number | undefined | null)[];
-		const { avgReaction, accuracy } = parseStimulusRow(stimulusCells);
-
-		participants.push({ buttonId, avgReaction, accuracy });
+		participants.push({ buttonId, stimulusCells });
 	}
 
 	return { fileNumber, hand, participants, uploadedAt: Date.now() };
@@ -161,13 +161,11 @@ export async function getResultForParticipant(
 	const pair: StoredButtonPair | null = await buttonStore.getItem(key);
 	if (!pair) return { left: null, right: null };
 
+	const rawLeft = pair.left?.participants.find((p) => p.buttonId === buttonId) ?? null;
+	const rawRight = pair.right?.participants.find((p) => p.buttonId === buttonId) ?? null;
 	return {
-		left: pair.left
-			? (pair.left.participants.find((p) => p.buttonId === buttonId) ?? null)
-			: null,
-		right: pair.right
-			? (pair.right.participants.find((p) => p.buttonId === buttonId) ?? null)
-			: null
+		left: rawLeft ? computeFromRaw(rawLeft) : null,
+		right: rawRight ? computeFromRaw(rawRight) : null
 	};
 }
 
@@ -191,4 +189,28 @@ export async function loadAllButtonData(): Promise<Map<string, StoredButtonPair>
 		}
 	});
 	return map;
+}
+
+// ─── Old-format detection ────────────────────────────────────────────
+
+export function isOldFormatEntry(pair: StoredButtonPair): boolean {
+	if (pair.left.participants.length > 0) {
+		return !('stimulusCells' in pair.left.participants[0]);
+	}
+	if (pair.right.participants.length > 0) {
+		return !('stimulusCells' in pair.right.participants[0]);
+	}
+	return false;
+}
+
+export async function hasOldFormatData(): Promise<boolean> {
+	const keys: string[] = [];
+	await buttonStore.iterate((_, key) => {
+		if (key.startsWith('gto-button-')) keys.push(key);
+	});
+	for (const key of keys) {
+		const pair: StoredButtonPair | null = await buttonStore.getItem(key);
+		if (pair && isOldFormatEntry(pair)) return true;
+	}
+	return false;
 }
