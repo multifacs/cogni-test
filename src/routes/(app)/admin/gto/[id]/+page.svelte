@@ -259,28 +259,28 @@
 
 			const rows = [];
 			for (const m of metrics) {
-			let avgReactionRight: number | string | null = null;
-			let accuracyRight: number | string | null = null;
-			let avgReactionLeft: number | string | null = null;
-			let accuracyLeft: number | string | null = null;
+				let avgReactionRight: number | string | null = null;
+				let accuracyRight: number | string | null = null;
+				let avgReactionLeft: number | string | null = null;
+				let accuracyLeft: number | string | null = null;
 
-			const hasDbButton =
-				m.editableMetrics.buttonTestFileName &&
-				m.editableMetrics.buttonTestNumber != null;
-			if (hasDbButton) {
-				const result = await getResultForParticipant(
-					m.editableMetrics.buttonTestFileName!,
-					m.editableMetrics.buttonTestNumber
-				);
-				avgReactionLeft =
-					result.left?.avgReaction ?? (hasDbButton ? 'файл не загружен' : null);
-				accuracyLeft =
-					result.left?.accuracy ?? (hasDbButton ? 'файл не загружен' : null);
-				avgReactionRight =
-					result.right?.avgReaction ?? (hasDbButton ? 'файл не загружен' : null);
-				accuracyRight =
-					result.right?.accuracy ?? (hasDbButton ? 'файл не загружен' : null);
-			}
+				const hasDbButton =
+					m.editableMetrics.buttonTestFileName &&
+					m.editableMetrics.buttonTestNumber != null;
+				if (hasDbButton) {
+					const result = await getResultForParticipant(
+						m.editableMetrics.buttonTestFileName!,
+						m.editableMetrics.buttonTestNumber
+					);
+					avgReactionLeft =
+						result.left?.avgReaction ?? (hasDbButton ? 'файл не загружен' : null);
+					accuracyLeft =
+						result.left?.accuracy ?? (hasDbButton ? 'файл не загружен' : null);
+					avgReactionRight =
+						result.right?.avgReaction ?? (hasDbButton ? 'файл не загружен' : null);
+					accuracyRight =
+						result.right?.accuracy ?? (hasDbButton ? 'файл не загружен' : null);
+				}
 
 				rows.push({
 					ID: data.gtoIdMap.get(m.userId) ?? '',
@@ -1372,47 +1372,53 @@
 													<span class="text-xs text-gray-400"
 														>Кнопочки файл</span
 													>
-													<select
+													<input
+														type="text"
 														name="buttonTestFileName"
+														list="button-file-opts-{m.participantId}"
 														class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
-														onchange={(e) => {
-															const target =
-																e.currentTarget as HTMLSelectElement;
-															const val = target.value;
-															if (val) {
-																loadButtonIdsForFile(val);
-															}
-															// Update local override
+														value={effectiveButtonFile ?? ''}
+														oninput={(e) => {
+															const val = (
+																e.currentTarget as HTMLInputElement
+															).value.trim();
 															if (val) {
 																selectedButtonFile.set(
 																	m.participantId,
 																	val
 																);
+																if (
+																	availableFileNumbers.includes(
+																		val
+																	) ||
+																	fileNumbersWithStatus.some(
+																		(f) => f.fileNumber === val
+																	)
+																) {
+																	loadButtonIdsForFile(val);
+																}
 															} else {
 																selectedButtonFile.delete(
 																	m.participantId
 																);
 															}
 														}}
+													/>
+													<datalist
+														id="button-file-opts-{m.participantId}"
 													>
-														<option
-															value=""
-															selected={!effectiveButtonFile}
-															>—</option
-														>
 														{#each availableFileNumbers as fn (fn)}
-															<option
-																value={fn}
-																selected={effectiveButtonFile ===
-																	fn}>{fn}</option
-															>
+															<option value={fn}></option>
 														{/each}
-													</select>
-													{#if em.buttonTestFileName && !fileNumbersWithStatus.some((f) => f.fileNumber === em.buttonTestFileName)}
+													</datalist>
+													<p class="text-xs text-gray-500 mt-1">
+														Номер файла без расширения и суффикса (напр.
+														010907)
+													</p>
+													{#if effectiveButtonFile && !availableFileNumbers.includes(effectiveButtonFile) && !fileNumbersWithStatus.some((f) => f.fileNumber === effectiveButtonFile)}
 														<p class="text-xs text-amber-400 mt-1">
-															Файл «{em.buttonTestFileName}» указан в
-															базе, но не загружен. Загрузите файл,
-															чтобы увидеть результаты.
+															Файл не загружен — результаты моторной
+															реакции будут недоступны до загрузки
 														</p>
 													{/if}
 												</label>
@@ -1422,36 +1428,24 @@
 													<span class="text-xs text-gray-400"
 														>Кнопочки №</span
 													>
-													<div class="flex items-center gap-2">
-														<select
-															name="buttonTestNumber"
-															class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
-															disabled={!effectiveButtonFile ||
-																!availableFileNumbers.includes(
-																	effectiveButtonFile
-																)}
-														>
-															<option
-																value=""
-																selected={em.buttonTestNumber ==
-																	null}>—</option
-															>
-															{#if effectiveButtonFile && participantButtonIds.has(effectiveButtonFile)}
-																{#each participantButtonIds.get(effectiveButtonFile) ?? [] as btnId (btnId)}
-																	<option
-																		value={btnId}
-																		selected={em.buttonTestNumber ===
-																			btnId}>{btnId}</option
-																	>
-																{/each}
-															{/if}
-														</select>
-														{#if em.buttonTestNumber != null && effectiveButtonFile && !availableFileNumbers.includes(effectiveButtonFile)}
-															<span class="text-xs text-gray-400"
-																>({em.buttonTestNumber} в базе)</span
-															>
+													<input
+														type="number"
+														name="buttonTestNumber"
+														list="button-num-opts-{m.participantId}"
+														class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
+														min="1"
+														max="20"
+														value={em.buttonTestNumber ?? ''}
+													/>
+													<datalist
+														id="button-num-opts-{m.participantId}"
+													>
+														{#if effectiveButtonFile && participantButtonIds.has(effectiveButtonFile)}
+															{#each participantButtonIds.get(effectiveButtonFile) ?? [] as btnId (btnId)}
+																<option value={btnId}></option>
+															{/each}
 														{/if}
-													</div>
+													</datalist>
 												</label>
 
 												<!-- Logic -->
