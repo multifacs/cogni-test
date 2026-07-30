@@ -30,7 +30,7 @@
 	];
 </script>
 
-<nav class="flex w-full justify-around text-white">
+<nav class="flex w-full justify-around">
 	{#each paths as path}
 		<a
 			href={path.href}
@@ -38,7 +38,7 @@
 			class:text-blue-400={page.url.pathname.startsWith(path.href)}
 		>
 			<span>{path.icon}</span>
-			<span>{path.text}</span>
+			<h3>{path.text}</h3>
 		</a>
 	{/each}
 </nav>

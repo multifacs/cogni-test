@@ -4,37 +4,88 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import localforage from 'localforage';
+	import Header from '$lib/components/ui/Header.svelte';
+	import { userStore } from '$lib/stores/user';
+	import AgeCard from '$lib/components/ui/AgeCard.svelte';
+
+	let { data } = $props();
+
+	function capitalize(str: string): string {
+		if (!str) return 'Пользователь';
+		return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+	}
 
 	let diferredInstallEvent: any | null = $state(null);
 	let showInstallButton = $state(true);
 	let showModal = $state(false);
+	let userName = $state('Пользователь');
+	let greeting = $state('Добрый день');
+	let realAge = $state<number | null>(null);
+	let predictedAge = $state<number | null>(null);
 
-	onMount(async () => {
-		const lfShowInstallButton: boolean | null = await localforage.getItem('showInstallButton');
-		if (lfShowInstallButton === false) {
-			showInstallButton = false;
-		} else if (lfShowInstallButton === null) {
-			showInstallButton = true;
-		}
 
-		window.addEventListener('beforeinstallprompt', (e) => {
-			e.preventDefault();
-			diferredInstallEvent = e;
-			showInstallButton = true;
-			localforage.setItem('showInstallButton', true);
+	onMount(() => {
+		const unsubscribeUser = userStore.subscribe((user) => {
+			if (user) {
+				const rawName = (user as any).firstname || 'пользователь';
+				userName = capitalize(rawName);
+
+				const userBirthday = user.birthday || null;
+				if (userBirthday) {
+					const birthDate = new Date(userBirthday);
+					const today = new Date();
+					let age = today.getFullYear() - birthDate.getFullYear();
+					const monthDiff = today.getMonth() - birthDate.getMonth();
+					if (
+						monthDiff < 0 ||
+						(monthDiff === 0 && today.getDate() < birthDate.getDate())
+					) {
+						age--;
+					}
+					realAge = age;
+				}
+				if (data?.predictedAge !== null && data?.predictedAge !== undefined) {
+					predictedAge = Math.round(data.predictedAge);
+				}
+				const hour = new Date().getHours();
+				if (hour < 12) greeting = 'Доброе утро';
+				if (hour < 18) greeting = 'Добрый день';
+				else greeting = 'Добрый вечер';
+			}
 		});
 
-		window.addEventListener('appinstalled', () => {
-			showInstallButton = false;
-			localforage.setItem('showInstallButton', false);
-			showModal = false;
-		});
+		(async () => {
+			const lfShowInstallButton: boolean | null =
+				await localforage.getItem('showInstallButton');
+			if (lfShowInstallButton === false) {
+				showInstallButton = false;
+			} else if (lfShowInstallButton === null) {
+				showInstallButton = true;
+			}
 
-		// don't show button if user in the standalone app
-		if (checkStandaloneMode()) {
-			showInstallButton = false;
-			localforage.setItem('showInstallButton', false);
-		}
+			window.addEventListener('beforeinstallprompt', (e) => {
+				e.preventDefault();
+				diferredInstallEvent = e;
+				showInstallButton = true;
+				localforage.setItem('showInstallButton', true);
+			});
+
+			window.addEventListener('appinstalled', () => {
+				showInstallButton = false;
+				localforage.setItem('showInstallButton', false);
+				showModal = false;
+			});
+
+			// don't show button if user in the standalone app
+			if (checkStandaloneMode()) {
+				showInstallButton = false;
+				localforage.setItem('showInstallButton', false);
+			}
+		})();
+
+		return () => {
+			unsubscribeUser();
+		};
 	});
 
 	async function handleInstall() {
@@ -62,15 +113,16 @@
 	};
 </script>
 
-<section class="banner">
-	<h1 class="text-3xl font-bold">Добро пожаловать!</h1>
-</section>
-<main class="main flex flex-col items-center justify-center gap-4">
+<Header text={`${greeting}, ${userName}!`}></Header>
+
+<main class="main flex flex-col items-center gap-4">
 	<div class="flex w-full max-w-xs flex-col gap-4">
-		<Button color="green" goto="/tests">🧪 Когнитивный возраст</Button>
+		<AgeCard age={predictedAge} realAge={realAge}></AgeCard>
+		<Button color="green" goto="/exercises">Продолжить тренировки</Button>
+		<!-- <Button color="green" goto="/tests">🧪 Когнитивный возраст</Button>
 		<Button color="gray" goto="/exercises">📊 Когнитивный тренажёр</Button>
 		<Button color="blue" goto="/materials">📚 Когнитивное долголетие</Button>
-		<Button color="orange" goto="/gto">🏆 ГТО-М</Button>
+		<Button color="orange" goto="/gto">🏆 ГТО-М</Button> -->
 
 		{#if showInstallButton}
 			<div class="flex w-full max-w-xs flex-col gap-4 text-center">
@@ -128,9 +180,10 @@
 		{/if}
 	</div>
 </main>
-<section class="low-content flex items-center justify-center">
+
+<!-- <section class="low-content flex items-center justify-center">
 	<p class="max-w-md text-center text-lg max-md:text-sm">Выберите, с чего начать.</p>
-</section>
+</section> -->
 
 <style>
 </style>

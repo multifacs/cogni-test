@@ -6,6 +6,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { onMount } from 'svelte';
+	import Header from '$lib/components/ui/Header.svelte';
 
 	let { data } = $props();
 
@@ -87,10 +88,10 @@
 	}
 </script>
 
-<section class="banner">
+<!-- <section class="banner">
 	<h1 class="text-2xl font-bold">Сессии ГТО-М</h1>
-</section>
-
+</section> -->
+<Header text={'Сессии ГТО-М'}></Header>
 <main class="main overflow-auto p-4">
 	<div class="flex flex-col gap-6">
 		{#if data.activeSessions.length === 0 && data.completedSessions.length === 0}

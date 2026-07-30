@@ -84,19 +84,31 @@
 
 <div class="container">
 	<!-- <header class="header"></header> -->
-	<aside class="left-aside"></aside>
+	<!-- <aside class="left-aside"></aside> -->
 	{@render children()}
-	<aside class="right-aside"></aside>
+	<!-- <aside class="right-aside"></aside> -->
 	<footer class="footer flex justify-center rounded-lg">
 		<!-- <div class="w-2/3 max-md:w-full"> -->
-		<div class="w-full">
-			<NavBar />
-		</div>
+		<!-- <div class="w-full"> -->
+		<NavBar />
+		<!-- </div> -->
 	</footer>
 </div>
 
 <style>
 	:global {
+		* {
+			box-sizing: border-box;
+		}
+
+		html,
+		body {
+			margin: 0;
+			padding: 0;
+			height: 100dvh;
+			overflow: hidden;
+		}
+
 		/* .container {
 			display: grid;
 			grid-template-rows: 3rem auto 1fr auto 3rem;
@@ -114,7 +126,7 @@
 			font-size: 1.25rem;
 		} */
 
-		.container {
+		/* .container {
 			display: grid;
 			grid-template-rows: auto 1fr auto 3rem;
 			grid-template-columns: 1fr 4fr 1fr;
@@ -126,8 +138,27 @@
 				'left-aside footer right-aside';
 			gap: 0.5rem;
 			padding: 0.5rem;
-			/* font-weight: 600; */
 			font-size: 1.25rem;
+		} */
+
+		.container {
+			background-color: var(--main-bg-color);
+			display: grid;
+			grid-template-rows: auto 1fr auto;
+			grid-template-columns: 1fr;
+
+			height: 100dvh;
+			width: 100dvw;
+			max-width: 100%;
+			grid-template-areas:
+				'banner'
+				'main'
+				'low-content '
+				'footer';
+			gap: 0.5rem;
+			/* padding: 0.5rem; */
+			font-size: 1.25rem;
+			overflow: hidden;
 		}
 
 		.header {
@@ -151,23 +182,23 @@
 
 		.main {
 			grid-area: main;
-			background-color: #4286f433;
+			/* background-color: #4286f433; */
 			padding: 1rem;
 			/* display: flex;
 			justify-content: center;
 			align-items: center;
 			flex-direction: column;
 			gap: 1rem; */
-			overflow-x: auto; /* Enable horizontal scrolling */
+			min-height: 0;
+			overflow-x: hidden; /* Enable horizontal scrolling */
 			overflow-y: auto; /* Optional: enable vertical scrolling too */
 			min-width: 0; /* Critical: allows flex children to shrink below content size */
-			border-radius: var(--radius-lg);
+			/* border-radius: var(--radius-lg); */
 		}
 
 		.banner {
 			grid-area: banner;
 			border-radius: var(--radius-lg);
-			/* background-color: #db45370e; */
 			background-color: #4286f41b;
 			padding: 1rem;
 			text-align: center;
@@ -198,7 +229,7 @@
 
 		.footer {
 			grid-area: footer;
-			background-color: #4286f41b;
+			background-color: #fff;
 			padding: 0.5rem;
 			text-align: center;
 			align-items: center;
@@ -206,7 +237,7 @@
 		}
 
 		/* ✅ Better breakpoint */
-		@media (max-width: 768px) {
+		/* @media (max-width: 768px) {
 			.container {
 				grid-template-rows: 1rem 2rem 2rem 1fr 1.5rem 1.5rem 3rem;
 				grid-template-columns: 1fr;
@@ -233,6 +264,6 @@
 			.right-aside {
 				display: none;
 			}
-		}
+		} */
 	}
 </style>

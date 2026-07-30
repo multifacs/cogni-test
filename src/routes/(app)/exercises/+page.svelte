@@ -2,6 +2,7 @@
 	import { userStore } from '$lib/stores/user.js';
 	import { exerciseRegistry } from '$lib/exercises';
 	import { onMount } from 'svelte';
+	import Header from '$lib/components/ui/Header.svelte';
 
 	let { data } = $props();
 	let exerciseSessionCounts: Record<string, number> = $state({});
@@ -14,9 +15,10 @@
 	});
 </script>
 
-<section class="banner">
+<!-- <section class="banner">
 	<h1 class="text-3xl font-bold">Когнитивный тренажёр</h1>
-</section>
+</section> -->
+<Header text={'Когнитивный тренажер'}></Header>
 <main class="main" style="display: flex; flex-direction: column; gap: 15px">
 	<div class="flex w-full flex-col gap-3">
 		{#each data.exercises as { name, title, path, img }}

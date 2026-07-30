@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Header from '$lib/components/ui/Header.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import { userStore } from '$lib/stores/user.js';
 	import localforage from 'localforage';
@@ -49,10 +50,11 @@
 	}
 </script>
 
-<section class="banner">
+<!-- <section class="banner">
 	<h1 class="font-bold max-md:hidden">Определение когнитивного возраста</h1>
 	<h2 class="font-bold md:hidden">Когнитивный возраст</h2>
-</section>
+</section> -->
+<Header text={'Диагностика'}></Header>
 <main class="main flex flex-col gap-3">
 	{#if runAllMode}
 		<Spinner></Spinner>

@@ -1,11 +1,13 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
+	import Header from '$lib/components/ui/Header.svelte';
 	export let data;
 </script>
 
-<section class="banner">
+<!-- <section class="banner">
 	<h1 class="text-3xl font-bold">Информационные материалы</h1>
-</section>
+</section> -->
+<Header text={'Статьи'}></Header>
 <main class="main flex flex-col justify-center gap-4">
 	{#each data.articles as article}
 		<Button color="blue" goto={`/materials/${article.slug}`}>

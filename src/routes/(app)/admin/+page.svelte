@@ -1,10 +1,12 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
+	import Header from '$lib/components/ui/Header.svelte';
 </script>
 
-<section class="banner">
+<!-- <section class="banner">
 	<h1 class="text-3xl font-bold">Admin page</h1>
-</section>
+</section> -->
+<Header text={'Admin page'}></Header>
 
 <main class="main flex flex-col items-center justify-center gap-4">
 	<div class="flex w-full max-w-sm flex-col gap-4">

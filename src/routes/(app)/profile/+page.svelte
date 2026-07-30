@@ -13,6 +13,7 @@
 	import TableRow from './components/TableRow.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import Autocomplete from './components/Autocomplete.svelte';
+	import Header from '$lib/components/ui/Header.svelte';
 
 	const user = derived(userStore, ($userStore) => $userStore);
 	let subscribed = $state(false);
@@ -627,10 +628,10 @@
 		{/await}
 	</form>
 </main>
-<section class="banner">
+<!-- <section class="banner">
 	<h1 class="mb-4 text-2xl font-bold">Профиль</h1>
-</section>
-
+</section> -->
+<Header text={'Профиль'}></Header>
 <section class="low-content grid grid-cols-2 gap-4 md:grid-cols-4">
 	<div class="max-md:hidden"></div>
 	<form method="POST" action="/?/logout" use:enhance>
