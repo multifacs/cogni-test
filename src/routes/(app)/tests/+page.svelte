@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
+	import ExerciseCard from '$lib/components/ui/ExerciseCard.svelte';
 	import Header from '$lib/components/ui/Header.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import { userStore } from '$lib/stores/user.js';
@@ -71,29 +72,14 @@
 			</div>
 		{/if}
 
-		<div class="flex w-full flex-col gap-3">
+		<div class="flex flex-wrap justify-between gap-5 p-2">
 			{#each data.tests as { name, title, path, img }}
-				<a
-					href={path}
-					class="flex items-center justify-between rounded-2xl bg-gray-600 p-3 shadow transition hover:bg-gray-100 hover:text-black"
-				>
-					<div class="flex flex-col gap-1">
-						<span class="text-lg">{title}</span>
-						{#if testSessionCounts[name]}
-							<span class="text-sm font-medium text-lime-200">
-								Пройдено: {testSessionCounts[name]}
-							</span>
-						{:else}
-							<span class="text-sm text-orange-400"> Не пройдено </span>
-						{/if}
-					</div>
-					<img src={img} alt={name} class="h-14 w-14 rounded-xl bg-white" />
-				</a>
+				<ExerciseCard {name} {title} {path} {img} {testSessionCounts} />
 			{/each}
 		</div>
 	{/if}
 </main>
-<section class="low-content grid grid-cols-3 gap-5 text-center items-center">
+<!-- <section class="low-content grid grid-cols-3 items-center gap-5 text-center">
 	<p class="text-xs font-medium max-md:hidden">🧠 Когнитивный возраст 🧠</p>
 	<p class="text-xs font-medium md:hidden">🧠Когнитивный🧠 возраст</p>
 	<p class="mt-1 text-3xl font-bold">
@@ -105,4 +91,4 @@
 	</p>
 	<p class="text-xs font-medium max-md:hidden">⚠️ Я только учусь, и я могу ошибаться ⚠️</p>
 	<p class="text-xs font-medium md:hidden">Могу ⚠️ошибаться⚠️</p>
-</section>
+</section> -->

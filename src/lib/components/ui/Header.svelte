@@ -5,9 +5,9 @@
 <div class="banner">
 	<div class="flex items-center justify-between gap-4">
 		<img src="/logo.svg" alt="Icon" class="icon" />
-		<div class="text">
+		<h2 style="font-weight: var(--font-weight-bold); --tw-font-weight: var(--font-weight-bold)">
 			{text}
-		</div>
+		</h2>
 	</div>
 </div>
 
@@ -23,12 +23,5 @@
 		min-height: 20px;
 		max-height: 70px;
 		flex-shrink: 0;
-	}
-	.text {
-		color: var(--main-text-color);
-		font-size: 1.4rem;
-		--tw-font-weight: var(--font-weight-bold);
-		font-weight: var(--font-weight-bold);
-		text-align: center;
 	}
 </style>

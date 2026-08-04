@@ -7,6 +7,7 @@
 	import Header from '$lib/components/ui/Header.svelte';
 	import { userStore } from '$lib/stores/user';
 	import AgeCard from '$lib/components/ui/AgeCard.svelte';
+	import RecommendationCard from '$lib/components/ui/RecommendationCard.svelte';
 
 	let { data } = $props();
 
@@ -116,9 +117,12 @@
 <Header text={`${greeting}, ${userName}!`}></Header>
 
 <main class="main flex flex-col items-center gap-4">
-	<div class="flex w-full max-w-xs flex-col gap-4">
+	<div class="flex  flex-col gap-4">
+	<h2>Вы тренируете память уже</h2>
+	<h1>5 дней</h1>
 		<AgeCard age={predictedAge} realAge={realAge}></AgeCard>
 		<Button color="green" goto="/exercises">Продолжить тренировки</Button>
+		<RecommendationCard/>
 		<!-- <Button color="green" goto="/tests">🧪 Когнитивный возраст</Button>
 		<Button color="gray" goto="/exercises">📊 Когнитивный тренажёр</Button>
 		<Button color="blue" goto="/materials">📚 Когнитивное долголетие</Button>

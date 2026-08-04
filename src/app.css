@@ -3,6 +3,7 @@
 :root {
 	--main-bg-color: #e8f0fe;
 	--main-text-color: #2c3e50;
+	--main-accent-color: #d48c7a;
 
 	--button-green: rgb(15, 132, 15);
 	--button-red: #bf3023;
@@ -31,33 +32,36 @@ body,
 p,
 h1,
 h2,
-h3 {
+h3,
+h4 {
 	margin: 0;
 	padding: 0;
 	color: var(--main-text-color);
 }
 
 h1 {
-	font-size: var(--text-2xl);
-	--tw-font-weight: var(--font-weight-bold);
-	font-weight: var(--font-weight-bold);
-	/* text-shadow:
-		0px 1px 1px var(--tw-text-shadow-color, rgb(0 0 0 / 0.1)),
-		0px 1px 2px var(--tw-text-shadow-color, rgb(0 0 0 / 0.1)),
-		0px 2px 4px var(--tw-text-shadow-color, rgb(0 0 0 / 0.1)); */
+	font-size: clamp(1.5rem, 4vw, 2.5rem); /* минимум 24px, адаптивно, максимум 40px */
+	--tw-font-weight: var(--font-weight-black);
+	font-weight: var(--font-weight-black);
 	text-align: center;
 }
 
 h2 {
-	font-size: var(--text-lg);
-	--tw-font-weight: var(--font-weight-bold);
-	font-weight: var(--font-weight-bold);
+	font-size: clamp(1rem, 3vw, 1.5rem); /* 18px → 24px */
+	font-weight: var(--font-weight-medium);
 	text-align: center;
 }
 
 h3 {
-	font-size: var(--text-sm);
-	--tw-font-weight: var(--font-weight-bolds);
+	font-size: clamp(0.750rem, 2vw, 1.125rem); /* 14px → 18px */
+	--tw-font-weight: var(--font-weight-medium);
+	font-weight: var(--font-weight-medium);
+	text-align: center;
+}
+
+h4 {
+	font-size: clamp(0.75rem, 1.5vw, 0.875rem); /* 12px → 14px */
+	--tw-font-weight: var(--font-weight-medium);
 	font-weight: var(--font-weight-medium);
 	text-align: center;
 }

@@ -30,9 +30,9 @@
 			case 'better':
 				return '/tracker/tracker_better.svg';
 			case 'equal':
-				return '/tracker/tracker_equal.svg'; // Желтый - равен
+				return '/tracker/tracker_equal.svg';
 			case 'worse':
-				return '/tracker/tracker_worse.svg'; // Красный - хуже (старше)
+				return '/tracker/tracker_worse.svg';
 			default:
 				return null;
 		}
@@ -41,11 +41,11 @@
 
 <div class="card">
 	<div>
-		<h2>Ваш когнитивный возраст</h2>
-		<div class="text">{age} лет</div>
+		<h2 style="font-weight: var(--font-weight-bold);">Ваш когнитивный возраст</h2>
+		<h1>{age} лет</h1>
 	</div>
 
-	<h3>{statusText()}</h3>
+	<h4>{statusText()}</h4>
 	<img src={trackerImage()} alt="Tracker" />
 </div>
 
@@ -57,13 +57,5 @@
 		flex-direction: column;
 		padding: 2.5rem;
 		gap: 1rem;
-	}
-
-	.text {
-		font-size: var(--text-3xl);
-		--tw-font-weight: var(--font-weight-black);
-		font-weight: var(--font-weight-black);
-		text-align: center;
-		color: var(--main-text-color);
 	}
 </style>
