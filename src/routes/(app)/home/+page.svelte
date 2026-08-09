@@ -4,12 +4,20 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import localforage from 'localforage';
+	import { goto } from '$app/navigation';
+
+	let { data } = $props();
 
 	let diferredInstallEvent: any | null = $state(null);
 	let showInstallButton = $state(true);
-	let showModal = $state(false);
+	let showInstallModal = $state(false);
+	let showRunAllModal = $state(false);
 
 	onMount(async () => {
+		if (data.hasUnfinishedTests && !data.loggedInAdmin) {
+			showRunAllModal = true;
+		}
+
 		const lfShowInstallButton: boolean | null = await localforage.getItem('showInstallButton');
 		if (lfShowInstallButton === false) {
 			showInstallButton = false;
@@ -27,7 +35,7 @@
 		window.addEventListener('appinstalled', () => {
 			showInstallButton = false;
 			localforage.setItem('showInstallButton', false);
-			showModal = false;
+			showInstallModal = false;
 		});
 
 		// don't show button if user in the standalone app
@@ -49,8 +57,13 @@
 				localforage.setItem('showInstallButton', false);
 			}
 		} else {
-			showModal = true;
+			showInstallModal = true;
 		}
+	}
+
+	function handleRunAll() {
+		localforage.setItem('runAllMode', true);
+		goto('/tests');
 	}
 
 	const checkStandaloneMode = () => {
@@ -78,8 +91,21 @@
 				<Button color="green" onclick={handleInstall}>Установить приложение</Button>
 			</div>
 		{/if}
-		{#if showModal}
-			<Modal bind:showModal>
+		{#if showRunAllModal}
+			<Modal bind:showModal={showInstallModal}>
+				{#snippet header()}
+					<h2 class="text-2xl text-white">
+						Пройдите начальную диагностику, чтобы получить доступ ко всем возможностям
+						приложения
+					</h2>
+				{/snippet}
+				<div class="flex flex-col gap-4">
+					<Button color="green" onclick={handleRunAll}>Пройти диагностику</Button>
+				</div>
+			</Modal>
+		{/if}
+		{#if showInstallModal}
+			<Modal bind:showModal={showInstallModal}>
 				{#snippet header()}
 					<div class="flex flex-col gap-4">
 						<h2 class="text-2xl text-white">
@@ -115,12 +141,13 @@
 					</div>
 				{/snippet}
 				<div class="flex flex-col gap-4">
-					<Button color="green" onclick={() => (showModal = false)}>Понятно</Button>
+					<Button color="green" onclick={() => (showInstallModal = false)}>Понятно</Button
+					>
 					<Button
 						color="red"
 						onclick={() => {
 							localforage.setItem('showInstallButton', false);
-							showModal = false;
+							showInstallModal = false;
 						}}>Больше не показывать</Button
 					>
 				</div>
