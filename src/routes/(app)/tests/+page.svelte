@@ -6,14 +6,18 @@
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import { userStore } from '$lib/stores/user.js';
 	import localforage from 'localforage';
-	import { onMount } from 'svelte';
+	import { getContext, onMount } from 'svelte';
 
 	let { data } = $props();
 
 	let testSessionCounts: Record<string, number> = $state({});
 	let runAllMode = $state(true);
+	const headerContext = getContext<{ value: string }>('headerText');
 
 	onMount(async () => {
+		if (headerContext) {
+			headerContext.value = 'Диагностика';
+		}
 		runAllMode = (await localforage.getItem('runAllMode')) || false;
 		console.log(data);
 		userStore.set(data.user || '');
@@ -51,11 +55,6 @@
 	}
 </script>
 
-<!-- <section class="banner">
-	<h1 class="font-bold max-md:hidden">Определение когнитивного возраста</h1>
-	<h2 class="font-bold md:hidden">Когнитивный возраст</h2>
-</section> -->
-<Header text={'Диагностика'}></Header>
 <main class="main flex flex-col gap-3">
 	{#if runAllMode}
 		<Spinner></Spinner>

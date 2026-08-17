@@ -46,7 +46,7 @@
 	</div>
 
 	<h4>{statusText()}</h4>
-	<img src={trackerImage()} alt="Tracker" />
+	<img class="img" src={trackerImage()} alt="Tracker" />
 </div>
 
 <style>
@@ -55,7 +55,14 @@
 		border-radius: 1rem;
 		display: flex;
 		flex-direction: column;
+		align-items: center;
 		padding: 2.5rem;
 		gap: 1rem;
+
+		/* width: min(90%, 30rem); */
+	}
+
+	.img {
+		width: 60%;
 	}
 </style>

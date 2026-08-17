@@ -34,7 +34,7 @@
 	{#each paths as path}
 		<a
 			href={path.href}
-			class="flex flex-col items-center text-sm transition-colors duration-200 max-xs:text-xs"
+			class="nav flex flex-col items-center text-sm transition-colors duration-200 max-xs:text-xs"
 			class:text-blue-400={page.url.pathname.startsWith(path.href)}
 		>
 			<span>{path.icon}</span>
@@ -42,3 +42,6 @@
 		</a>
 	{/each}
 </nav>
+
+<style>
+</style>

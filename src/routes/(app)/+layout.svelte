@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, type Snippet } from 'svelte';
+	import { onMount, setContext, type Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
 	import { profileSurveyStore, userStore } from '$lib/stores/user';
 	import { pushService } from '$lib/pushService';
@@ -9,13 +9,32 @@
 	import NavBar from '$lib/components/ui/NavBar.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import { isSubscribed } from '$lib/utils/push';
+	import Header from '$lib/components/ui/Header.svelte';
 
 	let subscribed = $state(false);
 	let showModal = $state(false);
 	let showSpinner = $state(false);
 
-	let { data, children, leftAside }: { data: LayoutData; children: Snippet; leftAside: Snippet } =
-		$props();
+	let {
+		data,
+		children,
+		leftAside
+	}: {
+		data: LayoutData;
+		children: Snippet;
+		leftAside: Snippet;
+	} = $props();
+
+	let headerText = $state('');
+
+	setContext('headerText', {
+		get value() {
+			return headerText;
+		},
+		set value(v: string) {
+			headerText = v;
+		}
+	});
 
 	onMount(async () => {
 		userStore.set(data.user);
@@ -83,15 +102,12 @@
 </div>
 
 <div class="container">
-	<!-- <header class="header"></header> -->
-	<!-- <aside class="left-aside"></aside> -->
+	<header>
+		<Header text={headerText} />
+	</header>
 	{@render children()}
-	<!-- <aside class="right-aside"></aside> -->
 	<footer class="footer flex justify-center rounded-lg">
-		<!-- <div class="w-2/3 max-md:w-full"> -->
-		<!-- <div class="w-full"> -->
 		<NavBar />
-		<!-- </div> -->
 	</footer>
 </div>
 
@@ -161,25 +177,6 @@
 			overflow: hidden;
 		}
 
-		.header {
-			grid-area: header;
-			/* background-color: #f4b30018; */
-			padding: 1rem;
-			text-align: center;
-			display: flex;
-			justify-content: center;
-			align-items: center;
-		}
-
-		.left-aside {
-			grid-area: left-aside;
-			/* background-color: #0f9d581c; */
-			padding: 1rem;
-			display: flex;
-			justify-content: center;
-			align-items: center;
-		}
-
 		.main {
 			grid-area: main;
 			/* background-color: #4286f433; */
@@ -202,15 +199,6 @@
 			background-color: #4286f41b;
 			padding: 1rem;
 			text-align: center;
-			display: flex;
-			justify-content: center;
-			align-items: center;
-		}
-
-		.right-aside {
-			grid-area: right-aside;
-			/* background-color: #f4b3001f; */
-			padding: 1rem;
 			display: flex;
 			justify-content: center;
 			align-items: center;

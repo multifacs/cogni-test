@@ -6,7 +6,7 @@
 
 <a href={path} class="card">
 	<div class="line"></div>
-	<div class="flex h-[80%] flex-col items-center justify-between p-[3%]">
+	<div class="flex h-[80%] flex-col items-center justify-between p-[5%]">
 		<h2 style="font-weight: var(--font-weight-bold); --tw-font-weight: var(--font-weight-bold)">
 			{title}
 		</h2>
@@ -37,12 +37,12 @@
 	}
 
 	.img {
-		width: 35%;
+		width: 30%;
 	}
 
 	.line {
 		background-color: var(--main-accent-color);
-		height: clamp(1rem, 2vw, 2rem);
+		height: clamp(1rem, 3.5vw, 2rem);
 		width: 100%;
 	}
 </style>

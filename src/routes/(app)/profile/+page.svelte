@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { getContext, onMount } from 'svelte';
 	import { enhance } from '$app/forms';
 	import { profileSurveyStore, userStore } from '$lib/stores/user';
 	import { derived } from 'svelte/store';
@@ -17,10 +17,14 @@
 
 	const user = derived(userStore, ($userStore) => $userStore);
 	let subscribed = $state(false);
+	const headerContext = getContext<{ value: string }>('headerText');
 
 	onMount(async () => {
 		subscribed = await isSubscribed();
 		console.log({ ...$profileSurveyStore });
+		if (headerContext) {
+			headerContext.value = 'Профиль';
+		}
 	});
 
 	console.log($user);
@@ -628,10 +632,7 @@
 		{/await}
 	</form>
 </main>
-<!-- <section class="banner">
-	<h1 class="mb-4 text-2xl font-bold">Профиль</h1>
-</section> -->
-<Header text={'Профиль'}></Header>
+
 <section class="low-content grid grid-cols-2 gap-4 md:grid-cols-4">
 	<div class="max-md:hidden"></div>
 	<form method="POST" action="/?/logout" use:enhance>

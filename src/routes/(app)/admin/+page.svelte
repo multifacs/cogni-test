@@ -1,12 +1,20 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
 	import Header from '$lib/components/ui/Header.svelte';
+	import { getContext, onMount } from 'svelte';
+
+	const headerContext = getContext<{ value: string }>('headerText');
+
+	onMount(() => {
+		if (headerContext) {
+			headerContext.value = 'Admin page';
+		}
+	});
 </script>
 
 <!-- <section class="banner">
 	<h1 class="text-3xl font-bold">Admin page</h1>
 </section> -->
-<Header text={'Admin page'}></Header>
 
 <main class="main flex flex-col items-center justify-center gap-4">
 	<div class="flex w-full max-w-sm flex-col gap-4">

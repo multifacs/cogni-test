@@ -6,16 +6,21 @@
 
 	let { data } = $props();
 	let testSessionCounts: Record<string, number> = $state({});
+	import { getContext } from 'svelte';
+
+	const headerContext = getContext<{ value: string }>('headerText');
 
 	onMount(() => {
 		userStore.set(data.user || '');
 		if (data.exerciseSessionCounts) {
 			testSessionCounts = data.exerciseSessionCounts;
 		}
+		if (headerContext) {
+			headerContext.value = 'Когнитивный тренажер';
+		}
 	});
 </script>
 
-<Header text={'Когнитивный тренажер'}></Header>
 <main class="main" style="display: flex; flex-direction: column;">
 	<div class="flex flex-wrap justify-between gap-5 p-2">
 		{#each data.exercises as { name, title, path, img }}

@@ -5,13 +5,17 @@
 	import { exerciseRegistry } from '$lib/exercises';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { onMount } from 'svelte';
+	import { getContext, onMount } from 'svelte';
 	import Header from '$lib/components/ui/Header.svelte';
 
 	let { data } = $props();
 
+	const headerContext = getContext<{ value: string }>('headerText');
 	onMount(() => {
 		invalidateAll();
+		if (headerContext) {
+			headerContext.value = 'Сессии ГТО-М';
+		}
 	});
 
 	let showDisclaimer = $state(false);
@@ -88,10 +92,6 @@
 	}
 </script>
 
-<!-- <section class="banner">
-	<h1 class="text-2xl font-bold">Сессии ГТО-М</h1>
-</section> -->
-<Header text={'Сессии ГТО-М'}></Header>
 <main class="main overflow-auto p-4">
 	<div class="flex flex-col gap-6">
 		{#if data.activeSessions.length === 0 && data.completedSessions.length === 0}

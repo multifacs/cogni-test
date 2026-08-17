@@ -1,10 +1,9 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
-	import { onMount } from 'svelte';
+	import { getContext, onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import localforage from 'localforage';
-	import Header from '$lib/components/ui/Header.svelte';
 	import { userStore } from '$lib/stores/user';
 	import AgeCard from '$lib/components/ui/AgeCard.svelte';
 	import RecommendationCard from '$lib/components/ui/RecommendationCard.svelte';
@@ -24,6 +23,12 @@
 	let realAge = $state<number | null>(null);
 	let predictedAge = $state<number | null>(null);
 
+	const headerContext = getContext<{ value: string }>('headerText');
+	$effect(() => {
+		if (headerContext) {
+			headerContext.value = `${greeting}, ${userName}!`;
+		}
+	});
 
 	onMount(() => {
 		const unsubscribeUser = userStore.subscribe((user) => {
@@ -114,19 +119,21 @@
 	};
 </script>
 
-<Header text={`${greeting}, ${userName}!`}></Header>
+<main class="main">
+	<div class="flex flex-col items-center gap-6">
+		<div>
+			<h2>Вы тренируете память уже</h2>
+			<h1>5 дней</h1>
+		</div>
 
-<main class="main flex flex-col items-center gap-4">
-	<div class="flex  flex-col gap-4">
-	<h2>Вы тренируете память уже</h2>
-	<h1>5 дней</h1>
-		<AgeCard age={predictedAge} realAge={realAge}></AgeCard>
-		<Button color="green" goto="/exercises">Продолжить тренировки</Button>
-		<RecommendationCard/>
-		<!-- <Button color="green" goto="/tests">🧪 Когнитивный возраст</Button>
-		<Button color="gray" goto="/exercises">📊 Когнитивный тренажёр</Button>
-		<Button color="blue" goto="/materials">📚 Когнитивное долголетие</Button>
-		<Button color="orange" goto="/gto">🏆 ГТО-М</Button> -->
+		<!-- подгружать данные о том, когда пользователь заходил и сколько дней подряд-->
+		<div class="main-content gap-6">
+			<AgeCard age={predictedAge} {realAge}></AgeCard>
+			<div class="justify-beetwen n flex flex-col justify-around gap-6">
+				<Button color="green" goto="/exercises">Продолжить тренировки</Button>
+				<RecommendationCard />
+			</div>
+		</div>
 
 		{#if showInstallButton}
 			<div class="flex w-full max-w-xs flex-col gap-4 text-center">
@@ -190,4 +197,14 @@
 </section> -->
 
 <style>
+	.main-content {
+		display: grid;
+		grid-template-columns: 1fr;
+	}
+	@media (min-width: 1024px) {
+		.main-content {
+			grid-template-columns: 1fr 1fr;
+			gap: 5rem;
+		}
+	}
 </style>
