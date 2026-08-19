@@ -106,9 +106,7 @@
 		<Header text={headerText} />
 	</header>
 	{@render children()}
-	<footer class="footer flex justify-center rounded-lg">
 		<NavBar />
-	</footer>
 </div>
 
 <style>
@@ -125,38 +123,6 @@
 			overflow: hidden;
 		}
 
-		/* .container {
-			display: grid;
-			grid-template-rows: 3rem auto 1fr auto 3rem;
-			grid-template-columns: 1fr 4fr 1fr;
-			height: 100dvh;
-			grid-template-areas:
-				'header header header'
-				'left-aside banner right-aside'
-				'left-aside main right-aside'
-				'left-aside low-content right-aside'
-				'left-aside footer right-aside';
-			gap: 0.5rem;
-			padding: 0.5rem;
-			/* font-weight: 600;
-			font-size: 1.25rem;
-		} */
-
-		/* .container {
-			display: grid;
-			grid-template-rows: auto 1fr auto 3rem;
-			grid-template-columns: 1fr 4fr 1fr;
-			height: 100dvh;
-			grid-template-areas:
-				'left-aside banner right-aside'
-				'left-aside main right-aside'
-				'left-aside low-content right-aside'
-				'left-aside footer right-aside';
-			gap: 0.5rem;
-			padding: 0.5rem;
-			font-size: 1.25rem;
-		} */
-
 		.container {
 			background-color: var(--main-bg-color);
 			display: grid;
@@ -170,8 +136,7 @@
 				'banner'
 				'main'
 				'low-content '
-				'footer';
-			gap: 0.5rem;
+				'nav';
 			/* padding: 0.5rem; */
 			font-size: 1.25rem;
 			overflow: hidden;
@@ -179,23 +144,16 @@
 
 		.main {
 			grid-area: main;
-			/* background-color: #4286f433; */
 			padding: 1rem;
-			/* display: flex;
-			justify-content: center;
-			align-items: center;
-			flex-direction: column;
-			gap: 1rem; */
 			min-height: 0;
-			overflow-x: hidden; /* Enable horizontal scrolling */
-			overflow-y: auto; /* Optional: enable vertical scrolling too */
-			min-width: 0; /* Critical: allows flex children to shrink below content size */
-			/* border-radius: var(--radius-lg); */
+			overflow-x: hidden;
+			overflow-y: auto;
+			min-width: 0;
+			color:var(--main-text-color)
 		}
 
 		.banner {
 			grid-area: banner;
-			border-radius: var(--radius-lg);
 			background-color: #4286f41b;
 			padding: 1rem;
 			text-align: center;
@@ -214,44 +172,15 @@
 			justify-content: center;
 			align-items: center; */
 		}
-
-		.footer {
-			grid-area: footer;
-			background-color: #fff;
-			padding: 0.5rem;
-			text-align: center;
-			align-items: center;
-			display: flex;
+	}
+	@media (min-width: 1024px) {
+		.container {
+			grid-template-rows: auto 1fr auto;
+			grid-template-columns: auto 1fr;
+			grid-template-areas:
+				'nav banner'
+				'nav main'
+				'nav low-content ';
 		}
-
-		/* ✅ Better breakpoint */
-		/* @media (max-width: 768px) {
-			.container {
-				grid-template-rows: 1rem 2rem 2rem 1fr 1.5rem 1.5rem 3rem;
-				grid-template-columns: 1fr;
-				grid-template-areas:
-					'banner'
-					'banner'
-					'main'
-					'main'
-					'low-content'
-					'low-content'
-					'footer';
-				gap: 0.3rem;
-				padding: 0.3rem;
-			}
-
-			.header {
-				display: none;
-			}
-
-			.left-aside {
-				display: none;
-			}
-
-			.right-aside {
-				display: none;
-			}
-		} */
 	}
 </style>

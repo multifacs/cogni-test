@@ -154,14 +154,13 @@
 	}
 </script>
 
-<main class="main grid w-full">
-	<form class="flex w-full flex-col items-center justify-center">
+<main class="main grid w-full text-black">
+	<form class="flex w-full flex-col items-center justify-center ">
 		{#await $user}
 			<p>Загрузка...</p>
 		{:then u}
 			{#if u && u.id}
 				<!-- Tab Nav -->
-
 				<Tabs {tabs} bind:activeTab {onTabChange}>
 					<div class:hidden={activeTab !== 'tab1'}>
 						<Table>
@@ -178,15 +177,6 @@
 								value={`${formatDate(u.birthday)} (${formatAge(u.birthday)} лет)`}
 								omit
 							/>
-							<!-- <TableRow
-								label="Пол"
-								type="choice"
-								options={[
-									{ label: 'Мужчина', value: 'male' },
-									{ label: 'Женщина', value: 'female' }
-								]}
-								value={u.sex}
-							/> -->
 							<TableRow label="Пол" type="value" value={formatSex(u.sex)} omit />
 							<TableRow
 								label="ГТО-М ID"

@@ -4,7 +4,7 @@
 <h3 class="font-bold text-sm md:hidden">Сон: зачем он нужен и как его улучшить</h3>
 
 </section>
-<main class="main">
+<main class="main" style="color:black">
 
 > *"Никто точно не знает, зачем мы спим, но без сна человек умирает через несколько дней."*
 

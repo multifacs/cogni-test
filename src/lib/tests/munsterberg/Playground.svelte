@@ -284,8 +284,8 @@
 						duration-300
 						select-none
 						{isSelected(i, j) ? 'selected z-[2] scale-110 overflow-hidden border-transparent shadow-md' : ''}
-						{cell.isCorrect ? 'correct text-gray-50' : ''}
-						{cell.isIncorrect ? 'incorrect text-gray-50' : ''}"
+						{cell.isCorrect ? 'correct text-black' : ''}
+						{cell.isIncorrect ? 'incorrect text-black' : ''}"
 			>
 				{cell.letter}
 			</div>

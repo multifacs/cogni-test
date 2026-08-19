@@ -4,7 +4,7 @@
 <h3 class="font-bold text-sm md:hidden">Цифровая гигиена: как сохранить здоровье в эпоху гаджетов</h3>
 
 </section>
-<main class="main">
+<main class="main" style="color:black">
 
 ## ⚠️ Риски цифровых технологий
 

@@ -70,24 +70,14 @@
 				<Button color="red" onclick={runAll}>Начать</Button>
 			</div>
 		{/if}
-
-		<div class="flex flex-wrap justify-between gap-5 p-2">
+		<div class="content flex flex-col items-center justify-center gap-8 pt-[2%] pb-[4%]">
+			<h2>Регулярные тренировки помогают поддерживать когнитивные навыки</h2>
+			<Button color="green">Запуск потокового прохождения</Button>
+		</div>
+		<div class="flex flex-wrap justify-center gap-5 p-2">
 			{#each data.tests as { name, title, path, img }}
 				<ExerciseCard {name} {title} {path} {img} {testSessionCounts} />
 			{/each}
 		</div>
 	{/if}
 </main>
-<!-- <section class="low-content grid grid-cols-3 items-center gap-5 text-center">
-	<p class="text-xs font-medium max-md:hidden">🧠 Когнитивный возраст 🧠</p>
-	<p class="text-xs font-medium md:hidden">🧠Когнитивный🧠 возраст</p>
-	<p class="mt-1 text-3xl font-bold">
-		{#if data.predictedAge !== null && data.predictedAge !== undefined}
-			{Math.round(data.predictedAge)} лет
-		{:else}
-			<span title="Пройдите хотя бы один раз каждый тест">??</span>
-		{/if}
-	</p>
-	<p class="text-xs font-medium max-md:hidden">⚠️ Я только учусь, и я могу ошибаться ⚠️</p>
-	<p class="text-xs font-medium md:hidden">Могу ⚠️ошибаться⚠️</p>
-</section> -->

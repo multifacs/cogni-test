@@ -1,23 +1,24 @@
 <script lang="ts">
 	import Button from './Button.svelte';
+	let { title, text, goto, icon, button_text } = $props();
 </script>
 
 <div class="card">
 	<div class="line"></div>
-	<div>
-		<div class="m-4 flex items-center">
-			<img src="icons/book-open.svg" class="img" />
+	<div class=" flex w-full flex-col gap-5 p-5">
+		<div class="flex items-center">
+			<img src={icon} class="img" />
 			<h2
-				style="font-weight: var(--font-weight-bold); --tw-font-weight: var(--font-weight-bold)"
+				style="text-align: left;font-weight: var(--font-weight-bold); --tw-font-weight: var(--font-weight-bold)"
 			>
-				Совет дня
+				{title}
 			</h2>
 		</div>
-		<h4 style="text-align: left; padding-left: 1rem;">
-			Статья: как физическая активность влияет на память
+		<h4 style="text-align: left;">
+			{text}
 		</h4>
-		<div class="mb-2 flex flex-row-reverse p-2.5">
-			<Button color="green" goto="/materials">Прочитать</Button>
+		<div class="flex flex-row-reverse">
+			<Button color="green" {goto}>{button_text}</Button>
 		</div>
 	</div>
 </div>
@@ -28,11 +29,13 @@
 		border-radius: 1rem;
 		display: flex;
 		flex-direction: row;
-		gap: 2vw;
+		gap: 3vw;
 		overflow: hidden;
 		padding-right: 1.5rem;
-		min-height: 120px;
-		/* width: min(90%, 30rem); */
+		min-height: clamp(120px, 20%, 200px);
+		height: auto;
+		width: 100%;
+		max-width: 100%;
 	}
 
 	.line {
@@ -44,5 +47,11 @@
 	.img {
 		width: 25%;
 		margin-right: 1rem;
+	}
+
+@media (min-width: 1024px) {
+		.img {
+			width: 7vw;
+		}
 	}
 </style>

@@ -121,7 +121,7 @@
 
 <main class="main">
 	<div class="flex flex-col items-center gap-6">
-		<div>
+		<div class="p-4">
 			<h2>Вы тренируете память уже</h2>
 			<h1>5 дней</h1>
 		</div>
@@ -131,7 +131,7 @@
 			<AgeCard age={predictedAge} {realAge}></AgeCard>
 			<div class="justify-beetwen n flex flex-col justify-around gap-6">
 				<Button color="green" goto="/exercises">Продолжить тренировки</Button>
-				<RecommendationCard />
+				<RecommendationCard title="Совет дня" text="Статья: как физическая активность влияет на память" icon="icons/book-open.svg" goto="/materials" button_text="Прочитать"/>
 			</div>
 		</div>
 

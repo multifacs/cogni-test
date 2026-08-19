@@ -46,7 +46,7 @@
 		<h1>Тест начинается</h1>
 	{:else}
 		<div
-			class="inequality grid grid-cols-[1fr_auto_1fr] items-center gap-5 text-4xl font-bold text-gray-50"
+			class="inequality grid grid-cols-[1fr_auto_1fr] items-center gap-5 text-4xl font-bold"
 		>
 			<div class="left justify-self-center">
 				{getPaddedLeft(gameState.getState().currentLeft)}

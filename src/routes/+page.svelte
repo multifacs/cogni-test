@@ -40,15 +40,20 @@
 </script>
 
 <form
-	class="mx-auto flex w-full max-w-sm flex-col gap-4 rounded-3xl bg-gray-700 p-6 text-white shadow-xl"
+	class="mx-auto flex w-full max-w-sm flex-col gap-4 rounded-3xl bg-[var(--main-bg-color)] bg-white p-6 text-white shadow-xl"
 	method="POST"
 	action="?/login"
 	use:enhance
 >
-	<h1 class="mb-2 text-center text-2xl font-bold">Вход</h1>
+	<div class="flex justify-center gap-5">
+		<img src="/logo.svg" class="w-[25%]" />
+		<h1 style="text-align: left; font-size: clamp(1.2rem, 3vw, 2rem);">
+			Добро пожаловать в Cogni Test!
+		</h1>
+	</div>
 
 	<div class="flex flex-col gap-1">
-		<label for="firstname">🧍 Имя</label>
+		<label for="firstname">Введите ваше имя</label>
 		<TextInput
 			required
 			name="firstname"
@@ -58,7 +63,7 @@
 	</div>
 
 	<div class="flex flex-col gap-1">
-		<label for="lastname">🔠 Первые 2 буквы фамилии</label>
+		<label for="lastname">Введите первые 2 буквы фамилии</label>
 		<TextInput
 			required
 			name="lastname"
@@ -68,17 +73,16 @@
 	</div>
 
 	<div class="flex flex-col gap-1">
-		<label for="birthday">🎂 Дата рождения</label>
+		<label for="birthday">Введите дату рождения</label>
 		<DateInput required name="birthday" bind:value={birthdate} bind:errorMessage={dateError} />
 	</div>
 
 	<div class="flex items-center justify-between gap-2 text-sm">
-		<label for="sex">👫 Пол</label>
+		<label for="sex">Введите ваш пол</label>
 		<label><input type="radio" name="sex" bind:group={sex} value="male" /> Мужской</label>
 		<label><input type="radio" name="sex" bind:group={sex} value="female" /> Женский</label>
 	</div>
 
-	<!-- чекбокс согласия -->
 	<div class="mt-3 flex items-center gap-2 text-sm">
 		<input
 			id="consent"
@@ -91,7 +95,11 @@
 		/>
 		<label for="consent" class="select-none">
 			Согласен(а) на
-			<a href={resolve('/consent')} class="underline hover:opacity-80" target="_blank">
+			<a
+				href={resolve('/consent')}
+				class="underline hover:opacity-80"
+				target="_blank"
+			>
 				обработку персональных данных
 			</a>
 		</label>

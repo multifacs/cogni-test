@@ -227,6 +227,9 @@
 	}
 
 	.silhouette-choices {
+		/* background-color: grey; */
+		gap:4vw;
+		margin:4vw
 	}
 
 	/* Вертикальная ориентация */

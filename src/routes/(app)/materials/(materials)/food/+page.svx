@@ -5,7 +5,7 @@
 
 </section>
 
-<main class="main">
+<main class="main" style="color:black">
 
 ## 🔍 Основные выводы исследований
 
