@@ -148,14 +148,17 @@
 		</div>
 	{:else}
 		<div class="flex w-full max-w-xs flex-col gap-4">
-			<h2 class="text-2xl text-white">
-				Пройдите начальную диагностику, чтобы получить доступ ко всем возможностям
-				приложения
+			<h2 class="text-center">
+				Пройдите начальную диагностику, чтобы узнать свой когнитивный возраст.
 			</h2>
+			<p class="text-base">
+				После этого Вам откроется тренажёр и много других интересных возможностей.
+			</p>
 			<Button color="green" onclick={handleRunAll}>Пройти диагностику</Button>
 		</div>
 	{/if}
 </main>
+
 <section class="low-content flex items-center justify-center">
 	<p class="max-w-md text-center text-lg max-md:text-sm">Выберите, с чего начать.</p>
 </section>
