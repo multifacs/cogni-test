@@ -28,10 +28,12 @@ export const load: LayoutServerLoad = async ({ cookies, url }) => {
 	const hasUnfinishedTests = Object.keys(testSessionCounts).length < visibleTests.length;
 	const loggedInAdmin = cookies.get('logged_in_admin'); // logged in admins should be able to access all pages
 
+	const undiagnosed = hasUnfinishedTests && !loggedInAdmin;
+
 	// As user will be eventually redirected to /tests page to start diagnostic it's required to allow /tests.
 	// As well it's probably a good idea to allow /profile so user can logout for example.
 	const allowedPaths = ['/home', '/tests', '/profile', '/admin'];
-	if (hasUnfinishedTests && !loggedInAdmin) {
+	if (undiagnosed) {
 		let allowed = false;
 		for (const allowedPath of allowedPaths) {
 			if (url.pathname.startsWith(allowedPath)) {
@@ -104,6 +106,8 @@ export const load: LayoutServerLoad = async ({ cookies, url }) => {
 
 	return {
 		user,
-		profileSurvey
+		profileSurvey,
+		undiagnosed,
+		allowedPaths
 	};
 };
