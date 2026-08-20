@@ -192,10 +192,6 @@
 	</div>
 </main>
 
-<!-- <section class="low-content flex items-center justify-center">
-	<p class="max-w-md text-center text-lg max-md:text-sm">Выберите, с чего начать.</p>
-</section> -->
-
 <style>
 	.main-content {
 		display: grid;
