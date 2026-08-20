@@ -32,7 +32,7 @@
 	];
 
 	function isAllowed(href: string) {
-		return undiagnosed && allowedPaths.includes(href);
+		return !undiagnosed || allowedPaths.includes(href);
 	}
 </script>
 
