@@ -106,7 +106,7 @@
 		<Header text={headerText} />
 	</header>
 	{@render children()}
-		<NavBar />
+	<NavBar />
 </div>
 
 <style>
@@ -144,12 +144,12 @@
 
 		.main {
 			grid-area: main;
-			padding: 1rem;
+			padding: 4%;
 			min-height: 0;
 			overflow-x: hidden;
 			overflow-y: auto;
 			min-width: 0;
-			color:var(--main-text-color)
+			color: var(--main-text-color);
 		}
 
 		.banner {
@@ -164,13 +164,9 @@
 
 		.low-content {
 			grid-area: low-content;
-			/* background-color: #0f9d581d; */
-			background-color: #4286f42e;
-			padding: 0.5rem;
+			padding: 2% 15%;
 			border-radius: var(--radius-lg);
-			/* display: flex;
-			justify-content: center;
-			align-items: center; */
+
 		}
 	}
 	@media (min-width: 1024px) {

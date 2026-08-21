@@ -168,10 +168,11 @@
 		{#each silhouettes as s}
 			<button
 				aria-label={`${s} button`}
-				class="choice-btn max-xs:w-16 max-xs:h-16 h-[100px] w-[100px] cursor-pointer touch-none bg-white mask-contain select-none rounded-xl
-					ring-2 ring-transparent hover:ring-gray-400 active:ring-gray-600 transition-[ring-color] duration-150 disabled:opacity-40 disabled:ring-transparent"
+				class="choice-btn max-xs:w-16 max-xs:h-16 h-[100px] w-[100px] cursor-pointer touch-none rounded-xl bg-white mask-contain ring-2
+					ring-transparent transition-[ring-color] duration-150 select-none hover:ring-gray-400 active:ring-gray-600 disabled:ring-transparent"
 				disabled={!delta}
 				style={`
+					background-color: #9ca3af;
                     mask-image: url(${data.silhouettes[s]});
                     -webkit-mask-image: url(${data.silhouettes[s]});
                     `}
@@ -228,8 +229,8 @@
 
 	.silhouette-choices {
 		/* background-color: grey; */
-		gap:4vw;
-		margin:4vw
+		gap: 4vw;
+		margin: 4vw;
 	}
 
 	/* Вертикальная ориентация */

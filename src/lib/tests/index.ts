@@ -11,39 +11,39 @@ export type TestData = {
 export const tests: TestData[] = [
 	{
 		name: 'stroop',
-		title: 'Тест Струпа',
+		title: 'Цвет и смысл',
 		path: '/tests/stroop/about',
-		img: '/tests/stroop.jpg'
+		img: '/tests/stroop.svg'
 	},
 	{
 		name: 'math',
-		title: 'Aрифметический тест',
+		title: 'Быстрый счет',
 		path: '/tests/math/about',
-		img: '/tests/math.svg'
+		img: '/tests/math1.svg'
 	},
 	{
 		name: 'munsterberg',
-		title: 'Тест Мюнстерберга',
+		title: 'Поиск слов',
 		path: '/tests/munsterberg/about',
-		img: '/tests/munsterberg.svg'
+		img: '/tests/munsterberg1.svg'
 	},
 	{
 		name: 'campimetry',
-		title: 'Компьютерная кампиметрия',
+		title: 'Скрытая фигура',
 		path: '/tests/campimetry/about',
-		img: '/tests/campimetry.svg'
+		img: '/tests/campimetry1.svg'
 	},
 	{
 		name: 'memory',
-		title: 'Тест на память',
+		title: 'Слова и повторы',
 		path: '/tests/memory/about',
-		img: '/tests/memory.svg'
+		img: '/tests/memory1.svg'
 	},
 	{
 		name: 'swallow',
-		title: 'Тест «Ласточка»',
+		title: 'Полет птицы',
 		path: '/tests/swallow/about',
-		img: '/tests/swallow.svg'
+		img: '/tests/swallow1.svg'
 	}
 ];
 
@@ -111,11 +111,7 @@ export const GTO_TEST_ORDER: { type: string; route: string }[] = [
  * Given a test type from the GTO battery, return the about page URL
  * with the gtoSessionId param appended.
  */
-export function gtoTestAboutUrl(
-	testType: string,
-	index: number,
-	gtoSessionId: string
-): string {
+export function gtoTestAboutUrl(testType: string, index: number, gtoSessionId: string): string {
 	const entry = GTO_TEST_ORDER[index] ?? GTO_TEST_ORDER.find((e) => e.type === testType);
 	if (!entry) return '/gto';
 	return `${entry.route}/about?gtoSessionId=${gtoSessionId}`;

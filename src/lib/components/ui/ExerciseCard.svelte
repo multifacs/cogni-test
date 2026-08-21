@@ -37,7 +37,7 @@
 	}
 
 	.img {
-		width: 30%;
+		width: 35%;
 	}
 
 	.line {

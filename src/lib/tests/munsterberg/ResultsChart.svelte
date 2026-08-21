@@ -19,15 +19,9 @@
 </script>
 
 <div class="flex flex-col items-center">
-	<!-- <div class="flex flex-wrap">
-		<p><b>Список слов:</b>&nbsp</p>
-		{#each JSON.parse(meta) as word}
-			<span>{word}&nbsp</span>
-		{/each}
-	</div> -->
 	<p><b>Время прохождения:</b> {time} с</p>
     <p><b>Отгадано слов:</b> {results.filter((x) => x.guessed).length}/{results.length}</p>
-	<br />
+
 	{#each results as result}
 		<p>
 			<b>{result.word}</b>: <span class={result.guessed ? "text-green-400" : "text-red-500"}>

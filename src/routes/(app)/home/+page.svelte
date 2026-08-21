@@ -24,13 +24,23 @@
 	let predictedAge = $state<number | null>(null);
 
 	const headerContext = getContext<{ value: string }>('headerText');
-	$effect(() => {
+	function updateGreetingAndHeader() {
+		const hour = new Date().getHours();
+		let newGreeting;
+		if (hour < 12) newGreeting = 'Доброе утро';
+		else if (hour < 18) newGreeting = 'Добрый день';
+		else newGreeting = 'Добрый вечер';
+
+		greeting = newGreeting;
+
+		// Обновляем хедер
 		if (headerContext) {
 			headerContext.value = `${greeting}, ${userName}!`;
 		}
-	});
+	}
 
 	onMount(() => {
+		updateGreetingAndHeader();
 		const unsubscribeUser = userStore.subscribe((user) => {
 			if (user) {
 				const rawName = (user as any).firstname || 'пользователь';
@@ -53,10 +63,7 @@
 				if (data?.predictedAge !== null && data?.predictedAge !== undefined) {
 					predictedAge = Math.round(data.predictedAge);
 				}
-				const hour = new Date().getHours();
-				if (hour < 12) greeting = 'Доброе утро';
-				if (hour < 18) greeting = 'Добрый день';
-				else greeting = 'Добрый вечер';
+				updateGreetingAndHeader();
 			}
 		});
 
@@ -131,7 +138,13 @@
 			<AgeCard age={predictedAge} {realAge}></AgeCard>
 			<div class="justify-beetwen n flex flex-col justify-around gap-6">
 				<Button color="green" goto="/exercises">Продолжить тренировки</Button>
-				<RecommendationCard title="Совет дня" text="Статья: как физическая активность влияет на память" icon="icons/book-open.svg" goto="/materials" button_text="Прочитать"/>
+				<RecommendationCard
+					title="Совет дня"
+					text="Статья: как физическая активность влияет на память"
+					icon="icons/book-open.svg"
+					goto="/materials"
+					button_text="Прочитать"
+				/>
 			</div>
 		</div>
 

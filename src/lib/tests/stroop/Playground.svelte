@@ -8,7 +8,7 @@
 
 	// Game state
 	let currentWord: Word = $state('stage 1');
-	let currentColor: Color | 'white' = $state('white');
+	let currentColor: Color | 'var(--main-text-color)' = $state('var(--main-text-color)');
 	let score = 0;
 	const DURATION = 5;
 	let timeLeft = $state(DURATION);
@@ -39,7 +39,7 @@
 
 	export function stopGame() {
 		isTestRunning = false;
-		updateState('stage 1', 'white');
+		updateState('stage 1', 'var(--main-text-color)');
 		clearTimer();
 		gameEnd();
 		sendResults(game.getResults());
@@ -54,7 +54,7 @@
 		startTimer();
 	}
 
-	function updateState(word: Word, color: Color | 'white') {
+	function updateState(word: Word, color: Color | 'var(--main-text-color)') {
 		currentWord = word;
 		currentColor = color;
 		timeLeft = DURATION;
@@ -80,7 +80,7 @@
 	}
 
 	function handleAnswer(color: string) {
-		if (!isTestRunning || currentColor === 'white') return;
+		if (!isTestRunning || currentColor === 'var(--main-text-color)') return;
 		clearTimer();
 
 		game.handleAnswer(color as Color);
@@ -93,9 +93,12 @@
 	};
 	const stageInstructions: instructionsObject = {
 		'stage -1': 'Ошибка',
-		'stage 1': 'Нужно соответствовать и цвету, и смыслу.',
-		'stage 2': 'Нужно соответствовать смыслу.',
-		'stage 3': 'Нужно соответствовать цвету.'
+		'stage 1':
+			'Слово написано тем же цветом, что и означает. Нажмите на квадратик такого же цвета.',
+		'stage 2':
+			'Слово написано другим цветом. Нажимайте на квадратик того цвета, который обозначает слово (по смыслу).',
+		'stage 3':
+			'Слово снова написано не своим цветом. Теперь нажимайте на квадратик того цвета, которым написано слово (не обращайте внимания на смысл).'
 	};
 
 	function checkWordStage(word: Word): Stage {
@@ -120,10 +123,10 @@
 		<h1>Конец теста</h1>
 	{/if}
 </div>
-<div class="grid gap-4 grid-cols-[1fr_1fr]">
+<div class="grid grid-cols-[1fr_1fr] gap-4">
 	{#each Object.values(colors) as color}
 		<button
-			class="w-20 max-xs:w-16 h-16 max-xs:h-12 cursor-pointer border-none"
+			class="max-xs:w-16 max-xs:h-12 h-16 w-20 cursor-pointer border-none"
 			style="background-color: {color};"
 			aria-label={color}
 			onclick={() => handleAnswer(color)}
