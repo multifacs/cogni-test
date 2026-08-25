@@ -3,6 +3,15 @@
 	import { missingFieldLabels } from '$lib/survey-field-labels';
 	import { invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
+	import { getContext, onMount } from 'svelte';
+
+	const headerContext = getContext<{ value: string }>('headerText');
+
+	onMount(() => {
+		if (headerContext) {
+			headerContext.value = 'Управление сессиями ГТО-М';
+		}
+	});
 
 	let { data }: PageProps = $props();
 	let selectedUsers = $state<Set<string>>(new Set());
@@ -73,9 +82,6 @@
 	}
 </script>
 
-<section class="banner">
-	<h1 class="text-2xl font-bold">Управление сессиями ГТО-М</h1>
-</section>
 
 <main class="main overflow-auto p-4">
 	<div class="flex flex-col gap-6">
@@ -83,7 +89,7 @@
 		<div class="flex flex-col gap-3">
 			<h2 class="text-xl font-semibold">Существующие сессии</h2>
 			{#if data.sessions.length === 0}
-				<div class="flex flex-col items-center gap-2 py-6 text-gray-400">
+				<div class="flex flex-col items-center gap-2 py-6 ">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						class="h-10 w-10 opacity-40"
@@ -105,7 +111,7 @@
 					{#each data.sessions as s}
 						<a
 							href="/admin/gto/{s.id}"
-							class="group flex items-center justify-between rounded-xl border border-gray-700 bg-gray-800/50 p-3 transition-colors hover:border-gray-600 hover:bg-gray-700/50"
+							class="group flex items-center justify-between rounded-xl border border-gray-700 bg-white p-3 transition-colors hover:border-gray-600 hover:bg-gray-700/50"
 						>
 							<div class="flex min-w-0 flex-col">
 								<span class="truncate font-medium">{s.name}</span>
@@ -144,12 +150,12 @@
 		<!-- Link to word sets -->
 		<a
 			href="/admin/gto/word-sets"
-			class="flex items-center justify-between rounded-xl border border-gray-700 bg-gray-800/30 p-4 transition-colors hover:border-gray-600 hover:bg-gray-700/30"
+			class="flex items-center justify-between rounded-xl border border-gray-700 bg-white p-4 transition-colors hover:border-gray-600 hover:bg-gray-700/30"
 		>
 			<div class="flex items-center gap-3">
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
-					class="h-5 w-5 text-gray-400"
+					class="h-5 w-5"
 					fill="none"
 					viewBox="0 0 24 24"
 					stroke="currentColor"
@@ -163,14 +169,14 @@
 				</svg>
 				<div class="flex flex-col">
 					<span class="font-medium">Сеты слов</span>
-					<span class="text-xs text-gray-400"
+					<span class="text-xs "
 						>Создание, редактирование и генерация сетов</span
 					>
 				</div>
 			</div>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
-				class="h-5 w-5 text-gray-500"
+				class="h-5 w-5 "
 				viewBox="0 0 20 20"
 				fill="currentColor"
 			>
@@ -184,7 +190,7 @@
 
 		<!-- Create session form -->
 		<form
-			class="flex flex-col gap-4 rounded-xl border border-gray-700 bg-gray-800/30 p-4"
+			class="flex flex-col gap-4 rounded-xl border border-gray-700 bg-white p-4"
 			onsubmit={(e) => {
 				e.preventDefault();
 				handleCreateSession(e.currentTarget);
@@ -197,12 +203,12 @@
 			{/if}
 
 			<label class="flex flex-col gap-1">
-				<span class="text-sm font-medium text-gray-300">Название сессии</span>
+				<span class="text-sm font-medium ">Название сессии</span>
 				<input
 					type="text"
 					name="name"
 					bind:value={sessionName}
-					class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
+					class="rounded-lg bg-[#E5E7EB] px-3 py-2 text-sm"
 				/>
 			</label>
 
@@ -215,7 +221,7 @@
 			<div class="flex flex-col gap-2">
 				<div class="flex flex-wrap items-center gap-3">
 					<h3 class="text-lg font-medium">Участники</h3>
-					<span class="text-sm text-gray-400">({selectedUsers.size} выбрано)</span>
+					<span class="text-sm ">({selectedUsers.size} выбрано)</span>
 					<div class="flex-1"></div>
 					<Button
 						color="green"
@@ -228,7 +234,7 @@
 					<div class="relative">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
-							class="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400"
+							class="absolute left-2.5 top-2.5 h-4 w-4 "
 							viewBox="0 0 20 20"
 							fill="currentColor"
 						>
@@ -242,7 +248,7 @@
 							type="text"
 							placeholder="Поиск..."
 							bind:value={searchQuery}
-							class="rounded-lg bg-gray-700 py-2 pl-8 pr-3 text-sm"
+							class="rounded-lg bg-[#E5E7EB] py-2 pl-8 pr-3 text-sm"
 						/>
 					</div>
 					<label class="flex items-center gap-1.5 text-sm">
@@ -252,7 +258,7 @@
 				</div>
 
 				{#if filteredUsers.length === 0}
-					<p class="py-4 text-center text-sm text-gray-400">
+					<p class="py-4 text-center text-sm ">
 						{searchQuery || filterRecent
 							? 'Пользователи не найдены'
 							: 'Нет авторизованных пользователей'}
@@ -265,7 +271,7 @@
 								class="flex items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors {selectedUsers.has(
 									u.id
 								)
-									? 'bg-indigo-900/40 ring-1 ring-indigo-500/50'
+									? 'bg-white ring-1 ring-indigo-500/50'
 									: 'bg-gray-900/30 hover:bg-gray-700/50'}"
 								onclick={() => toggleUser(u.id)}
 							>
@@ -295,7 +301,7 @@
 									<span class="truncate text-sm font-medium"
 										>{u.firstname} {u.lastname}</span
 									>
-									<span class="text-xs text-gray-400">
+									<span class="text-xs">
 										{u.sex === 'male' ? 'М' : 'Ж'}
 										{#if u.gtoId}
 											· ГТО-М: {u.gtoId}
@@ -305,7 +311,7 @@
 								<div class="flex shrink-0 items-center gap-1.5">
 									{#if u.missingSurveyFields.length > 0}
 										<span
-											class="rounded-full bg-red-900/40 px-2 py-0.5 text-xs text-red-300"
+											class="rounded-full bg-red-500/40 px-2 py-0.5 text-xs "
 											title={missingFieldLabels(u.missingSurveyFields)}
 										>
 											{u.missingSurveyFields.length}

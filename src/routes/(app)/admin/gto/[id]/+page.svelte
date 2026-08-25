@@ -22,6 +22,15 @@
 	} from '$lib/client/gto-button-data';
 	import { onMount } from 'svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+	import { getContext } from 'svelte';
+
+	const headerContext = getContext<{ value: string }>('headerText');
+
+	onMount(() => {
+		if (headerContext) {
+			headerContext.value = 'Управление сессиями ГТО-М';
+		}
+	});
 
 	let { data }: PageProps = $props();
 	let editingName = $state(false);
@@ -383,7 +392,9 @@
 
 <svelte:window onclick={closeMenuOutside} />
 
-<section class="banner">
+
+<main class="main overflow-auto p-4">
+<section >
 	<div class="flex items-center justify-center gap-3">
 		{#if editingName}
 			<div class="flex items-center gap-2">
@@ -423,8 +434,6 @@
 		</span>
 	</div>
 </section>
-
-<main class="main overflow-auto p-4">
 	<div class="flex flex-col gap-4">
 		<!-- Session control menu -->
 		{#if data.session.status !== 'completed'}
@@ -447,7 +456,7 @@
 				</button>
 				{#if menuOpen}
 					<div
-						class="absolute left-0 top-full z-10 mt-1 min-w-[200px] rounded-lg border border-gray-700 bg-gray-800 py-1 shadow-xl"
+						class="absolute top-full left-0 z-10 mt-1 min-w-[200px] rounded-lg border border-gray-700 bg-gray-800 py-1 shadow-xl"
 					>
 						{#if data.session.status === 'active'}
 							<button
@@ -547,7 +556,7 @@
 				</button>
 				{#if menuOpen}
 					<div
-						class="absolute left-0 top-full z-10 mt-1 min-w-[200px] rounded-lg border border-gray-700 bg-gray-800 py-1 shadow-xl"
+						class="absolute top-full left-0 z-10 mt-1 min-w-[200px] rounded-lg border border-gray-700 bg-gray-800 py-1 shadow-xl"
 					>
 						<button
 							class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-green-300 transition-colors hover:bg-gray-700"
@@ -573,7 +582,7 @@
 		{/if}
 
 		<!-- Add participant -->
-		<div class="rounded-xl border border-gray-700 bg-gray-800/30 p-4">
+		<div class="rounded-xl border border-gray-700 bg-white p-4">
 			<button
 				class="flex w-full items-center justify-between text-left"
 				onclick={() => (addingParticipant = !addingParticipant)}
@@ -601,7 +610,7 @@
 							type="text"
 							bind:value={participantSearch}
 							placeholder="Поиск по имени или ГТО-М ID..."
-							class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
+							class="rounded-lg bg-[#] px-3 py-2 text-sm"
 						/>
 						<label class="flex items-center gap-1.5 text-sm whitespace-nowrap">
 							<input type="checkbox" bind:checked={filterRecent} class="rounded" />
@@ -622,7 +631,7 @@
 									onclick={() => handleAddParticipant(u.id)}
 								>
 									<span
-										class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-600 text-xs font-bold text-gray-300"
+										class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-xs font-bold text-gray-300"
 									>
 										{u.firstname[0]}
 									</span>
@@ -630,7 +639,7 @@
 										<span class="truncate text-sm font-medium"
 											>{u.firstname} {u.lastname}</span
 										>
-										<span class="text-xs text-gray-400">
+										<span class="text-xs ">
 											{u.sex === 'male' ? 'М' : 'Ж'} · {u.age} лет
 											{#if u.gtoId}
 												· ГТО-М: {u.gtoId}
@@ -686,7 +695,7 @@
 				<div class="relative">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
-						class="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400"
+						class="absolute top-2.5 left-2.5 h-4 w-4 text-gray-400"
 						viewBox="0 0 20 20"
 						fill="currentColor"
 					>
@@ -700,12 +709,12 @@
 						type="text"
 						placeholder="Поиск участников..."
 						bind:value={metricsSearch}
-						class="rounded-lg bg-gray-700 py-2 pl-8 pr-3 text-sm"
+						class="rounded-lg bg-[#E5E7EB]  py-2 pr-3 pl-8 text-sm"
 					/>
 				</div>
 			</div>
 			{#if filteredMetrics.length === 0}
-				<p class="py-4 text-center text-sm text-gray-400">Участники не найдены</p>
+				<p class="py-4 text-center text-sm text-gray-400 ">Участники не найдены</p>
 			{:else}
 				<div class="flex flex-col gap-3">
 					{#each filteredMetrics as m, i (m.participantId)}
@@ -715,7 +724,7 @@
 						{@const effectiveButtonFile =
 							selectedButtonFile.get(m.participantId) ?? em.buttonTestFileName}
 						<div
-							class="rounded-xl border border-gray-700 bg-gray-800/50 transition-colors"
+							class="rounded-xl border border-gray-700 bg-white transition-colors"
 						>
 							<!-- Card header — always visible -->
 							<button
@@ -724,7 +733,7 @@
 									(expandedParticipant = isExpanded ? null : m.participantId)}
 							>
 								<span
-									class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-700 text-sm font-bold text-gray-300"
+									class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-(--main-accent-color) text-sm font-bold text-white"
 								>
 									{i + 1}
 								</span>
@@ -743,27 +752,27 @@
 								<div class="flex items-center gap-2">
 									{#if m.missingSurveyFields.length > 0}
 										<span
-											class="rounded-full bg-red-900/40 px-2 py-0.5 text-xs text-red-300"
+											class="rounded-full bg-red-300 px-2 py-0.5 text-xs text-white"
 											title={missingFieldLabels(m.missingSurveyFields)}
 										>
 											{m.missingSurveyFields.length} полей
 										</span>
 									{:else}
 										<span
-											class="rounded-full bg-green-900/40 px-2 py-0.5 text-xs text-green-300"
+											class="rounded-full bg-green-300 px-2 py-0.5 text-xs text-white"
 										>
 											Анкета ✓
 										</span>
 									{/if}
 									{#if m.wordScore !== null}
 										<span
-											class="rounded-full bg-purple-900/40 px-2 py-0.5 text-xs text-purple-300"
+											class="rounded-full bg-purple-300 px-2 py-0.5 text-xs text-white"
 										>
 											Слова: {m.wordScore}/5
 										</span>
 									{:else if m.submittedWords}
 										<span
-											class="rounded-full bg-yellow-900/40 px-2 py-0.5 text-xs text-yellow-300"
+											class="rounded-full bg-yellow-300 px-2 py-0.5 text-xs text-white"
 											title={m.submittedWords.join(', ')}
 										>
 											Слова: ожидает сета
@@ -840,9 +849,9 @@
 											class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
 										>
 											<!-- Stroop -->
-											<div class="rounded-lg bg-gray-900/50 p-3">
+											<div class="rounded-lg bg-[#E5E7EB] p-3">
 												<h4
-													class="mb-2 text-xs font-semibold uppercase tracking-wider text-blue-400"
+													class="mb-2 text-xs font-semibold tracking-wider text-blue-400 uppercase"
 												>
 													Струп
 												</h4>
@@ -850,13 +859,13 @@
 													{#each [{ label: 'Этап 1', data: m.stroop.stage1 }, { label: 'Этап 2', data: m.stroop.stage2 }, { label: 'Этап 3', data: m.stroop.stage3 }] as stage}
 														<div class="flex items-center gap-2">
 															<span
-																class="w-16 shrink-0 text-xs text-gray-400"
+																class="w-16 shrink-0 text-xs "
 																>{stage.label}</span
 															>
 															<span class="tabular-nums"
 																>{fmt(stage.data.meanTime)}с</span
 															>
-															<span class="text-xs text-gray-500"
+															<span class="text-xs "
 																>σ{fmt(stage.data.stdDevTime)}</span
 															>
 															<span
@@ -875,16 +884,16 @@
 											</div>
 
 											<!-- Math -->
-											<div class="rounded-lg bg-gray-900/50 p-3">
+											<div class="rounded-lg bg-[#E5E7EB] p-3">
 												<h4
-													class="mb-2 text-xs font-semibold uppercase tracking-wider text-emerald-400"
+													class="mb-2 text-xs font-semibold tracking-wider text-emerald-400 uppercase"
 												>
 													Арифметика
 												</h4>
 												<div class="flex flex-col gap-1 text-sm">
 													<div class="flex items-center gap-2">
 														<span
-															class="w-16 shrink-0 text-xs text-gray-400"
+															class="w-16 shrink-0 text-xs "
 															>Среднее</span
 														>
 														<span class="tabular-nums"
@@ -893,7 +902,7 @@
 													</div>
 													<div class="flex items-center gap-2">
 														<span
-															class="w-16 shrink-0 text-xs text-gray-400"
+															class="w-16 shrink-0 text-xs "
 															>σ</span
 														>
 														<span class="tabular-nums"
@@ -902,7 +911,7 @@
 													</div>
 													<div class="flex items-center gap-2">
 														<span
-															class="w-16 shrink-0 text-xs text-gray-400"
+															class="w-16 shrink-0 text-xs "
 															>Точность</span
 														>
 														<span
@@ -920,16 +929,16 @@
 											</div>
 
 											<!-- Munsterberg -->
-											<div class="rounded-lg bg-gray-900/50 p-3">
+											<div class="rounded-lg bg-[#E5E7EB] p-3">
 												<h4
-													class="mb-2 text-xs font-semibold uppercase tracking-wider text-amber-400"
+													class="mb-2 text-xs font-semibold tracking-wider text-amber-400 uppercase"
 												>
 													Мюнстерберг
 												</h4>
 												<div class="flex flex-col gap-1 text-sm">
 													<div class="flex items-center gap-2">
 														<span
-															class="w-16 shrink-0 text-xs text-gray-400"
+															class="w-16 shrink-0 text-xs "
 															>Среднее</span
 														>
 														<span class="tabular-nums"
@@ -938,7 +947,7 @@
 													</div>
 													<div class="flex items-center gap-2">
 														<span
-															class="w-16 shrink-0 text-xs text-gray-400"
+															class="w-16 shrink-0 text-xs "
 															>σ</span
 														>
 														<span class="tabular-nums"
@@ -947,7 +956,7 @@
 													</div>
 													<div class="flex items-center gap-2">
 														<span
-															class="w-16 shrink-0 text-xs text-gray-400"
+															class="w-16 shrink-0 text-xs "
 															>Доля</span
 														>
 														<span class="tabular-nums"
@@ -958,7 +967,7 @@
 													</div>
 													<div class="flex items-center gap-2">
 														<span
-															class="w-16 shrink-0 text-xs text-gray-400"
+															class="w-16 shrink-0 text-xs "
 															>Кол-во</span
 														>
 														<span class="tabular-nums"
@@ -969,16 +978,16 @@
 											</div>
 
 											<!-- Campimetry -->
-											<div class="rounded-lg bg-gray-900/50 p-3">
+											<div class="rounded-lg bg-[#E5E7EB] p-3">
 												<h4
-													class="mb-2 text-xs font-semibold uppercase tracking-wider text-rose-400"
+													class="mb-2 text-xs font-semibold tracking-wider text-rose-400 uppercase"
 												>
 													Кампиметрия
 												</h4>
 												<div class="flex flex-col gap-1.5 text-sm">
 													{#each [{ label: 'Этап 1', data: m.campimetry.stage1 }, { label: 'Этап 2', data: m.campimetry.stage2 }] as stage}
 														<div class="flex flex-col gap-1">
-															<span class="text-xs text-gray-400"
+															<span class="text-xs "
 																>{stage.label}</span
 															>
 															<div
@@ -989,12 +998,12 @@
 																		stage.data.meanTime
 																	)}с</span
 																>
-																<span class="text-xs text-gray-500"
+																<span class="text-xs "
 																	>σ{fmt(
 																		stage.data.stdDevTime
 																	)}</span
 																>
-																<span class="text-xs text-gray-500"
+																<span class="text-xs "
 																	>δ{fmt(
 																		stage.data.meanDelta
 																	)}</span
@@ -1002,8 +1011,8 @@
 															</div>
 														</div>
 													{/each}
-													<div class="mt-1 border-t border-gray-700 pt-1">
-														<span class="text-xs text-gray-400"
+													<div class="mt-1 border-t bg-[#E5E7EB] pt-1">
+														<span class="text-xs "
 															>Разброс (эт. 2)</span
 														>
 														<div class="flex gap-3 pl-2 text-xs">
@@ -1027,16 +1036,16 @@
 											</div>
 
 											<!-- Memory -->
-											<div class="rounded-lg bg-gray-900/50 p-3">
+											<div class="rounded-lg bg-[#E5E7EB] p-3">
 												<h4
-													class="mb-2 text-xs font-semibold uppercase tracking-wider text-cyan-400"
+													class="mb-2 text-xs font-semibold tracking-wider text-cyan-400 uppercase"
 												>
 													Память
 												</h4>
 												<div class="flex flex-col gap-1 text-sm">
 													<div class="flex items-center gap-2">
 														<span
-															class="w-16 shrink-0 text-xs text-gray-400"
+															class="w-16 shrink-0 text-xs "
 															>Среднее</span
 														>
 														<span class="tabular-nums"
@@ -1045,7 +1054,7 @@
 													</div>
 													<div class="flex items-center gap-2">
 														<span
-															class="w-16 shrink-0 text-xs text-gray-400"
+															class="w-16 shrink-0 text-xs "
 															>σ</span
 														>
 														<span class="tabular-nums"
@@ -1054,7 +1063,7 @@
 													</div>
 													<div class="flex items-center gap-2">
 														<span
-															class="w-16 shrink-0 text-xs text-gray-400"
+															class="w-16 shrink-0 text-xs "
 															>Точность</span
 														>
 														<span
@@ -1070,7 +1079,7 @@
 													</div>
 													<div class="flex items-center gap-2">
 														<span
-															class="w-16 shrink-0 text-xs text-gray-400"
+															class="w-16 shrink-0 text-xs "
 															>Точность</span
 														>
 														<span
@@ -1088,16 +1097,16 @@
 											</div>
 
 											<!-- Swallow -->
-											<div class="rounded-lg bg-gray-900/50 p-3">
+											<div class="rounded-lg bg-[#E5E7EB] p-3">
 												<h4
-													class="mb-2 text-xs font-semibold uppercase tracking-wider text-teal-400"
+													class="mb-2 text-xs font-semibold tracking-wider text-teal-400 uppercase"
 												>
 													Ласточка
 												</h4>
 												<div class="flex flex-col gap-1 text-sm">
 													<div class="flex items-center gap-2">
 														<span
-															class="w-16 shrink-0 text-xs text-gray-400"
+															class="w-16 shrink-0 text-xs "
 															>Среднее</span
 														>
 														<span class="tabular-nums"
@@ -1106,7 +1115,7 @@
 													</div>
 													<div class="flex items-center gap-2">
 														<span
-															class="w-16 shrink-0 text-xs text-gray-400"
+															class="w-16 shrink-0 text-xs "
 															>σ</span
 														>
 														<span class="tabular-nums"
@@ -1115,7 +1124,7 @@
 													</div>
 													<div class="flex items-center gap-2">
 														<span
-															class="w-16 shrink-0 text-xs text-gray-400"
+															class="w-16 shrink-0 text-xs "
 															>Точность</span
 														>
 														<span
@@ -1133,16 +1142,16 @@
 											</div>
 
 											<!-- Raven -->
-											<div class="rounded-lg bg-gray-900/50 p-3">
+											<div class="rounded-lg bg-[#E5E7EB] p-3">
 												<h4
-													class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-400"
+													class="mb-2 text-xs font-semibold tracking-wider text-violet-400 uppercase"
 												>
 													Матрицы Равена
 												</h4>
 												<div class="flex flex-col gap-1 text-sm">
 													<div class="flex items-center gap-2">
 														<span
-															class="w-20 shrink-0 text-xs text-gray-400"
+															class="w-20 shrink-0 text-xs "
 															>Всего</span
 														>
 														<span class="tabular-nums"
@@ -1152,7 +1161,7 @@
 													</div>
 													<div class="flex items-center gap-2">
 														<span
-															class="w-20 shrink-0 text-xs text-gray-400"
+															class="w-20 shrink-0 text-xs "
 															>Точность</span
 														>
 														<span
@@ -1168,7 +1177,7 @@
 													</div>
 													<div class="flex items-center gap-2">
 														<span
-															class="w-20 shrink-0 text-xs text-gray-400"
+															class="w-20 shrink-0 text-xs "
 															>Среднее</span
 														>
 														<span class="tabular-nums"
@@ -1180,14 +1189,14 @@
 												</div>
 
 												<div class="mt-2 border-t border-gray-700 pt-2">
-													<span class="text-xs text-gray-400"
+													<span class="text-xs"
 														>По сложности</span
 													>
 													<div
 														class="mt-1 grid grid-cols-3 gap-2 text-xs"
 													>
 														<div>
-															<span class="text-gray-500">Легкие</span
+															<span class="">Легкие</span
 															>
 															<div class="tabular-nums">
 																{m.raven.byDifficulty.level1
@@ -1196,7 +1205,7 @@
 															</div>
 														</div>
 														<div>
-															<span class="text-gray-500"
+															<span class=""
 																>Средние</span
 															>
 															<div class="tabular-nums">
@@ -1206,7 +1215,7 @@
 															</div>
 														</div>
 														<div>
-															<span class="text-gray-500"
+															<span class=""
 																>Сложные</span
 															>
 															<div class="tabular-nums">
@@ -1220,7 +1229,7 @@
 
 												{#if Object.keys(m.raven.byTaskClass).length > 0}
 													<div class="mt-2 border-t border-gray-700 pt-2">
-														<span class="text-xs text-gray-400"
+														<span class="text-xs"
 															>По классу задач</span
 														>
 														<div
@@ -1230,7 +1239,7 @@
 																<div
 																	class="flex items-center justify-between"
 																>
-																	<span class="text-gray-500"
+																	<span
 																		>{info.label}</span
 																	>
 																	<span class="tabular-nums"
@@ -1246,10 +1255,10 @@
 
 										<!-- Editable metrics section -->
 										<div
-											class="rounded-lg border border-gray-700 bg-gray-900/30 p-4"
+											class="rounded-lg border border-gray-700 bg-[#E5E7EB] p-4"
 										>
 											<h4
-												class="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400"
+												class="mb-3 text-xs font-semibold tracking-wider  uppercase"
 											>
 												Редактируемые данные
 											</h4>
@@ -1274,12 +1283,12 @@
 											>
 												<!-- Balance test -->
 												<label class="flex flex-col gap-1">
-													<span class="text-xs text-gray-400"
+													<span class="text-xs "
 														>Тест на баланс</span
 													>
 													<select
 														name="balanceTest"
-														class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
+														class="rounded-lg bg-white px-3 py-2 text-sm"
 													>
 														<option value="" selected={!em.balanceTest}
 															>—</option
@@ -1296,7 +1305,7 @@
 
 												<!-- Maze Q1/Q2/Q3 -->
 												<label class="flex flex-col gap-1">
-													<span class="text-xs text-gray-400"
+													<span class="text-xs "
 														>Лабиринт Q1</span
 													>
 													<input
@@ -1306,12 +1315,12 @@
 														max="1"
 														step="0.01"
 														value={em.mazeQ1 ?? ''}
-														class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
+														class="rounded-lg bg-white px-3 py-2 text-sm"
 														placeholder="0–1"
 													/>
 												</label>
 												<label class="flex flex-col gap-1">
-													<span class="text-xs text-gray-400"
+													<span class="text-xs "
 														>Лабиринт Q2</span
 													>
 													<input
@@ -1321,12 +1330,12 @@
 														max="1"
 														step="0.01"
 														value={em.mazeQ2 ?? ''}
-														class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
+														class="rounded-lg bg-white px-3 py-2 text-sm"
 														placeholder="0–1"
 													/>
 												</label>
 												<label class="flex flex-col gap-1">
-													<span class="text-xs text-gray-400"
+													<span class="text-xs "
 														>Лабиринт Q3</span
 													>
 													<input
@@ -1336,47 +1345,47 @@
 														max="1"
 														step="0.01"
 														value={em.mazeQ3 ?? ''}
-														class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
+														class="rounded-lg bg-white px-3 py-2 text-sm"
 														placeholder="0–1"
 													/>
 												</label>
 
 												<!-- Maze VR -->
 												<label class="flex flex-col gap-1">
-													<span class="text-xs text-gray-400"
+													<span class="text-xs "
 														>Лабиринт VR №</span
 													>
 													<input
 														type="number"
 														name="mazeVRNumber"
 														value={em.mazeVRNumber ?? ''}
-														class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
+														class="rounded-lg bg-white px-3 py-2 text-sm"
 														placeholder="Номер"
 													/>
 												</label>
 												<label class="flex flex-col gap-1">
-													<span class="text-xs text-gray-400"
+													<span class="text-xs "
 														>Лабиринт VR файл</span
 													>
 													<input
 														type="text"
 														name="mazeVRFileName"
 														value={em.mazeVRFileName ?? ''}
-														class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
+														class="rounded-lg bg-white px-3 py-2 text-sm"
 														placeholder="Имя файла"
 													/>
 												</label>
 
 												<!-- Button test file -->
 												<label class="flex flex-col gap-1">
-													<span class="text-xs text-gray-400"
+													<span class="text-xs "
 														>Кнопочки файл</span
 													>
 													<input
 														type="text"
 														name="buttonTestFileName"
 														list="button-file-opts-{m.participantId}"
-														class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
+														class="rounded-lg bg-white px-3 py-2 text-sm"
 														value={effectiveButtonFile ?? ''}
 														oninput={(e) => {
 															const val = (
@@ -1411,17 +1420,18 @@
 															<option value={fn}></option>
 														{/each}
 													</datalist>
-													<p class="text-xs text-gray-500 mt-1">
+													<p class="mt-1 text-xs text-gray-500">
 														Номер файла без расширения и суффикса (напр.
 														010907)
 													</p>
 													{#if effectiveButtonFile && !availableFileNumbers.includes(effectiveButtonFile)}
-														<p class="text-xs text-amber-400 mt-1">
+														<p class="mt-1 text-xs text-amber-400">
 															{#if fileNumbersWithStatus.some((f) => f.fileNumber === effectiveButtonFile)}
 																Сначала загрузите оба файла (л и п)
 															{:else}
-																Файл не загружен — результаты моторной
-																реакции будут недоступны до загрузки
+																Файл не загружен — результаты
+																моторной реакции будут недоступны до
+																загрузки
 															{/if}
 														</p>
 													{/if}
@@ -1429,14 +1439,14 @@
 
 												<!-- Button test number -->
 												<label class="flex flex-col gap-1">
-													<span class="text-xs text-gray-400"
+													<span class="text-xs "
 														>Кнопочки №</span
 													>
 													<input
 														type="number"
 														name="buttonTestNumber"
 														list="button-num-opts-{m.participantId}"
-														class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
+														class="rounded-lg bg-white px-3 py-2 text-sm"
 														min="1"
 														max="20"
 														value={em.buttonTestNumber ?? ''}
@@ -1454,7 +1464,7 @@
 
 												<!-- Logic -->
 												<label class="flex flex-col gap-1">
-													<span class="text-xs text-gray-400">Логика</span
+													<span class="text-xs ">Логика</span
 													>
 													<input
 														type="number"
@@ -1463,19 +1473,19 @@
 														max="1"
 														step="0.01"
 														value={em.logic ?? ''}
-														class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
+														class="rounded-lg bg-white px-3 py-2 text-sm"
 														placeholder="0–1"
 													/>
 												</label>
 
 												<!-- Word set -->
 												<label class="flex flex-col gap-1">
-													<span class="text-xs text-gray-400"
+													<span class="text-xs "
 														>Сет слов</span
 													>
 													<select
 														name="wordSetNumber"
-														class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
+														class="rounded-lg bg-white px-3 py-2 text-sm"
 														onchange={(e) => {
 															const target =
 																e.currentTarget as HTMLSelectElement;
@@ -1524,14 +1534,14 @@
 											</form>
 										</div>
 										<div
-											class="rounded-lg border border-gray-700 bg-gray-900/30 p-4"
+											class="rounded-lg border border-gray-700 bg-white p-4"
 										>
 											<h2
-												class="mb-3 text-xs font-semibold uppercase tracking-wider text-white"
+												class="mb-3 text-xs font-semibold tracking-wider  uppercase"
 											>
 												Выбранные слова:
 											</h2>
-											<p class="text-white text-center">
+											<p class="text-center ">
 												{m.submittedWords?.join(', ')}
 											</p>
 										</div>
@@ -1542,8 +1552,8 @@
 					{/each}
 				</div>
 				<!-- Button test file upload -->
-				<details class="rounded-lg border border-gray-700 bg-gray-900/30 p-4" open>
-					<summary class="cursor-pointer text-sm font-medium text-gray-300">
+				<details class="rounded-lg border border-gray-700 bg-white p-4" open>
+					<summary class="cursor-pointer text-sm font-medium ">
 						Файлы кнопочных тестов
 						{#if fileNumbersWithStatus.length > 0}
 							<span
@@ -1555,7 +1565,7 @@
 					</summary>
 					<div class="mt-3 space-y-3">
 						<div
-							class="rounded-lg border border-yellow-800/50 bg-yellow-900/20 p-2 text-xs text-yellow-300"
+							class="rounded-lg border border-yellow-800/50 bg-yellow-200 p-2 text-xs "
 						>
 							Данные кнопочных тестов хранятся только в этом браузере. Другие
 							администраторы не увидят загруженные файлы.
@@ -1569,7 +1579,7 @@
 									type="file"
 									accept=".xls,.xlsx"
 									multiple
-									class="block text-sm text-gray-300 file:mr-2 file:rounded-lg file:border-0 file:bg-gray-700 file:px-3 file:py-1.5 file:text-sm file:text-gray-300 hover:file:bg-gray-600"
+									class="block text-sm text-gray-300 file:mr-2 file:rounded-lg file:border-0 file:bg-(--main-accent-color) file:px-3 file:py-1.5 file:text-sm file:text-grey-200 hover:file:text-white"
 									disabled={uploadingFiles}
 									onchange={async (e) => {
 										const files = (e.target as HTMLInputElement).files;

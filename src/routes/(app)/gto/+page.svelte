@@ -125,7 +125,7 @@
 						{@const total = GTO_TEST_ORDER.length}
 						{@const percent = Math.round((progress / total) * 100)}
 						<div
-							class="flex flex-col gap-4 rounded-xl border border-gray-700 bg-gray-800/50 p-4 transition-colors"
+							class="flex flex-col gap-4 rounded-xl border border-gray-700 bg-white p-4 transition-colors"
 						>
 							<!-- Session header -->
 							<div class="flex items-center justify-between">

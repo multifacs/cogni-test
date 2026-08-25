@@ -2,6 +2,15 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
+	import { getContext, onMount } from 'svelte';
+
+	const headerContext = getContext<{ value: string }>('headerText');
+
+	onMount(() => {
+		if (headerContext) {
+			headerContext.value = 'Сеты слов ГТО-М';
+		}
+	});
 
 	let { data }: PageProps = $props();
 
@@ -124,14 +133,10 @@
 	}
 </script>
 
-<section class="banner">
-	<h1 class="text-2xl font-bold">Сеты слов ГТО-М</h1>
-</section>
-
 <main class="main overflow-auto p-4">
 	<div class="flex flex-col gap-6">
 		<!-- Generate random sets -->
-		<div class="flex flex-col gap-3 rounded-xl border border-gray-700 bg-gray-800/30 p-4">
+		<div class="flex flex-col gap-3 rounded-xl border border-gray-700 bg-white p-4">
 			<h2 class="text-lg font-semibold">Сгенерировать случайные сеты</h2>
 			{#if generateError}
 				<p class="rounded-lg bg-red-900/30 px-3 py-2 text-sm text-red-300">
@@ -140,13 +145,13 @@
 			{/if}
 			<div class="flex items-end gap-3">
 				<label class="flex flex-col gap-1">
-					<span class="text-xs text-gray-400">Количество сетов</span>
+					<span class="text-xs ">Количество сетов</span>
 					<input
 						type="number"
 						min="1"
 						max="50"
 						bind:value={generateCount}
-						class="w-24 rounded-lg bg-gray-700 px-3 py-2 text-sm"
+						class="w-24 rounded-lg bg-[#E5E7EB] px-3 py-2 text-sm"
 					/>
 				</label>
 				<Button color="blue" onclick={handleGenerate} disabled={isGenerating}>
@@ -156,18 +161,18 @@
 		</div>
 
 		<!-- Create manually -->
-		<div class="flex flex-col gap-3 rounded-xl border border-gray-700 bg-gray-800/30 p-4">
+		<div class="flex flex-col gap-3 rounded-xl border border-gray-700 bg-white p-4">
 			<h2 class="text-lg font-semibold">Создать сет вручную</h2>
 			{#if createError}
 				<p class="rounded-lg bg-red-900/30 px-3 py-2 text-sm text-red-300">{createError}</p>
 			{/if}
 			<div class="flex flex-col gap-2">
 				<label class="flex flex-col gap-1">
-					<span class="text-xs text-gray-400">5 слов через запятую</span>
+					<span class="text-xs ">5 слов через запятую</span>
 					<input
 						type="text"
 						bind:value={newWords}
-						class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
+						class="rounded-lg bg-[#E5E7EB] px-3 py-2 text-sm"
 						placeholder="слово1, слово2, слово3, слово4, слово5"
 					/>
 				</label>
@@ -210,10 +215,10 @@
 				<div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
 					{#each data.wordSets as ws (ws.id)}
 						<div
-							class="flex flex-col gap-3 rounded-xl border border-gray-700 bg-gray-800/50 p-4"
+							class="flex flex-col gap-3 rounded-xl border border-gray-700 bg-white p-4"
 						>
 							<div class="flex items-center justify-between">
-								<span class="text-sm font-semibold text-gray-300"
+								<span class="text-sm font-semibold "
 									>Сет {ws.setNumber}</span
 								>
 								<span class="text-xs text-gray-500">{formatDate(ws.createdAt)}</span
@@ -232,7 +237,7 @@
 								<input
 									type="text"
 									bind:value={editWords}
-									class="rounded-lg bg-gray-700 px-3 py-2 text-sm"
+									class="rounded-lg bg-[#E5E7EB] px-3 py-2 text-sm"
 								/>
 								<div class="flex items-center gap-2">
 									<Button
@@ -249,16 +254,16 @@
 								<div class="flex flex-wrap gap-1.5">
 									{#each ws.words as word, i}
 										<span
-											class="rounded-md bg-gray-700 px-2.5 py-1 text-sm font-medium text-gray-200"
+											class="rounded-md bg-(--main-accent-color) px-2.5 py-1 text-sm font-medium text-white"
 										>
-											<span class="mr-1 text-xs text-gray-500">{i + 1}.</span
+											<span class="mr-1 text-xs ">{i + 1}.</span
 											>{word}
 										</span>
 									{/each}
 								</div>
 								<div class="flex items-center gap-2">
 									<button
-										class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-gray-300 transition hover:bg-gray-700"
+										class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-gray-300 transition hover:text-gray-700"
 										onclick={() => startEdit(ws.id, ws.words)}
 										aria-label="Редактировать сет {ws.setNumber}"
 									>
@@ -275,7 +280,7 @@
 										Изменить
 									</button>
 									<button
-										class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-red-300 transition hover:bg-red-900/30 disabled:opacity-30"
+										class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-red-300 transition hover:text-red-700 disabled:opacity-30"
 										disabled={deletingId === ws.id}
 										onclick={() => handleDelete(ws.id)}
 										aria-label="Удалить сет {ws.setNumber}"

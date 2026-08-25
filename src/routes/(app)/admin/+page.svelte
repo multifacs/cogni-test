@@ -7,7 +7,7 @@
 
 	onMount(() => {
 		if (headerContext) {
-			headerContext.value = 'Admin page';
+			headerContext.value = 'Страница администратора';
 		}
 	});
 </script>

@@ -158,15 +158,15 @@
 			<Modal bind:showModal>
 				{#snippet header()}
 					<div class="flex flex-col gap-4">
-						<h2 class="text-2xl text-white">
+						<h2 class="text-2xl ">
 							Установка приложения на не chrome-based браузерах
 						</h2>
-						<p class="text-white">Похоже, Вы используете firefox или safari.</p>
-						<p class="text-white">
+						<p >Похоже, Вы используете firefox или safari.</p>
+						<p >
 							Если Вы используете <b>Safari</b>, то вы можете установить приложение на
 							своем устройстве вручную.
 						</p>
-						<ol class="list-inside list-decimal text-white">
+						<ol class="list-inside list-decimal ">
 							<li>
 								<b>Нажмите «Поделиться»</b>: Найдите иконку "Поделиться" (квадрат со
 								стрелкой, смотрящей вверх) внизу или вверху экрана и нажмите на нее.
@@ -184,7 +184,7 @@
 								будет запускаться как отдельное приложение.
 							</li>
 						</ol>
-						<p class="text-white">
+						<p class="">
 							<b>Firefox</b> не поддерживает установку pwa приложений. В этом случае воспользуйтесь
 							другим браузером.
 						</p>
