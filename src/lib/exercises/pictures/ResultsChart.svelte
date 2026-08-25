@@ -24,12 +24,12 @@
 
 	const pointColor = (ctx: ScriptableContext<'line'>) => {
 		const result = ctx.raw as PicturesResult | undefined;
-		if (!result) return 'white';
+		if (!result) return 'var(--main-text-color)';
 		if (result.isCorrect === null) return getCSSVar('--color-gray-400');
 		return result.isCorrect ? getCSSVar('--color-green-500') : getCSSVar('--color-red-400');
 	};
 
-	Chart.defaults.color = 'white';
+	Chart.defaults.color = 'var(--main-text-color)';
 
 	let canvas: HTMLCanvasElement = $state(Object());
 	let chart = $state(Object());

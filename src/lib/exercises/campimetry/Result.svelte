@@ -21,7 +21,7 @@
 
 <div class="flex flex-col items-center gap-2 py-2">
 	<p>Время прохождения: {allTime} с</p>
-	<p>Среднее время на один цвет: {avg} с</p>
+	<p class="padding-bottom: 1rem;">Среднее время на один цвет: {avg} с</p>
 </div>
 
 <ResultsChart testType="campimetry" results={results as CampimetryResult[]} />

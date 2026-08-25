@@ -21,7 +21,7 @@
 
 {#if results.length > 0}
 	{@const first = results[0] as WordMorphingSummaryRow}
-	<div class="grid grid-cols-3 gap-2 py-2 sm:gap-4">
+	<div class="grid grid-cols-3 gap-2 py-2 sm:gap-4 bg-white">
 		<div class="rounded-2xl bg-[#364b6c] p-2 text-center text-white sm:p-4">
 			<span class="mb-1 block text-xs opacity-70 sm:mb-2 sm:text-sm">Категория</span>
 			<strong class="text-base sm:text-2xl"

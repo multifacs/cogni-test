@@ -94,24 +94,24 @@
 
 {#if !started}
 	<div
-		class="mb-5 flex flex-col items-center justify-center gap-3 rounded-2xl bg-[#364b6c] p-5 text-xl backdrop-blur"
+		class="mb-5 flex flex-col items-center justify-center gap-3 rounded-2xl bg-white p-5 text-xl backdrop-blur"
 	>
-		<label class="flex flex-col items-center justify-center gap-1.5 text-white/80">
+		<label class="flex flex-col items-center justify-center gap-1.5">
 			Всего чисел (n):
 			<input
 				type="number"
 				bind:value={n}
 				min="1"
-				class="w-28 rounded-xl border-none bg-white/10 px-3 py-2 text-white ring-white/20 transition outline-none focus:ring-2"
+				class="rounded-xl border-none bg-[#E5E7EB] px-3 py-2 ring-white/20 transition outline-none focus:ring-2"
 			/>
 		</label>
-		<label class="flex flex-col items-center justify-center gap-1.5 text-white/80">
+		<label class="flex flex-col items-center justify-center gap-1.5">
 			Найти чисел (m):
 			<input
 				type="number"
 				bind:value={m}
 				min="1"
-				class="w-28 rounded-xl border-none bg-white/10 px-3 py-2 text-white ring-white/20 transition outline-none focus:ring-2"
+				class=" rounded-xl border-none bg-[#E5E7EB] px-3 py-2 ring-white/20 transition outline-none focus:ring-2"
 			/>
 		</label>
 		<Button color="green" onclick={generateTest}>Старт</Button>
@@ -134,7 +134,7 @@
 			<strong>{[...targets].join(', ')}</strong>
 		</p>
 		<div
-			class="grid grid-cols-[repeat(auto-fill,minmax(70px,1fr))] gap-2.5 rounded-3xl bg-white/10 p-5 backdrop-blur"
+			class="xs:grid-cols-5 grid grid-cols-4 gap-2.5 rounded-3xl bg-white/10 p-5 backdrop-blur sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 2xl:grid-cols-14"
 		>
 			{#each numbers as num (num)}
 				<button

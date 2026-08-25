@@ -203,16 +203,16 @@
 
 {#if started && showing}
 	<div class="flex flex-col items-center justify-center gap-4">
-		<p class="text-center text-xl text-white">Запомните буквы!</p>
+		<p class="text-center text-xl ">Запомните буквы!</p>
 
 		<div class="grid max-w-4xl grid-cols-[repeat(3,auto)] justify-center gap-[15px]">
-			<p class="text-center text-base text-white">
+			<p class="text-center text-base ">
 				Показ: {showTime > 0 ? showTime : 0} сек
 			</p>
 			<p class="text-center text-base font-semibold text-[#4caf50]">
 				Букв: {lettersToShow.length}
 			</p>
-			<p class="text-center text-base text-white">
+			<p class="text-center text-base ">
 				Время игры: {elapsed} сек
 			</p>
 		</div>
@@ -224,7 +224,7 @@
 				<button
 					type="button"
 					disabled
-					class="min-w-18 rounded-2xl bg-gray-100 p-4 text-xl font-bold text-indigo-800"
+					class="min-w-18 rounded-2xl bg-white p-4 text-xl font-bold text-indigo-800"
 					>{letter}</button
 				>
 			{/each}
@@ -233,13 +233,13 @@
 {:else if started}
 	<div class="flex flex-col items-center justify-center gap-4">
 		<div class="grid max-w-4xl grid-cols-[repeat(3,auto)] justify-center gap-4">
-			<p class="text-center text-base text-white">
+			<p class="text-center text-base ">
 				Время: {elapsed} сек
 			</p>
 			<p class="text-center text-base font-semibold text-[#4caf50]">
 				Выбрано: {userAnswer.length} / {lettersToShow.length}
 			</p>
-			<p class="text-center text-base text-white">
+			<p class="text-center text-base ">
 				{userAnswer.length ? userAnswer.join('') : '—'}
 			</p>
 		</div>
@@ -249,8 +249,8 @@
 				<button
 					type="button"
 					class={userAnswer.includes(letter)
-						? 'h-16 w-16 rounded-2xl cursor-pointer bg-[#4caf50]! font-bold text-black!'
-						: 'h-16 w-16 rounded-2xl cursor-pointer bg-white font-bold text-indigo-800'}
+						? 'h-16 w-16 rounded-2xl cursor-pointer bg-[#4caf50]! font-bold '
+						: 'h-16 w-16 rounded-2xl cursor-pointer bg-white font-bold '}
 					onclick={() => pick(letter)}>{letter}</button
 				>
 			{/each}
@@ -263,7 +263,7 @@
 	</div>
 {:else if finished}
 	<div class="flex flex-col items-center justify-center gap-3">
-		<p class="text-lg font-semibold text-white">
+		<p class="text-lg font-semibold ">
 			{timeoutTriggered ? 'Время вышло' : 'Тест завершён'}
 		</p>
 	</div>

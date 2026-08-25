@@ -311,31 +311,15 @@
 	.wrap {
 		padding: 1rem;
 	}
-	h1 {
-		font-weight: 800;
-		font-size: 1.6rem;
-		margin: 0;
-	}
-	.muted {
-		opacity: 0.75;
-		font-size: 0.95rem;
-	}
-	.head {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 0.75rem;
-	}
+
 	.btn {
 		padding: 0.6rem 1rem;
 		border-radius: 0.8rem;
-		border: 1px solid rgba(255, 255, 255, 0.2);
 		background: transparent;
 	}
 	.btn-primary {
-		background: #fff;
-		color: #111;
-		border-color: #fff;
+		background: #6FCF97;
+		color: #fff;
 	}
 
 	.board {
