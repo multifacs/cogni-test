@@ -15,6 +15,7 @@
     align-items: center;
     padding: 2rem;
     gap: 1rem;
-    /* width: fit-content; */
+    width: fit-content;
+    height: fit-content;
   }
 </style>

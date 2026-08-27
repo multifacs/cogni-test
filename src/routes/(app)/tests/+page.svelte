@@ -74,10 +74,18 @@
 			<h2>Регулярные тренировки помогают поддерживать когнитивные навыки</h2>
 			<Button color="green">Запуск потокового прохождения</Button>
 		</div>
-		<div class="flex flex-wrap justify-center gap-5 p-2">
+		<div class="cards flex flex-wrap justify-center gap-5 p-2">
 			{#each data.tests as { name, title, path, img }}
 				<ExerciseCard {name} {title} {path} {img} {testSessionCounts} />
 			{/each}
 		</div>
 	{/if}
 </main>
+<style>
+	@media (min-width: 1024px) {
+
+		.cards {
+			gap:4vw;
+		}
+	}
+</style>

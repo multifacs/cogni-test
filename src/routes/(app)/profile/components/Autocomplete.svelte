@@ -1,40 +1,46 @@
-<script>
+<!-- src/routes/questionary/components/Autocomplete.svelte -->
+<script lang="ts">
 	import cities from './russia-cities.json';
 
-	let value = '';
-	export let query = '';
-	let isOpen = false;
+	let { query = $bindable() } = $props();
+	let isOpen = $state(false);
 
 	// filter only cities with type === "Город"
 	const cityOptions = cities.filter((c) => c.type === 'Город');
 
-	// reactive filtered list
-	$: filtered = query
-		? cityOptions
-				.filter(
-					(c) =>
-						c.name.toLowerCase().includes(query.toLowerCase()) ||
-						c.name_en?.toLowerCase().includes(query.toLowerCase())
-				)
-				.slice(0, 3)
-		: cityOptions.slice(0, 3); // limit initial list
+	// reactive filtered list - правильное использование $derived
+	let filtered = $derived(
+		query
+			? cityOptions
+					.filter(
+						(c) =>
+							c.name.toLowerCase().includes(query.toLowerCase()) ||
+							c.name_en?.toLowerCase().includes(query.toLowerCase())
+					)
+					.slice(0, 3)
+			: cityOptions.slice(0, 3)
+	);
 
 	function selectCity(city) {
-		value = city.id;
 		query = city.name;
 		isOpen = false;
+	}
+
+	function handleInput(e) {
+		query = e.currentTarget.value;
+		isOpen = true;
 	}
 </script>
 
 <div class="relative w-full">
 	<!-- Input -->
 	<input
-		bind:value={query}
+		value={query}
+		oninput={handleInput}
 		onfocus={() => (isOpen = true)}
-		oninput={() => (isOpen = true)}
-		onfocusout={() => setTimeout(() => (isOpen = false), 100)}
+		onfocusout={() => setTimeout(() => (isOpen = false), 200)}
 		placeholder="Начните печатать..."
-		class="w-full rounded-sm border px-3 py-2 text-blue-100 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400"
+		class="w-full rounded-sm border px-3 py-2 text-black outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400"
 		class:border-blue-300={query != null}
 		class:border-orange-400={query == null}
 		class:border-2={query == null}
@@ -44,10 +50,10 @@
 	<!-- Dropdown -->
 	{#if isOpen && filtered.length > 0}
 		<ul
-			class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded border border-blue-300 shadow"
+			class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded border border-blue-300 bg-white shadow"
 		>
 			{#each filtered as city}
-				<li class="cursor-pointer bg-blue-100 px-3 py-2 text-gray-800">
+				<li class="cursor-pointer px-3 py-2 hover:bg-blue-50">
 					<button class="w-full text-left" onclick={() => selectCity(city)}>
 						{city.name} ({city.region.name})
 					</button>

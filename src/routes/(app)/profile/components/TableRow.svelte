@@ -1,3 +1,4 @@
+<!-- src/routes/questionary/components/TableRow.svelte -->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 
@@ -95,7 +96,7 @@
 	});
 
 	function ensureTrailingEmptyRow(rows: { text: string; choice: string }[]) {
-		if (type !== 'custom-choice') return;
+		if (type !== 'custom-choice') return rows;
 
 		const last = rows[rows.length - 1];
 
@@ -153,7 +154,6 @@
 			isInternalUpdate = true;
 			value = stringValue;
 
-			// microtask, а не setTimeout — быстрее и чище
 			queueMicrotask(() => {
 				isInternalUpdate = false;
 			});
@@ -296,8 +296,5 @@
 				{value}
 			{/if}
 		{/if}
-		<!-- {#if (value == null) && type !== 'custom-choice'}
-			<span class="fond-bold text-2xl text-red-500 [text-shadow:0_0_10px_#ef4444]">!</span>
-		{/if} -->
 	</td>
 </tr>

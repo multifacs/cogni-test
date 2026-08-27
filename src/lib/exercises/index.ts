@@ -73,19 +73,19 @@ export const exercises: ExerciseData[] = [
 		title: 'Цепочка букв',
 		path: '/exercises/letters/about',
 		img: '/exercises/letters1.svg'
-	},
-	{
-		name: 'road-trip',
-		title: 'По дороге на работу',
-		path: '/exercises/road-trip/about',
-		img: '/exercises/road-trip.svg'
-	},
-	{
-		name: 'not-lost',
-		title: 'По дороге на работу',
-		path: '/exercises/not-lost/about',
-		img: '/exercises/not-lost.svg'
 	}
+	// {
+	// 	name: 'road-trip',
+	// 	title: 'По дороге на работу',
+	// 	path: '/exercises/road-trip/about',
+	// 	img: '/exercises/road-trip.svg'
+	// },
+	// {
+	// 	name: 'not-lost',
+	// 	title: 'По дороге на работу',
+	// 	path: '/exercises/not-lost/about',
+	// 	img: '/exercises/not-lost.svg'
+	// }
 ];
 
 type ExerciseLoader = {

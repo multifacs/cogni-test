@@ -23,7 +23,7 @@
 </script>
 
 <main class="main" style="display: flex; flex-direction: column; align-items: center;">
-	<div class="content flex flex-col items-center justify-center gap-8 pt-[2%] pb-[4%]">
+	<div class="content flex flex-col items-center justify-center gap-8 pt-[2%] pb-[4%] pl-[2%] pr-[2%]">
 		<h2>Регулярные тренировки помогают поддерживать когнитивные навыки</h2>
 		<RecommendationCard
 			title="Диагностика когнитивного возраста"
@@ -33,7 +33,7 @@
 			button_text="Начать прохождение"
 		/>
 	</div>
-	<div class="cards flex flex-wrap justify-between gap-5 p-2">
+	<div class="cards flex flex-wrap justify-center gap-5 p-2">
 		{#each data.exercises as { name, title, path, img }}
 			<ExerciseCard {name} {title} {path} {img} {testSessionCounts} />
 		{/each}
@@ -47,6 +47,7 @@
 		}
 		.cards {
 			padding: 2vw;
+			gap:4vw;
 		}
 	}
 </style>

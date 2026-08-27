@@ -1,39 +1,32 @@
+<!-- src/routes/profile/+page.svelte -->
 <script lang="ts">
 	import { getContext, onMount } from 'svelte';
-	import { enhance } from '$app/forms';
-	import { profileSurveyStore, userStore } from '$lib/stores/user';
+	import { userStore } from '$lib/stores/user';
 	import { derived } from 'svelte/store';
-
 	import Button from '$lib/components/ui/Button.svelte';
-
+	import { enhance } from '$app/forms';
+	import Card from '$lib/components/ui/Card.svelte';
+	import InfoCard from '$lib/components/ui/InfoCard.svelte';
+	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import { pushService } from '$lib/pushService';
 	import { isSubscribed } from '$lib/utils/push';
-	import Tabs from './components/Tabs.svelte';
-	import Table from './components/Table.svelte';
-	import TableRow from './components/TableRow.svelte';
-	import Spinner from '$lib/components/ui/Spinner.svelte';
-	import Autocomplete from './components/Autocomplete.svelte';
-	import Header from '$lib/components/ui/Header.svelte';
 
+	let { data } = $props();
 	const user = derived(userStore, ($userStore) => $userStore);
-	let subscribed = $state(false);
 	const headerContext = getContext<{ value: string }>('headerText');
-
+	let subscribed = $state(false);
+	let showSpinner = $state(false);
+	let predictedAge = $state<number | null>(null);
 	onMount(async () => {
-		subscribed = await isSubscribed();
-		console.log({ ...$profileSurveyStore });
 		if (headerContext) {
 			headerContext.value = 'Профиль';
 		}
+		subscribed = await isSubscribed();
+
+		if (data?.predictedAge !== null && data?.predictedAge !== undefined) {
+			predictedAge = Math.round(data.predictedAge);
+		}
 	});
-
-	console.log($user);
-
-	function formatBool(val: boolean | null): string {
-		if (val === true) return 'Да';
-		if (val === false) return 'Нет';
-		return 'Не указано';
-	}
 
 	function formatAge(inputDate: Date) {
 		const today = new Date();
@@ -58,12 +51,14 @@
 
 	export function formatDate(date: Date): string {
 		const day = String(date.getDate()).padStart(2, '0');
-		const month = String(date.getMonth() + 1).padStart(2, '0'); // месяцы с 0
+		const month = String(date.getMonth() + 1).padStart(2, '0');
 		const year = date.getFullYear();
 		return `${day}.${month}.${year}`;
 	}
 
-	let showSpinner = $state(false);
+	function capitalize(str: string): string {
+		return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+	}
 
 	async function subscribe() {
 		try {
@@ -74,6 +69,7 @@
 			console.log('Subscribed successfully');
 		} catch (error) {
 			console.error('Failed to subscribe:', error);
+			showSpinner = false;
 		}
 	}
 
@@ -86,569 +82,89 @@
 			console.error('Failed to unsubscribe:', error);
 		}
 	}
-
-	let activeTab = $state('tab1');
-
-	const tabs = [
-		{ id: 'tab1', label: '😀 Основное' },
-		{ id: 'tab2', label: '🎓 Образование' },
-		{ id: 'tab3', label: '💃 Занятия' },
-		{ id: 'tab4', label: '💪 Тело' },
-		{ id: 'tab5', label: '⚙️ Настройки' }
-	];
-
-	function onTabChange(tab: string) {
-		console.log(tab);
-		activeTab = tab;
-	}
-
-	// Функция для конвертации объекта в FormData
-	function toFormData(data) {
-		const formData = new FormData();
-
-		for (const [key, value] of Object.entries(data)) {
-			if (value !== null && value !== undefined && value !== '') {
-				// Для булевых значений конвертируем в 0/1
-				if (typeof value === 'boolean') {
-					formData.append(key, value ? '1' : '0');
-				} else {
-					formData.append(key, value.toString());
-				}
-			}
-		}
-
-		return formData;
-	}
-
-	let isSaving = $state('false');
-
-	async function handleSave() {
-		isSaving = 'true';
-		try {
-			const formDataToSend = toFormData($profileSurveyStore);
-
-			const response = await fetch('/?/save', {
-				method: 'POST',
-				body: formDataToSend
-			});
-
-			if (!response.ok) {
-				throw new Error('Failed to save profile data');
-			}
-
-			const result = await response.json();
-			console.log('Profile saved successfully:', result);
-
-			isSaving = 'saved';
-
-			return result;
-		} catch (err) {
-			console.error('Error saving profile survey:', err);
-			isSaving = 'error';
-			throw err;
-		} finally {
-			setTimeout(() => {
-				isSaving = 'false';
-			}, 2000);
-		}
-	}
 </script>
 
-<main class="main grid w-full text-black">
-	<form class="flex w-full flex-col items-center justify-center ">
+<main class="main" style="display: flex; flex-direction: column; align-items: center;">
+	<div class="content flex flex-col items-center justify-center gap-8 pt-[2%] pb-[4%]">
 		{#await $user}
-			<p>Загрузка...</p>
+			<div class="flex justify-center p-8">
+				<p>Загрузка...</p>
+			</div>
 		{:then u}
 			{#if u && u.id}
-				<!-- Tab Nav -->
-				<Tabs {tabs} bind:activeTab {onTabChange}>
-					<div class:hidden={activeTab !== 'tab1'}>
-						<Table>
-							<TableRow label="ID" value={u.id} omit />
-							<TableRow
-								label="Имя"
-								type="value"
-								value={`${u.firstname} ${u.lastname}`}
-								omit
-							/>
-							<TableRow
-								label="Дата рождения"
-								type="value"
-								value={`${formatDate(u.birthday)} (${formatAge(u.birthday)} лет)`}
-								omit
-							/>
-							<TableRow label="Пол" type="value" value={formatSex(u.sex)} omit />
-							<TableRow
-								label="ГТО-М ID"
-								type="input"
-								bind:value={$profileSurveyStore.gtoId}
-							></TableRow>
-							<TableRow
-								label="E-mail"
-								type="input"
-								bind:value={$profileSurveyStore.email}
-							></TableRow>
-							<TableRow
-								label="Населенный пункт, в котором вы прожили большую часть жизни"
-								type="custom"
+				<Card>
+					<div class="name flex flex-col gap-2 p-[2%] w-[45vw] items-center">
+						<p><b>Имя:</b> {capitalize(u.firstname)} {capitalize(u.lastname)}</p>
+						<p><b>Возраст:</b> {formatAge(u.birthday)} лет</p>
+					</div>
+				</Card>
+				<h2>Заполните анкету, чтобы сделать результаты диагностики точнее</h2>
+				<Button color="green" goto="/questionary">Перейти к анкете</Button>
+				<div class="cards flex flex-wrap justify-between gap-5 p-2">
+					<InfoCard title="Конитивный возраст" info={predictedAge} />
+					<InfoCard title="Дата последней проверки" info="" />
+					<InfoCard title="Пройдено тренировок" info="" />
+					<InfoCard title="Серия" info="" />
+				</div>
+				<!--
+				ПЕРСОНАЛИЗАЦИЯ
+				<Card>График изменения конгитивного возраста</Card>
+				<Card>
+					<h2>Конитивные навыки</h2>
+					<div>Восприятие</div>
+					<div>Скорость реакции</div>
+					<div>Исполнительные функции</div>
+					<div>Оперативная память</div>
+					<div>Пространственное восприятие</div>
+					<div>Память</div>
+				</Card> -->
+
+				<Card>
+					<div class="flex flex-row items-center gap-8">
+						<h3 class="mb-4 text-center text-lg font-semibold">Уведомления</h3>
+						{#if subscribed}
+							<Button color="red" kind="small" onclick={unsubscribe}
+								>Отписаться</Button
 							>
-								<Autocomplete bind:query={$profileSurveyStore.birthCity}
-								></Autocomplete>
-							</TableRow>
-							<TableRow
-								label="Текущее место проживания"
-								type="choice"
-								options={[
-									{
-										label: 'Столичный город (Москва или Санкт-Петербург)',
-										value: 'capital'
-									},
-									{ label: 'Областной центр', value: 'municipality' },
-									{ label: 'Районный центр', value: 'city' },
-									{
-										label: 'Малый город или поселок городского типа',
-										value: 'town'
-									},
-									{ label: 'Деревня/село', value: 'village' }
-								]}
-								bind:value={$profileSurveyStore.currentCityType}
-							></TableRow>
-						</Table>
+						{:else}
+							{#if showSpinner}
+								<div class="flex items-center justify-center gap-2">
+									<Spinner />
+									<p class="text-sm">
+										Перезагрузите страницу, если загрузка идет долго
+									</p>
+								</div>
+							{:else}
+								<Button color="green" kind="small" onclick={subscribe}>
+									Подписаться
+								</Button>
+							{/if}
+						{/if}
 					</div>
-
-					<div class:hidden={activeTab !== 'tab2'}>
-						<Table>
-							<TableRow
-								label="Какое у вас образование?"
-								type="choice"
-								options={[
-									{
-										label: 'Без образования, начальное, неполное среднее',
-										value: 'none'
-									},
-									{ label: 'Среднее общее', value: 'highschool' },
-									{
-										label: 'Среднее специальное – ПТУ, СПТУ, колледж',
-										value: 'associate'
-									},
-									{
-										label: 'Среднее техническое – техникум',
-										value: 'vocational'
-									},
-									{
-										label: 'Незаконченное высшее – не менее 3 курсов вуза',
-										value: 'undergrad'
-									},
-									{
-										label: 'Высшее – специалист, бакалавр, магистр',
-										value: 'graduate'
-									},
-									{
-										label: 'Высшее научное – аспирантура, кандидат или доктор наук',
-										value: 'phd'
-									}
-								]}
-								bind:value={$profileSurveyStore.education}
-							/>
-							<TableRow
-								label="Сколько лет вашей основной деятельностью была работа, не требующая особой квалификации (охранник, официант, садовник, уборщик и т.д.)?"
-								type="range"
-								min={0}
-								max={50}
-								bind:value={$profileSurveyStore.yearsNotQualified}
-							/>
-							<TableRow
-								label="Сколько лет вашей основной деятельностью была работа, требующая квалифицированного прикладного труда (медсестра, повар, парикмахер, слесарь и т.д.)?"
-								type="range"
-								min={0}
-								max={50}
-								bind:value={$profileSurveyStore.yearsQualifiedApplied}
-							/>
-							<TableRow
-								label="Сколько лет вашей основной деятельностью была работа, требующая квалифицированного не прикладного труда (агент по недвижимости, менеджер по продажам, музыкант, руководитель небольшого коллектива)?"
-								type="range"
-								min={0}
-								max={50}
-								bind:value={$profileSurveyStore.yearsQualifiedNonApplied}
-							/>
-							<TableRow
-								label="Сколько лет вашей основной деятельностью была профессиональная работа (управляющий компанией, адвокат, врач, учитель и т.д.)?"
-								type="range"
-								min={0}
-								max={50}
-								bind:value={$profileSurveyStore.yearsProfessional}
-							/>
-							<TableRow
-								label="Сколько лет вашей основной деятельностью была высокоответственная или интеллектуальная работа (директор крупной компании, ученый, профессор, судья, хирург)?"
-								type="range"
-								min={0}
-								max={50}
-								bind:value={$profileSurveyStore.yearsHighResponsibility}
-							/>
-						</Table>
-					</div>
-					<div class:hidden={activeTab !== 'tab3'}>
-						<Table>
-							<TableRow
-								label="Какой из предложенных ниже вариантов лучше всего описывает ваше основное занятие в настоящее время?"
-								type="choice"
-								options={[
-									{
-										label: 'Ученик средней школы, гимназии, ПТУ, профессионального училища, профессионального лицея, техникума, колледжа',
-										value: 'student'
-									},
-									{ label: 'Студент дневного вуза', value: 'uni_student' },
-									{ label: 'Работаю', value: 'employed' },
-									{
-										label: 'Не работаю по состоянию здоровья, инвалид',
-										value: 'disabled'
-									},
-									{
-										label: 'Веду домашнее хозяйство, ухаживаю за другими членами семьи, воспитываю детей',
-										value: 'homemaker'
-									},
-									{ label: 'Пенсионер', value: 'retiree' },
-									{ label: 'Другое', value: 'other' }
-								]}
-								bind:value={$profileSurveyStore.currentOccupation}
-							/>
-							<TableRow
-								label="К какой категории можно отнести вашу должность на основном месте работы?"
-								type="choice"
-								options={[
-									{
-										label: 'Бизнесмен, предприниматель',
-										value: 'business_owner'
-									},
-									{
-										label: 'Руководитель высшего звена, управленец',
-										value: 'executive'
-									},
-									{
-										label: 'Руководитель среднего звена (мастер, бригадир, начальник отдела и др.)',
-										value: 'middle_manager'
-									},
-									{ label: 'Военнослужащий', value: 'military' },
-									{
-										label: 'Сотрудник органов внутренних дел',
-										value: 'law_enforcement'
-									},
-									{ label: 'Учитель, воспитатель', value: 'teacher' },
-									{
-										label: 'Сотрудник государственного и муниципального управления',
-										value: 'civil_servant'
-									},
-									{
-										label: 'Врач, работник здравоохранения',
-										value: 'healthcare'
-									},
-									{
-										label: 'Представитель творческой интеллигенции (актер, музыкант, художник и др.)',
-										value: 'creative_professional'
-									},
-									{
-										label: 'Преподаватель вуза, научный работник',
-										value: 'academic'
-									},
-									{
-										label: 'Служащий, специалист предприятия, организации',
-										value: 'office_employee'
-									},
-									{ label: 'Рабочий', value: 'worker' },
-									{ label: 'Другое', value: 'other_profession' }
-								]}
-								bind:value={$profileSurveyStore.jobPosition}
-							/>
-							<TableRow
-								label="Укажите какими из представленных дел вы занимаетесь еженедельно:"
-								value={''}
-								span
-							/>
-							<TableRow
-								label="Чтение газет, журналов, книг"
-								type="choice"
-								options={[
-									{ label: 'Никогда', value: 'never' },
-									{ label: 'Изредка', value: 'seldom' },
-									{ label: 'Регулярно', value: 'often' }
-								]}
-								bind:value={$profileSurveyStore.weeklyReading}
-							/>
-							<TableRow
-								label="Домашние обязанности (приготовление пищи, стирка, покупка продуктов и т.д.)"
-								type="choice"
-								options={[
-									{ label: 'Никогда', value: 'never' },
-									{ label: 'Изредка', value: 'seldom' },
-									{ label: 'Регулярно', value: 'often' }
-								]}
-								bind:value={$profileSurveyStore.weeklyHousework}
-							/>
-							<TableRow
-								label="Хобби (шахматы, танцы, вязание, коллекционирование и т.д.)"
-								type="choice"
-								options={[
-									{ label: 'Никогда', value: 'never' },
-									{ label: 'Изредка', value: 'seldom' },
-									{ label: 'Регулярно', value: 'often' }
-								]}
-								bind:value={$profileSurveyStore.weeklyHobby}
-							/>
-							<TableRow
-								label="Использование современных технологий (интернет, компьютер)"
-								type="choice"
-								options={[
-									{ label: 'Никогда', value: 'never' },
-									{ label: 'Изредка', value: 'seldom' },
-									{ label: 'Регулярно', value: 'often' }
-								]}
-								bind:value={$profileSurveyStore.weeklyTech}
-							/>
-							<TableRow
-								label="Укажите какими из представленных дел вы занимаетесь ежемесячно:"
-								value={''}
-								span
-							/>
-							<TableRow
-								label="Социальные мероприятия (клубы, ассоциации, собрания)"
-								type="choice"
-								options={[
-									{ label: 'Никогда', value: 'never' },
-									{ label: 'Изредка', value: 'seldom' },
-									{ label: 'Регулярно', value: 'often' }
-								]}
-								bind:value={$profileSurveyStore.monthlySocial}
-							/>
-							<TableRow
-								label="Кино, театр"
-								type="choice"
-								options={[
-									{ label: 'Никогда', value: 'never' },
-									{ label: 'Изредка', value: 'seldom' },
-									{ label: 'Регулярно', value: 'often' }
-								]}
-								bind:value={$profileSurveyStore.monthlyCulture}
-							/>
-							<TableRow
-								label="Садоводство, рукоделие"
-								type="choice"
-								options={[
-									{ label: 'Никогда', value: 'never' },
-									{ label: 'Изредка', value: 'seldom' },
-									{ label: 'Регулярно', value: 'often' }
-								]}
-								bind:value={$profileSurveyStore.monthlyGardening}
-							/>
-							<TableRow
-								label="Забота о ком-то (внуки, пожилые люди)"
-								type="choice"
-								options={[
-									{ label: 'Никогда', value: 'never' },
-									{ label: 'Изредка', value: 'seldom' },
-									{ label: 'Регулярно', value: 'often' }
-								]}
-								bind:value={$profileSurveyStore.monthlyCaring}
-							/>
-							<TableRow
-								label="Волонтерская работа"
-								type="choice"
-								options={[
-									{ label: 'Никогда', value: 'never' },
-									{ label: 'Изредка', value: 'seldom' },
-									{ label: 'Регулярно', value: 'often' }
-								]}
-								bind:value={$profileSurveyStore.monthlyVolunteer}
-							/>
-							<TableRow
-								label="Художественная деятельность (пение, рисование, игра на музыкальных инструментах и т.д.)"
-								type="choice"
-								options={[
-									{ label: 'Никогда', value: 'never' },
-									{ label: 'Изредка', value: 'seldom' },
-									{ label: 'Регулярно', value: 'often' }
-								]}
-								bind:value={$profileSurveyStore.monthlyArtistic}
-							/>
-							<TableRow
-								label="Укажите какими из представленных дел вы занимаетесь ежегодно:"
-								value={''}
-								span
-							/>
-							<TableRow
-								label="Выставки, концерты, конференции"
-								type="choice"
-								options={[
-									{ label: 'Никогда', value: 'never' },
-									{ label: 'Изредка', value: 'seldom' },
-									{ label: 'Регулярно', value: 'often' }
-								]}
-								bind:value={$profileSurveyStore.yearlyEvents}
-							/>
-							<TableRow
-								label="Путешествия на несколько дней"
-								type="choice"
-								options={[
-									{ label: 'Никогда', value: 'never' },
-									{ label: 'Изредка', value: 'seldom' },
-									{ label: 'Регулярно', value: 'often' }
-								]}
-								bind:value={$profileSurveyStore.yearlyTravel}
-							/>
-							<TableRow
-								label="Чтение книг"
-								type="choice"
-								options={[
-									{ label: 'Никогда', value: 'never' },
-									{ label: 'Изредка', value: 'seldom' },
-									{ label: 'Регулярно', value: 'often' }
-								]}
-								bind:value={$profileSurveyStore.yearlyBookReading}
-							/>
-						</Table>
-					</div>
-
-					<div class:hidden={activeTab !== 'tab4'}>
-						<Table>
-							<TableRow
-								label="Рост"
-								type="range"
-								min={0}
-								max={250}
-								bind:value={$profileSurveyStore.height}
-							/>
-							<TableRow
-								label="Вес"
-								type="range"
-								min={0}
-								max={250}
-								bind:value={$profileSurveyStore.weight}
-							/>
-							<TableRow
-								label="Ведущая рука (какой рукой в основном пишете)"
-								type="choice"
-								options={[
-									{ label: 'Правая', value: 'left' },
-									{ label: 'Левая', value: 'right' }
-								]}
-								bind:value={$profileSurveyStore.dominantHand}
-							/>
-							<TableRow
-								label="Являетесь ли вы амбидекстром?"
-								type="choice"
-								isBoolean={true}
-								bind:value={$profileSurveyStore.isAmbidextrous}
-							/>
-							<!-- <TableRow label="Хронические заболевания" type="input" /> -->
-							<TableRow
-								label="Хронические заболевания"
-								type="custom-choice"
-								bind:value={$profileSurveyStore.chronicDiseases}
-							/>
-							<TableRow
-								label="Курение"
-								type="choice"
-								options={[
-									{ label: 'Нет', value: 'no' },
-									{ label: 'Да', value: 'yes' },
-									{ label: 'Было', value: 'usedTo' }
-								]}
-								bind:value={$profileSurveyStore.smoking}
-							/>
-							<TableRow
-								label="Алкоголь"
-								type="choice"
-								options={[
-									{ label: 'Нет', value: 'no' },
-									{ label: 'Да (1+ в неделю)', value: 'yes' }
-								]}
-								bind:value={$profileSurveyStore.alcohol}
-							/>
-							<TableRow
-								label="Какими видами спорта занимаетесь сейчас?"
-								type="custom-choice"
-								options={[
-									{ label: 'Каждый день', value: 'everyday' },
-									{ label: '5 раз в неделю', value: 'week5' },
-									{ label: '3 раз в неделю', value: 'week3' },
-									{ label: '1 раз в неделю', value: 'week1' },
-									{ label: 'Раз в 2 недели', value: 'biweekly' },
-									{ label: 'Раз в месяц', value: 'montly' }
-								]}
-								bind:value={$profileSurveyStore.sports}
-							/>
-							<TableRow
-								label="Занимаетесь ли киберспортом или являетесь геймером?"
-								type="choice"
-								isBoolean={true}
-								bind:value={$profileSurveyStore.isGamer}
-							/>
-						</Table>
-					</div>
-
-					<div class:hidden={activeTab !== 'tab5'}>
-						<Table>
-							<TableRow label="Уведомления" type="custom" omit>
-								{#if subscribed}
-									<div class="flex justify-center">
-										<Button color="blue" kind="small" onclick={unsubscribe}
-											>Отписаться</Button
-										>
-									</div>
-								{:else}
-									<div class="flex justify-center">
-										{#if showSpinner}
-											<div class="flex items-center justify-center gap-2">
-												<Spinner></Spinner>
-												<p class="text-sm">
-													Перезагрузите страницу, если загрузка идет долго
-												</p>
-											</div>
-										{:else}
-											<Button color="green" kind="small" onclick={subscribe}
-												>Подписаться</Button
-											>
-										{/if}
-									</div>
-								{/if}
-							</TableRow>
-						</Table>
-					</div>
-				</Tabs>
-
-				<!-- End Tab Nav -->
+				</Card>
+				<form method="POST" action="/?/logout" use:enhance>
+					<Button class="h-full w-full" type="submit" kind="small" color="red"
+						>Выйти</Button
+					>
+				</form>
 			{:else}
-				<p>Пользователь не найден. Возможно, вы не вошли в систему.</p>
+				<div class="flex justify-center p-8">
+					<p class="text-red-500">
+						Пользователь не найден. Возможно, вы не вошли в систему.
+					</p>
+				</div>
 			{/if}
 		{/await}
-	</form>
+	</div>
 </main>
 
-<section class="low-content grid grid-cols-2 gap-4 md:grid-cols-4">
-	<div class="max-md:hidden"></div>
-	<form method="POST" action="/?/logout" use:enhance>
-		<Button class="h-full w-full" type="submit" kind="small" color="red">Выйти</Button>
-	</form>
-	<Button
-		class="flex items-center justify-center"
-		kind="small"
-		color="green"
-		onclick={handleSave}
-	>
-		{#if isSaving === 'false'}
-			Сохранить
-		{/if}
-
-		{#if isSaving === 'true'}
-			...
-		{/if}
-
-		{#if isSaving === 'saved'}
-			Сохранено!
-		{/if}
-
-		{#if isSaving === 'error'}
-			Ошибка!
-		{/if}
-	</Button>
-	<div class="max-md:hidden"></div>
-</section>
+<style>
+	@media (min-width: 1024px) {
+		.cards {
+			gap: 4vw;
+		}
+		.name{
+			width:25vw;
+		}
+	}
+</style>
