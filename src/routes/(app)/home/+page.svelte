@@ -128,10 +128,10 @@
 
 <main class="main">
 	<div class="flex flex-col items-center gap-6">
-		<div class="p-4">
+		<!-- <div class="p-4">
 			<h2>Вы тренируете память уже</h2>
 			<h1>5 дней</h1>
-		</div>
+		</div> -->
 
 		<!-- подгружать данные о том, когда пользователь заходил и сколько дней подряд-->
 		<div class="main-content gap-6">

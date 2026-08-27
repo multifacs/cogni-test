@@ -8,11 +8,11 @@
 
 	import { pushService } from '$lib/pushService';
 	import { isSubscribed } from '$lib/utils/push';
-	import Tabs from '../profile/components/Tabs.svelte';
-	import Table from '../profile/components/Table.svelte';
-	import TableRow from '../profile/components/TableRow.svelte';
+	import Tabs from './components/Tabs.svelte';
+	import Table from './components/Table.svelte';
+	import TableRow from './components/TableRow.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
-	import Autocomplete from '../profile/components/Autocomplete.svelte';
+	import Autocomplete from './components/Autocomplete.svelte';
 
 	const user = derived(userStore, ($userStore) => $userStore);
 	let subscribed = $state(false);
@@ -24,9 +24,6 @@
 		if (headerContext) {
 			headerContext.value = 'Анкета';
 		}
-
-		// Загружаем данные пользователя при монтировании
-		await userStore.loadUser();
 	});
 
 	console.log($user);
@@ -150,12 +147,16 @@
 </script>
 
 <main class="main grid w-full text-black">
-	<form class="flex w-full flex-col items-center justify-center ">
+	<form class="flex w-full flex-col items-center justify-center">
 		{#await $user}
 			<p>Загрузка...</p>
 		{:then u}
 			{#if u && u.id}
 				<!-- Tab Nav -->
+				<h2>
+					Анкета состоит из нескольких разделов
+					<br />Вы можете пройти их по очереди или выбрать нужный раздел
+				</h2>
 				<Tabs bind:activeTab {tabs} {onTabChange}>
 					{#snippet children()}
 						<div class:hidden={activeTab !== 'tab1'}>
@@ -574,22 +575,29 @@
 									{#snippet children()}
 										{#if subscribed}
 											<div class="flex justify-center">
-												<Button color="blue" kind="small" onclick={unsubscribe}
-													>Отписаться</Button
+												<Button
+													color="blue"
+													kind="small"
+													onclick={unsubscribe}>Отписаться</Button
 												>
 											</div>
 										{:else}
 											<div class="flex justify-center">
 												{#if showSpinner}
-													<div class="flex items-center justify-center gap-2">
+													<div
+														class="flex items-center justify-center gap-2"
+													>
 														<Spinner></Spinner>
 														<p class="text-sm">
-															Перезагрузите страницу, если загрузка идет долго
+															Перезагрузите страницу, если загрузка
+															идет долго
 														</p>
 													</div>
 												{:else}
-													<Button color="green" kind="small" onclick={subscribe}
-														>Подписаться</Button
+													<Button
+														color="green"
+														kind="small"
+														onclick={subscribe}>Подписаться</Button
 													>
 												{/if}
 											</div>
