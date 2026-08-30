@@ -73,6 +73,7 @@
 		<Button color="gray" goto="/exercises">📊 Когнитивный тренажёр</Button>
 		<Button color="blue" goto="/materials">📚 Когнитивное долголетие</Button>
 		<Button color="orange" goto="/gto">🏆 ГТО-М</Button>
+		<Button color="pink" goto="/metrics">Метрики WIP</Button>
 
 		{#if showInstallButton}
 			<div class="flex w-full max-w-xs flex-col gap-4 text-center">
