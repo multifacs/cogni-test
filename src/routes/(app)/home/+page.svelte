@@ -9,6 +9,8 @@
 	let showInstallButton = $state(true);
 	let showModal = $state(false);
 
+	let { data } = $props();
+
 	onMount(async () => {
 		const lfShowInstallButton: boolean | null = await localforage.getItem('showInstallButton');
 		if (lfShowInstallButton === false) {
@@ -125,6 +127,26 @@
 					>
 				</div>
 			</Modal>
+		{/if}
+		<div class="flex w-full max-w-xs flex-col gap-4 text-center">
+			<h3 class="text-lg">Рекомендации</h3>
+		</div>
+		{#if !data.hasData}
+			<span>Сначала пройдите тесты и упражнения, чтобы получить рекомендации.</span>
+		{:else}
+			<div class="flex w-full flex-col gap-3">
+				{#each data.recommendations as { name, title, path, img }}
+					<a
+						href={path}
+						class="flex items-center justify-between rounded-2xl bg-gray-600 p-3 shadow transition hover:bg-gray-100 hover:text-black"
+					>
+						<div class="flex flex-col gap-1">
+							<span class="text-lg">{title}</span>
+						</div>
+						<img src={img} alt={name} class="h-14 w-14 rounded-xl bg-white" />
+					</a>
+				{/each}
+			</div>
 		{/if}
 	</div>
 </main>

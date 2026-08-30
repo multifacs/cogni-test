@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { userStore } from '$lib/stores/user.js';
-	import { exerciseRegistry } from '$lib/exercises';
+	import { exerciseRegistry, exercises } from '$lib/exercises';
+	import { translate } from '$lib/utils/common';
 	import { onMount } from 'svelte';
 
 	let { data } = $props();
@@ -34,6 +35,14 @@
 						{:else}
 							<span class="text-sm text-orange-400"> Не пройдено </span>
 						{/if}
+					{/if}
+					{#if exercises.find((e) => e.name === name)?.user_metrics?.length}
+						<span class="text-sm text-blue-300">
+							Развивает: {exercises
+								.find((e) => e.name === name)
+								?.user_metrics?.map(translate)
+								.join(', ')}
+						</span>
 					{/if}
 				</div>
 				<img src={img} alt={name} class="h-14 w-14 rounded-xl bg-white" />
