@@ -1,3 +1,4 @@
+import type { SkillMetric } from '$lib/types';
 import type { TestType } from './types';
 
 export type TestData = {
@@ -6,6 +7,8 @@ export type TestData = {
 	path: string;
 	img: string;
 	hidden?: boolean;
+	admin_metrics?: SkillMetric[];
+	user_metrics?: SkillMetric[];
 };
 
 export const tests: TestData[] = [
@@ -13,37 +16,55 @@ export const tests: TestData[] = [
 		name: 'stroop',
 		title: 'Тест Струпа',
 		path: '/tests/stroop/about',
-		img: '/tests/stroop.jpg'
+		img: '/tests/stroop.jpg',
+		admin_metrics: ['executive_function', 'short_memory', 'attention', 'thinking'],
+		user_metrics: ['executive_function']
 	},
 	{
 		name: 'math',
 		title: 'Aрифметический тест',
 		path: '/tests/math/about',
-		img: '/tests/math.svg'
+		img: '/tests/math.svg',
+		admin_metrics: ['attention', 'thinking', 'reaction_speed'],
+		user_metrics: ['reaction_speed']
 	},
 	{
 		name: 'munsterberg',
 		title: 'Тест Мюнстерберга',
 		path: '/tests/munsterberg/about',
-		img: '/tests/munsterberg.svg'
+		img: '/tests/munsterberg.svg',
+		admin_metrics: ['attention', 'perception', 'verbal_function'],
+		user_metrics: ['perception']
 	},
 	{
 		name: 'campimetry',
 		title: 'Компьютерная кампиметрия',
 		path: '/tests/campimetry/about',
-		img: '/tests/campimetry.svg'
+		img: '/tests/campimetry.svg',
+		admin_metrics: ['attention', 'perception', 'color_perception'],
+		user_metrics: ['perception']
 	},
 	{
 		name: 'memory',
 		title: 'Тест на память',
 		path: '/tests/memory/about',
-		img: '/tests/memory.svg'
+		img: '/tests/memory.svg',
+		admin_metrics: [
+			'attention',
+			'reaction_speed',
+			'verbal_function',
+			'short_memory',
+			'working_memory'
+		],
+		user_metrics: ['working_memory']
 	},
 	{
 		name: 'swallow',
 		title: 'Тест «Ласточка»',
 		path: '/tests/swallow/about',
-		img: '/tests/swallow.svg'
+		img: '/tests/swallow.svg',
+		admin_metrics: ['executive_function', 'spacial_perception', 'short_memory'],
+		user_metrics: ['spacial_perception']
 	}
 ];
 
@@ -111,11 +132,7 @@ export const GTO_TEST_ORDER: { type: string; route: string }[] = [
  * Given a test type from the GTO battery, return the about page URL
  * with the gtoSessionId param appended.
  */
-export function gtoTestAboutUrl(
-	testType: string,
-	index: number,
-	gtoSessionId: string
-): string {
+export function gtoTestAboutUrl(testType: string, index: number, gtoSessionId: string): string {
 	const entry = GTO_TEST_ORDER[index] ?? GTO_TEST_ORDER.find((e) => e.type === testType);
 	if (!entry) return '/gto';
 	return `${entry.route}/about?gtoSessionId=${gtoSessionId}`;
