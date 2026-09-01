@@ -1,7 +1,8 @@
 // scripts/generate-dev-env.test.ts
-import { describe, it, expect, afterAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { execFile } from 'node:child_process';
-import { mkdtempSync, rmSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -27,7 +28,7 @@ const execNode = (
 	});
 };
 
-const scratchDir = mkdtempSync(join(repoRoot, '.dev-env-test-'));
+const scratchDir = mkdtempSync(join(tmpdir(), 'cogni-dev-env-test-'));
 
 describe('generate-dev-env CLI', () => {
 	it('Case A: generates correct structure with all 6 keys', async () => {
