@@ -2,10 +2,10 @@
 
 ## Purpose
 
-The `inline-onnx` plugin (defined in `vite.config.ts`) embeds ONNX model files directly into the JavaScript bundle at build time as base64 strings. This eliminates the need for runtime file path resolution, which is problematic in SvelteKit production builds because:
+The `inline-onnx` plugin (defined in `src/lib/server/age/inlineOnnxPlugin.ts`) embeds ONNX model files directly into the JavaScript bundle at build time as base64 strings. This eliminates the need for runtime file path resolution, which is problematic in SvelteKit production builds because:
 
-- The build output structure (``.svelte-kit/output/server/chunks/``) differs from the source layout
-- ``import.meta.url`` resolves to chunk paths where model files don't exist
+- The build output structure (`.svelte-kit/output/server/chunks/`) differs from the source layout
+- `import.meta.url` resolves to chunk paths where model files don't exist
 - No ONNX files are copied to the build output by default
 
 ## How It Works
@@ -54,12 +54,24 @@ This resolves to `src/lib/server/age/models/Bagging_age_predictor.onnx`.
 
 1. Place the `.onnx` file under `src/lib/server/age/models/`
 2. Add an import in your server code:
-   ```ts
-   import myModelBase64 from 'virtual:inline-onnx/./models/my_model.onnx';
-   ```
+    ```ts
+    import myModelBase64 from 'virtual:inline-onnx/./models/my_model.onnx';
+    ```
 3. Decode at runtime:
-   ```ts
-   const buffer = Buffer.from(myModelBase64, 'base64');
-   const session = await InferenceSession.create(buffer);
-   ```
+    ```ts
+    const buffer = Buffer.from(myModelBase64, 'base64');
+    const session = await InferenceSession.create(buffer);
+    ```
 4. Rebuild (`npm run build`)
+
+## Fail-Fast Behavior
+
+When the ONNX models are missing (usually because the git submodule `src/lib/server/age/models` is not initialized), `vite dev` and `vite build` will crash immediately at plugin startup with a clear error message that includes:
+
+- The path to the missing models directory
+- A hint that the git submodule is likely not initialized
+- The exact fix command: `git submodule update --init`
+
+Vitest runs are exempt from this check (controlled by `process.env.VITEST`) so tests can run without the models being present.
+
+If the submodule is initialized but a specific `.onnx` file referenced by an import is missing, the plugin's `load()` hook throws a descriptive error naming the missing file — another layer of defense in depth.
