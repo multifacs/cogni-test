@@ -3,6 +3,8 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import { userStore } from '$lib/stores/user.js';
+	import { tests } from '$lib/tests';
+	import { translate } from '$lib/utils/common';
 	import localforage from 'localforage';
 	import { onMount } from 'svelte';
 
@@ -85,6 +87,14 @@
 							</span>
 						{:else}
 							<span class="text-sm text-orange-400"> Не пройдено </span>
+						{/if}
+						{#if tests.find((t) => t.name === name)?.user_metrics?.length}
+							<span class="text-sm text-blue-300">
+								Развивает: {tests
+									.find((t) => t.name === name)
+									?.user_metrics?.map(translate)
+									.join(', ')}
+							</span>
 						{/if}
 					</div>
 					<img src={img} alt={name} class="h-14 w-14 rounded-xl bg-white" />

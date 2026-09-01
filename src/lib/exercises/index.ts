@@ -1,8 +1,12 @@
+import type { SkillMetric } from '$lib/types';
+
 export type ExerciseData = {
 	name: string;
 	title: string;
 	path: string;
 	img: string;
+	admin_metrics?: SkillMetric[];
+	user_metrics?: SkillMetric[];
 };
 
 export type { ExerciseType, ExerciseResult, ExerciseResults } from './types';
@@ -12,25 +16,40 @@ export const exercises: ExerciseData[] = [
 		name: 'word-morphing',
 		title: 'Тест на словосочетания',
 		path: '/exercises/word-morphing/about',
-		img: '/exercises/word-morphing.svg'
+		img: '/exercises/word-morphing.svg',
+		admin_metrics: [
+			'working_memory',
+			'short_memory',
+			'long_memory',
+			'perception',
+			'attention',
+			'thinking'
+		],
+		user_metrics: ['memory']
 	},
 	{
 		name: 'campimetry',
 		title: 'Расширенная кампиметрия',
 		path: '/exercises/campimetry/about',
-		img: '/tests/campimetry.svg'
+		img: '/tests/campimetry.svg',
+		admin_metrics: ['attention', 'perception', 'color_perception'],
+		user_metrics: ['perception']
 	},
 	{
 		name: 'memory-match',
 		title: 'Совпадения',
 		path: '/exercises/memory-match/about',
-		img: '/exercises/memory-match.svg'
+		img: '/exercises/memory-match.svg',
+		admin_metrics: ['spacial_perception', 'short_memory', 'attention'],
+		user_metrics: ['memory']
 	},
 	{
 		name: 'nback-stream',
 		title: 'Определение повторов',
 		path: '/exercises/nback-stream/about',
-		img: '/exercises/n-back.svg'
+		img: '/exercises/n-back.svg',
+		admin_metrics: ['executive_function', 'perception', 'attention', 'short_memory'],
+		user_metrics: ['memory']
 	},
 	{
 		name: 'raven-matrices',
@@ -78,13 +97,17 @@ export const exercises: ExerciseData[] = [
 		name: 'road-trip',
 		title: 'По дороге на работу',
 		path: '/exercises/road-trip/about',
-		img: '/exercises/road-trip.svg'
+		img: '/exercises/road-trip.svg',
+		admin_metrics: ['perception', 'verbal_function', 'thinking'],
+		user_metrics: ['perception']
 	},
 	{
 		name: 'not-lost',
 		title: 'По дороге на работу',
 		path: '/exercises/not-lost/about',
-		img: '/exercises/not-lost.svg'
+		img: '/exercises/not-lost.svg',
+		admin_metrics: ['spacial_perception', 'spacial_orientation', 'short_memory'],
+		user_metrics: ['spacial_perception']
 	}
 ];
 

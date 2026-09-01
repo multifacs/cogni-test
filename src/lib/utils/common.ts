@@ -1,3 +1,5 @@
+import type { SkillMetric } from '$lib/types';
+
 export function translate(word: string): string {
 	const dict: Record<string, string> = {
 		red: 'Красный',
@@ -23,7 +25,21 @@ export function translate(word: string): string {
 		'dark-red': 'тёмно-красный',
 		'light-red': 'светло-красный',
 		'dark-yellow': 'тёмно-жёлтый',
-		'light-yellow': 'светло-жёлтый'
+		'light-yellow': 'светло-жёлтый',
+
+		executive_function: 'Исполнительные функции',
+		memory: 'Память',
+		attention: 'Внимание',
+		thinking: 'Мышление',
+		perception: 'Восприятие',
+		reaction_speed: 'Скорость реакции',
+		verbal_function: 'Вербальные функции',
+		spacial_perception: 'Пространственное восприятие',
+		spacial_orientation: 'Пространственная ориентация',
+		short_memory: 'Кратковременная память',
+		working_memory: 'Рабочая память',
+		long_memory: 'Долговременная память',
+		color_perception: 'Цветовое восприятие'
 	};
 	if (word && word in dict) return dict[word];
 	if (word && !(word in dict)) return word;
@@ -79,13 +95,13 @@ export function formatUserLocalDate(dateString: string): string {
 }
 
 export function formatDateLog(date: Date): string {
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
-  
-  return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
+	const day = String(date.getDate()).padStart(2, '0');
+	const month = String(date.getMonth() + 1).padStart(2, '0');
+	const year = date.getFullYear();
+
+	const hours = String(date.getHours()).padStart(2, '0');
+	const minutes = String(date.getMinutes()).padStart(2, '0');
+	const seconds = String(date.getSeconds()).padStart(2, '0');
+
+	return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
 }
