@@ -35,6 +35,8 @@
 			console.log('Redirecting to uncompleted test:', uncompletedTest);
 			if (uncompletedTest) {
 				goto(uncompletedTest.path);
+			} else {
+				goto('/home');
 			}
 		}
 	});

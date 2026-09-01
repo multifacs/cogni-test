@@ -90,7 +90,7 @@
 	<footer class="footer flex justify-center rounded-lg">
 		<!-- <div class="w-2/3 max-md:w-full"> -->
 		<div class="w-full">
-			<NavBar />
+			<NavBar undiagnosed={data.undiagnosed} allowedPaths={data.allowedPaths} />
 		</div>
 	</footer>
 </div>
