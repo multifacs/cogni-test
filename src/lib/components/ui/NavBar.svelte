@@ -83,6 +83,11 @@
 		text-decoration: none;
 	}
 
+	.nav-link img {
+		width: 1.5rem;
+		height: 1.5rem;
+	}
+
 	.nav-text {
 		margin: 0;
 	}
