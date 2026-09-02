@@ -453,7 +453,9 @@
 {#if showModal}
 	<Modal bind:showModal>
 		{#snippet header()}
-			<h2 class="text-2xl text-[var(--main-text-color)">Подпишитесь на пуш-уведомления</h2>
+			<h2 class="text-2xl text-[var(--main-text-color) text-center">
+				Подпишитесь на пуш-уведомления
+			</h2>
 		{/snippet}
 		<div class="flex flex-col gap-4">
 			<p>

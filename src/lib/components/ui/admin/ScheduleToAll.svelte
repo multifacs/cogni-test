@@ -14,7 +14,7 @@
 </script>
 
 <div class="flex flex-col items-center justify-center gap-4">
-	<h2>Schedule push to all users</h2>
+	<h2 class="text-center">Schedule push to all users</h2>
 	<Input
 		id="titleSchedule"
 		type="text"

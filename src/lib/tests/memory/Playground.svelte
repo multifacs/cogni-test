@@ -147,14 +147,14 @@
 	<p class="sm:text-2xl">Осталось времени: {timeLeft} сек</p>
 {:else if phase === 'task'}
 	<p class="sm:text-2xl">Было ли это слово?</p>
-	<h1>{currentWord}</h1>
+	<h1 class="text-center">{currentWord}</h1>
 	<div class="color-grid">
 		<Button kind="big" color="green" onclick={() => handleAnswer(true)}>ДА</Button>
 		<Button kind="big" color="red" onclick={() => handleAnswer(false)}>НЕТ</Button>
 	</div>
 	<p class="sm:text-2xl">Осталось времени: {timeLeft} сек</p>
 {:else}
-	<h1>Конец теста</h1>
+	<h1 class="text-center">Конец теста</h1>
 {/if}
 
 <style>

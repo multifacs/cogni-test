@@ -129,7 +129,9 @@
 						>
 							<!-- Session header -->
 							<div class="flex items-center justify-between">
-								<h2 class="truncate text-lg font-semibold">{session.name}</h2>
+								<h2 class="truncate text-lg font-semibold text-center">
+									{session.name}
+								</h2>
 								<span
 									class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs {ss.bg} {ss.text}"
 								>
@@ -296,7 +298,7 @@
 			<!-- Completed sessions -->
 			{#if data.completedSessions.length > 0}
 				<div class="flex items-center gap-3">
-					<h2 class="text-lg font-semibold">Завершённые сессии</h2>
+					<h2 class="text-lg font-semibold text-center">Завершённые сессии</h2>
 					<span class="text-sm text-gray-400">({data.completedSessions.length})</span>
 				</div>
 				<div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
@@ -306,7 +308,9 @@
 							class="flex flex-col gap-3 rounded-xl border border-gray-700 bg-gray-800/30 p-4 transition-colors"
 						>
 							<div class="flex items-center justify-between">
-								<h2 class="truncate text-lg font-semibold">{session.name}</h2>
+								<h2 class="truncate text-lg font-semibold text-center">
+									{session.name}
+								</h2>
 								<span
 									class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs {ss.bg} {ss.text}"
 								>
@@ -347,7 +351,7 @@
 {#if showDisclaimer}
 	<Modal bind:showModal={showDisclaimer}>
 		{#snippet header()}
-			<h2 class="text-2xl text-white">
+			<h2 class="text-2xl text-white text-center">
 				{#if disclaimerType === 'tests'}
 					{selectedSession.currentTestIndex > 0
 						? 'Продолжить тестирование?'

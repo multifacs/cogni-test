@@ -59,7 +59,7 @@
 			class:grayscale={!isAllowed(path.href)}
 		>
 			<img src={path.icon} alt={path.text} />
-			<h4 class="nav-text">{path.text}</h4>
+			<h4 class="nav-text text-center">{path.text}</h4>
 		</a>
 	{/each}
 </nav>

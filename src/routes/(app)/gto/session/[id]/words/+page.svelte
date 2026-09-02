@@ -35,7 +35,7 @@
 </script>
 
 <section class="banner">
-	<h1 class="text-2xl font-bold">Последовательность слов</h1>
+	<h1 class="text-2xl font-bold text-center">Последовательность слов</h1>
 	<p class="text-gray-400">{data.sessionName}</p>
 	{#if !data.hasWordSet}
 		<p class="text-sm text-yellow-400">
@@ -76,7 +76,7 @@
 {#if showDisclaimer}
 	<Modal bind:showModal={showDisclaimer}>
 		{#snippet header()}
-			<h2 class="text-2xl text-white">Внимание!</h2>
+			<h2 class="text-2xl text-white text-center">Внимание!</h2>
 		{/snippet}
 		<div class="flex flex-col gap-4">
 			<p class="text-white">

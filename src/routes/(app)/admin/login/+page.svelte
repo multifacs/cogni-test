@@ -7,7 +7,7 @@
 </script>
 
 <section class="banner">
-	<h1 class="text-3xl font-bold">Admin page</h1>
+	<h1 class="text-3xl font-bold text-center">Admin page</h1>
 </section>
 
 <main class="main flex flex-col items-center justify-center gap-4">
@@ -17,7 +17,7 @@
 		action="?/login"
 		use:enhance
 	>
-		<h2>Please login to continue</h2>
+		<h2 class="text-center">Please login to continue</h2>
 		{#if form?.incorrect}
 			<p class="text-red-500">Incorrect password</p>
 		{/if}

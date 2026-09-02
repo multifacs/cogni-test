@@ -73,7 +73,7 @@
 			</div>
 		{/each}
 	{:else}
-		<h1>Попыток нет</h1>
+		<h1 class="text-center">Попыток нет</h1>
 	{/if}
 </main>
 

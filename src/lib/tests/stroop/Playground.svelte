@@ -115,12 +115,12 @@
 
 <div class="color-text flex h-20 flex-col items-center justify-center">
 	{#if isTestRunning}
-		<h1 style="color: {currentColor};">{translate(currentWord)}</h1>
+		<h1 class="text-center" style="color: {currentColor};">{translate(currentWord)}</h1>
 		{#if currentWord.includes('stage')}
 			<p class="text-center sm:text-xl">{stageInstructions[checkWordStage(currentWord)]}</p>
 		{/if}
 	{:else}
-		<h1>Конец теста</h1>
+		<h1 class="text-center">Конец теста</h1>
 	{/if}
 </div>
 <div class="grid grid-cols-[1fr_1fr] gap-4">

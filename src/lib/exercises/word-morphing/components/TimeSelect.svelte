@@ -15,7 +15,7 @@
 	} = $props();
 </script>
 
-<h2>Выберите время на запоминание:</h2>
+<h2 class="text-center">Выберите время на запоминание:</h2>
 <div class="grid max-w-lg grid-cols-2 gap-4">
 	{#each timeOptions as timeOption}
 		<Button
@@ -28,9 +28,7 @@
 </div>
 
 {#if selectedTimeOption.name === 'Пользовательский'}
-	<div
-		class="mt-4 flex flex-col items-center gap-2 rounded-lg p-4"
-	>
+	<div class="mt-4 flex flex-col items-center gap-2 rounded-lg p-4">
 		<label for="customTime">Введите время в минутах:</label>
 		<div class="flex items-center gap-2">
 			<TextInput

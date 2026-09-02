@@ -240,7 +240,7 @@
 
 		<div class="content-panel">
 			<p class="question-index">Шаг {currentQuestion().id}</p>
-			<h2>{currentQuestion().prompt}</h2>
+			<h2 class="text-center">{currentQuestion().prompt}</h2>
 			<p class="question-helper">{currentQuestion().helper}</p>
 
 			{#if currentQuestion().kind === 'observe'}

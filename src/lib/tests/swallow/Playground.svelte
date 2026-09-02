@@ -94,12 +94,12 @@
 
 {#if lives}
 	{#if currentTask.background === 'blue'}
-		<h2>Куда летит ласточка?</h2>
+		<h2 class="text-center">Куда летит ласточка?</h2>
 	{:else}
-		<h2>Откуда летит ласточка?</h2>
+		<h2 class="text-center">Откуда летит ласточка?</h2>
 	{/if}
 {:else}
-	<h1>Конец теста</h1>
+	<h1 class="text-center">Конец теста</h1>
 {/if}
 
 <div

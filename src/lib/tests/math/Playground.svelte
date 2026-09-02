@@ -43,7 +43,7 @@
 
 {#if gameState.getState().isGameRunning}
 	{#if gameState.getState().currentLeft == 'stage'}
-		<h1>Тест начинается</h1>
+		<h1 class="text-center">Тест начинается</h1>
 	{:else}
 		<div class="inequality grid grid-cols-[1fr_auto_1fr] items-center gap-5 text-4xl font-bold">
 			<div class="left justify-self-center">
@@ -58,7 +58,7 @@
 		</div>
 	{/if}
 {:else}
-	<h1>Конец теста</h1>
+	<h1 class="text-center">Конец теста</h1>
 {/if}
 
 <div class="grid grid-cols-2 gap-2.5">

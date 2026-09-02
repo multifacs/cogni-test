@@ -148,7 +148,7 @@
 
 			{#if showInstallButton}
 				<div class="flex w-full max-w-xs flex-col gap-4 text-center">
-					<h3 class="text-lg">
+					<h3 class="text-lg text-center">
 						Вы также можете установить приложение на своем устройстве
 					</h3>
 					<Button color="green" onclick={handleInstall}>Установить приложение</Button>
@@ -158,7 +158,7 @@
 				<Modal bind:showModal={showInstallModal}>
 					{#snippet header()}
 						<div class="flex flex-col gap-4">
-							<h2 class="text-2xl">
+							<h2 class="text-2xl text-center">
 								Установка приложения на не chrome-based браузерах
 							</h2>
 							<p>Похоже, Вы используете firefox или safari.</p>

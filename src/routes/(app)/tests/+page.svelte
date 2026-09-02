@@ -73,7 +73,9 @@
 			</div>
 		{/if}
 		<div class="content flex flex-col items-center justify-center gap-8 pt-[2%] pb-[4%]">
-			<h2>Регулярные тренировки помогают поддерживать когнитивные навыки</h2>
+			<h2 class="text-center">
+				Регулярные тренировки помогают поддерживать когнитивные навыки
+			</h2>
 			<Button color="green">Запуск потокового прохождения</Button>
 		</div>
 		<div class="cards flex flex-wrap justify-center gap-5 p-2">

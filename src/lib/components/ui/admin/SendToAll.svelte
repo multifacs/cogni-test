@@ -9,11 +9,10 @@
 		body: '',
 		icon: 'icon.png'
 	});
-
 </script>
 
 <div class="flex flex-col items-center justify-center gap-4">
-	<h2>Send push to all users</h2>
+	<h2 class="text-center">Send push to all users</h2>
 	<Input
 		id="titleToAll"
 		type="text"

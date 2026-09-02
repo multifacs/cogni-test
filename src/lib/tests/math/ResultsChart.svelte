@@ -229,6 +229,6 @@
 	});
 </script>
 
-<h2>Время прохождения теста: {allTime} с</h2>
-<h2 style="padding-bottom: 1rem;">Среднее время реакции: {avg} мc</h2>
+<h2 class="text-center">Время прохождения теста: {allTime} с</h2>
+<h2 class="text-center" style="padding-bottom: 1rem;">Среднее время реакции: {avg} мc</h2>
 <canvas bind:this={canvas}></canvas>

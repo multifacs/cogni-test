@@ -130,7 +130,9 @@
 				<p class="m-0 text-xs font-extrabold tracking-wider text-slate-500 uppercase">
 					Задание {currentIndex + 1} из {tasks.length}
 				</p>
-				<h2 class="text-lg leading-snug text-gray-900">Выберите недостающую ячейку</h2>
+				<h2 class="text-lg leading-snug text-gray-900 text-center">
+					Выберите недостающую ячейку
+				</h2>
 			</div>
 			<div class="flex flex-wrap gap-1.5 md:justify-end">
 				<span

@@ -7,17 +7,20 @@
 <a href={path} class="card">
 	<div class="line"></div>
 	<div class="flex h-[80%] flex-col items-center justify-between p-[5%]">
-		<h2 style="font-weight: var(--font-weight-bold); --tw-font-weight: var(--font-weight-bold)">
+		<h2
+			class="text-center"
+			style="font-weight: var(--font-weight-bold); --tw-font-weight: var(--font-weight-bold)"
+		>
 			{title}
 		</h2>
 
 		<img src={img} alt={name} class="img" />
 		{#if testSessionCounts[name] && testSessionCounts[name] > 0}
-			<h3>
+			<h3 class="text-center">
 				Пройдено: {testSessionCounts[name]}
 			</h3>
 		{:else}
-			<h3>Не пройдено</h3>
+			<h3 class="text-center">Не пройдено</h3>
 		{/if}
 	</div>
 </a>

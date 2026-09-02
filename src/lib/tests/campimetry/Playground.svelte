@@ -207,7 +207,7 @@
 				d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
 			/>
 		</svg>
-		<h1 class="text-2xl font-bold">Тест окончен</h1>
+		<h1 class="text-2xl font-bold text-center">Тест окончен</h1>
 		<p class="text-gray-500">Результаты отправлены</p>
 	</div>
 {/if}

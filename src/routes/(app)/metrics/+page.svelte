@@ -8,7 +8,7 @@
 </script>
 
 <section class="banner">
-	<h1 class="text-3xl font-bold">Метрики</h1>
+	<h1 class="text-3xl font-bold text-center">Метрики</h1>
 </section>
 <main class="main flex flex-col gap-3">
 	<div class="flex w-full flex-col gap-3">

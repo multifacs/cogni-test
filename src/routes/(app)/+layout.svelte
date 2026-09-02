@@ -71,7 +71,7 @@
 	{#if showModal}
 		<Modal bind:showModal>
 			{#snippet header()}
-				<h2 class="text-2xl text-white">Подпишитесь на push-уведомления</h2>
+				<h2 class="text-2xl text-white text-center">Подпишитесь на push-уведомления</h2>
 			{/snippet}
 			<div class="flex flex-col gap-4">
 				{#if showSpinner}

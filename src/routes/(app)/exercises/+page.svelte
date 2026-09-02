@@ -26,7 +26,7 @@
 	<div
 		class="content flex flex-col items-center justify-center gap-8 pt-[2%] pb-[4%] pl-[2%] pr-[2%]"
 	>
-		<h2>Регулярные тренировки помогают поддерживать когнитивные навыки</h2>
+		<h2 class="text-center">Регулярные тренировки помогают поддерживать когнитивные навыки</h2>
 		<RecommendationCard
 			title="Диагностика когнитивного возраста"
 			text="Пройдите тесты и узнайте свой возраст"

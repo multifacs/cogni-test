@@ -407,7 +407,7 @@
 					<Button color="gray" onclick={() => (editingName = false)}>Отмена</Button>
 				</div>
 			{:else}
-				<h1 class="text-2xl font-bold">{data.session.name}</h1>
+				<h1 class="text-2xl font-bold text-center">{data.session.name}</h1>
 				<button
 					class="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-700 hover:text-white"
 					onclick={() => (editingName = true)}
@@ -686,7 +686,7 @@
 			</div>
 		{:else}
 			<div class="flex items-center gap-3">
-				<h2 class="text-lg font-semibold">Участники</h2>
+				<h2 class="text-lg font-semibold text-center">Участники</h2>
 				<span class="text-sm text-gray-400"
 					>({filteredMetrics.length}/{data.metrics.length})</span
 				>
@@ -848,7 +848,7 @@
 											<!-- Stroop -->
 											<div class="rounded-lg bg-[#E5E7EB] p-3">
 												<h4
-													class="mb-2 text-xs font-semibold tracking-wider text-blue-400 uppercase"
+													class="mb-2 text-xs font-semibold tracking-wider text-blue-400 uppercase text-center"
 												>
 													Струп
 												</h4>
@@ -882,7 +882,7 @@
 											<!-- Math -->
 											<div class="rounded-lg bg-[#E5E7EB] p-3">
 												<h4
-													class="mb-2 text-xs font-semibold tracking-wider text-emerald-400 uppercase"
+													class="mb-2 text-xs font-semibold tracking-wider text-emerald-400 uppercase text-center"
 												>
 													Арифметика
 												</h4>
@@ -922,7 +922,7 @@
 											<!-- Munsterberg -->
 											<div class="rounded-lg bg-[#E5E7EB] p-3">
 												<h4
-													class="mb-2 text-xs font-semibold tracking-wider text-amber-400 uppercase"
+													class="mb-2 text-xs font-semibold tracking-wider text-amber-400 uppercase text-center"
 												>
 													Мюнстерберг
 												</h4>
@@ -965,7 +965,7 @@
 											<!-- Campimetry -->
 											<div class="rounded-lg bg-[#E5E7EB] p-3">
 												<h4
-													class="mb-2 text-xs font-semibold tracking-wider text-rose-400 uppercase"
+													class="mb-2 text-xs font-semibold tracking-wider text-rose-400 uppercase text-center"
 												>
 													Кампиметрия
 												</h4>
@@ -1021,7 +1021,7 @@
 											<!-- Memory -->
 											<div class="rounded-lg bg-[#E5E7EB] p-3">
 												<h4
-													class="mb-2 text-xs font-semibold tracking-wider text-cyan-400 uppercase"
+													class="mb-2 text-xs font-semibold tracking-wider text-cyan-400 uppercase text-center"
 												>
 													Память
 												</h4>
@@ -1076,7 +1076,7 @@
 											<!-- Swallow -->
 											<div class="rounded-lg bg-[#E5E7EB] p-3">
 												<h4
-													class="mb-2 text-xs font-semibold tracking-wider text-teal-400 uppercase"
+													class="mb-2 text-xs font-semibold tracking-wider text-teal-400 uppercase text-center"
 												>
 													Ласточка
 												</h4>
@@ -1116,7 +1116,7 @@
 											<!-- Raven -->
 											<div class="rounded-lg bg-[#E5E7EB] p-3">
 												<h4
-													class="mb-2 text-xs font-semibold tracking-wider text-violet-400 uppercase"
+													class="mb-2 text-xs font-semibold tracking-wider text-violet-400 uppercase text-center"
 												>
 													Матрицы Равена
 												</h4>
@@ -1216,7 +1216,7 @@
 											class="rounded-lg border border-gray-700 bg-[#E5E7EB] p-4"
 										>
 											<h4
-												class="mb-3 text-xs font-semibold tracking-wider uppercase"
+												class="mb-3 text-xs font-semibold tracking-wider uppercase text-center"
 											>
 												Редактируемые данные
 											</h4>
@@ -1474,7 +1474,7 @@
 										</div>
 										<div class="rounded-lg border border-gray-700 bg-white p-4">
 											<h2
-												class="mb-3 text-xs font-semibold tracking-wider uppercase"
+												class="mb-3 text-xs font-semibold tracking-wider uppercase text-center"
 											>
 												Выбранные слова:
 											</h2>

@@ -179,7 +179,7 @@
 		</p>
 	{/if}
 {:else}
-	<h1>Тест окончен</h1>
+	<h1 class="text-center">Тест окончен</h1>
 {/if}
 
 <style>

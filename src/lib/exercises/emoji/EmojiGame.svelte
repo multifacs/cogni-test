@@ -192,7 +192,7 @@
 		{#if !started}
 			<div class="flex flex-col items-center justify-center gap-2">
 				<Button color="green" onclick={startTest}>Начать тест</Button>
-				<h2>Запомни эмодзи до начала</h2>
+				<h2 class="text-center">Запомни эмодзи до начала</h2>
 			</div>
 		{:else}
 			<div class="flex gap-4">

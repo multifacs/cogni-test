@@ -137,7 +137,7 @@
 	<div class="flex flex-col gap-6">
 		<!-- Generate random sets -->
 		<div class="flex flex-col gap-3 rounded-xl border border-gray-700 bg-white p-4">
-			<h2 class="text-lg font-semibold">Сгенерировать случайные сеты</h2>
+			<h2 class="text-lg font-semibold text-center">Сгенерировать случайные сеты</h2>
 			{#if generateError}
 				<p class="rounded-lg bg-red-900/30 px-3 py-2 text-sm text-red-300">
 					{generateError}
@@ -162,7 +162,7 @@
 
 		<!-- Create manually -->
 		<div class="flex flex-col gap-3 rounded-xl border border-gray-700 bg-white p-4">
-			<h2 class="text-lg font-semibold">Создать сет вручную</h2>
+			<h2 class="text-lg font-semibold text-center">Создать сет вручную</h2>
 			{#if createError}
 				<p class="rounded-lg bg-red-900/30 px-3 py-2 text-sm text-red-300">{createError}</p>
 			{/if}
@@ -185,7 +185,7 @@
 		<!-- Existing sets -->
 		<div class="flex flex-col gap-3">
 			<div class="flex items-center gap-3">
-				<h2 class="text-lg font-semibold">Существующие сеты</h2>
+				<h2 class="text-lg font-semibold text-center">Существующие сеты</h2>
 				<span class="text-sm text-gray-400">({data.wordSets.length})</span>
 			</div>
 

@@ -5,14 +5,14 @@
 </script>
 
 {#if category === 'words'}
-	<h2>Выберите новое прилагательное:</h2>
+	<h2 class="text-center">Выберите новое прилагательное:</h2>
 	<div class="grid max-w-lg grid-cols-2 gap-4">
 		{#each adjectiveChoices as adj}
 			<Button color="green" onclick={() => setAdjective(adj)}>{adj}</Button>
 		{/each}
 	</div>
 {:else}
-	<h2>Выберите новую фигуру:</h2>
+	<h2 class="text-center">Выберите новую фигуру:</h2>
 	<div class="grid grid-cols-3 gap-4">
 		{#each shapeChoices as shape}
 			<button

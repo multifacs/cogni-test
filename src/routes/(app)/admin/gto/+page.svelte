@@ -86,7 +86,7 @@
 	<div class="flex flex-col gap-6">
 		<!-- Existing sessions -->
 		<div class="flex flex-col gap-3">
-			<h2 class="text-xl font-semibold">Существующие сессии</h2>
+			<h2 class="text-xl font-semibold text-center">Существующие сессии</h2>
 			{#if data.sessions.length === 0}
 				<div class="flex flex-col items-center gap-2 py-6">
 					<svg
@@ -193,7 +193,7 @@
 				handleCreateSession(e.currentTarget);
 			}}
 		>
-			<h2 class="text-xl font-semibold">Создать сессию</h2>
+			<h2 class="text-xl font-semibold text-center">Создать сессию</h2>
 
 			{#if createError}
 				<p class="rounded-lg bg-red-900/30 px-3 py-2 text-sm text-red-300">{createError}</p>
@@ -217,7 +217,7 @@
 			<!-- Participant selection -->
 			<div class="flex flex-col gap-2">
 				<div class="flex flex-wrap items-center gap-3">
-					<h3 class="text-lg font-medium">Участники</h3>
+					<h3 class="text-lg font-medium text-center">Участники</h3>
 					<span class="text-sm">({selectedUsers.size} выбрано)</span>
 					<div class="flex-1"></div>
 					<Button

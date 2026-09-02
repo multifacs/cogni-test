@@ -154,7 +154,7 @@
 
 {#if phase === 'config'}
 	<div class="flex flex-col gap-4">
-		<h2 class="text-xl font-semibold">Выберите режим</h2>
+		<h2 class="text-xl font-semibold text-center">Выберите режим</h2>
 		<div class="grid max-w-xl grid-cols-2 gap-4">
 			<button
 				class="card {domain === 'figures' ? 'selected' : ''}"

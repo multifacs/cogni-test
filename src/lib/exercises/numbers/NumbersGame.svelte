@@ -167,7 +167,7 @@
 			исчезновения с экрана.
 		</p>
 		<div class="rounded-2xl bg-white/5 px-6 py-5">
-			<h2 class="mb-3 text-base font-semibold">Инструкция</h2>
+			<h2 class="mb-3 text-base font-semibold text-center">Инструкция</h2>
 			<ol class="flex list-disc flex-col gap-1.5 pl-5">
 				<li class="text-base leading-normal">
 					Вам будут показаны числа, которые нужно запомнить.
@@ -184,7 +184,7 @@
 {:else}
 	<div class="flex flex-col items-center justify-center gap-4">
 		<section class="flex w-full flex-col gap-6 rounded-3xl p-8 backdrop-blur-sm">
-			<h1 class="text-3xl font-bold">Уровень {currentLevelNumber()}</h1>
+			<h1 class="text-3xl font-bold text-center">Уровень {currentLevelNumber()}</h1>
 
 			{#key `${phase}-${currentLevelIndex}`}
 				{#if phase === 'memorize'}
@@ -192,7 +192,7 @@
 						class="flex flex-col items-center justify-center gap-4 rounded-2xl bg-white/5 p-6"
 					>
 						<div class="flex flex-col items-center justify-between gap-3">
-							<h2 class="text-xl font-semibold">Запомните числа</h2>
+							<h2 class="text-xl font-semibold text-center">Запомните числа</h2>
 							<div
 								class="min-w-[60px] rounded-full bg-white px-3.5 py-1 text-center text-sm font-bold whitespace-nowrap text-[#0c1452]"
 							>
@@ -219,7 +219,9 @@
 				{:else if phase === 'input'}
 					<div class="flex flex-col gap-4 rounded-2xl p-6">
 						<div class="flex flex-col items-center justify-between gap-3">
-							<h2 class="text-xl font-semibold">Введите числа по порядку</h2>
+							<h2 class="text-xl font-semibold text-center">
+								Введите числа по порядку
+							</h2>
 							<div
 								class="min-w-[60px] rounded-full px-3.5 py-1 text-center text-sm font-normal whitespace-nowrap"
 							>
@@ -266,7 +268,7 @@
 					role="dialog"
 					aria-modal="true"
 				>
-					<h2 class="text-2xl font-bold">Уровень {currentReview.level}</h2>
+					<h2 class="text-2xl font-bold text-center">Уровень {currentReview.level}</h2>
 					<p
 						class="text-sm {currentReview.isCorrect
 							? 'text-green-200'
@@ -278,7 +280,9 @@
 					</p>
 					<div class="grid grid-cols-2 gap-5">
 						<div class="flex flex-col justify-center items-center">
-							<h3 class="mb-2.5 text-sm font-medium tracking-widest uppercase">
+							<h3
+								class="mb-2.5 text-sm font-medium tracking-widest uppercase text-center"
+							>
 								Исходные числа
 							</h3>
 							<div class="flex flex-wrap gap-2">
@@ -292,7 +296,9 @@
 							</div>
 						</div>
 						<div class="flex flex-col justify-center items-center">
-							<h3 class="mb-2.5 text-sm font-medium tracking-widest uppercase">
+							<h3
+								class="mb-2.5 text-sm font-medium tracking-widest uppercase text-center"
+							>
 								Ваш ввод
 							</h3>
 							<div class="flex flex-wrap gap-2">

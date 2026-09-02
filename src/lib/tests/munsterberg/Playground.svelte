@@ -296,7 +296,9 @@
 	<!-- <h3>{`0${timer === 60 ? 1 : 0}:${timer % 60 < 10 ? '0' : ''}${timer % 60}`}</h3> -->
 	<ProgressBar min={0} max={60} progress={60 - timer} />
 {:else}
-	<h3>Вы отгадали {guessedCount}/{generatedWords.length} за {60 - timer} сек.</h3>
+	<h3 class="text-center">
+		Вы отгадали {guessedCount}/{generatedWords.length} за {60 - timer} сек.
+	</h3>
 {/if}
 
 <svelte:window bind:innerWidth bind:innerHeight />

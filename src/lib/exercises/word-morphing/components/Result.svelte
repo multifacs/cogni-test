@@ -30,7 +30,7 @@
 </script>
 
 <div class="flex flex-col gap-2">
-	<h2>Ваши ответы:</h2>
+	<h2 class="text-center">Ваши ответы:</h2>
 	<ol>
 		{#each recalledCombos as recalled, i}
 			<li
@@ -46,7 +46,7 @@
 </div>
 
 <div class="flex flex-col gap-2">
-	<h2>Ожидаемые ответы:</h2>
+	<h2 class="text-center">Ожидаемые ответы:</h2>
 	{#if category === 'words'}
 		<ul>
 			{#each expectedCombos as expected}
