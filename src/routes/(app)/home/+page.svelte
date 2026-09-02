@@ -129,7 +129,7 @@
 	};
 </script>
 
-<main class="main">
+<main class="main flex flex-col items-center justify-center">
 	{#if !undiagnosed}
 		<div class="flex flex-col items-center gap-6">
 			<div class="main-content gap-6">
@@ -207,7 +207,7 @@
 			{/if}
 		</div>
 	{:else}
-		<div class="flex w-full max-w-xs flex-col gap-4">
+		<div class="flex w-full max-w-xs flex-col gap-4 mx-auto text-center">
 			<h2 class="text-center">
 				Пройдите начальную диагностику, чтобы узнать свой когнитивный возраст.
 			</h2>
