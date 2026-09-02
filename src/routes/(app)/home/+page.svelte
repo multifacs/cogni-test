@@ -129,7 +129,7 @@
 	};
 </script>
 
-<main class="main flex flex-col items-center justify-center">
+<main class="main flex flex-col items-center justify-center-safe">
 	{#if !undiagnosed}
 		<div class="flex flex-col items-center gap-6">
 			<div class="main-content gap-6">
