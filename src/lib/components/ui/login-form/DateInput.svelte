@@ -124,7 +124,7 @@
     border
 	bg-[#E5E7EB]
 	p-2
-    text-white
+    text-(--main-text-color)
     placeholder-gray-400
     outline-0
     transition
