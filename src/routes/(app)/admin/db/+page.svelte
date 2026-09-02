@@ -1,13 +1,17 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
+	import { getContext, onMount } from 'svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
-</script>
+	const headerContext = getContext<{ value: string }>('headerText');
 
-<section class="banner">
-	<h1 class="text-3xl font-bold">База пользователей</h1>
-</section>
+	onMount(() => {
+		if (headerContext) {
+			headerContext.value = 'База пользователей';
+		}
+	});
+</script>
 
 <main class="main flex flex-col items-center justify-center">
 	<div class="border-default relative w-full overflow-x-auto rounded-2xl border shadow-xs">

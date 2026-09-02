@@ -30,7 +30,7 @@
 
 {#if Component}
 	<main class="main box-border text-justify">
-		<div class="flex min-h-full flex-col justify-center">
+		<div class="flex min-h-full flex-col items-center justify-center">
 			<Component></Component>
 		</div>
 	</main>

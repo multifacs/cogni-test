@@ -30,18 +30,18 @@
 	}
 </script>
 
-<main class="main box-border flex min-h-full flex-col justify-center gap-2">
+<main class="main box-border flex min-h-full flex-col gap-2">
 	{#if !results}
 		<Spinner />
 		<p>Загрузка результатов...</p>
 	{:else if results.length > 0}
 		{#each results as result (result.sessionId)}
-			<div class="w-full rounded-2xl bg-gray-600 shadow">
+			<div class="w-full rounded-2xl bg-white shadow">
 				<button
-					class={`flex w-full cursor-pointer items-center justify-between rounded-t-2xl px-4 py-3 transition-colors hover:bg-gray-400 ${openedSessionId !== result.sessionId ? 'hover:rounded-b-2xl' : ''}`}
+					class={`flex w-full cursor-pointer items-center justify-between rounded-t-2xl px-4 py-3 transition-colors hover:bg-gray-100 ${openedSessionId !== result.sessionId ? 'hover:rounded-b-2xl' : ''}`}
 					onclick={() => toggleSession(result.sessionId)}
 				>
-					<span class="font-medium text-gray-50">
+					<span class="font-medium">
 						{openedSessionId === result.sessionId
 							? 'Попытка от ' + formatUserLocalDate(result.createdAt)
 							: formatUserLocalDate(result.createdAt)}

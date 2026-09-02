@@ -5,7 +5,7 @@ export type Word = Color | Stage;
 export type Task = {
 	stage: number;
 	word: Word;
-	color: Color | 'white';
+	color: Color | 'var(--main-text-color)';
 	task: 'both' | 'meaning' | 'color' | 'stage';
 };
 

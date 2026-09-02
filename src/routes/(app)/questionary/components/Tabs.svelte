@@ -1,3 +1,4 @@
+<!-- src/routes/questionary/components/Tabs.svelte -->
 <script lang="ts">
 	// Svelte 5 props
 	let {
@@ -13,7 +14,7 @@
 	} = $props();
 </script>
 
-<ul class="w-full flex gap-1 text-center text-sm font-medium justify-center">
+<ul class="font-black w-full flex gap-1 text-center text-sm font-medium justify-center flex-wrap">
 	{#each tabs as tab}
 		<li class="me-2 shrink-0" class:max-md:flex-1={!tab.disabled && activeTab === tab.id}>
 			<button
@@ -40,8 +41,11 @@
 				class:hover:bg-gray-600={!tab.disabled && activeTab !== tab.id}
 				class:bg-blue-900={!tab.disabled && activeTab !== tab.id}
 				onclick={() => {
-					console.log(activeTab);
-					return !tab.disabled && onTabChange(tab.id);
+					if (!tab.disabled) {
+						console.log('Switching to tab:', tab.id);
+						activeTab = tab.id;
+						onTabChange(tab.id);
+					}
 				}}
 				disabled={tab.disabled}
 			>
@@ -53,5 +57,9 @@
 
 <!-- Content -->
 <div class="mt-4 w-full">
-	{@render children()}
+	{#if typeof children === 'function'}
+		{@render children()}
+	{:else}
+		{children}
+	{/if}
 </div>

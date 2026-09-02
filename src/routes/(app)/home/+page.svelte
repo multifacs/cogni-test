@@ -1,17 +1,45 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
-	import { onMount } from 'svelte';
+	import { getContext, onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import localforage from 'localforage';
 	import { goto } from '$app/navigation';
+	import { userStore } from '$lib/stores/user';
+	import AgeCard from '$lib/components/ui/AgeCard.svelte';
+	import RecommendationCard from '$lib/components/ui/RecommendationCard.svelte';
 
 	let { data } = $props();
+
+	function capitalize(str: string): string {
+		if (!str) return 'Пользователь';
+		return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+	}
 
 	let diferredInstallEvent: any | null = $state(null);
 	let showInstallButton = $state(true);
 	let showInstallModal = $state(false);
-	let undiagnosed = $state(false); // i guess with variable is about me
+	let undiagnosed = $state(false);
+	let userName = $state('Пользователь');
+	let greeting = $state('Добрый день');
+	let realAge = $state<number | null>(null);
+	let predictedAge = $state<number | null>(null); // всегда null; anticipatedAge отклонен
+
+	const headerContext = getContext<{ value: string }>('headerText');
+
+	function updateGreetingAndHeader() {
+		const hour = new Date().getHours();
+		let newGreeting;
+		if (hour < 12) newGreeting = 'Доброе утро';
+		else if (hour < 18) newGreeting = 'Добрый день';
+		else newGreeting = 'Добрый вечер';
+
+		greeting = newGreeting;
+
+		if (headerContext) {
+			headerContext.value = `${greeting}, ${userName}!`;
+		}
+	}
 
 	onMount(async () => {
 		if (data.hasUnfinishedTests && !data.loggedInAdmin) {
@@ -38,11 +66,38 @@
 			showInstallModal = false;
 		});
 
-		// don't show button if user in the standalone app
 		if (checkStandaloneMode()) {
 			showInstallButton = false;
 			localforage.setItem('showInstallButton', false);
 		}
+
+		updateGreetingAndHeader();
+		const unsubscribeUser = userStore.subscribe((user) => {
+			if (user) {
+				const rawName = (user as any).firstname || 'пользователь';
+				userName = capitalize(rawName);
+
+				const userBirthday = user.birthday || null;
+				if (userBirthday) {
+					const birthDate = new Date(userBirthday);
+					const today = new Date();
+					let age = today.getFullYear() - birthDate.getFullYear();
+					const monthDiff = today.getMonth() - birthDate.getMonth();
+					if (
+						monthDiff < 0 ||
+						(monthDiff === 0 && today.getDate() < birthDate.getDate())
+					) {
+						age--;
+					}
+					realAge = age;
+				}
+				updateGreetingAndHeader();
+			}
+		});
+
+		return () => {
+			unsubscribeUser();
+		};
 	});
 
 	async function handleInstall() {
@@ -75,17 +130,22 @@
 	};
 </script>
 
-<section class="banner">
-	<h1 class="text-3xl font-bold">Добро пожаловать!</h1>
-</section>
-<main class="main flex flex-col items-center justify-center gap-4">
+<main class="main">
 	{#if !undiagnosed}
-		<div class="flex w-full max-w-xs flex-col gap-4">
-			<Button color="green" goto="/tests">🧪 Когнитивный возраст</Button>
-			<Button color="gray" goto="/exercises">📊 Когнитивный тренажёр</Button>
-			<Button color="blue" goto="/materials">📚 Когнитивное долголетие</Button>
-			<Button color="orange" goto="/gto">🏆 ГТО-М</Button>
-			<Button color="pink" goto="/metrics">Метрики WIP</Button>
+		<div class="flex flex-col items-center gap-6">
+			<div class="main-content gap-6">
+				<AgeCard age={null} {realAge} />
+				<div class="justify-beetwen n flex flex-col justify-around gap-6">
+					<Button color="green" goto="/exercises">Продолжить тренировки</Button>
+					<RecommendationCard
+						title="Совет дня"
+						text="Статья: как физическая активность влияет на память"
+						icon="/icons/book-open.svg"
+						goto="/materials"
+						button_text="Прочитать"
+					/>
+				</div>
+			</div>
 
 			{#if showInstallButton}
 				<div class="flex w-full max-w-xs flex-col gap-4 text-center">
@@ -99,15 +159,15 @@
 				<Modal bind:showModal={showInstallModal}>
 					{#snippet header()}
 						<div class="flex flex-col gap-4">
-							<h2 class="text-2xl text-white">
+							<h2 class="text-2xl">
 								Установка приложения на не chrome-based браузерах
 							</h2>
-							<p class="text-white">Похоже, Вы используете firefox или safari.</p>
-							<p class="text-white">
+							<p>Похоже, Вы используете firefox или safari.</p>
+							<p>
 								Если Вы используете <b>Safari</b>, то вы можете установить
 								приложение на своем устройстве вручную.
 							</p>
-							<ol class="list-inside list-decimal text-white">
+							<ol class="list-inside list-decimal">
 								<li>
 									<b>Нажмите «Поделиться»</b>: Найдите иконку "Поделиться"
 									(квадрат со стрелкой, смотрящей вверх) внизу или вверху экрана и
@@ -126,7 +186,7 @@
 									он будет запускаться как отдельное приложение.
 								</li>
 							</ol>
-							<p class="text-white">
+							<p class="">
 								<b>Firefox</b> не поддерживает установку pwa приложений. В этом случае
 								воспользуйтесь другим браузером.
 							</p>
@@ -146,26 +206,6 @@
 					</div>
 				</Modal>
 			{/if}
-			<div class="flex w-full max-w-xs flex-col gap-4 text-center">
-				<h3 class="text-lg">Рекомендации</h3>
-			</div>
-			{#if !data.hasData}
-				<span>Сначала пройдите тесты и упражнения, чтобы получить рекомендации.</span>
-			{:else}
-				<div class="flex w-full flex-col gap-3">
-					{#each data.recommendations as { name, title, path, img }}
-						<a
-							href={path}
-							class="flex items-center justify-between rounded-2xl bg-gray-600 p-3 shadow transition hover:bg-gray-100 hover:text-black"
-						>
-							<div class="flex flex-col gap-1">
-								<span class="text-lg">{title}</span>
-							</div>
-							<img src={img} alt={name} class="h-14 w-14 rounded-xl bg-white" />
-						</a>
-					{/each}
-				</div>
-			{/if}
 		</div>
 	{:else}
 		<div class="flex w-full max-w-xs flex-col gap-4">
@@ -180,9 +220,15 @@
 	{/if}
 </main>
 
-<section class="low-content flex items-center justify-center">
-	<p class="max-w-md text-center text-lg max-md:text-sm">Выберите, с чего начать.</p>
-</section>
-
 <style>
+	.main-content {
+		display: grid;
+		grid-template-columns: 1fr;
+	}
+	@media (min-width: 1024px) {
+		.main-content {
+			grid-template-columns: 1fr 1fr;
+			gap: 5rem;
+		}
+	}
 </style>

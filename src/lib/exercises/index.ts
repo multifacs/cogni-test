@@ -14,9 +14,9 @@ export type { ExerciseType, ExerciseResult, ExerciseResults } from './types';
 export const exercises: ExerciseData[] = [
 	{
 		name: 'word-morphing',
-		title: 'Тест на словосочетания',
+		title: 'Цепочка слов',
 		path: '/exercises/word-morphing/about',
-		img: '/exercises/word-morphing.svg',
+		img: '/exercises/word-morphing1.svg',
 		admin_metrics: [
 			'working_memory',
 			'short_memory',
@@ -29,25 +29,25 @@ export const exercises: ExerciseData[] = [
 	},
 	{
 		name: 'campimetry',
-		title: 'Расширенная кампиметрия',
+		title: 'Поле зрения',
 		path: '/exercises/campimetry/about',
-		img: '/tests/campimetry.svg',
+		img: '/tests/campimetry1.svg',
 		admin_metrics: ['attention', 'perception', 'color_perception'],
 		user_metrics: ['perception']
 	},
 	{
 		name: 'memory-match',
-		title: 'Совпадения',
+		title: 'Найди пару',
 		path: '/exercises/memory-match/about',
-		img: '/exercises/memory-match.svg',
+		img: '/exercises/memory-match1.svg',
 		admin_metrics: ['spacial_perception', 'short_memory', 'attention'],
 		user_metrics: ['memory']
 	},
 	{
 		name: 'nback-stream',
-		title: 'Определение повторов',
+		title: 'Повторы в ряду',
 		path: '/exercises/nback-stream/about',
-		img: '/exercises/n-back.svg',
+		img: '/exercises/n-back1.svg',
 		admin_metrics: ['executive_function', 'perception', 'attention', 'short_memory'],
 		user_metrics: ['memory']
 	},
@@ -55,43 +55,43 @@ export const exercises: ExerciseData[] = [
 		name: 'raven-matrices',
 		title: 'Матрицы Равена',
 		path: '/exercises/raven-matrices/about',
-		img: '/exercises/raven-matrices.svg'
+		img: '/exercises/raven-matrices1.svg'
 	},
 	{
 		name: 'emoji',
-		title: 'Тест на смену эмодзи',
+		title: 'Смена эмодзи',
 		path: '/exercises/emoji/about',
-		img: '/exercises/emoji.svg'
+		img: '/exercises/emoji1.svg'
 	},
 	{
 		name: 'attention',
-		title: 'Тест на внимание',
+		title: 'Найди число',
 		path: '/exercises/attention/about',
-		img: '/exercises/attention.svg'
+		img: '/exercises/attention1.svg'
 	},
 	{
 		name: 'pictures',
-		title: 'Запоминание картинок',
+		title: 'Детали картинок',
 		path: '/exercises/pictures/about',
-		img: '/exercises/pictures.svg'
+		img: '/exercises/pictures1.svg'
 	},
 	{
 		name: 'numbers',
-		title: 'Запоминание чисел',
+		title: 'Цифровой ряд',
 		path: '/exercises/numbers/about',
-		img: '/exercises/numbers.svg'
+		img: '/exercises/numbers1.svg'
 	},
 	{
 		name: 'flanker',
-		title: 'Фланговый тест Эриксена',
+		title: 'Стрелки',
 		path: '/exercises/flanker/about',
-		img: '/exercises/flanker.svg'
+		img: '/exercises/flanker1.svg'
 	},
 	{
 		name: 'letters',
-		title: 'Буквенный охват',
+		title: 'Цепочка букв',
 		path: '/exercises/letters/about',
-		img: '/exercises/letters.svg'
+		img: '/exercises/letters1.svg'
 	},
 	{
 		name: 'road-trip',

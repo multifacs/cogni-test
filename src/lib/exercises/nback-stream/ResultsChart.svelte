@@ -28,11 +28,11 @@
 
 	const pointColor = (ctx: ScriptableContext<'line'>) => {
 		const result = ctx.raw as NBackResult | undefined;
-		if (!result) return 'white';
+		if (!result) return '--main-text-color';
 		return result.isCorrect ? getCSSVar('--color-green-500') : getCSSVar('--color-red-400');
 	};
 
-	Chart.defaults.color = 'white';
+	Chart.defaults.color = '--main-text-color';
 
 	let canvas: HTMLCanvasElement = $state(Object());
 	let chart = $state(Object());

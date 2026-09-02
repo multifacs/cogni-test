@@ -72,22 +72,22 @@
 
 	const colorClasses: ColorClassesObject = {
 		red: {
-			bg: 'bg-red-700',
-			hover: 'hover:bg-red-800',
+			bg: 'bg-red-400',
+			hover: 'hover:bg-red-500',
 			ring: 'focus:ring-red-600',
 			offset: 'focus:ring-offset-red-300',
 			text: 'text-white'
 		},
 		blue: {
-			bg: 'bg-blue-700',
-			hover: 'hover:bg-blue-800',
+			bg: 'bg-blue-400',
+			hover: 'hover:bg-blue-500',
 			ring: 'focus:ring-blue-600',
 			offset: 'focus:ring-offset-blue-300',
 			text: 'text-white'
 		},
 		green: {
-			bg: 'bg-green-700',
-			hover: 'hover:bg-green-800',
+			bg: 'bg-[#6FCF97]',
+			hover: 'hover:bg-green-500',
 			ring: 'focus:ring-green-600',
 			offset: 'focus:ring-offset-green-300',
 			text: 'text-white'

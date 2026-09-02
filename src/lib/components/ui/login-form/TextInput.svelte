@@ -49,18 +49,18 @@
 	max-xs:text-base
 	max-xs:p-1
 	xs:p-2.5
-	p-2
 	block
 	w-full
-    rounded-lg
-	border
-    bg-gray-800
-    text-white
+	rounded-lg
+    border
+	bg-[#E5E7EB]
+    p-2
+    text-(--main-text-color)
     placeholder-gray-400
     outline-0
     transition
-    focus:border-blue-500
-    focus:ring-blue-500
+   focus:border-[var(--main-accent-color)]
+    focus:ring-[var(--main-accent-color)]
 	${errorMessage ? 'border-red-500' : 'border-gray-600'}
   `}
 />

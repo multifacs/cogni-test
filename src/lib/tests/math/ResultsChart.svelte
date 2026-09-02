@@ -27,7 +27,7 @@
 		return result.isCorrect ? getCSSVar('--color-green-500') : getCSSVar('--color-red-400');
 	};
 
-	Chart.defaults.color = 'white';
+	Chart.defaults.color = 'var(--main-text-color)';
 
 	let canvas: HTMLCanvasElement = $state(Object());
 	let chart = $state(Object());
@@ -229,6 +229,6 @@
 	});
 </script>
 
-<p>Время прохождения теста: {allTime} с</p>
-<p>Среднее время реакции: {avg} мc</p>
+<h2>Время прохождения теста: {allTime} с</h2>
+<h2 style="padding-bottom: 1rem;">Среднее время реакции: {avg} мc</h2>
 <canvas bind:this={canvas}></canvas>

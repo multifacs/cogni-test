@@ -287,7 +287,6 @@
 		font-size: 0.8rem;
 		text-transform: uppercase;
 		letter-spacing: 0.12em;
-		color: rgba(255, 255, 255, 0.5);
 		margin: 0;
 	}
 
@@ -298,17 +297,16 @@
 	}
 	.progress-copy {
 		font-size: 0.9rem;
-		color: rgba(255, 255, 255, 0.7);
 	}
 	.progress-track {
 		height: 6px;
-		background: rgba(255, 255, 255, 0.15);
+		background: white;
 		border-radius: 99px;
 		overflow: hidden;
 	}
 	.progress-value {
 		height: 100%;
-		background: white;
+		background: #6fcf97;
 		border-radius: 99px;
 		transition: width 0.3s ease;
 	}
@@ -338,7 +336,6 @@
 	}
 
 	.image-frame {
-		background: rgba(255, 255, 255, 0.05);
 	}
 	.visual-panel img {
 		width: 100%;
@@ -351,18 +348,15 @@
 
 	.memory-callout {
 		padding: 24px;
-		background: rgba(255, 255, 255, 0.06);
 		border-radius: 16px;
 		text-align: center;
 		width: 100%;
 	}
 	.memory-callout p {
-		color: white;
 		font-size: 1rem;
 		margin: 0 0 8px;
 	}
 	.memory-callout span {
-		color: rgba(255, 255, 255, 0.5);
 		font-size: 0.85rem;
 	}
 
@@ -376,7 +370,6 @@
 
 	.question-index {
 		font-size: 0.8rem;
-		color: rgba(255, 255, 255, 0.4);
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
 		margin: 0;
@@ -385,13 +378,11 @@
 	.content-panel h2 {
 		font-size: 1.25rem;
 		font-weight: 600;
-		color: white;
 		margin: 0;
 		line-height: 1.4;
 	}
 	.question-helper {
 		font-size: 0.9rem;
-		color: rgba(255, 255, 255, 0.55);
 		margin: 0;
 	}
 
@@ -408,12 +399,10 @@
 	.result-card h1 {
 		font-size: 1.8rem;
 		font-weight: 700;
-		color: white;
 		margin: 0;
 	}
 
 	.result-score {
-		background: rgba(255, 255, 255, 0.08);
 		border-radius: 16px;
 		padding: 20px 24px;
 		display: flex;
@@ -423,11 +412,9 @@
 	.result-score strong {
 		font-size: 2rem;
 		font-weight: 700;
-		color: white;
 	}
 	.score-label {
 		font-size: 1.5rem;
-		color: rgb(255, 255, 255);
 		margin: 0 0 4px;
 	}
 

@@ -5,12 +5,17 @@
 	import { exerciseRegistry } from '$lib/exercises';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { onMount } from 'svelte';
+	import { getContext, onMount } from 'svelte';
+	import Header from '$lib/components/ui/Header.svelte';
 
 	let { data } = $props();
 
+	const headerContext = getContext<{ value: string }>('headerText');
 	onMount(() => {
 		invalidateAll();
+		if (headerContext) {
+			headerContext.value = 'Сессии ГТО-М';
+		}
 	});
 
 	let showDisclaimer = $state(false);
@@ -87,10 +92,6 @@
 	}
 </script>
 
-<section class="banner">
-	<h1 class="text-2xl font-bold">Сессии ГТО-М</h1>
-</section>
-
 <main class="main overflow-auto p-4">
 	<div class="flex flex-col gap-6">
 		{#if data.activeSessions.length === 0 && data.completedSessions.length === 0}
@@ -124,7 +125,7 @@
 						{@const total = GTO_TEST_ORDER.length}
 						{@const percent = Math.round((progress / total) * 100)}
 						<div
-							class="flex flex-col gap-4 rounded-xl border border-gray-700 bg-gray-800/50 p-4 transition-colors"
+							class="flex flex-col gap-4 rounded-xl border border-gray-700 bg-white p-4 transition-colors"
 						>
 							<!-- Session header -->
 							<div class="flex items-center justify-between">

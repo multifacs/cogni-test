@@ -85,7 +85,7 @@
 </script>
 
 {#if Component}
-	<main class="main flex flex-col items-center justify-evenly">
+	<main class="main flex flex-col items-center justify-evenly text-[--main-text-color]">
 		<Component bind:this={childComponent} gameEnd={onGameEnd} sendResults={onSendResults} {data}
 		></Component>
 	</main>

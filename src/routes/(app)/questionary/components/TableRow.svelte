@@ -1,3 +1,4 @@
+<!-- src/routes/questionary/components/TableRow.svelte -->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 
@@ -95,7 +96,7 @@
 	});
 
 	function ensureTrailingEmptyRow(rows: { text: string; choice: string }[]) {
-		if (type !== 'custom-choice') return;
+		if (type !== 'custom-choice') return rows;
 
 		const last = rows[rows.length - 1];
 
@@ -153,7 +154,6 @@
 			isInternalUpdate = true;
 			value = stringValue;
 
-			// microtask, а не setTimeout — быстрее и чище
 			queueMicrotask(() => {
 				isInternalUpdate = false;
 			});
@@ -169,19 +169,19 @@
 	class:max-md:grid-cols-1={!omit}
 >
 	<td
-		class="text-sm whitespace-break-spaces text-blue-100"
+		class="text-sm whitespace-break-spaces text-black"
 		class:col-span-2={span}
 		class:font-semibold={span}
 	>
 		{label}
 	</td>
 
-	<td class="flex items-center gap-2 text-sm text-blue-100" class:collapse={span}>
+	<td class="flex items-center gap-2 text-sm text-black" class:collapse={span}>
 		{#if type === 'input'}
 			<input
 				type="text"
 				bind:value
-				class="w-full rounded-sm border px-3 py-2 text-blue-100
+				class="w-full rounded-sm border px-3 py-2 text-black
 				placeholder-blue-400
 				transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400"
 				class:border-blue-300={value != null}
@@ -198,7 +198,7 @@
 				<select
 					bind:value
 					class="w-full cursor-pointer rounded-sm border p-2
-					text-blue-100 transition outline-none open:cursor-pointer open:text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-400"
+					text-black transition outline-none open:cursor-pointer open:text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-400"
 					class:border-blue-300={value != null}
 					class:border-orange-400={value == null}
 					class:border-2={value == null}
@@ -214,7 +214,7 @@
 				<select
 					bind:value
 					class="w-full cursor-pointer truncate rounded-sm border p-2
-					text-blue-100 transition outline-none open:cursor-pointer open:text-gray-900 invalid:text-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-400"
+					text-black transition outline-none open:cursor-pointer open:text-gray-900 invalid:text-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-400"
 					placeholder="Выберите..."
 					class:border-blue-300={value != null}
 					class:border-orange-400={value == null}
@@ -236,7 +236,7 @@
 					bind:value
 					{min}
 					{max}
-					class="flex-1 rounded-sm border p-2 text-blue-100
+					class="flex-1 rounded-sm border p-2 text-black
 					outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
 					placeholder="Введите..."
 					class:border-blue-300={value != null}
@@ -257,7 +257,7 @@
 							value={row.text}
 							oninput={(e) => updateText(i, e.currentTarget.value)}
 							class="rounded-sm border border-blue-300 p-2 text-ellipsis
-							text-blue-100 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+							text-black outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
 							class:flex-1={showSelect}
 							class:w-full={!showSelect}
 							placeholder="Введите текст..."
@@ -268,7 +268,7 @@
 								value={row.choice}
 								onchange={(e) => updateChoice(i, e.currentTarget.value)}
 								class="flex-1 rounded-sm border border-blue-300 p-2 text-ellipsis
-									text-blue-100 outline-none open:text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+									text-black outline-none open:text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
 							>
 								<option value="">(без выбора)</option>
 								{#each options as opt}
@@ -296,8 +296,5 @@
 				{value}
 			{/if}
 		{/if}
-		<!-- {#if (value == null) && type !== 'custom-choice'}
-			<span class="fond-bold text-2xl text-red-500 [text-shadow:0_0_10px_#ef4444]">!</span>
-		{/if} -->
 	</td>
 </tr>

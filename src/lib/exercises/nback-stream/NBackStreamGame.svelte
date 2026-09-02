@@ -155,43 +155,43 @@
 {#if phase === 'config'}
 	<div class="flex flex-col gap-4">
 		<h2 class="text-xl font-semibold">Выберите режим</h2>
-		<div class="grid grid-cols-2 gap-4 max-w-xl">
+		<div class="grid max-w-xl grid-cols-2 gap-4">
 			<button
 				class="card {domain === 'figures' ? 'selected' : ''}"
 				onclick={() => (domain = 'figures')}
 			>
-				<div class="text-3xl mb-2">⬢</div>
+				<div class="mb-2 text-3xl">⬢</div>
 				<div class="font-medium">Фигуры</div>
 			</button>
 			<button
 				class="card {domain === 'numbers' ? 'selected' : ''}"
 				onclick={() => (domain = 'numbers')}
 			>
-				<div class="text-3xl mb-2">7</div>
+				<div class="mb-2 text-3xl">7</div>
 				<div class="font-medium">Числа</div>
 			</button>
 		</div>
 
-		<div class="grid grid-cols-3 gap-4 max-w-xl">
+		<div class="grid max-w-xl grid-cols-3 gap-4">
 			<button class="card {nBack === 1 ? 'selected' : ''}" onclick={() => (nBack = 1)}
-				><div class="text-2xl">1-back</div></button
+				><div class="text-2xl">на 1 раньше</div></button
 			>
 			<button class="card {nBack === 2 ? 'selected' : ''}" onclick={() => (nBack = 2)}
-				><div class="text-2xl">2-back</div></button
+				><div class="text-2xl">на 2 раньше</div></button
 			>
 			<button class="card {nBack === 3 ? 'selected' : ''}" onclick={() => (nBack = 3)}
-				><div class="text-2xl">3-back</div></button
+				><div class="text-2xl">на 3 раньше</div></button
 			>
 		</div>
 
-		<div class="w-full flex justify-center gap-4 pt-2">
+		<div class="flex w-full justify-center gap-4 pt-2">
 			<button class="btn" onclick={start}>Далее</button>
 		</div>
 	</div>
 {:else if phase === 'countdown'}
 	<div class="grid place-items-center p-10 text-center">
-		<div class="text-lg mb-2 opacity-80">Задание</div>
-		<div class="text-2xl font-semibold mb-6">
+		<div class="mb-2 text-lg opacity-80">Задание</div>
+		<div class="mb-6 text-2xl font-semibold">
 			{#if domain === 'figures'}
 				Сравнение по {target === 'shape' ? 'форме' : 'цвету'}
 			{:else}
@@ -201,15 +201,15 @@
 		<div class="text-6xl font-bold">{countdown}</div>
 	</div>
 {:else if phase === 'running'}
-	<div class="p-6 space-y-6">
-		<div class="text-lg font-semibold text-center">
+	<div class="space-y-6 p-6">
+		<div class="text-center text-lg font-semibold">
 			{#if domain === 'figures'}
 				{target === 'shape' ? 'Форма такая' : 'Цвет такой'} же, как {nBack}-ход(а) назад?
 			{:else}
 				Число такое же, как {nBack}-ход(а) назад?
 			{/if}
 		</div>
-		<div class="text-sm opacity-70 text-center -mt-1">Осталось ~ {remainSec} c</div>
+		<div class="-mt-1 text-center text-sm opacity-70">Осталось ~ {remainSec} c</div>
 
 		{#if current && current.truth === null}
 			<div class="hint">
@@ -220,7 +220,7 @@
 
 		<StreamBoard {current} />
 
-		<div class="flex gap-4 justify-center pt-2">
+		<div class="flex justify-center gap-4 pt-2">
 			{#if current?.truth === null}
 				<button class="btn primary" onclick={advance} aria-label="Далее (Space)"
 					>Далее</button
@@ -255,7 +255,7 @@
 		border: 1px solid rgba(0, 0, 0, 0.18);
 		border-radius: 1rem;
 		background: #fff;
-		color: #111827;
+
 		display: grid;
 		place-items: center;
 		cursor: pointer;
@@ -301,10 +301,9 @@
 		padding: 0.7rem 1.1rem;
 		border-radius: 0.8rem;
 		border: 1px solid rgba(0, 0, 0, 0.2);
-		background: #fff;
-		color: #111827;
+		color: #fff;
+		background-color: #6fcf97;
 		cursor: pointer;
-		font-weight: 600;
 	}
 	.btn:hover {
 		background: #f8fafc;

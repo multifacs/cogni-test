@@ -157,6 +157,7 @@
 					class="max-xs:w-16 max-xs:h-16 h-[100px] w-[100px] cursor-pointer touch-none bg-white mask-contain select-none"
 					disabled={!delta}
 					style={`
+						background-color: #9ca3af;
                         mask-image: url(${data.silhouettes[s]});
                         -webkit-mask-image: url(${data.silhouettes[s]});
                     `}
@@ -192,15 +193,15 @@
 
 	@media (orientation: portrait) {
 		.background {
-			width: 70vw;
-			height: 70vw;
+			width: 50vw;
+			height: 50vw;
 		}
 	}
 
 	@media (orientation: landscape) {
 		.background {
-			width: 50vh;
-			height: 50vh;
+			width: 40vh;
+			height: 40vh;
 		}
 	}
 </style>

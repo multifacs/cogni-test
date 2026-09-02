@@ -17,9 +17,9 @@
                 rounded-lg
                 border
                 border-gray-600
-                bg-gray-700
+                bg-white
                 p-2
-                text-white
+                text-(--main-text-color)
                 placeholder-gray-400
                 outline-0
                 transition

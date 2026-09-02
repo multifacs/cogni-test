@@ -25,7 +25,7 @@
 		return result.isCorrect ? getCSSVar('--color-green-500') : getCSSVar('--color-red-400');
 	};
 
-	Chart.defaults.color = 'white';
+	Chart.defaults.color = 'var(--main-text-color)';
 
 	let canvas: HTMLCanvasElement = $state(Object());
 	let chart = $state(Object());
@@ -80,7 +80,7 @@
 			},
 			options: {
 				onHover: function (event, chartElements) {
-                    // @ts-ignore
+					// @ts-ignore
 					const target = event.native ? event.native.target : event.chart.canvas;
 					target.style.cursor = chartElements.length ? 'pointer' : 'default';
 				},
@@ -106,10 +106,13 @@
 					legend: {
 						labels: {
 							usePointStyle: true,
-                            // @ts-ignore
+							// @ts-ignore
 							generateLabels: (chart) => {
-								const original = Chart.defaults.plugins.legend.labels.generateLabels(chart);
-								console.log(Chart.defaults.plugins.legend.labels.generateLabels(chart));
+								const original =
+									Chart.defaults.plugins.legend.labels.generateLabels(chart);
+								console.log(
+									Chart.defaults.plugins.legend.labels.generateLabels(chart)
+								);
 								const fontColor = original[0]['fontColor'];
 								const strokeStyle = original[0]['strokeStyle'];
 								const newLabels = [];
@@ -173,16 +176,20 @@
 							maxRotation: 0,
 							minRotation: 0,
 							callback: (idx) => {
-								const direction = (parsedResults[idx as number].raw as SwallowResult).direction;
+								const direction = (
+									parsedResults[idx as number].raw as SwallowResult
+								).direction;
 								if (direction == 'up') return '▲';
 								if (direction == 'down') return '▼';
 								if (direction == 'left') return '◄';
 								if (direction == 'right') return '►';
 							},
 							color: (ctx) => {
-								const color = (parsedResults[ctx.index].raw as SwallowResult).background == 'blue'
-									? '--color-blue-500'
-									: '--color-red-500';
+								const color =
+									(parsedResults[ctx.index].raw as SwallowResult).background ==
+									'blue'
+										? '--color-blue-500'
+										: '--color-red-500';
 								return getCSSVar(color);
 							},
 							font: {
@@ -209,5 +216,5 @@
 </script>
 
 <p>Время прохождения теста: {allTime} с</p>
-<p>Среднее время реакции: {avg} мc</p>
+<p class="padding-bottom: 1rem;">Среднее время реакции: {avg} мc</p>
 <canvas bind:this={canvas}></canvas>

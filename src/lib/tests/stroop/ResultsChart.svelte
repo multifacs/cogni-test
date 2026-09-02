@@ -26,7 +26,7 @@
 		return result.isCorrect ? getCSSVar('--color-green-500') : getCSSVar('--color-red-400');
 	};
 
-	Chart.defaults.color = 'white';
+	Chart.defaults.color = 'var(--main-text-color)';
 
 	let canvas: HTMLCanvasElement = $state(Object());
 	let chart = $state(Object());
@@ -81,8 +81,8 @@
 			},
 			options: {
 				onHover: function (event, chartElements) {
-                    // i actually don't know what is going on here
-                    // @ts-ignore
+					// i actually don't know what is going on here
+					// @ts-ignore
 					const target = event.native ? event.native.target : event.chart.canvas;
 					target.style.cursor = chartElements.length ? 'pointer' : 'default';
 				},
@@ -130,8 +130,11 @@
 						labels: {
 							usePointStyle: true,
 							generateLabels: (chart) => {
-								const original = Chart.defaults.plugins.legend.labels.generateLabels(chart);
-								console.log(Chart.defaults.plugins.legend.labels.generateLabels(chart));
+								const original =
+									Chart.defaults.plugins.legend.labels.generateLabels(chart);
+								console.log(
+									Chart.defaults.plugins.legend.labels.generateLabels(chart)
+								);
 								const fontColor = original[0]['fontColor'];
 								const strokeStyle = original[0]['strokeStyle'];
 								// const newLabels = [];
@@ -234,5 +237,5 @@
 </script>
 
 <p>Время прохождения теста: {allTime} с</p>
-<p>Среднее время реакции: {avg} мc</p>
+<p style="padding-bottom: 1rem;">Среднее время реакции: {avg} мc</p>
 <canvas bind:this={canvas}></canvas>
