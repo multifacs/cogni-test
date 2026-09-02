@@ -1,12 +1,13 @@
 <script lang="ts">
 	let { age, realAge } = $props();
+	let displayAge = $derived(age === null || age === undefined ? null : Math.round(age));
 
 	let trackerStatus = $derived(() => {
-		if (age === null || age === undefined || realAge === null || realAge === undefined) {
+		if (displayAge === null || realAge === null || realAge === undefined) {
 			return 'unknown';
 		}
-		if (age < realAge) return 'better';
-		if (age === realAge) return 'equal';
+		if (displayAge < realAge) return 'better';
+		if (displayAge === realAge) return 'equal';
 		return 'worse';
 	});
 
@@ -42,7 +43,7 @@
 <div class="card">
 	<div>
 		<h2 style="font-weight: var(--font-weight-bold);">Ваш когнитивный возраст</h2>
-		<h1>{age ?? '??'} лет</h1>
+		<h1>{displayAge ?? '??'} лет</h1>
 	</div>
 
 	<h4>{statusText()}</h4>
