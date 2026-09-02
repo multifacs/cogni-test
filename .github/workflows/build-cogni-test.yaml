@@ -1,13 +1,10 @@
-name: Build and Push Cogni-Test
+name: Build and Push Cogni-Test Image to GHCR
 
-on:
-    push:
-        branches: [main, dev]
-    workflow_dispatch:
+on: push
 
 jobs:
     build:
-        name: Build Cogni-Test Image
+        name: Build and Push Cogni-Test Image to GHCR
         runs-on: ubuntu-latest
 
         permissions:
@@ -18,7 +15,7 @@ jobs:
         steps:
             - uses: actions/checkout@v6
               with:
-                submodules: true
+                  submodules: true
 
             - name: Set up Docker Buildx
               uses: docker/setup-buildx-action@v4
@@ -37,7 +34,10 @@ jobs:
                     echo "TAG=latest" >> $GITHUB_ENV
                   else
                     echo "MODE=DEV" >> $GITHUB_ENV
-                    echo "TAG=dev" >> $GITHUB_ENV
+                    # Docker-тег допускает только [a-zA-Z0-9_.-] и должен начинаться
+                    # с буквы/цифры/_, поэтому чистим имя ветки (feature/x -> feature-x)
+                    TAG=$(echo "${{ github.ref_name }}" | sed -E -e 's/[^a-zA-Z0-9_.-]+/-/g' -e 's/^[^a-zA-Z0-9_]+//' | cut -c1-128)
+                    echo "TAG=${TAG}" >> $GITHUB_ENV
                   fi
 
             - name: Build and push
