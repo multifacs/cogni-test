@@ -40,11 +40,11 @@
 
 <div class="card">
 	<div>
-		<h2 style="font-weight: var(--font-weight-bold);">Ваш когнитивный возраст</h2>
-		<h1>{displayAge ?? '??'} лет</h1>
+		<p class="text-center text-base font-medium">Ваш когнитивный возраст</p>
+		<p class="text-center text-3xl font-bold">{displayAge ?? '??'} лет</p>
 	</div>
 
-	<h4>{statusText}</h4>
+	<p class="text-center text-sm">{statusText}</p>
 	{#if trackerImage}<img class="img" src={trackerImage} alt="Tracker" />{/if}
 </div>
 

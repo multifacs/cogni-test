@@ -1,16 +1,14 @@
 <script lang="ts">
 	let { title, info } = $props();
+
+	const empty = $derived(info === null || info === undefined || info === '');
 </script>
 
 <div class="card">
 	<div class="line"></div>
-	<div class="flex h-[80%] flex-col items-center justify-start p-[5%] gap-2">
-		<h2>
-			{title}
-		</h2>
-		<h1 style="font-weight: var(--font-weight-bold); --tw-font-weight: var(--font-weight-bold)">
-			{info}
-		</h1>
+	<div class="flex h-full w-full flex-1 flex-col items-center justify-start gap-2 p-4 md:p-5">
+		<p class="text-center text-base font-medium">{title}</p>
+		<p class="text-center text-2xl font-bold">{empty ? '—' : info}</p>
 	</div>
 </div>
 
@@ -22,16 +20,15 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		width: clamp(5rem, 40.5vw, 15rem);
-		height: clamp(5rem, 40.5vw, 15rem);
-		justify-content: space-between;
-		padding-bottom: 2vw;
+		width: 100%;
+		min-height: 7.5rem;
+		justify-content: flex-start;
 		flex-shrink: 0;
 	}
 
 	.line {
 		background-color: var(--main-accent-color);
-		height: clamp(1rem, 3.5vw, 2rem);
+		height: 1.25rem;
 		width: 100%;
 	}
 </style>

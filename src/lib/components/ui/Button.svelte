@@ -23,7 +23,8 @@
 		| 'violet'
 		| 'fuchsia'
 		| 'rose'
-		| 'cream';
+		| 'cream'
+		| 'secondary';
 	type OnclickType = MouseEventHandler<HTMLButtonElement> | null | undefined;
 	type TypeType = 'button' | 'submit' | 'reset' | null | undefined;
 	let {
@@ -203,6 +204,13 @@
 			ring: 'focus:ring-stone-200',
 			offset: 'focus:ring-offset-stone-100',
 			text: 'text-stone-900'
+		},
+		secondary: {
+			bg: 'bg-white',
+			hover: 'hover:bg-gray-50',
+			ring: 'focus:ring-gray-400',
+			offset: 'focus:ring-offset-gray-200',
+			text: 'text-gray-900'
 		}
 	};
 </script>

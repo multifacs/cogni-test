@@ -81,7 +81,7 @@
 </script>
 
 <main class="main" style="display: flex; flex-direction: column; align-items: center;">
-	<div class="content flex flex-col items-center justify-center gap-15 pt-[2%] pb-[4%]">
+	<div class="content flex flex-col items-center justify-center gap-8 pt-6 pb-12">
 		{#await $user}
 			<div class="flex justify-center p-8">
 				<p>Загрузка...</p>
@@ -89,16 +89,18 @@
 		{:then u}
 			{#if u && u.id}
 				<Card>
-					<div class="name flex w-[45vw] flex-col items-center gap-2 p-[2%]">
+					<div class="mx-auto flex max-w-md flex-col items-center gap-2 p-6">
 						<p><b>Имя:</b> {capitalize(u.firstname)} {capitalize(u.lastname)}</p>
 						<p><b>Возраст:</b> {formatAge(u.birthday)} лет</p>
 					</div>
 				</Card>
 				<div class="flex flex-col gap-7">
-					<h2>Заполните анкету, чтобы сделать результаты диагностики точнее</h2>
+					<h2 class="text-center">
+						Заполните анкету, чтобы сделать результаты диагностики точнее
+					</h2>
 					<Button color="green" goto="/questionary">Перейти к анкете</Button>
 				</div>
-				<div class="cards flex flex-wrap justify-between gap-5 p-2">
+				<div class="grid w-full grid-cols-2 gap-4 md:grid-cols-4">
 					<InfoCard title="Когнитивный возраст" info={predictedAge ?? '—'} />
 					<InfoCard title="Дата последней проверки" info="" />
 					<InfoCard title="Пройдено тренировок" info="" />
@@ -119,11 +121,16 @@
 
 				<Card>
 					<div class="flex flex-row items-center gap-8">
-						<h3 class="mb-4 text-center text-lg font-semibold">Уведомления</h3>
+						<h3 class="text-left text-lg font-semibold">Уведомления</h3>
 						{#if subscribed}
-							<Button color="red" kind="small" onclick={unsubscribe}
-								>Отписаться</Button
+							<Button
+								color="secondary"
+								kind="small"
+								class="border border-gray-300"
+								onclick={unsubscribe}
 							>
+								Отписаться
+							</Button>
 						{:else}
 							{#if showSpinner}
 								<div class="flex items-center justify-center gap-2">
@@ -140,10 +147,8 @@
 						{/if}
 					</div>
 				</Card>
-				<form method="POST" action="/?/logout" use:enhance>
-					<Button class="h-full w-full" type="submit" kind="small" color="red"
-						>Выйти</Button
-					>
+				<form class="mx-auto w-fit" method="POST" action="/?/logout" use:enhance>
+					<Button type="submit" kind="small" color="red">Выйти</Button>
 				</form>
 			{:else}
 				<div class="flex justify-center p-8">
@@ -155,14 +160,3 @@
 		{/await}
 	</div>
 </main>
-
-<style>
-	@media (min-width: 1024px) {
-		.cards {
-			gap: 4vw;
-		}
-		.name {
-			width: 20vw;
-		}
-	}
-</style>
