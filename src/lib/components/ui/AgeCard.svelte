@@ -46,7 +46,7 @@
 	</div>
 
 	<h4>{statusText()}</h4>
-	<img class="img" src={trackerImage()} alt="Tracker" />
+	{#if trackerImage()}<img class="img" src={trackerImage()} alt="Tracker" />{/if}
 </div>
 
 <style>

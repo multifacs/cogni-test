@@ -23,7 +23,6 @@
 	let userName = $state('Пользователь');
 	let greeting = $state('Добрый день');
 	let realAge = $state<number | null>(null);
-	let predictedAge = $state<number | null>(null); // всегда null; anticipatedAge отклонен
 
 	const headerContext = getContext<{ value: string }>('headerText');
 
@@ -134,7 +133,7 @@
 	{#if !undiagnosed}
 		<div class="flex flex-col items-center gap-6">
 			<div class="main-content gap-6">
-				<AgeCard age={null} {realAge} />
+				<AgeCard age={data.predictedAge} {realAge} />
 				<div class="justify-beetwen n flex flex-col justify-around gap-6">
 					<Button color="green" goto="/exercises">Продолжить тренировки</Button>
 					<RecommendationCard

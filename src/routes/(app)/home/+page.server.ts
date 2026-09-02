@@ -3,6 +3,8 @@ import { tests } from '$lib/tests';
 import { getMetricScores, getRecommendations } from '$lib/shared/metrics';
 import { redirect } from '@sveltejs/kit';
 import { getTestSessionCounts } from '$lib/server/db/controllers/test';
+import { getFeaturesFromDB } from '$lib/server/age/getFeaturesFromDB';
+import { runAgeModel } from '$lib/server/age/runAgeModel';
 
 export const load: PageServerLoad = async ({ cookies }) => {
 	const userId = cookies.get('user_id');
@@ -15,8 +17,8 @@ export const load: PageServerLoad = async ({ cookies }) => {
 
 	const hasUnfinishedTests = Object.keys(testSessionCounts).length < visibleTests.length;
 	const loggedInAdmin = cookies.get('logged_in_admin'); // logged in admins should be able to access all pages
-  
-  const metricScores = await getMetricScores(userId);
+
+	const metricScores = await getMetricScores(userId);
 	const hasData = Object.values(metricScores).some((s) => s > 0);
 
 	let recommendations = getRecommendations(metricScores);
@@ -33,11 +35,23 @@ export const load: PageServerLoad = async ({ cookies }) => {
 			}));
 	}
 
+	// Default values for optional data
+	let predictedAge: number | null = null;
+
+	// Fetch features used for age prediction
+	const features = await getFeaturesFromDB(userId);
+
+	// Run the ML model only if features exist
+	if (features) {
+		predictedAge = await runAgeModel(features);
+	}
+
 	return {
-    recommendations,
-    metricScores,
-    hasData,
+		recommendations,
+		metricScores,
+		hasData,
 		hasUnfinishedTests,
-		loggedInAdmin
+		loggedInAdmin,
+		predictedAge
 	};
 };
