@@ -65,15 +65,16 @@
 		showing = true;
 
 		if (showInterval) clearInterval(showInterval);
-		showInterval = setInterval(() => {
+		const interval = setInterval(() => {
 			showTime--;
 			if (showTime < 0) {
-				clearInterval(showInterval);
+				clearInterval(interval);
 				showInterval = null;
 				showing = false;
 				inputStartedAt = Date.now();
 			}
 		}, 1000);
+		showInterval = interval;
 	}
 
 	function startGame() {
