@@ -10,8 +10,8 @@
 	let { gameEnd, sendResults, data }: Props = $props();
 
 	// Acknowledge contract props — intentionally not used in this adapter
-	void gameEnd;
-	void data;
+	gameEnd;
+	data;
 
 	function handleSendResults(results: Record<string, unknown>[]) {
 		try {

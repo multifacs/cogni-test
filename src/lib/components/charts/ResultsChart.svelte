@@ -153,7 +153,6 @@
 			},
 			options: {
 				onHover: function (event, chartElements) {
-					// @ts-ignore
 					const target = event.native ? event.native.target : event.chart.canvas;
 					target.style.cursor = chartElements.length ? 'pointer' : 'default';
 				},
