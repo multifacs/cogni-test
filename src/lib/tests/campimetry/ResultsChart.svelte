@@ -58,8 +58,10 @@
 			});
 	}
 
-	const allTime = Math.round(results.reduce((a, b) => a + b.time, 0) / 1000);
-	const avg = Math.round(((results.reduce((a, b) => a + b.time, 0) / results.length) * 2) / 1000);
+	const allTime = $derived(Math.round(results.reduce((a, b) => a + b.time, 0) / 1000));
+	const avg = $derived(
+		Math.round(((results.reduce((a, b) => a + b.time, 0) / results.length) * 2) / 1000)
+	);
 
 	let parsedResults: Result[];
 

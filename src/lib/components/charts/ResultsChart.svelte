@@ -51,30 +51,23 @@
 	let canvas: HTMLCanvasElement = $state(Object());
 	let chart = $state(Object());
 
-	let maxStage: number = Math.max(
-		...results.map((item) => {
-			if ('stage' in item) {
-				return item.stage;
-			}
-			return 0;
-		})
-	);
-	if (!maxStage || maxStage == 1) maxStage = 0;
+	const maxStage = $derived.by(() => {
+		const max = Math.max(...results.map((item) => ('stage' in item ? item.stage : 0)), 0);
+		if (!max || max === 1) return 0;
+		if (testType == 'campimetry') return 0;
+		return max;
+	});
 
-	if (testType == 'campimetry') maxStage = 0;
-
-	let stageNums: number[] = [];
-	for (let i = 1; i <= maxStage; i++) stageNums.push(i);
-	if (!maxStage) stageNums = [0];
+	const stageNums = $derived.by(() => {
+		if (!maxStage) return [0];
+		return Array.from({ length: maxStage }, (_, i) => i + 1);
+	});
 
 	function compareNumbers(a: number, b: number) {
 		return a - b;
 	}
 
-	function getResults(
-		testType: TestType,
-		results: RegularResults
-	): Result[] {
+	function getResults(testType: TestType, results: RegularResults): Result[] {
 		console.log(results);
 		if (testType == 'stroop') {
 			return (results as StroopResult[]).map((result) => {
@@ -160,7 +153,7 @@
 			},
 			options: {
 				onHover: function (event, chartElements) {
-                    // @ts-ignore
+					// @ts-ignore
 					const target = event.native ? event.native.target : event.chart.canvas;
 					target.style.cursor = chartElements.length ? 'pointer' : 'default';
 				},
@@ -176,7 +169,7 @@
 								const value = context[0].raw as Result;
 								const raw = value.raw;
 								if (testType == 'math') {
-                                    const mathResult = raw as MathResult;
+									const mathResult = raw as MathResult;
 									return `${mathResult.left} ${mathResult.sign} ${mathResult.right}`;
 								}
 								return `Попытка ${value.x}`;
@@ -185,7 +178,7 @@
 								const value = context[0].raw as Result;
 								const raw = value.raw;
 								if (testType == 'math') {
-                                    const mathResult = raw as MathResult;
+									const mathResult = raw as MathResult;
 									return `Ответ: ${mathResult.userAnswer ? 'да' : 'нет'}`;
 								}
 								return '';
@@ -202,7 +195,7 @@
 					legend: {
 						labels: {
 							usePointStyle: true,
-                            // @ts-ignore
+							// @ts-ignore
 							generateLabels: (chart) => {
 								const original =
 									Chart.defaults.plugins.legend.labels.generateLabels(chart);
