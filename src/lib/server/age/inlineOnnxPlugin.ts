@@ -42,7 +42,7 @@ export function inlineOnnxPlugin(modelsDir: string = DEFAULT_MODELS_DIR): Inline
 			assertOnnxModelsAvailable(modelsDir);
 		},
 		resolveId(source: string, importer?: string) {
-			if (!source.startsWith(virtualId)) return;
+			if (!source.startsWith(virtualId)) return null;
 			const relPath = source.slice(virtualId.length);
 			if (importer && !relPath.startsWith('/')) {
 				const abs = resolve(dirname(importer), relPath);
