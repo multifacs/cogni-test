@@ -273,22 +273,17 @@
 				let avgReactionLeft: number | string | null = null;
 				let accuracyLeft: number | string | null = null;
 
-				const hasDbButton =
-					m.editableMetrics.buttonTestFileName &&
-					m.editableMetrics.buttonTestNumber != null;
-				if (hasDbButton) {
+				const buttonTestFileName = m.editableMetrics.buttonTestFileName;
+				const buttonTestNumber = m.editableMetrics.buttonTestNumber;
+				if (buttonTestFileName && buttonTestNumber != null) {
 					const result = await getResultForParticipant(
-						m.editableMetrics.buttonTestFileName!,
-						m.editableMetrics.buttonTestNumber
+						buttonTestFileName,
+						buttonTestNumber
 					);
-					avgReactionLeft =
-						result.left?.avgReaction ?? (hasDbButton ? 'файл не загружен' : null);
-					accuracyLeft =
-						result.left?.accuracy ?? (hasDbButton ? 'файл не загружен' : null);
-					avgReactionRight =
-						result.right?.avgReaction ?? (hasDbButton ? 'файл не загружен' : null);
-					accuracyRight =
-						result.right?.accuracy ?? (hasDbButton ? 'файл не загружен' : null);
+					avgReactionLeft = result.left?.avgReaction ?? 'файл не загружен';
+					accuracyLeft = result.left?.accuracy ?? 'файл не загружен';
+					avgReactionRight = result.right?.avgReaction ?? 'файл не загружен';
+					accuracyRight = result.right?.accuracy ?? 'файл не загружен';
 				}
 
 				rows.push({

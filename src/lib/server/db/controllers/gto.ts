@@ -1073,6 +1073,7 @@ export type AuthorizedUser = {
 	firstname: string;
 	lastname: string;
 	sex: string;
+	age: number;
 	createdAt: string;
 	lastActiveAt: string | null;
 	gtoId: string | null;
@@ -1086,6 +1087,7 @@ export async function getAuthorizedUsers(): Promise<AuthorizedUser[]> {
 			firstname: user.firstname,
 			lastname: user.lastname,
 			sex: user.sex,
+			birthday: user.birthday,
 			createdAt: user.createdAt,
 			lastActiveAt: user.lastActiveAt,
 			gtoId: profileSurvey.gtoId,
@@ -1100,6 +1102,7 @@ export async function getAuthorizedUsers(): Promise<AuthorizedUser[]> {
 		firstname: row.firstname,
 		lastname: row.lastname,
 		sex: row.sex,
+		age: calculateAge(row.birthday),
 		createdAt: row.createdAt,
 		lastActiveAt: row.lastActiveAt,
 		gtoId: row.gtoId,
