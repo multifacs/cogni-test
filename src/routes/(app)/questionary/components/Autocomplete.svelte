@@ -5,6 +5,12 @@
 	let { query = $bindable() } = $props();
 	let isOpen = $state(false);
 
+	type City = {
+		name: string;
+		name_en?: string;
+		type: string;
+	};
+
 	// filter only cities with type === "Город"
 	const cityOptions = cities.filter((c) => c.type === 'Город');
 
@@ -21,12 +27,12 @@
 			: cityOptions.slice(0, 3)
 	);
 
-	function selectCity(city) {
+	function selectCity(city: City) {
 		query = city.name;
 		isOpen = false;
 	}
 
-	function handleInput(e) {
+	function handleInput(e: Event & { currentTarget: HTMLInputElement }) {
 		query = e.currentTarget.value;
 		isOpen = true;
 	}
