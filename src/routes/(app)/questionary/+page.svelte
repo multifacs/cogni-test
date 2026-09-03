@@ -563,10 +563,8 @@
 										{#snippet children()}
 											{#if subscribed}
 												<div class="flex justify-center">
-													<Button
-														color="blue"
-														kind="small"
-														onclick={unsubscribe}>Отписаться</Button
+													<Button color="blue" onclick={unsubscribe}
+														>Отписаться</Button
 													>
 												</div>
 											{:else}
@@ -582,10 +580,8 @@
 															</p>
 														</div>
 													{:else}
-														<Button
-															color="green"
-															kind="small"
-															onclick={subscribe}>Подписаться</Button
+														<Button color="green" onclick={subscribe}
+															>Подписаться</Button
 														>
 													{/if}
 												</div>
@@ -606,12 +602,7 @@
 
 <section class="low-content grid grid-cols-2 gap-4 md:grid-cols-4">
 	<div class="max-md:hidden"></div>
-	<Button
-		class="flex items-center justify-center"
-		kind="small"
-		color="green"
-		onclick={handleSave}
-	>
+	<Button class="flex items-center justify-center" color="green" onclick={handleSave}>
 		{#if isSaving === 'false'}
 			Сохранить
 		{/if}

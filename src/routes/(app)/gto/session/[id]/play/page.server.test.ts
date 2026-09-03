@@ -53,7 +53,7 @@ describe('GTO play page server', () => {
 			await load({
 				params: { id: 'sess-1' },
 				cookies: { get: (name: string) => (name === 'user_id' ? 'user-1' : undefined) }
-			} as any);
+			});
 		} catch (e) {
 			expect(e.status).toBe(307);
 			expect(e.location).toBe(`${GTO_TEST_ORDER[0].route}/about?gtoSessionId=sess-1`);
@@ -70,7 +70,7 @@ describe('GTO play page server', () => {
 			await load({
 				params: { id: 'sess-1' },
 				cookies: { get: (name: string) => (name === 'user_id' ? 'user-1' : undefined) }
-			} as any);
+			});
 		} catch (e) {
 			expect(e.status).toBe(307);
 			expect(e.location).toBe(`${GTO_TEST_ORDER[mathIndex].route}/about?gtoSessionId=sess-1`);
@@ -87,7 +87,7 @@ describe('GTO play page server', () => {
 			await load({
 				params: { id: 'sess-1' },
 				cookies: { get: (name: string) => (name === 'user_id' ? 'user-1' : undefined) }
-			} as any);
+			});
 		} catch (e) {
 			expect(e.status).toBe(307);
 			expect(e.location).toBe(`/exercises/raven-matrices/about?gtoSessionId=sess-1`);
@@ -104,7 +104,7 @@ describe('GTO play page server', () => {
 			await load({
 				params: { id: 'sess-1' },
 				cookies: { get: (name: string) => (name === 'user_id' ? 'user-1' : undefined) }
-			} as any);
+			});
 		} catch (e) {
 			expect(e.status).toBe(307);
 			expect(e.location).toBe('/gto/session/sess-1/words');

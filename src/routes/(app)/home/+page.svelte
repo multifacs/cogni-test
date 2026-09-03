@@ -67,7 +67,7 @@
 		updateGreetingAndHeader();
 		const unsubscribeUser = userStore.subscribe((user) => {
 			if (user) {
-				const rawName = (user as any).firstname || 'пользователь';
+				const rawName = user.firstname || 'пользователь';
 				userName = capitalize(rawName);
 
 				const userBirthday = user.birthday || null;
@@ -127,7 +127,7 @@
 		if (!browser) return false;
 		return (
 			window.matchMedia('(display-mode: standalone)').matches ||
-			(window.navigator as any).standalone === true
+			window.navigator.standalone === true
 		);
 	};
 </script>

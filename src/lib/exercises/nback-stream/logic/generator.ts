@@ -60,7 +60,7 @@ export function generateSequence(opts: {
 		}
 		for (let i = nBack; i < total; i++) {
 			const wantMatch = Math.random() < matchRatio;
-			const ref = (seq[i - nBack] as any).payload as FigureStim;
+			const ref = seq[i - nBack].payload as FigureStim;
 			const payload = newFigureWithConstraint(
 				ref,
 				target === 'shape' ? 'shape' : 'color',
@@ -77,7 +77,7 @@ export function generateSequence(opts: {
 		}
 		for (let i = nBack; i < total; i++) {
 			const wantMatch = Math.random() < matchRatio;
-			const refVal = (seq[i - nBack] as any).payload.value as number;
+			const refVal = seq[i - nBack].payload.value as number;
 			let v = refVal;
 			if (!wantMatch) {
 				const cand = range.filter((x) => x !== refVal);
@@ -94,21 +94,21 @@ export function generateSequence(opts: {
 			streak++;
 			if (streak > 2) {
 				if (seq[i].domain === 'figures') {
-					const ref = (seq[i - nBack] as any).payload as FigureStim;
+					const ref = seq[i - nBack].payload as FigureStim;
 					if (target === 'shape') {
 						const shapes = SHAPES.filter((s) => s !== ref.shape);
-						(seq[i] as any).payload.shape = pick(shapes);
+						seq[i].payload.shape = pick(shapes);
 					} else if (target === 'color') {
 						const colors = COLORS.filter((c) => c !== ref.color);
-						(seq[i] as any).payload.color = pick(colors);
+						seq[i].payload.color = pick(colors);
 					}
 				} else {
-					const refVal = (seq[i - nBack] as any).payload.value as number;
+					const refVal = seq[i - nBack].payload.value as number;
 					const range = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 					const cand = range.filter((x) => x !== refVal);
-					(seq[i] as any).payload.value = pick(cand);
+					seq[i].payload.value = pick(cand);
 				}
-				(seq[i] as any).truth = false;
+				seq[i].truth = false;
 				streak = 0;
 			}
 		} else {

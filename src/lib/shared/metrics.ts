@@ -68,7 +68,7 @@ export async function getMetricScores(userId: string): Promise<MetricScores> {
 	const testPromises = tests
 		.filter((test) => test.admin_metrics?.length)
 		.map(async (test) => {
-			const sessions = await getResults(test.name as any, userId);
+			const sessions = await getResults(test.name, userId);
 			for (const session of sessions) {
 				const score = computeSessionScore(test.name, session.attempts);
 				for (const metric of test.admin_metrics!) {
@@ -82,7 +82,7 @@ export async function getMetricScores(userId: string): Promise<MetricScores> {
 		.map(async (ex) => {
 			const sessionType = EXERCISE_SLUG_TO_TEST_TYPE[ex.name];
 			if (!sessionType) return;
-			const sessions = await getResults(sessionType as any, userId);
+			const sessions = await getResults(sessionType, userId);
 			for (const session of sessions) {
 				const score = computeSessionScore(sessionType, session.attempts);
 				for (const metric of ex.admin_metrics!) {

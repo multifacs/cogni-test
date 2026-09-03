@@ -3,7 +3,7 @@ import { getLastResult } from '$lib/server/db/controllers/result';
 export async function getFeaturesFromDB(userId: string) {
 	console.log('➡️ getFeaturesFromDB: получаю признаки для пользователя', userId);
 
-	const testMetrics: Record<string, any> = {};
+	const testMetrics: Record<string, number | null> = {};
 
 	// 4. Munkres
 	const mun = await getLastResult('munsterberg', userId);
