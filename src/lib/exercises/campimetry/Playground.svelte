@@ -151,7 +151,7 @@
 	</div>
 	{#if currentStage == 1}
 		<div class="row flex w-4/5 max-w-96 justify-between">
-			{#each silhouettes as s}
+			{#each silhouettes as s (s)}
 				<button
 					aria-label={`${s} button`}
 					class="max-xs:w-16 max-xs:h-16 h-[100px] w-[100px] cursor-pointer touch-none bg-white mask-contain select-none"

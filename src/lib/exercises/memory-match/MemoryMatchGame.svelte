@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { cp } from 'node:fs/promises';
 	import { IMAGE_URLS, OVERLAY_URL } from './images';
 	import type { MemoryMatchSummaryRow } from './types';
 

@@ -2,7 +2,7 @@
 	import Chart from 'chart.js/auto';
 	import annotationPlugin from 'chartjs-plugin-annotation';
 
-	import { Colors, Scale, type CoreScaleOptions, type ScriptableContext } from 'chart.js';
+	import { Colors, type ScriptableContext } from 'chart.js';
 	Chart.register(Colors);
 	Chart.register(annotationPlugin);
 
@@ -36,7 +36,6 @@
 	Chart.defaults.color = 'var(--main-text-color)';
 
 	let canvas: HTMLCanvasElement = $state(Object());
-	let chart = $state(Object());
 
 	const stageNums: number[] = [2];
 
@@ -105,7 +104,7 @@
 		parsedResults = getResults(testType, results);
 		console.log(parsedResults);
 
-		chart = new Chart(canvas, {
+		new Chart(canvas, {
 			type: 'line',
 			data: {
 				labels: parsedResults.map((el) => el.x).sort(compareNumbers),

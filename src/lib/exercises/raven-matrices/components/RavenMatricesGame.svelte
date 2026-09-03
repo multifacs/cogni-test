@@ -24,9 +24,7 @@
 	let currentIndex = $state(0);
 	let selectedIndex: number | null = $state(null);
 	let answers = $state<RavenAnswerRecord[]>([]);
-	let testStartedAt = $state(0);
 	let questionStartedAt = $state(0);
-	let isStarted = $state(false);
 	let isLocked = $state(false);
 
 	let currentTask = $derived(tasks[currentIndex]);
@@ -43,14 +41,11 @@
 		currentIndex = 0;
 		selectedIndex = null;
 		answers = [];
-		isStarted = false;
 		isLocked = false;
 	}
 
 	function start() {
-		testStartedAt = performance.now();
 		questionStartedAt = performance.now();
-		isStarted = true;
 	}
 
 	function selectAnswer(index: number) {
