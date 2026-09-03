@@ -2,6 +2,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import type { LettersTrialRow, RoundEntry } from './types';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	let {
 		gameEnd,
@@ -148,7 +149,7 @@
 		const input = e.target as HTMLInputElement;
 		console.log(e);
 
-		const letterMap = new Map<string, string>();
+		const letterMap = new SvelteMap<string, string>();
 
 		letterMap.set('KeyQ', 'Й');
 		letterMap.set('KeyW', 'Ц');
