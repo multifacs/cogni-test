@@ -241,7 +241,7 @@
 	});
 </script>
 
-<div
+<button
 	class="
 	pointer-events-auto
 	z-0
@@ -249,7 +249,7 @@
 	grid
 	cursor-pointer
 	touch-none
-	border-[1px]
+	border
 	border-gray-700
 	select-none
 	"
@@ -263,27 +263,27 @@
 	onpointerup={handleInteraction}
 	onpointerout={handleInteraction}
 >
-	{#each grid as row, i}
-		{#each row as cell, j}
+	{#each grid as row, i (i)}
+		{#each row as cell, j (j)}
 			<div
 				class="
 						cell
 						pointer-events-none
 						relative
-						z-[1]
+						z-1
 						box-border
 						flex
 						transform-gpu
 						touch-none
 						items-center
 						justify-center
-						border-[1px]
+						border
 						border-gray-700
 						text-center
 						transition-all
 						duration-300
 						select-none
-						{isSelected(i, j) ? 'selected z-[2] scale-110 overflow-hidden border-transparent shadow-md' : ''}
+						{isSelected(i, j) ? 'selected z-2 scale-110 overflow-hidden border-transparent shadow-md' : ''}
 						{cell.isCorrect ? 'correct text-black' : ''}
 						{cell.isIncorrect ? 'incorrect text-black' : ''}"
 			>
@@ -291,7 +291,7 @@
 			</div>
 		{/each}
 	{/each}
-</div>
+</button>
 {#if isGameRunning}
 	<!-- <h3>{`0${timer === 60 ? 1 : 0}:${timer % 60 < 10 ? '0' : ''}${timer % 60}`}</h3> -->
 	<ProgressBar min={0} max={60} progress={60 - timer} />

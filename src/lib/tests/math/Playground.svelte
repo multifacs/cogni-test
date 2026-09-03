@@ -1,13 +1,16 @@
 <script lang="ts">
-	import Sign from './components/Sign.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import { translate } from '$lib/utils/common';
 	import { GameState } from './logic/controller.svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import '@fontsource/fira-code';
 
 	let { gameEnd, sendResults } = $props();
-	let gameState = $state(new GameState(gameEnd, sendResults));
+	let gameState = $state(
+		new GameState(
+			() => gameEnd,
+			() => sendResults
+		)
+	);
 
 	onMount(() => {
 		gameState.resetGame();

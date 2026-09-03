@@ -7,7 +7,7 @@
 	<div class="line"></div>
 	<div class=" flex w-full flex-col gap-5 p-5">
 		<div class="flex items-center">
-			<img src={icon} class="img" />
+			<img src={icon} class="img" alt={title} />
 			<h2
 				style="text-align: left;font-weight: var(--font-weight-bold); --tw-font-weight: var(--font-weight-bold)"
 			>

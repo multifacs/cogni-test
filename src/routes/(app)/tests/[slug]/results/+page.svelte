@@ -9,8 +9,8 @@
 	import Card from '$lib/components/ui/Card.svelte';
 
 	const { data } = $props();
-	const slug = data.slug;
-	const results = data.results;
+	const slug = $derived(data.slug);
+	const results = $derived(data.results);
 
 	const test = $derived(testRegistry[slug]);
 	let Comp: Component | null = $state(null);
@@ -37,12 +37,15 @@
 		}
 	});
 
-	// Открытый элемент (по умолчанию первый)
-	let openedSessionId = $state(results[0]?.sessionId);
+	// null — авто (первая попытка); иначе — явный выбор пользователя для этого slug
+	let choice = $state<{ slug: string; id: string | null } | null>(null);
 
-	// Переключаем открытие/закрытие
+	const openedSessionId = $derived(
+		choice && choice.slug === slug ? choice.id : (results[0]?.sessionId ?? null)
+	);
+
 	const toggleSession = (sessionId: string) => {
-		openedSessionId = (openedSessionId === sessionId ? null : sessionId) as string;
+		choice = { slug, id: openedSessionId === sessionId ? null : sessionId };
 	};
 
 	onMount(async () => {
@@ -62,7 +65,7 @@
 		<Spinner></Spinner>
 		<p>Загрузка теста {slug}...</p>
 	{:else if results.length != 0}
-		{#each results as result}
+		{#each results as result (result.sessionId)}
 			<Card>
 				<button
 					class={`flex w-full cursor-pointer items-center justify-between rounded-t-2xl px-4 py-3 transition-colors hover:bg-gray-100 ${openedSessionId != result.sessionId ? 'hover:rounded-b-2xl' : ''}`}

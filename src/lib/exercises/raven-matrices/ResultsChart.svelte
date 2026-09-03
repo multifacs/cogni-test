@@ -225,20 +225,3 @@
 <div class="grid gap-2 w-full sm:w-4/5">
 	<canvas bind:this={canvas}></canvas>
 </div>
-
-<style>
-	.stats-row {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem 1.5rem;
-		font-size: 0.75rem;
-		color: #94a3b8;
-	}
-
-	@media (min-width: 640px) {
-		.stats-row {
-			gap: 0.75rem 1.5rem;
-			font-size: 0.85rem;
-		}
-	}
-</style>

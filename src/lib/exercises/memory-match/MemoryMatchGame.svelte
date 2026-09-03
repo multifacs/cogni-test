@@ -308,10 +308,6 @@
 		--match-ring: rgba(0, 255, 120, 0.85);
 	}
 
-	.wrap {
-		padding: 1rem;
-	}
-
 	.btn {
 		padding: 0.6rem 1rem;
 		border-radius: 0.8rem;

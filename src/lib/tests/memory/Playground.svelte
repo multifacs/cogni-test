@@ -170,12 +170,4 @@
 		gap: 1.5rem;
 		margin-bottom: 0.5rem;
 	}
-
-	.mem-word {
-		font-size: 16px;
-		font-weight: bold;
-		background-color: rgb(2, 125, 27);
-		padding: 0.5rem 1rem;
-		border-radius: 6px;
-	}
 </style>

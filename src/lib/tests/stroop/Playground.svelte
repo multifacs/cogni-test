@@ -124,7 +124,7 @@
 	{/if}
 </div>
 <div class="grid grid-cols-[1fr_1fr] gap-4">
-	{#each Object.values(colors) as color}
+	{#each Object.values(colors) as color (color)}
 		<button
 			class="max-xs:w-16 max-xs:h-12 h-16 w-20 cursor-pointer border-none"
 			style="background-color: {color};"
@@ -136,14 +136,3 @@
 {#if isTestRunning}
 	<p class="sm:text-xl">Осталось времени: {timeLeft} сек</p>
 {/if}
-
-<style>
-	.color-button {
-		padding: 10px 20px;
-		margin: 5px;
-		width: 80px;
-		height: 60px;
-		border: none;
-		cursor: pointer;
-	}
-</style>
