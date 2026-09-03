@@ -40,16 +40,9 @@
 		}
 	}
 
-	onMount(async () => {
+	onMount(() => {
 		if (data.hasUnfinishedTests && !data.loggedInAdmin) {
 			undiagnosed = true;
-		}
-
-		const lfShowInstallButton: boolean | null = await localforage.getItem('showInstallButton');
-		if (lfShowInstallButton === false) {
-			showInstallButton = false;
-		} else if (lfShowInstallButton === null) {
-			showInstallButton = true;
 		}
 
 		window.addEventListener('beforeinstallprompt', (e) => {
@@ -91,6 +84,15 @@
 					realAge = age;
 				}
 				updateGreetingAndHeader();
+			}
+		});
+
+		// Асинхронная часть — не блокирует монтирование
+		localforage.getItem<boolean | null>('showInstallButton').then((lfShowInstallButton) => {
+			if (lfShowInstallButton === false) {
+				showInstallButton = false;
+			} else if (lfShowInstallButton === null) {
+				showInstallButton = true;
 			}
 		});
 
