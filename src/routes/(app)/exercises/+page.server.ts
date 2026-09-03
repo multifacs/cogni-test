@@ -23,7 +23,7 @@ const exerciseToSessionType: Record<string, string> = {
 export const load: PageServerLoad = async ({ cookies }) => {
 	const userId = cookies.get('user_id');
 	let predictedAge = null;
-	let exerciseSessionCounts: Record<string, number> = {};
+	const exerciseSessionCounts: Record<string, number> = {};
 	if (!userId) return { exercises };
 
 	const features = await getFeaturesFromDB(userId);

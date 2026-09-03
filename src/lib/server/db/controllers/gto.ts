@@ -845,7 +845,7 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 
 		// ─── Stroop ─────────────────────────────────────────────
 		const stroopSession = testSessions.find((s) => s.testType === 'stroop');
-		let stroopMetrics: ParticipantMetrics['stroop'] = {
+		const stroopMetrics: ParticipantMetrics['stroop'] = {
 			stage1: { meanTime: null, stdDevTime: null, accuracy: 0 },
 			stage2: { meanTime: null, stdDevTime: null, accuracy: 0 },
 			stage3: { meanTime: null, stdDevTime: null, accuracy: 0 }
@@ -904,7 +904,7 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 
 		// ─── Campimetry ────────────────────────────────────────
 		const campimetrySession = testSessions.find((s) => s.testType === 'campimetry');
-		let campimetryMetrics: CampimetryMetrics = {
+		const campimetryMetrics: CampimetryMetrics = {
 			stage1: { meanTime: null, stdDevTime: null, meanDelta: null },
 			stage2: { meanTime: null, stdDevTime: null, meanDelta: null },
 			stage2Breakdown: { underPress: 0, exact: 0, overPress: 0 }
@@ -1140,7 +1140,7 @@ export async function generateWordSets(count: number, allWords: string[]): Promi
 	const existing = await db
 		.select({ max: sql<number>`COALESCE(MAX(${gtoWordSet.setNumber}), 0)` })
 		.from(gtoWordSet);
-	let startNumber = (existing[0]?.max ?? 0) + 1;
+	const startNumber = (existing[0]?.max ?? 0) + 1;
 
 	const toInsert = [];
 	for (let i = 0; i < count; i++) {

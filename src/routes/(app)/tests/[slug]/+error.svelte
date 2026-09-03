@@ -8,5 +8,5 @@
 </main>
 
 <section class="low-content grid grid-cols-1">
-	<Button color="red" goto={`/tests`}>Назад к тестам</Button>
+	<Button color="red" goto="/tests">Назад к тестам</Button>
 </section>
