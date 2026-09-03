@@ -146,7 +146,7 @@ function getDb() {
 describe.skipIf(!process.env.DATABASE_URL)('seed results', () => {
 	it('populates last-active user with random test results', async () => {
 		const db = getDb();
-		expect(db).not.toBeNull();
+		if (!db) throw new Error('Test database not initialized (DATABASE_URL missing?)');
 
 		const [lastUser] = await db
 			.select()
@@ -157,18 +157,13 @@ describe.skipIf(!process.env.DATABASE_URL)('seed results', () => {
 		expect(lastUser).toBeDefined();
 		expect(lastUser.id).toBeDefined();
 
-		const stroopSessionId = await postResult(genStroop(25), 'stroop', lastUser.id, db);
-		const mathSessionId = await postResult(genMath(10), 'math', lastUser.id, db);
-		const memorySessionId = await postResult(genMemory(10), 'memory', lastUser.id, db);
-		const campimetrySessionId = await postResult(
-			genCampimetry(20),
-			'campimetry',
-			lastUser.id,
-			db
-		);
-		const swallowSessionId = await postResult(genSwallow(100), 'swallow', lastUser.id, db);
+		const stroopSessionId = await postResult(genStroop(25), 'stroop', lastUser.id);
+		const mathSessionId = await postResult(genMath(10), 'math', lastUser.id);
+		const memorySessionId = await postResult(genMemory(10), 'memory', lastUser.id);
+		const campimetrySessionId = await postResult(genCampimetry(20), 'campimetry', lastUser.id);
+		const swallowSessionId = await postResult(genSwallow(100), 'swallow', lastUser.id);
 		const { results: munResults } = genMunsterberg(8);
-		const munsterbergSessionId = await postResult(munResults, 'munsterberg', lastUser.id, db);
+		const munsterbergSessionId = await postResult(munResults, 'munsterberg', lastUser.id);
 
 		const stroopRows = await db
 			.select()
