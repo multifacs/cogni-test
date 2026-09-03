@@ -45,10 +45,10 @@ describe('inlineOnnxPlugin', () => {
 		const plugin = inlineOnnxPlugin(tmpDir);
 		expect.assertions(2);
 		try {
-			expect(() => plugin.load!('\0inline-onnx:' + join(tmpDir, 'missing.onnx'))).toThrow(
+			expect(() => plugin.load('\0inline-onnx:' + join(tmpDir, 'missing.onnx'))).toThrow(
 				/Missing ONNX model file/
 			);
-			expect(() => plugin.load!('\0inline-onnx:' + join(tmpDir, 'missing.onnx'))).toThrow(
+			expect(() => plugin.load('\0inline-onnx:' + join(tmpDir, 'missing.onnx'))).toThrow(
 				/git submodule update --init/
 			);
 		} finally {
@@ -63,7 +63,7 @@ describe('inlineOnnxPlugin', () => {
 		const plugin = inlineOnnxPlugin(tmpDir);
 		expect.assertions(1);
 		try {
-			const result = plugin.load!('\0inline-onnx:' + filePath);
+			const result = plugin.load('\0inline-onnx:' + filePath);
 			const expected = Buffer.from([0x01, 0x02, 0x03]).toString('base64');
 			expect(result).toBe(`export default "${expected}";`);
 		} finally {
@@ -78,7 +78,7 @@ describe('inlineOnnxPlugin', () => {
 		expect.assertions(1);
 		try {
 			const plugin = inlineOnnxPlugin(tmpDir);
-			expect(() => plugin.buildStart!({} as any)).toThrow(/git submodule update --init/);
+			expect(() => plugin.buildStart()).toThrow(/git submodule update --init/);
 		} finally {
 			if (original !== undefined) process.env.VITEST = original;
 			else delete process.env.VITEST;
@@ -93,7 +93,7 @@ describe('inlineOnnxPlugin', () => {
 		expect.assertions(1);
 		try {
 			const plugin = inlineOnnxPlugin(tmpDir);
-			expect(() => plugin.buildStart!({} as any)).not.toThrow();
+			expect(() => plugin.buildStart()).not.toThrow();
 		} finally {
 			if (original !== undefined) process.env.VITEST = original;
 			else delete process.env.VITEST;
