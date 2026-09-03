@@ -20,10 +20,12 @@
 	const gtoSessionId = $derived(page.url.searchParams.get('gtoSessionId') ?? undefined);
 
 	// Back URL: in GTO mode go to about page, otherwise exercise page
+	import type { PathnameWithSearchOrHash } from '$app/types';
+
 	const backUrl = $derived(
-		gtoSessionId
+		(gtoSessionId
 			? `/exercises/${slug}/about?gtoSessionId=${gtoSessionId}`
-			: `/exercises/${slug}`
+			: `/exercises/${slug}`) satisfies PathnameWithSearchOrHash
 	);
 
 	$effect(() => {

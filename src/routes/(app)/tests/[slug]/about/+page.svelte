@@ -21,10 +21,12 @@
 		}
 	});
 
+	import type { PathnameWithSearchOrHash } from '$app/types';
+
 	const playgroundUrl = $derived(
-		gtoSessionId
+		(gtoSessionId
 			? `/tests/${slug}/playground?gtoSessionId=${gtoSessionId}`
-			: `/tests/${slug}/playground`
+			: `/tests/${slug}/playground`) satisfies PathnameWithSearchOrHash
 	);
 </script>
 

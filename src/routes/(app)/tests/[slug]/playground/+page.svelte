@@ -19,9 +19,12 @@
 	// GTO session integration: read gtoSessionId from URL params
 	const gtoSessionId = $derived(page.url.searchParams.get('gtoSessionId') ?? undefined);
 
-	// Back URL: in GTO mode go to about page, otherwise test page
+	import type { PathnameWithSearchOrHash } from '$app/types';
+
 	const backUrl = $derived(
-		gtoSessionId ? `/tests/${slug}/about?gtoSessionId=${gtoSessionId}` : `/tests/${slug}`
+		(gtoSessionId
+			? `/tests/${slug}/about?gtoSessionId=${gtoSessionId}`
+			: `/tests/${slug}`) satisfies PathnameWithSearchOrHash
 	);
 
 	$effect(() => {
