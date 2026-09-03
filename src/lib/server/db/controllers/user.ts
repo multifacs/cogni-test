@@ -45,7 +45,7 @@ export async function createUser(userInput: Partial<User>): Promise<User | null>
 		return newUser;
 	} catch (error) {
 		// Можно добавить более детальную обработку ошибок в зависимости от типа ошибки
-		console.log(
+		console.error(
 			`Failed to create user: ${error instanceof Error ? error.message : String(error)}`
 		);
 		return null;
