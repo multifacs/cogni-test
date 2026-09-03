@@ -8,6 +8,7 @@
 	import { userStore } from '$lib/stores/user';
 	import AgeCard from '$lib/components/ui/AgeCard.svelte';
 	import RecommendationCard from '$lib/components/ui/RecommendationCard.svelte';
+	import { resolve } from '$app/paths';
 
 	let { data } = $props();
 
@@ -16,7 +17,7 @@
 		return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 	}
 
-	let diferredInstallEvent | null = $state(null);
+	let diferredInstallEvent = $state(null);
 	let showInstallButton = $state(true);
 	let showInstallModal = $state(false);
 	let undiagnosed = $state(false);
@@ -119,7 +120,7 @@
 
 	function handleRunAll() {
 		localforage.setItem('runAllMode', true);
-		goto('/tests');
+		goto(resolve('/tests'));
 	}
 
 	const checkStandaloneMode = () => {
