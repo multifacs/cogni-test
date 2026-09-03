@@ -152,9 +152,11 @@
 				})
 			},
 			options: {
-				onHover: function (event, chartElements) {
-					const target = event.native ? event.native.target : event.chart.canvas;
-					target.style.cursor = chartElements.length ? 'pointer' : 'default';
+				onHover: (event, chartElements) => {
+					const target = event.native?.target;
+					if (target instanceof HTMLElement) {
+						target.style.cursor = chartElements.length ? 'pointer' : 'default';
+					}
 				},
 				responsive: true,
 				plugins: {

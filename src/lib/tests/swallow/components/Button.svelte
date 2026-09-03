@@ -1,5 +1,11 @@
 <script lang="ts">
 	import { goto as gotoSvelte } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import type { PathnameWithSearchOrHash, ResolvedPathname } from '$app/types';
+	// resolve() has a variadic conditional signature (ResolveArgs<T>) that
+	// cannot accept the full route union — narrow it to the pathname overload.
+	const resolvePathname = resolve as (path: PathnameWithSearchOrHash) => ResolvedPathname;
+
 	import type { Snippet } from 'svelte';
 	import type { MouseEventHandler } from 'svelte/elements';
 
@@ -15,24 +21,22 @@
 		disabled = false,
 		type = null,
 		class: className = '',
-		style: styleName = '',
+		style: styleName = ''
 	}: {
 		kind?: string;
 		color?: ButtonColor;
 		children: Snippet;
 		onclick?: OnclickType;
-		goto?: string;
+		goto?: PathnameWithSearchOrHash;
 		disabled?: boolean;
 		type?: TypeType;
 		class?: string;
 		style?: string;
 	} = $props();
 
-	if (goto) {
-		onclick = () => {
-			gotoSvelte(goto);
-		};
-	}
+	const effectiveOnclick = $derived(
+		goto !== undefined ? () => gotoSvelte(resolvePathname(goto)) : onclick
+	);
 
 	type ColorClassesObject = {
 		[key in ButtonColor]: {
@@ -49,7 +53,7 @@
 			hover: 'hover:bg-blue-800',
 			ring: 'focus:ring-blue-600',
 			offset: 'focus:ring-offset-blue-300'
-		},
+		}
 	};
 </script>
 
@@ -81,7 +85,7 @@
 	focus:outline-none
 	${className}
 	`}
-	{onclick}
+	onclick={effectiveOnclick}
 	{disabled}
 	{type}
 >

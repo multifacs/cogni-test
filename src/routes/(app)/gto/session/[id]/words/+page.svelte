@@ -6,7 +6,12 @@
 
 	let { data } = $props();
 
-	let wordInputs = $state<string[]>(Array(data.wordCount).fill(''));
+	let wordInputs = $state<string[]>([]);
+	$effect(() => {
+		// сброс при переходе между сессиями — компонент переиспользуется
+		const wordCount = data.wordCount;
+		wordInputs = Array(wordCount).fill('');
+	});
 	let isSubmitting = $state(false);
 	let showDisclaimer = $state(true);
 	let toastMessage = $state<string | null>(null);

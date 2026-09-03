@@ -5,7 +5,7 @@
 	import { page } from '$app/state';
 
 	const { data } = $props();
-	const slug = data.slug;
+	const slug = $derived(data.slug);
 	const test = $derived(testRegistry[slug]);
 	let Component: any = $state(null);
 

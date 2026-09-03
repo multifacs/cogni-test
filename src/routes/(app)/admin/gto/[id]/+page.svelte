@@ -34,7 +34,13 @@
 
 	let { data }: PageProps = $props();
 	let editingName = $state(false);
-	let sessionName = $state(data.session.name);
+
+	let sessionName = $state('');
+	$effect(() => {
+		sessionName = data.session.name;
+	});
+	// если после сохранения имени сервер вернёт обновлённый data — поле корректно обновится; ручные правки пользователя не перетрутся, пока data.session.name не изменится реально)
+
 	let savingMetrics = new SvelteSet<string>();
 	let toastMessage = $state<string | null>(null);
 	let toastType = $state<'error' | 'success' | 'info'>('info');
