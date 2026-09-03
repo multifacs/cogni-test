@@ -5,6 +5,7 @@
 	import { exerciseRegistry } from '$lib/exercises';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import type { PathnameWithSearchOrHash } from '$app/types';
 	import { getContext, onMount } from 'svelte';
 	import Header from '$lib/components/ui/Header.svelte';
 
@@ -41,9 +42,9 @@
 	}
 
 	const targetUrl = $derived(
-		disclaimerType === 'tests'
+		(disclaimerType === 'tests'
 			? `/gto/session/${selectedSession.gtoSessionId}/play`
-			: `/gto/session/${selectedSession.gtoSessionId}/words`
+			: `/gto/session/${selectedSession.gtoSessionId}/words`) satisfies PathnameWithSearchOrHash
 	);
 
 	function confirmAction() {

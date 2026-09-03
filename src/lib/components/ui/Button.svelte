@@ -4,6 +4,11 @@
 	import type { Snippet } from 'svelte';
 	import type { MouseEventHandler } from 'svelte/elements';
 
+	import type { PathnameWithSearchOrHash, ResolvedPathname } from '$app/types';
+	// resolve() has a variadic conditional signature (ResolveArgs<T>) that
+	// cannot accept the full route union — narrow it to the pathname overload.
+	const resolvePathname = resolve as (path: PathnameWithSearchOrHash) => ResolvedPathname;
+
 	type ButtonColor =
 		| 'red'
 		| 'blue'
@@ -45,7 +50,7 @@
 		color: ButtonColor;
 		children: Snippet;
 		onclick?: OnclickType;
-		goto?: string;
+		goto?: PathnameWithSearchOrHash;
 		invalidateAll?: boolean;
 		disabled?: boolean;
 		type?: TypeType;
@@ -56,7 +61,7 @@
 	let resolvedOnclick = $derived(
 		goto
 			? () => {
-					gotoSvelte(resolve(goto), { invalidateAll });
+					gotoSvelte(resolvePathname(goto), { invalidateAll });
 				}
 			: onclick
 	);
