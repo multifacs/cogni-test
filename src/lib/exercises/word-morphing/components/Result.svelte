@@ -10,8 +10,8 @@
 		currentShape,
 		currentColor
 	}: {
-		recalledCombos;
-		expectedCombos;
+		recalledCombos: string[];
+		expectedCombos: string[];
 		category: 'words' | 'shapes';
 		originalShape: Shape;
 		originalColor: Color;
