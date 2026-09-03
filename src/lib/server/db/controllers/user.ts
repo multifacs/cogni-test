@@ -48,6 +48,7 @@ export async function createUser(userInput: Partial<User>): Promise<User | null>
 		console.log(
 			`Failed to create user: ${error instanceof Error ? error.message : String(error)}`
 		);
+		return null;
 	}
 }
 
