@@ -17,7 +17,7 @@
 
 <h2 class="text-center">Выберите время на запоминание:</h2>
 <div class="grid max-w-lg grid-cols-2 gap-4">
-	{#each timeOptions as timeOption}
+	{#each timeOptions as timeOption (timeOption.name)}
 		<Button
 			color={selectedTimeOption === timeOption ? 'blue' : 'gray'}
 			onclick={() => selectTime(timeOption)}

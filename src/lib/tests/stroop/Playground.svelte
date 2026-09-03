@@ -9,7 +9,6 @@
 	// Game state
 	let currentWord: Word = $state('stage 1');
 	let currentColor: Color | 'var(--main-text-color)' = $state('var(--main-text-color)');
-	let score = 0;
 	const DURATION = 5;
 	let timeLeft = $state(DURATION);
 
@@ -32,7 +31,6 @@
 
 	export function resetGame() {
 		game = new StroopGame();
-		score = 0;
 		isTestRunning = true;
 		nextTask();
 	}
@@ -84,7 +82,6 @@
 		clearTimer();
 
 		game.handleAnswer(color as Color);
-		score = game.getResults().filter((x) => x.isCorrect).length;
 		nextTask();
 	}
 

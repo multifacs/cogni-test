@@ -13,7 +13,6 @@
 	type OnclickType = MouseEventHandler<HTMLButtonElement> | null | undefined;
 	type TypeType = 'button' | 'submit' | 'reset' | null | undefined;
 	let {
-		kind = 'normal',
 		color = 'blue',
 		children,
 		onclick = undefined,
@@ -23,7 +22,6 @@
 		class: className = '',
 		style: styleName = ''
 	}: {
-		kind?: string;
 		color?: ButtonColor;
 		children: Snippet;
 		onclick?: OnclickType;

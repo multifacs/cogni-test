@@ -71,7 +71,7 @@ export class MathGame {
 		const left = Math.floor(Math.random() * 20 - 5);
 		const right = Math.floor(Math.random() * 20 - 5);
 		const sign = Math.round(Math.random() * 4);
-		let answer = false;
+		let answer;
 		switch (sign) {
 			case 0:
 				answer = left > right;

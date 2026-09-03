@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { cp } from 'node:fs/promises';
 	import { IMAGE_URLS, OVERLAY_URL } from './images';
 	import type { MemoryMatchSummaryRow } from './types';
 
@@ -45,7 +46,7 @@
 		stages?: StageConfig[];
 	} = $props();
 
-	const FLIP_MS = 220; // длительность флипа
+	// const FLIP_MS = 220; // длительность флипа
 	const MISMATCH_SHOW_MS = 650; // держим неверную пару открытой
 
 	// ---- State ----
@@ -61,7 +62,9 @@
 		if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
 			try {
 				return crypto.randomUUID();
-			} catch {}
+			} catch (e) {
+				console.error(e);
+			}
 		}
 		// простой фолбэк
 		const rnd = () =>

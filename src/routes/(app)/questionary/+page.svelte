@@ -30,27 +30,6 @@
 
 	console.log($user);
 
-	function formatAge(inputDate: Date) {
-		const today = new Date();
-		const birthDate = new Date(inputDate);
-
-		let age = today.getFullYear() - birthDate.getFullYear();
-
-		const hasHadBirthdayThisYear =
-			today.getMonth() > birthDate.getMonth() ||
-			(today.getMonth() === birthDate.getMonth() && today.getDate() >= birthDate.getDate());
-
-		if (!hasHadBirthdayThisYear) {
-			age--;
-		}
-
-		return age;
-	}
-
-	function formatSex(val: 'male' | 'female'): string {
-		return val === 'male' ? 'Мужской' : 'Женский';
-	}
-
 	export function formatDate(date: Date): string {
 		const day = String(date.getDate()).padStart(2, '0');
 		const month = String(date.getMonth() + 1).padStart(2, '0');

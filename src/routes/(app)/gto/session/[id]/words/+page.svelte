@@ -3,6 +3,7 @@
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import Toast from '$lib/components/ui/Toast.svelte';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
 	let { data } = $props();
 
@@ -29,7 +30,7 @@
 		});
 
 		if (response.ok) {
-			goto('/gto', { invalidateAll: true });
+			goto(resolve('/gto'), { invalidateAll: true });
 		} else {
 			const err = await response.json();
 			toastMessage = err.error || 'Ошибка отправки';
@@ -51,7 +52,7 @@
 
 <main class="main flex flex-col items-center justify-center gap-4">
 	<div class="flex w-full max-w-xs flex-col gap-3">
-		{#each wordInputs as _, i}
+		{#each wordInputs as _, i (i)}
 			<div class="flex flex-col gap-1">
 				<label for="word-{i}" class="text-sm text-gray-400">{i + 1}-е слово</label>
 				<input

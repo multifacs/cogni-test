@@ -1,7 +1,5 @@
 <script lang="ts">
 	import Card from '$lib/components/ui/Card.svelte';
-	import { getCSSVar, translate } from '$lib/utils';
-	import { onMount } from 'svelte';
 </script>
 
 <Card>

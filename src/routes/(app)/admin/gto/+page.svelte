@@ -4,6 +4,8 @@
 	import { invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import { getContext, onMount } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
+	import { resolve } from '$app/paths';
 
 	const headerContext = getContext<{ value: string }>('headerText');
 
@@ -31,7 +33,7 @@
 		} else {
 			selectedUsers.add(id);
 		}
-		selectedUsers = new Set(selectedUsers); // trigger reactivity
+		selectedUsers = new SvelteSet(selectedUsers); // trigger reactivity
 	}
 
 	function formatDate(dateStr: string | null) {
@@ -72,7 +74,7 @@
 		try {
 			const fd = new FormData(form);
 			await fetch('?/create', { method: 'POST', body: fd });
-			selectedUsers = new Set();
+			selectedUsers = new SvelteSet();
 			await invalidateAll();
 		} catch {
 			createError = 'Ошибка создания сессии';
@@ -107,9 +109,9 @@
 				</div>
 			{:else}
 				<div class="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
-					{#each data.sessions as s}
+					{#each data.sessions as s (s.id)}
 						<a
-							href="/admin/gto/{s.id}"
+							href={resolve(`/admin/gto/${s.id}`)}
 							class="group flex items-center justify-between rounded-xl border border-gray-700 bg-white p-3 transition-colors hover:border-gray-600 hover:bg-gray-700/50"
 						>
 							<div class="flex min-w-0 flex-col">
@@ -148,7 +150,7 @@
 
 		<!-- Link to word sets -->
 		<a
-			href="/admin/gto/word-sets"
+			href={resolve('/admin/gto/word-sets')}
 			class="flex items-center justify-between rounded-xl border border-gray-700 bg-white p-4 transition-colors hover:border-gray-600 hover:bg-gray-700/30"
 		>
 			<div class="flex items-center gap-3">
@@ -210,7 +212,7 @@
 			</label>
 
 			<!-- Hidden inputs for selected users -->
-			{#each Array.from(selectedUsers) as userId}
+			{#each Array.from(selectedUsers) as userId (userId)}
 				<input type="hidden" name="participantIds" value={userId} />
 			{/each}
 

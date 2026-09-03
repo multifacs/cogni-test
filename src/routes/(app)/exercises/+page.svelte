@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { userStore } from '$lib/stores/user.js';
 	import { onMount } from 'svelte';
-	import Header from '$lib/components/ui/Header.svelte';
 	import ExerciseCard from '$lib/components/ui/ExerciseCard.svelte';
 	import RecommendationCard from '$lib/components/ui/RecommendationCard.svelte';
 	import { getContext } from 'svelte';
@@ -36,7 +35,7 @@
 		/>
 	</div>
 	<div class="cards flex flex-wrap justify-center gap-5 p-2">
-		{#each data.exercises as { name, title, path, img }}
+		{#each data.exercises as { name, title, path, img } (name)}
 			<ExerciseCard {name} {title} {path} {img} testSessionCounts={exerciseSessionCounts} />
 		{/each}
 	</div>

@@ -58,7 +58,7 @@
 		<ul
 			class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded border border-blue-300 bg-white shadow"
 		>
-			{#each filtered as city}
+			{#each filtered as city (city.id)}
 				<li class="cursor-pointer px-3 py-2 hover:bg-blue-50">
 					<button class="w-full text-left" onclick={() => selectCity(city)}>
 						{city.name} ({city.region.name})

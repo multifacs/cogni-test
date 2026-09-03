@@ -37,7 +37,7 @@
 	let avg = $state(0);
 
 	function getResults(trials: AttentionTrialRow[]): ChartPoint[] {
-		return trials.map((t, i) => ({
+		return trials.map((t) => ({
 			x: t.clickIndex,
 			y: t.reactionTimeMs,
 			number: t.number,
