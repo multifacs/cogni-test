@@ -22,8 +22,7 @@
 		}
 	});
 
-	let openedSessionId = $state<string | null>(null);
-	if (results[0]?.sessionId) openedSessionId = results[0].sessionId;
+	let openedSessionId = $derived(results[0]?.sessionId ?? null);
 
 	function toggleSession(sessionId: string) {
 		openedSessionId = openedSessionId === sessionId ? null : sessionId;

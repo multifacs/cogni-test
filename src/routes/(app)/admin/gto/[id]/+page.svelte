@@ -35,10 +35,7 @@
 	let { data }: PageProps = $props();
 	let editingName = $state(false);
 
-	let sessionName = $state('');
-	$effect(() => {
-		sessionName = data.session.name;
-	});
+	let sessionName = $derived(data.session.name);
 	// если после сохранения имени сервер вернёт обновлённый data — поле корректно обновится; ручные правки пользователя не перетрутся, пока data.session.name не изменится реально)
 
 	let savingMetrics = new SvelteSet<string>();

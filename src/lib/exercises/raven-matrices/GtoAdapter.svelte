@@ -2,16 +2,10 @@
 	import RavenMatricesGame from './components/RavenMatricesGame.svelte';
 
 	interface Props {
-		gameEnd: () => void;
 		sendResults: (results: unknown[]) => void;
-		data: Record<string, unknown>;
 	}
 
-	let { gameEnd, sendResults, data }: Props = $props();
-
-	// Acknowledge contract props — intentionally not used in this adapter
-	gameEnd;
-	data;
+	let { sendResults }: Props = $props();
 
 	function handleSendResults(results: Record<string, unknown>[]) {
 		try {
