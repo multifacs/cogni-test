@@ -71,7 +71,6 @@
 			},
 			options: {
 				onHover(event, chartElements) {
-					// @ts-ignore
 					const target = event.native ? event.native.target : event.chart.canvas;
 					target.style.cursor = chartElements.length ? 'pointer' : 'default';
 				},
@@ -83,8 +82,7 @@
 								const value = context[0].raw as NBackResult;
 								return `Ответ ${value.x}`;
 							},
-							afterTitle(context) {
-								const value = context[0].raw as NBackResult;
+							afterTitle() {
 								return `${domainLabel(s.domain)} / ${s.nBack}-back / ${targetLabel(s.target)}`;
 							},
 							beforeBody(context) {
@@ -101,7 +99,6 @@
 					legend: {
 						labels: {
 							usePointStyle: true,
-							// @ts-ignore
 							generateLabels(chart) {
 								const original =
 									Chart.defaults.plugins.legend.labels.generateLabels(chart);

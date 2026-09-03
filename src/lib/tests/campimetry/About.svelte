@@ -1,7 +1,5 @@
 <script lang="ts">
 	import Card from '$lib/components/ui/Card.svelte';
-	import { getCSSVar, translate } from '$lib/utils';
-	import { colors } from './logic/lab-color.svelte';
 </script>
 
 <!-- <p>Тест включает в себя ограниченный набор цветов:</p>

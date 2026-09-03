@@ -9,7 +9,6 @@
 	let { data, gameEnd, sendResults } = $props();
 
 	let isGameRunning = $state(false);
-	let showResults = $state(false);
 
 	let game: CampimetryGame = $state(Object());
 	let silhouettes: string[] = $state([]);
@@ -29,7 +28,6 @@
 	});
 
 	export function resetGame() {
-		showResults = false;
 		currentStage = 1;
 		delta = 0;
 		game = new CampimetryGame(Object.keys(data.silhouettes));
@@ -163,10 +161,10 @@
 			? 'invisible'
 			: ''}"
 	>
-		{#each silhouettes as s}
+		{#each silhouettes as s (s)}
 			<button
 				aria-label={`${s} button`}
-				class="choice-btn max-xs:w-16 max-xs:h-16 h-[100px] w-[100px] cursor-pointer touch-none rounded-xl bg-white mask-contain ring-2
+				class="choice-btn max-xs:w-16 max-xs:h-16 h-25 w-25 cursor-pointer touch-none rounded-xl bg-white mask-contain ring-2
 					ring-transparent transition-[ring-color] duration-150 select-none hover:ring-gray-400 active:ring-gray-600 disabled:ring-transparent"
 				disabled={!delta}
 				style={`

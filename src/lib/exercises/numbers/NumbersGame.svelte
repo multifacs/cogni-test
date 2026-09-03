@@ -36,7 +36,6 @@
 
 	const currentLevelNumber = () => currentLevelIndex + 1;
 	const isLastLevel = () => currentLevelIndex === levelConfigs.length - 1;
-	const correctLevels = () => acceptedReviews.filter((r) => r.isCorrect).length;
 
 	const randomInt = (min: number, max: number) =>
 		Math.floor(Math.random() * (max - min + 1)) + min;
@@ -194,7 +193,7 @@
 						<div class="flex flex-col items-center justify-between gap-3">
 							<h2 class="text-xl font-semibold text-center">Запомните числа</h2>
 							<div
-								class="min-w-[60px] rounded-full bg-white px-3.5 py-1 text-center text-sm font-bold whitespace-nowrap text-[#0c1452]"
+								class="min-w-15 rounded-full bg-white px-3.5 py-1 text-center text-sm font-bold whitespace-nowrap text-[#0c1452]"
 							>
 								{countdown} сек
 							</div>
@@ -209,7 +208,7 @@
 						>
 							{#each currentSequence as value, index (index)}
 								<div
-									class="min-w-[52px] rounded-xl bg-white px-4 py-3 text-center text-2xl font-bold text-[#0c1452]"
+									class="min-w-13 rounded-xl bg-white px-4 py-3 text-center text-2xl font-bold text-[#0c1452]"
 								>
 									{value}
 								</div>
@@ -223,7 +222,7 @@
 								Введите числа по порядку
 							</h2>
 							<div
-								class="min-w-[60px] rounded-full px-3.5 py-1 text-center text-sm font-normal whitespace-nowrap"
+								class="min-w-15 rounded-full px-3.5 py-1 text-center text-sm font-normal whitespace-nowrap"
 							>
 								Без ограничения
 							</div>

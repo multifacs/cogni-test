@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { computeSessionScore, getRecommendations } from './metrics';
 import type { SkillMetric } from '$lib/types';
 
@@ -6,7 +6,8 @@ import type { SkillMetric } from '$lib/types';
 async function restoreRealModulesAndImportMetrics() {
 	vi.resetModules();
 	const actualTests = await vi.importActual<typeof import('$lib/tests')>('$lib/tests');
-	const actualExercises = await vi.importActual<typeof import('$lib/exercises')>('$lib/exercises');
+	const actualExercises =
+		await vi.importActual<typeof import('$lib/exercises')>('$lib/exercises');
 	vi.doMock('$lib/tests', () => actualTests);
 	vi.doMock('$lib/exercises', () => actualExercises);
 	return import('./metrics');
@@ -15,9 +16,6 @@ async function restoreRealModulesAndImportMetrics() {
 vi.mock('$lib/server/db/controllers/result', () => ({
 	getResults: vi.fn()
 }));
-
-// Helper to build attempts with a given property pattern
-type Attempt = Record<string, unknown>;
 
 describe('computeSessionScore', () => {
 	it('returns 0 for empty attempts', () => {

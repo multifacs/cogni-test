@@ -11,7 +11,6 @@
 	import { getCSSVar } from '$lib/utils';
 	import type { StroopResult } from './types';
 	import type { Result } from '$lib/components/charts/types';
-	import createPlugin from 'tailwindcss/plugin';
 
 	let {
 		testType,
@@ -29,8 +28,6 @@
 	Chart.defaults.color = 'var(--main-text-color)';
 
 	let canvas: HTMLCanvasElement = $state(Object());
-	let chart = $state(Object());
-
 	let stageNums: number[] = [1, 2, 3];
 
 	function compareNumbers(a: number, b: number) {
@@ -62,7 +59,7 @@
 		);
 		console.log(avg);
 
-		chart = new Chart(canvas, {
+		new Chart(canvas, {
 			type: 'line',
 			data: {
 				labels: parsedResults.map((el) => el.x).sort(compareNumbers),
@@ -82,7 +79,6 @@
 			options: {
 				onHover: function (event, chartElements) {
 					// i actually don't know what is going on here
-					// @ts-ignore
 					const target = event.native ? event.native.target : event.chart.canvas;
 					target.style.cursor = chartElements.length ? 'pointer' : 'default';
 				},
@@ -96,7 +92,6 @@
 						callbacks: {
 							title: (context) => {
 								const value = context[0].raw as Result;
-								const raw = value.raw;
 								return `Задание ${value.x}`;
 							},
 							afterTitle: (context) => {
@@ -110,7 +105,6 @@
 							},
 							label: function (context) {
 								const value = context.raw as Result;
-								const raw = value.raw as StroopResult;
 								const isCorrect = value.isCorrect;
 								const status = isCorrect ? 'Верно' : 'Неверно';
 								return `Реакция: ${value.y} мс (${status})`;

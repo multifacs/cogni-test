@@ -40,14 +40,14 @@
 
 					<th scope="col" class="px-6 py-3 font-medium"> Campimetry </th>
 
-					<th scope="col" class="min-w-[400px] px-6 py-3 font-medium">
+					<th scope="col" class="min-w-100 px-6 py-3 font-medium">
 						Незаполненные поля
 					</th>
 				</tr>
 			</thead>
 
 			<tbody>
-				{#each data.users as user}
+				{#each data.users as user (user.id)}
 					<tr class="bg-neutral-primary-soft border-default border-b">
 						<td class="px-6 py-4 font-mono text-xs">
 							{user.id}

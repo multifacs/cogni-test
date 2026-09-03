@@ -17,12 +17,10 @@
 
 	let {
 		data,
-		children,
-		leftAside
+		children
 	}: {
 		data: LayoutData;
 		children: Snippet;
-		leftAside: Snippet;
 	} = $props();
 
 	let headerText = $state('');

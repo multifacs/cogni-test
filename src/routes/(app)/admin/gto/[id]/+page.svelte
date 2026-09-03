@@ -91,10 +91,6 @@
 		}
 	});
 
-	function formatDate(dateStr: string) {
-		return new Date(dateStr).toLocaleString('ru-RU');
-	}
-
 	function fmt(val: number | null, decimals = 2): string {
 		if (val === null) return '—';
 		return val.toFixed(decimals);
@@ -453,7 +449,7 @@
 				</button>
 				{#if menuOpen}
 					<div
-						class="absolute top-full left-0 z-10 mt-1 min-w-[200px] rounded-lg border border-gray-700 bg-gray-800 py-1 shadow-xl"
+						class="absolute top-full left-0 z-10 mt-1 min-w-50 rounded-lg border border-gray-700 bg-gray-800 py-1 shadow-xl"
 					>
 						{#if data.session.status === 'active'}
 							<button
@@ -553,7 +549,7 @@
 				</button>
 				{#if menuOpen}
 					<div
-						class="absolute top-full left-0 z-10 mt-1 min-w-[200px] rounded-lg border border-gray-700 bg-gray-800 py-1 shadow-xl"
+						class="absolute top-full left-0 z-10 mt-1 min-w-50 rounded-lg border border-gray-700 bg-gray-800 py-1 shadow-xl"
 					>
 						<button
 							class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-green-300 transition-colors hover:bg-gray-700"
@@ -859,7 +855,7 @@
 													Струп
 												</h4>
 												<div class="flex flex-col gap-1.5 text-sm">
-													{#each [{ label: 'Этап 1', data: m.stroop.stage1 }, { label: 'Этап 2', data: m.stroop.stage2 }, { label: 'Этап 3', data: m.stroop.stage3 }] as stage}
+													{#each [{ label: 'Этап 1', data: m.stroop.stage1 }, { label: 'Этап 2', data: m.stroop.stage2 }, { label: 'Этап 3', data: m.stroop.stage3 }] as stage (stage.label)}
 														<div class="flex items-center gap-2">
 															<span class="w-16 shrink-0 text-xs"
 																>{stage.label}</span
@@ -976,7 +972,7 @@
 													Кампиметрия
 												</h4>
 												<div class="flex flex-col gap-1.5 text-sm">
-													{#each [{ label: 'Этап 1', data: m.campimetry.stage1 }, { label: 'Этап 2', data: m.campimetry.stage2 }] as stage}
+													{#each [{ label: 'Этап 1', data: m.campimetry.stage1 }, { label: 'Этап 2', data: m.campimetry.stage2 }] as stage (stage.label)}
 														<div class="flex flex-col gap-1">
 															<span class="text-xs"
 																>{stage.label}</span

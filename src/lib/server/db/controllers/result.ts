@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { session, user } from '$lib/server/db/schema';
+import { session } from '$lib/server/db/schema';
 import {
 	mathAttempt,
 	stroopAttempt,
@@ -28,7 +28,7 @@ import type {
 	MetaResult as ExerciseMetaResult
 } from '$lib/exercises/types';
 import short from 'short-uuid';
-import { eq, asc, desc } from 'drizzle-orm';
+import { eq, asc } from 'drizzle-orm';
 
 export type AnySessionType = TestType | ExerciseType;
 type AnyMetaResult = TestMetaResult | ExerciseMetaResult;
@@ -154,7 +154,6 @@ export async function getResults(sessionType: AnySessionType, userId: string): P
 		results.push({
 			sessionId: s.id,
 			createdAt: s.createdAt,
-			// @ts-ignore
 			attempts,
 			meta: s.meta ? JSON.parse(s.meta) : undefined
 		});

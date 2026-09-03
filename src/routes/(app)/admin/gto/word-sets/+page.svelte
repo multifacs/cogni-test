@@ -250,7 +250,7 @@
 							{:else}
 								<!-- Display mode -->
 								<div class="flex flex-wrap gap-1.5">
-									{#each ws.words as word, i}
+									{#each ws.words as word, i (i)}
 										<span
 											class="rounded-md bg-(--main-accent-color) px-2.5 py-1 text-sm font-medium text-white"
 										>

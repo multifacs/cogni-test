@@ -32,7 +32,6 @@
 	let showInterval: ReturnType<typeof setInterval> | null = null;
 	let gameInterval: ReturnType<typeof setInterval> | null = null;
 
-	let testStartedAt = 0;
 	let inputStartedAt = 0;
 	let answerLog: RoundEntry[] = [];
 
@@ -85,7 +84,6 @@
 		elapsed = 0;
 		maxSpan = 0;
 		numLetters = START_LENGTH;
-		testStartedAt = Date.now();
 		inputStartedAt = 0;
 		answerLog = [];
 		timeoutTriggered = false;
@@ -146,8 +144,8 @@
 	}
 
 	function handleKeyDown(e: KeyboardEvent) {
-		const input = e.target as HTMLInputElement;
-		console.log(e);
+		// const input = e.target as HTMLInputElement;
+		// console.log(e);
 
 		const letterMap = new SvelteMap<string, string>();
 
@@ -207,7 +205,7 @@
 	<div class="flex flex-col items-center justify-center gap-4">
 		<p class="text-center text-xl">Запомните буквы!</p>
 
-		<div class="grid max-w-4xl grid-cols-[repeat(3,auto)] justify-center gap-[15px]">
+		<div class="grid max-w-4xl grid-cols-[repeat(3,auto)] justify-center gap-4">
 			<p class="text-center text-base">
 				Показ: {showTime > 0 ? showTime : 0} сек
 			</p>

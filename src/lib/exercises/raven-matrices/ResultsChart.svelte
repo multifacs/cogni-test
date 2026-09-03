@@ -36,7 +36,7 @@
 	let chart = $state(Object());
 
 	let avg = $state(0);
-	let allTime = $state(0);
+	// let allTime = $state(0);
 
 	function getResults(attempts: RavenAttemptRow[]): RavenResult[] {
 		return attempts.map((a, i) => ({
@@ -55,7 +55,6 @@
 		const s = summary(attempts);
 
 		avg = s.averageResponseTimeMs;
-		allTime = Math.round(s.totalDurationMs / 1000);
 
 		chart = new Chart(canvas, {
 			type: 'line',
@@ -74,7 +73,6 @@
 			},
 			options: {
 				onHover(event, chartElements) {
-					// @ts-ignore
 					const target = event.native ? event.native.target : event.chart.canvas;
 					target.style.cursor = chartElements.length ? 'pointer' : 'default';
 				},
@@ -135,7 +133,6 @@
 					legend: {
 						labels: {
 							usePointStyle: true,
-							// @ts-ignore
 							generateLabels(chart) {
 								const original =
 									Chart.defaults.plugins.legend.labels.generateLabels(chart);
