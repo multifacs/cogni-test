@@ -22,11 +22,16 @@
 		}
 	});
 
-	let openedSessionId = $derived(results[0]?.sessionId ?? null);
+	// null — авто (первая попытка); иначе — явный выбор пользователя для этого slug
+	let choice = $state<{ slug: string; id: string | null } | null>(null);
 
-	function toggleSession(sessionId: string) {
-		openedSessionId = openedSessionId === sessionId ? null : sessionId;
-	}
+	const openedSessionId = $derived(
+		choice && choice.slug === slug ? choice.id : (results[0]?.sessionId ?? null)
+	);
+
+	const toggleSession = (sessionId: string) => {
+		choice = { slug, id: openedSessionId === sessionId ? null : sessionId };
+	};
 </script>
 
 <main class="main box-border flex min-h-full flex-col gap-2">
