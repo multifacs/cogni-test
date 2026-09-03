@@ -1,7 +1,7 @@
 <script lang="ts">
 	import MemoryMatchGame from './MemoryMatchGame.svelte';
 
-	let { gameEnd, sendResults }: { gameEnd: () => void; sendResults: (results: any[]) => void } =
+	let { gameEnd, sendResults }: { gameEnd: () => void; sendResults: (results) => void } =
 		$props();
 </script>
 

@@ -79,10 +79,11 @@
 				})
 			},
 			options: {
-				onHover: function (event, chartElements) {
-					// @ts-ignore
-					const target = event.native ? event.native.target : event.chart.canvas;
-					target.style.cursor = chartElements.length ? 'pointer' : 'default';
+				onHover(event, chartElements, chart) {
+					const target = event.native?.target as HTMLElement | undefined;
+					(target ?? chart.canvas).style.cursor = chartElements.length
+						? 'pointer'
+						: 'default';
 				},
 				responsive: true,
 				plugins: {
@@ -90,12 +91,10 @@
 						callbacks: {
 							title: (context) => {
 								const value = context[0].raw as Result;
-								const raw = value.raw;
 								return `Попытка ${value.x}`;
 							},
 							label: function (context) {
 								const value = context.raw as Result;
-								const raw = value.raw;
 								const isCorrect = value.isCorrect;
 								const status = isCorrect ? 'Верно' : 'Неверно';
 								return `Реакция: ${value.y} мс (${status})`;
@@ -106,7 +105,6 @@
 					legend: {
 						labels: {
 							usePointStyle: true,
-							// @ts-ignore
 							generateLabels: (chart) => {
 								const original =
 									Chart.defaults.plugins.legend.labels.generateLabels(chart);
@@ -123,7 +121,7 @@
 										fontColor,
 										fillStyle: 'rgba(255,99,132,0.4)',
 										strokeStyle: 'rgba(255,99,132,1)',
-										pointStyle: 'line',
+										pointStyle: 'line' as const,
 										lineDash: [6, 6],
 										hidden: false,
 										index: -1
@@ -133,7 +131,7 @@
 										fontColor,
 										fillStyle: getCSSVar('--color-green-500'),
 										strokeStyle,
-										pointStyle: 'circle',
+										pointStyle: 'circle' as const,
 										hidden: false,
 										index: -1
 									},
@@ -142,7 +140,7 @@
 										fontColor,
 										fillStyle: getCSSVar('--color-red-400'),
 										strokeStyle,
-										pointStyle: 'circle',
+										pointStyle: 'circle' as const,
 										hidden: false,
 										index: -2
 									}

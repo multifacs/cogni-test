@@ -1,6 +1,4 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import Header from '$lib/components/ui/Header.svelte';
 	import RecommendationCard from '$lib/components/ui/RecommendationCard.svelte';
 	import { getContext, onMount } from 'svelte';
 	export let data;
@@ -16,7 +14,7 @@
 
 <main class="main flex flex-col gap-6">
 	<div class="flex flex-wrap justify-between gap-5 p-2">
-		{#each data.articles as article}
+		{#each data.articles as article (article.slug)}
 			<RecommendationCard
 				title={article.title}
 				text={`Время чтения: ${article.time} минут`}

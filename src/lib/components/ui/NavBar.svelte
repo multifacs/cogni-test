@@ -1,9 +1,15 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 
 	let { undiagnosed, allowedPaths } = $props();
 
-	const paths = [
+	import type { PathnameWithSearchOrHash, ResolvedPathname } from '$app/types';
+	// resolve() has a variadic conditional signature (ResolveArgs<T>) that
+	// cannot accept the full route union — narrow it to the pathname overload.
+	const resolvePathname = resolve as (path: PathnameWithSearchOrHash) => ResolvedPathname;
+
+	const paths: { href: PathnameWithSearchOrHash; icon: string; text: string }[] = [
 		{
 			href: '/home',
 			icon: '/nav_icons/home.svg',
@@ -49,9 +55,9 @@
 </script>
 
 <nav class="nav">
-	{#each paths as path}
+	{#each paths as path (path.href)}
 		<a
-			href={path.href}
+			href={resolvePathname(path.href)}
 			class="nav-link"
 			class:active={isActive(path.href)}
 			class:pointer-events-none={!isAllowed(path.href)}

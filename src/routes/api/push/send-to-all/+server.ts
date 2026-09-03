@@ -24,7 +24,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			try {
 				await webpush.sendNotification(subscription, payload);
 				return { success: true, endpoint: subscription.endpoint };
-			} catch (error: any) {
+			} catch (error) {
 				console.error('Failed to send to:', subscription.endpoint, error);
 
 				// Handle expired subscriptions
@@ -50,4 +50,4 @@ export const POST: RequestHandler = async ({ request }) => {
 		console.error('Error sending notifications:', error);
 		return json({ error: 'Failed to send notifications' }, { status: 500 });
 	}
-}
+};

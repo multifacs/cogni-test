@@ -66,7 +66,7 @@ export const POST: RequestHandler = async ({ request, params, cookies }) => {
 		try {
 			await markParticipantTestsCompleted(params.id, userId);
 			return json({ success: true });
-		} catch (e: any) {
+		} catch (e) {
 			return json({ error: e.message }, { status: 400 });
 		}
 	}

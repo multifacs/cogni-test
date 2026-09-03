@@ -7,7 +7,7 @@
 	const { data } = $props();
 	const slug = $derived(data.slug);
 	const test = $derived(testRegistry[slug]);
-	let Component: any = $state(null);
+	let Component = $state(null);
 
 	// GTO session integration
 	const gtoSessionId = $derived(page.url.searchParams.get('gtoSessionId') ?? undefined);

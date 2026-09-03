@@ -75,7 +75,7 @@ function getQueryTableMap(): Record<string, any> {
 	};
 }
 
-const orderByMap: Record<string, (fields: any) => any> = {
+const orderByMap: Record<string, (fields) => any> = {
 	math: (f) => asc(f.attempt),
 	stroop: (f) => asc(f.attempt),
 	memory: (f) => asc(f.attempt),
@@ -120,7 +120,7 @@ export async function postResult(
 	if (!insertAttempt) throw new Error(`Unknown session type: ${sessionType}`);
 
 	await db.insert(insertAttempt).values(
-		attempts.map((attempt: any) => ({
+		attempts.map((attempt) => ({
 			...attempt,
 			sessionId
 		}))
@@ -131,9 +131,9 @@ export async function postResult(
 
 export async function getResults(sessionType: AnySessionType, userId: string): Promise<any[]> {
 	const sessions = await db.query.session.findMany({
-		where: (fields: any, { eq, and }: any) =>
+		where: (fields, { eq, and }) =>
 			and(eq(fields.testType, sessionType), eq(fields.userId, userId)),
-		orderBy: (fields: any, { desc }: any) => desc(fields.createdAt)
+		orderBy: (fields, { desc }) => desc(fields.createdAt)
 	});
 
 	const queryTableMap = getQueryTableMap();
@@ -143,11 +143,11 @@ export async function getResults(sessionType: AnySessionType, userId: string): P
 	const orderBy = orderByMap[sessionType];
 	if (!orderBy) throw new Error(`Unknown session type: ${sessionType}`);
 
-	const results: any[] = [];
+	const results = [];
 
 	for (const s of sessions) {
 		const attempts = await attemptTable.findMany({
-			where: (fields: any) => eq(fields.sessionId, s.id),
+			where: (fields) => eq(fields.sessionId, s.id),
 			orderBy
 		});
 

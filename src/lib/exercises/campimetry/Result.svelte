@@ -5,11 +5,9 @@
 
 	let { results }: { results: ExerciseResults } = $props();
 
-	const allTime = $derived(
-		Math.round(results.reduce((a: number, b: any) => a + b.time, 0) / 1000)
-	);
+	const allTime = $derived(Math.round(results.reduce((a: number, b) => a + b.time, 0) / 1000));
 	const avg = $derived(
-		Math.round(results.reduce((a: number, b: any) => a + b.time, 0) / results.length / 1000)
+		Math.round(results.reduce((a: number, b) => a + b.time, 0) / results.length / 1000)
 	);
 </script>
 

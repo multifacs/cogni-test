@@ -114,7 +114,7 @@ describe.skipIf(!process.env.DATABASE_URL)('seed users', () => {
 		try {
 			await result;
 			expect.unreachable('should have thrown');
-		} catch (e: any) {
+		} catch (e) {
 			expect(e.cause?.message ?? e.message).toContain('lastname_length');
 		}
 	});

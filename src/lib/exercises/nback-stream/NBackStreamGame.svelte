@@ -27,7 +27,7 @@
 	let startAt = 0;
 	let stimShownAt = 0;
 	let remainSec = $state(60);
-	let tickTimer: any = null;
+	let tickTimer = null;
 
 	function pickTargetForFigures(): TargetFeature {
 		return Math.random() < 0.5 ? 'shape' : 'color';
@@ -139,14 +139,6 @@
 
 		sendResults(trialRows);
 		gameEnd();
-	}
-
-	function restart() {
-		clicks = [];
-		lastClickTs = null;
-		seq = [];
-		phase = 'config';
-		clearInterval(tickTimer);
 	}
 
 	onDestroy(() => clearInterval(tickTimer));

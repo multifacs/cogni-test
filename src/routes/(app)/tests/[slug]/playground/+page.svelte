@@ -12,7 +12,6 @@
 	const test = $derived(testRegistry[slug]);
 	let Component: typeof SvelteComponent | null = $state(null);
 
-	let isGameRunning = $state(true);
 	let isGameEnd = $state(false);
 	let childComponent: InstanceType<typeof SvelteComponent> | null = $state(null);
 
@@ -20,6 +19,7 @@
 	const gtoSessionId = $derived(page.url.searchParams.get('gtoSessionId') ?? undefined);
 
 	import type { PathnameWithSearchOrHash } from '$app/types';
+	import { resolve } from '$app/paths';
 
 	const backUrl = $derived(
 		(gtoSessionId
@@ -29,7 +29,6 @@
 
 	$effect(() => {
 		// Reset game state when the test changes (e.g. GTO navigating between tests)
-		isGameRunning = true;
 		isGameEnd = false;
 		Component = null;
 		if (test) {
@@ -40,11 +39,10 @@
 	});
 
 	function onGameEnd() {
-		isGameRunning = false;
 		isGameEnd = true;
 		// In GTO mode, navigation is handled by onSendResults after saving
 		if (!gtoSessionId) {
-			goto(`/tests/${slug}/results`);
+			goto(resolve(`/tests/${slug}/results`));
 		}
 	}
 
@@ -71,7 +69,7 @@
 				goto(result.nextTestUrl);
 			} else {
 				// All tests done — go to words page
-				goto(`/gto/session/${gtoSessionId}/words`);
+				goto(resolve(`/gto/session/${gtoSessionId}/words`));
 			}
 		} else {
 			// Standalone mode: just save the result

@@ -26,7 +26,7 @@ export const POST: RequestHandler = async ({ request, params, cookies }) => {
 			score: result.score,
 			pending: result.pending
 		});
-	} catch (e: any) {
+	} catch (e) {
 		return json({ error: e.message }, { status: 400 });
 	}
 };

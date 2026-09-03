@@ -11,7 +11,7 @@
 	import { pushService } from '$lib/pushService';
 	import { isSubscribed } from '$lib/utils/push';
 
-	let { data } = $props();
+	// let { data } = $props();
 	const user = derived(userStore, ($userStore) => $userStore);
 	const headerContext = getContext<{ value: string }>('headerText');
 	let subscribed = $state(false);
@@ -39,10 +39,6 @@
 		}
 
 		return age;
-	}
-
-	function formatSex(val: 'male' | 'female'): string {
-		return val === 'male' ? 'Мужской' : 'Женский';
 	}
 
 	export function formatDate(date: Date): string {
@@ -125,7 +121,6 @@
 						{#if subscribed}
 							<Button
 								color="secondary"
-								kind="small"
 								class="border border-gray-300"
 								onclick={unsubscribe}
 							>
@@ -140,15 +135,13 @@
 									</p>
 								</div>
 							{:else}
-								<Button color="green" kind="small" onclick={subscribe}>
-									Подписаться
-								</Button>
+								<Button color="green" onclick={subscribe}>Подписаться</Button>
 							{/if}
 						{/if}
 					</div>
 				</Card>
 				<form class="mx-auto w-fit" method="POST" action="/?/logout" use:enhance>
-					<Button type="submit" kind="small" color="red">Выйти</Button>
+					<Button type="submit" color="red">Выйти</Button>
 				</form>
 			{:else}
 				<div class="flex justify-center p-8">

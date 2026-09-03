@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { exerciseRegistry } from '$lib/exercises';
-
 	let { name, title, path, img, testSessionCounts = {} } = $props();
 </script>
 

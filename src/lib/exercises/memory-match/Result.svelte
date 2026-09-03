@@ -4,13 +4,9 @@
 	import ResultsChart from './ResultsChart.svelte';
 
 	let {
-		results,
-		exerciseType,
-		meta
+		results
 	}: {
 		results: ExerciseResults;
-		exerciseType?: string;
-		meta?: string[];
 	} = $props();
 
 	const chartData = $derived(
@@ -27,19 +23,13 @@
 	);
 
 	const totalDurationMs = $derived(
-		results.reduce(
-			(a: number, b_raw: any) => a + (b_raw as MemoryMatchSummaryRow).durationMs,
-			0
-		)
+		results.reduce((a: number, b_raw) => a + (b_raw as MemoryMatchSummaryRow).durationMs, 0)
 	);
 	const totalFlips = $derived(
-		results.reduce(
-			(a: number, b_raw: any) => a + (b_raw as MemoryMatchSummaryRow).flipsCount,
-			0
-		)
+		results.reduce((a: number, b_raw) => a + (b_raw as MemoryMatchSummaryRow).flipsCount, 0)
 	);
 	const totalMistakes = $derived(
-		results.reduce((a: number, b_raw: any) => a + (b_raw as MemoryMatchSummaryRow).mistakes, 0)
+		results.reduce((a: number, b_raw) => a + (b_raw as MemoryMatchSummaryRow).mistakes, 0)
 	);
 </script>
 

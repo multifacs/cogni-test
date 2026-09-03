@@ -34,7 +34,6 @@
 	type TypeType = 'button' | 'submit' | 'reset' | null | undefined;
 	let {
 		id,
-		kind = 'normal',
 		color = 'green',
 		children,
 		onclick = undefined,
@@ -46,7 +45,6 @@
 		style: styleName = ''
 	}: {
 		id?: string;
-		kind?: string;
 		color: ButtonColor;
 		children: Snippet;
 		onclick?: OnclickType;

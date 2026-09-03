@@ -10,12 +10,12 @@
 		tabs: { id: string; label: string; disabled?: boolean }[];
 		activeTab: string;
 		onTabChange?: (id: string) => void;
-		children: any;
+		children;
 	} = $props();
 </script>
 
 <ul class="font-black w-full flex gap-1 text-center text-sm font-medium justify-center flex-wrap">
-	{#each tabs as tab}
+	{#each tabs as tab (tab.label)}
 		<li class="me-2 shrink-0" class:max-md:flex-1={!tab.disabled && activeTab === tab.id}>
 			<button
 				class="

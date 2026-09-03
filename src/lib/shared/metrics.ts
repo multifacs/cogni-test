@@ -3,7 +3,7 @@ import { tests } from '$lib/tests';
 import { exercises, EXERCISE_SLUG_TO_TEST_TYPE } from '$lib/exercises';
 import { getResults } from '$lib/server/db/controllers/result';
 
-export function computeSessionScore(sessionType: string, attempts: any[]): number {
+export function computeSessionScore(sessionType: string, attempts): number {
 	if (!attempts?.length) return 0;
 
 	switch (sessionType) {

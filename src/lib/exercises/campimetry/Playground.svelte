@@ -11,9 +11,9 @@
 		gameEnd,
 		sendResults
 	}: {
-		data: any;
+		data;
 		gameEnd: () => void;
-		sendResults: (results: any[]) => void;
+		sendResults: (results) => void;
 	} = $props();
 
 	let isGameRunning = $state(true);

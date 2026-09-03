@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { getCSSVar, translate } from '$lib/utils';
-	import { onMount } from 'svelte';
-	import { colors } from './logic/lab-color.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 </script>
 

@@ -6,7 +6,7 @@
 		sendResults
 	}: {
 		gameEnd: () => void;
-		sendResults: (results: any[]) => void;
+		sendResults: (results) => void;
 	} = $props();
 </script>
 

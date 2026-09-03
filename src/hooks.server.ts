@@ -94,7 +94,7 @@ export async function processScheduledNotifications() {
 						notificationId: notification.id,
 						endpoint: subscription.endpoint
 					};
-				} catch (error: any) {
+				} catch (error) {
 					console.error('Failed to send scheduled notification:', notification.id, error);
 
 					// Handle expired subscriptions
@@ -145,13 +145,12 @@ let isProcessing = false;
 // Use globalThis to persist across HMR
 const WORKER_KEY = '__notification_worker__';
 
-
 // Worker function that runs every 3 seconds
 function startWorker() {
 	// Check if worker already exists globally
 	if (globalThis[WORKER_KEY]) {
 		console.log('Worker already running globally, restarting...');
-		stopWorker()
+		stopWorker();
 	}
 
 	// Fix for terminal input issues

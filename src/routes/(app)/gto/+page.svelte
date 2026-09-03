@@ -7,7 +7,6 @@
 	import { resolve } from '$app/paths';
 	import type { PathnameWithSearchOrHash } from '$app/types';
 	import { getContext, onMount } from 'svelte';
-	import Header from '$lib/components/ui/Header.svelte';
 
 	let { data } = $props();
 

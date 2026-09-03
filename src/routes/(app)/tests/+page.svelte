@@ -1,12 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import Button from '$lib/components/ui/Button.svelte';
 	import ExerciseCard from '$lib/components/ui/ExerciseCard.svelte';
-	import Header from '$lib/components/ui/Header.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import { userStore } from '$lib/stores/user.js';
-	import { tests } from '$lib/tests';
-	import { translate } from '$lib/utils/common';
 	import localforage from 'localforage';
 	import { getContext, onMount } from 'svelte';
 
@@ -41,7 +39,7 @@
 			if (uncompletedTest) {
 				goto(uncompletedTest.path);
 			} else {
-				goto('/home');
+				goto(resolve('/home'));
 			}
 		}
 	});
@@ -79,7 +77,7 @@
 			<Button color="green">Запуск потокового прохождения</Button>
 		</div>
 		<div class="cards flex flex-wrap justify-center gap-5 p-2">
-			{#each data.tests as { name, title, path, img }}
+			{#each data.tests as { name, title, path, img } (title)}
 				<ExerciseCard {name} {title} {path} {img} {testSessionCounts} />
 			{/each}
 		</div>

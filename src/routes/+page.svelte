@@ -8,8 +8,6 @@
 	import DateInput from '$lib/components/ui/login-form/DateInput.svelte';
 	import TextInput from '$lib/components/ui/login-form/TextInput.svelte';
 
-	let { data } = $props();
-
 	let firstname = $state('');
 	let lastname = $state('');
 	let birthdate = $state('');

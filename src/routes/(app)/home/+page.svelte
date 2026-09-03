@@ -16,7 +16,7 @@
 		return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 	}
 
-	let diferredInstallEvent: any | null = $state(null);
+	let diferredInstallEvent | null = $state(null);
 	let showInstallButton = $state(true);
 	let showInstallModal = $state(false);
 	let undiagnosed = $state(false);

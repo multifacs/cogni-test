@@ -56,13 +56,11 @@
 	};
 
 	let {
-		data,
 		gameEnd,
 		sendResults
 	}: {
-		data: any;
 		gameEnd: () => void;
-		sendResults: (results: any[]) => void;
+		sendResults: (results) => void;
 	} = $props();
 
 	let selectedTimeOption: TimeOption = $state(timeOptions[0]);
@@ -134,7 +132,7 @@
 	let input2 = $state('');
 	let input3 = $state('');
 
-	let countdown = $state(30);
+	// let countdown = $state(30);
 	let timerEndsAt = $state<number | null>(null);
 	let currentTime = $state(Date.now());
 

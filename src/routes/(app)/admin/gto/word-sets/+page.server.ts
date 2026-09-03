@@ -32,7 +32,7 @@ export const actions: Actions = {
 		try {
 			await createWordSet(words);
 			return { success: true };
-		} catch (e: any) {
+		} catch (e) {
 			return fail(500, { error: e.message });
 		}
 	},
@@ -55,7 +55,7 @@ export const actions: Actions = {
 		try {
 			await updateWordSet(id, words);
 			return { success: true };
-		} catch (e: any) {
+		} catch (e) {
 			return fail(500, { error: e.message });
 		}
 	},
@@ -86,7 +86,7 @@ export const actions: Actions = {
 		try {
 			await deleteWordSet(id);
 			return { success: true };
-		} catch (e: any) {
+		} catch (e) {
 			return fail(400, { error: e.message });
 		}
 	}

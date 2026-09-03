@@ -12,7 +12,6 @@
 	const exercise = $derived(exerciseRegistry[slug]);
 	let Component: typeof SvelteComponent | null = $state(null);
 
-	let isGameRunning = $state(true);
 	let isGameEnd = $state(false);
 	let childComponent: InstanceType<typeof SvelteComponent> | null = $state(null);
 
@@ -21,6 +20,7 @@
 
 	// Back URL: in GTO mode go to about page, otherwise exercise page
 	import type { PathnameWithSearchOrHash } from '$app/types';
+	import { resolve } from '$app/paths';
 
 	const backUrl = $derived(
 		(gtoSessionId
@@ -30,7 +30,6 @@
 
 	$effect(() => {
 		// Reset game state when the exercise changes (e.g. GTO navigating between tests)
-		isGameRunning = true;
 		isGameEnd = false;
 		Component = null;
 		if (exercise?.playground) {
@@ -41,12 +40,11 @@
 	});
 
 	function onGameEnd() {
-		isGameRunning = false;
 		isGameEnd = true;
 		// In GTO mode, navigation is handled by onSendResults after saving
 		if (!gtoSessionId) {
 			if (exercise?.result) {
-				goto(`/exercises/${slug}/results`);
+				goto(resolve(`/exercises/${slug}/results`));
 			}
 		}
 	}
@@ -78,7 +76,7 @@
 				goto(result.nextTestUrl);
 			} else {
 				// All tests done — go to words page
-				goto(`/gto/session/${gtoSessionId}/words`);
+				goto(resolve(`/gto/session/${gtoSessionId}/words`));
 			}
 		} else {
 			// Standalone mode: just save the result via the exercise endpoint

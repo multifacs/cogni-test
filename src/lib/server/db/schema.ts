@@ -3,7 +3,7 @@ import { sqliteTable, integer, text, check } from 'drizzle-orm/sqlite-core';
 import { gtoSession } from './models/gto';
 import { generate } from 'short-uuid';
 
-export function enumCheck(column: any, values: string[]) {
+export function enumCheck(column, values: string[]) {
 	const joined = values.map((v) => `'${v}'`).join(', ');
 	return sql`${column} in (${sql.raw(joined)})`;
 }

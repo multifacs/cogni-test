@@ -15,7 +15,7 @@
 	});
 	let lives = $state(3);
 	let timeLeft = $state(60);
-	let timer: any = null;
+	let timer = null;
 	let phase: 'intro' | 'test' | 'result' = 'intro';
 	let results = [];
 
