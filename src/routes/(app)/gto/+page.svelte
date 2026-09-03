@@ -40,7 +40,7 @@
 		showDisclaimer = true;
 	}
 
-	let targetUrl = $derived(
+	const targetUrl = $derived(
 		disclaimerType === 'tests'
 			? `/gto/session/${selectedSession.gtoSessionId}/play`
 			: `/gto/session/${selectedSession.gtoSessionId}/words`
