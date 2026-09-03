@@ -2,6 +2,7 @@ export * from './controllers/user';
 
 import { drizzle } from 'drizzle-orm/libsql';
 import { createClient, type Client } from '@libsql/client';
+import type { LibSQLDatabase } from 'drizzle-orm/libsql';
 import * as schema from './schema';
 
 /**
@@ -26,7 +27,7 @@ async function enableWAL(client: Client) {
 	}
 }
 
-export let db: ReturnType<typeof drizzle>;
+export let db: LibSQLDatabase<typeof schema>;
 
 import { env } from '$env/dynamic/private';
 
