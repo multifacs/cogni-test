@@ -12,10 +12,11 @@
 		meta: string[];
 	} = $props();
 
-	let time = 60;
-	if (results.filter((x) => !x.guessed).length == 0) {
-		time = Math.round(results.reduce((a, b) => a + b.time, 0) / 1000);
-	}
+	const time = $derived(
+		results.filter((x) => !x.guessed).length === 0
+			? Math.round(results.reduce((a, b) => a + b.time, 0) / 1000)
+			: 60
+	);
 </script>
 
 <div class="flex flex-col items-center">

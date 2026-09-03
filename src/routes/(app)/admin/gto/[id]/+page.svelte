@@ -719,10 +719,18 @@
 							selectedButtonFile.get(m.participantId) ?? em.buttonTestFileName}
 						<div class="rounded-xl border border-gray-700 bg-white transition-colors">
 							<!-- Card header — always visible -->
-							<button
-								class="flex w-full items-center gap-3 px-4 py-3 text-left"
+							<div
+								role="button"
+								tabindex={0}
+								class="flex w-full cursor-pointer select-none items-center gap-3 px-4 py-3 text-left"
 								onclick={() =>
 									(expandedParticipant = isExpanded ? null : m.participantId)}
+								onkeydown={(e) => {
+									if (e.key === 'Enter' || e.key === ' ') {
+										e.preventDefault();
+										expandedParticipant = isExpanded ? null : m.participantId;
+									}
+								}}
 							>
 								<span
 									class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-(--main-accent-color) text-sm font-bold text-white"
@@ -830,7 +838,7 @@
 										/>
 									</svg>
 								</div>
-							</button>
+							</div>
 
 							<!-- Expanded content -->
 							{#if isExpanded}
