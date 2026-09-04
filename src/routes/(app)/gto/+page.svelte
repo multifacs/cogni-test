@@ -5,12 +5,17 @@
 	import { exerciseRegistry } from '$lib/exercises';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { onMount } from 'svelte';
+	import type { PathnameWithSearchOrHash } from '$app/types';
+	import { getContext, onMount } from 'svelte';
 
 	let { data } = $props();
 
+	const headerContext = getContext<{ value: string }>('headerText');
 	onMount(() => {
 		invalidateAll();
+		if (headerContext) {
+			headerContext.value = 'Сессии ГТО-М';
+		}
 	});
 
 	let showDisclaimer = $state(false);
@@ -35,10 +40,10 @@
 		showDisclaimer = true;
 	}
 
-	let targetUrl = $derived(
-		disclaimerType === 'tests'
+	const targetUrl = $derived(
+		(disclaimerType === 'tests'
 			? `/gto/session/${selectedSession.gtoSessionId}/play`
-			: `/gto/session/${selectedSession.gtoSessionId}/words`
+			: `/gto/session/${selectedSession.gtoSessionId}/words`) satisfies PathnameWithSearchOrHash
 	);
 
 	function confirmAction() {
@@ -87,10 +92,6 @@
 	}
 </script>
 
-<section class="banner">
-	<h1 class="text-2xl font-bold">Сессии ГТО-М</h1>
-</section>
-
 <main class="main overflow-auto p-4">
 	<div class="flex flex-col gap-6">
 		{#if data.activeSessions.length === 0 && data.completedSessions.length === 0}
@@ -124,11 +125,13 @@
 						{@const total = GTO_TEST_ORDER.length}
 						{@const percent = Math.round((progress / total) * 100)}
 						<div
-							class="flex flex-col gap-4 rounded-xl border border-gray-700 bg-gray-800/50 p-4 transition-colors"
+							class="flex flex-col gap-4 rounded-xl border border-gray-700 bg-white p-4 transition-colors"
 						>
 							<!-- Session header -->
 							<div class="flex items-center justify-between">
-								<h2 class="truncate text-lg font-semibold">{session.name}</h2>
+								<h2 class="truncate text-lg font-semibold text-center">
+									{session.name}
+								</h2>
 								<span
 									class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs {ss.bg} {ss.text}"
 								>
@@ -295,7 +298,7 @@
 			<!-- Completed sessions -->
 			{#if data.completedSessions.length > 0}
 				<div class="flex items-center gap-3">
-					<h2 class="text-lg font-semibold">Завершённые сессии</h2>
+					<h2 class="text-lg font-semibold text-center">Завершённые сессии</h2>
 					<span class="text-sm text-gray-400">({data.completedSessions.length})</span>
 				</div>
 				<div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
@@ -305,7 +308,9 @@
 							class="flex flex-col gap-3 rounded-xl border border-gray-700 bg-gray-800/30 p-4 transition-colors"
 						>
 							<div class="flex items-center justify-between">
-								<h2 class="truncate text-lg font-semibold">{session.name}</h2>
+								<h2 class="truncate text-lg font-semibold text-center">
+									{session.name}
+								</h2>
 								<span
 									class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs {ss.bg} {ss.text}"
 								>
@@ -346,7 +351,7 @@
 {#if showDisclaimer}
 	<Modal bind:showModal={showDisclaimer}>
 		{#snippet header()}
-			<h2 class="text-2xl text-white">
+			<h2 class="text-2xl text-white text-center">
 				{#if disclaimerType === 'tests'}
 					{selectedSession.currentTestIndex > 0
 						? 'Продолжить тестирование?'

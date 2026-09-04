@@ -22,26 +22,30 @@
 		}
 	});
 
-	let openedSessionId = $state<string | null>(null);
-	if (results[0]?.sessionId) openedSessionId = results[0].sessionId;
+	// null — авто (первая попытка); иначе — явный выбор пользователя для этого slug
+	let choice = $state<{ slug: string; id: string | null } | null>(null);
 
-	function toggleSession(sessionId: string) {
-		openedSessionId = openedSessionId === sessionId ? null : sessionId;
-	}
+	const openedSessionId = $derived(
+		choice && choice.slug === slug ? choice.id : (results[0]?.sessionId ?? null)
+	);
+
+	const toggleSession = (sessionId: string) => {
+		choice = { slug, id: openedSessionId === sessionId ? null : sessionId };
+	};
 </script>
 
-<main class="main box-border flex min-h-full flex-col justify-center gap-2">
+<main class="main box-border flex min-h-full flex-col gap-2">
 	{#if !results}
 		<Spinner />
 		<p>Загрузка результатов...</p>
 	{:else if results.length > 0}
 		{#each results as result (result.sessionId)}
-			<div class="w-full rounded-2xl bg-gray-600 shadow">
+			<div class="w-full rounded-2xl bg-white shadow">
 				<button
-					class={`flex w-full cursor-pointer items-center justify-between rounded-t-2xl px-4 py-3 transition-colors hover:bg-gray-400 ${openedSessionId !== result.sessionId ? 'hover:rounded-b-2xl' : ''}`}
+					class={`flex w-full cursor-pointer items-center justify-between rounded-t-2xl px-4 py-3 transition-colors hover:bg-gray-100 ${openedSessionId !== result.sessionId ? 'hover:rounded-b-2xl' : ''}`}
 					onclick={() => toggleSession(result.sessionId)}
 				>
-					<span class="font-medium text-gray-50">
+					<span class="font-medium">
 						{openedSessionId === result.sessionId
 							? 'Попытка от ' + formatUserLocalDate(result.createdAt)
 							: formatUserLocalDate(result.createdAt)}
@@ -73,7 +77,7 @@
 			</div>
 		{/each}
 	{:else}
-		<h1>Попыток нет</h1>
+		<h1 class="text-center">Попыток нет</h1>
 	{/if}
 </main>
 

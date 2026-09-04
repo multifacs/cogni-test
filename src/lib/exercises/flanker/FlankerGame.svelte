@@ -12,7 +12,7 @@
 	} = $props();
 
 	const TOTAL_TRIALS = 50;
-	const MAX_TEST_SECONDS = 120;
+	// const MAX_TEST_SECONDS = 120;
 
 	let testStarted = $state(false);
 	let testFinished = $state(false);
@@ -24,7 +24,7 @@
 	let intervalId: ReturnType<typeof setInterval> | null = null;
 	let layoutKey = $state(0);
 
-	let testStartedAt = 0;
+	// let testStartedAt = 0;
 	let trialShownAt = 0;
 
 	let answerLog = $state<FlankerTrialRow[]>([]);
@@ -72,7 +72,7 @@
 		trials = generateTrials();
 		currentTrial = trials.shift() ?? null;
 		layoutKey++;
-		testStartedAt = Date.now();
+		// testStartedAt = Date.now();
 		trialShownAt = Date.now();
 		answerLog = [];
 		stopTimer();
@@ -133,7 +133,7 @@
 	}
 
 	function handleKeyDown(e: KeyboardEvent) {
-		const input = e.target as HTMLInputElement;
+		// const input = e.target as HTMLInputElement;
 		console.log(e);
 
 		if (e.key == 'ArrowLeft') {
@@ -156,7 +156,7 @@
 {#if testStarted && !testFinished && currentTrial}
 	<div bind:this={elem} class="flex flex-col items-center justify-center gap-4">
 		<div class="grid max-w-4xl grid-cols-[repeat(3,auto)] justify-center gap-4 text-lg">
-			<p class=" text-white">
+			<p class=" ">
 				Время: {elapsedTime} сек
 			</p>
 			<p class="font-semibold text-[#4caf50]">
@@ -169,11 +169,11 @@
 
 		{#key layoutKey}
 			<div class="grid grid-cols-5 gap-3">
-				{#each currentTrial as dir, index}
+				{#each currentTrial as dir, index (index)}
 					<button
 						type="button"
 						disabled
-						class="h-16 w-16 rounded-2xl bg-gray-100 text-3xl font-bold text-indigo-800"
+						class="h-16 w-16 rounded-2xl bg-white text-3xl font-bold text-indigo-800"
 						>{arrowSymbol(dir)}</button
 					>
 				{/each}
@@ -188,7 +188,7 @@
 	</div>
 {:else if testFinished}
 	<div class="flex flex-col items-center justify-center gap-3">
-		<p class="text-lg font-semibold text-white">Тест завершён</p>
+		<p class="text-lg font-semibold">Тест завершён</p>
 	</div>
 {:else}
 	<Button color="green" onclick={startTest}>Старт</Button>

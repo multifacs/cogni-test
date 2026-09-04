@@ -24,11 +24,11 @@
 
 	const pointColor = (ctx: ScriptableContext<'line'>) => {
 		const result = ctx.raw as EmojiResult | undefined;
-		if (!result) return 'white';
+		if (!result) return 'var(--main-text-color)';
 		return result.isCorrect ? getCSSVar('--color-green-500') : getCSSVar('--color-red-400');
 	};
 
-	Chart.defaults.color = 'white';
+	Chart.defaults.color = 'var(--main-text-color)';
 
 	let canvas: HTMLCanvasElement = $state(Object());
 	let chart = $state(Object());
@@ -69,10 +69,11 @@
 				]
 			},
 			options: {
-				onHover(event, chartElements) {
-					// @ts-ignore
-					const target = event.native ? event.native.target : event.chart.canvas;
-					target.style.cursor = chartElements.length ? 'pointer' : 'default';
+				onHover(event, chartElements, chart) {
+					const target = event.native?.target as HTMLElement | undefined;
+					(target ?? chart.canvas).style.cursor = chartElements.length
+						? 'pointer'
+						: 'default';
 				},
 				responsive: true,
 				plugins: {
@@ -100,7 +101,6 @@
 					legend: {
 						labels: {
 							usePointStyle: true,
-							// @ts-ignore
 							generateLabels(chart) {
 								const original =
 									Chart.defaults.plugins.legend.labels.generateLabels(chart);
@@ -112,7 +112,7 @@
 										fontColor,
 										fillStyle: 'rgba(255,99,132,0.4)',
 										strokeStyle: 'rgba(255,99,132,1)',
-										pointStyle: 'line',
+										pointStyle: 'line' as const,
 										lineDash: [6, 6],
 										hidden: false,
 										index: -1
@@ -122,7 +122,7 @@
 										fontColor,
 										fillStyle: getCSSVar('--color-green-500'),
 										strokeStyle,
-										pointStyle: 'circle',
+										pointStyle: 'circle' as const,
 										hidden: false,
 										index: -2
 									},
@@ -131,7 +131,7 @@
 										fontColor,
 										fillStyle: getCSSVar('--color-red-400'),
 										strokeStyle,
-										pointStyle: 'circle',
+										pointStyle: 'circle' as const,
 										hidden: false,
 										index: -3
 									}

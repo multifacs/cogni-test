@@ -27,10 +27,9 @@
 		return result.isCorrect ? getCSSVar('--color-green-500') : getCSSVar('--color-red-400');
 	};
 
-	Chart.defaults.color = 'white';
+	Chart.defaults.color = 'var(--main-text-color)';
 
 	let canvas: HTMLCanvasElement = $state(Object());
-	let chart = $state(Object());
 
 	let stageNums: number[] = [0];
 
@@ -63,7 +62,7 @@
 		);
 		console.log(avg);
 
-		chart = new Chart(canvas, {
+		new Chart(canvas, {
 			type: 'line',
 			data: {
 				labels: parsedResults.map((el) => el.x).sort(compareNumbers),
@@ -81,10 +80,11 @@
 				})
 			},
 			options: {
-				onHover: function (event, chartElements) {
-					// @ts-ignore
-					const target = event.native ? event.native.target : event.chart.canvas;
-					target.style.cursor = chartElements.length ? 'pointer' : 'default';
+				onHover(event, chartElements, chart) {
+					const target = event.native?.target as HTMLElement | undefined;
+					(target ?? chart.canvas).style.cursor = chartElements.length
+						? 'pointer'
+						: 'default';
 				},
 				responsive: true,
 				plugins: {
@@ -119,7 +119,6 @@
 					legend: {
 						labels: {
 							usePointStyle: true,
-							// @ts-ignore
 							generateLabels: (chart) => {
 								const original =
 									Chart.defaults.plugins.legend.labels.generateLabels(chart);
@@ -136,7 +135,7 @@
 										fontColor,
 										fillStyle: 'rgba(255,99,132,0.4)',
 										strokeStyle: 'rgba(255,99,132,1)',
-										pointStyle: 'line',
+										pointStyle: 'line' as const,
 										lineDash: [6, 6],
 										hidden: false,
 										index: -1
@@ -146,7 +145,7 @@
 										fontColor,
 										fillStyle: getCSSVar('--color-green-500'),
 										strokeStyle,
-										pointStyle: 'circle',
+										pointStyle: 'circle' as const,
 										hidden: false,
 										index: -1
 									},
@@ -155,7 +154,7 @@
 										fontColor,
 										fillStyle: getCSSVar('--color-red-400'),
 										strokeStyle,
-										pointStyle: 'circle',
+										pointStyle: 'circle' as const,
 										hidden: false,
 										index: -2
 									}
@@ -229,6 +228,6 @@
 	});
 </script>
 
-<p>Время прохождения теста: {allTime} с</p>
-<p>Среднее время реакции: {avg} мc</p>
+<h2 class="text-center">Время прохождения теста: {allTime} с</h2>
+<h2 class="text-center" style="padding-bottom: 1rem;">Среднее время реакции: {avg} мc</h2>
 <canvas bind:this={canvas}></canvas>

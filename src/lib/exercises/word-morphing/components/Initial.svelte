@@ -5,7 +5,7 @@
 		$props();
 </script>
 
-<h2>Сочетание для запоминания:</h2>
+<h2 class="text-center">Сочетание для запоминания:</h2>
 {#if category === 'words'}
 	<p class="text-3xl">{originalAdjective} {originalNoun}</p>
 {:else}

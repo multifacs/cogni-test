@@ -23,13 +23,13 @@
 
 	const pointColor = (ctx: ScriptableContext<'line'>) => {
 		const result = ctx.raw as ChartPoint | undefined;
-		if (!result) return 'white';
+		if (!result) return 'var(--main-text-color)';
 		if (result.isTarget && result.isCorrect) return getCSSVar('--color-green-500');
 		if (!result.isCorrect) return getCSSVar('--color-red-400');
 		return 'gray';
 	};
 
-	Chart.defaults.color = 'white';
+	Chart.defaults.color = 'var(--main-text-color)';
 
 	let canvas: HTMLCanvasElement = $state(Object());
 	let chart = $state(Object());
@@ -37,7 +37,7 @@
 	let avg = $state(0);
 
 	function getResults(trials: AttentionTrialRow[]): ChartPoint[] {
-		return trials.map((t, i) => ({
+		return trials.map((t) => ({
 			x: t.clickIndex,
 			y: t.reactionTimeMs,
 			number: t.number,
@@ -69,10 +69,11 @@
 				]
 			},
 			options: {
-				onHover(event, chartElements) {
-					// @ts-ignore
-					const target = event.native ? event.native.target : event.chart.canvas;
-					target.style.cursor = chartElements.length ? 'pointer' : 'default';
+				onHover(event, chartElements, chart) {
+					const target = event.native?.target as HTMLElement | undefined;
+					(target ?? chart.canvas).style.cursor = chartElements.length
+						? 'pointer'
+						: 'default';
 				},
 				responsive: true,
 				plugins: {
@@ -99,7 +100,6 @@
 					legend: {
 						labels: {
 							usePointStyle: true,
-							// @ts-ignore
 							generateLabels(chart) {
 								const original =
 									Chart.defaults.plugins.legend.labels.generateLabels(chart);

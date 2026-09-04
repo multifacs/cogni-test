@@ -36,7 +36,6 @@
 
 	const currentLevelNumber = () => currentLevelIndex + 1;
 	const isLastLevel = () => currentLevelIndex === levelConfigs.length - 1;
-	const correctLevels = () => acceptedReviews.filter((r) => r.isCorrect).length;
 
 	const randomInt = (min: number, max: number) =>
 		Math.floor(Math.random() * (max - min + 1)) + min;
@@ -167,18 +166,14 @@
 			исчезновения с экрана.
 		</p>
 		<div class="rounded-2xl bg-white/5 px-6 py-5">
-			<h2 class="mb-3 text-base font-semibold text-white">Инструкция</h2>
+			<h2 class="mb-3 text-base font-semibold text-center">Инструкция</h2>
 			<ol class="flex list-disc flex-col gap-1.5 pl-5">
-				<li class="text-base leading-normal text-white/70">
+				<li class="text-base leading-normal">
 					Вам будут показаны числа, которые нужно запомнить.
 				</li>
-				<li class="text-base leading-normal text-white/70">
-					Время на запоминание ограничено.
-				</li>
-				<li class="text-base leading-normal text-white/70">
-					Сложность постепенно повышается.
-				</li>
-				<li class="text-base leading-normal text-white/70">
+				<li class="text-base leading-normal">Время на запоминание ограничено.</li>
+				<li class="text-base leading-normal">Сложность постепенно повышается.</li>
+				<li class="text-base leading-normal">
 					После исчезновения чисел, введите их в том же порядке.
 				</li>
 			</ol>
@@ -188,7 +183,7 @@
 {:else}
 	<div class="flex flex-col items-center justify-center gap-4">
 		<section class="flex w-full flex-col gap-6 rounded-3xl p-8 backdrop-blur-sm">
-			<h1 class="text-3xl font-bold text-white">Уровень {currentLevelNumber()}</h1>
+			<h1 class="text-3xl font-bold text-center">Уровень {currentLevelNumber()}</h1>
 
 			{#key `${phase}-${currentLevelIndex}`}
 				{#if phase === 'memorize'}
@@ -196,14 +191,14 @@
 						class="flex flex-col items-center justify-center gap-4 rounded-2xl bg-white/5 p-6"
 					>
 						<div class="flex flex-col items-center justify-between gap-3">
-							<h2 class="text-xl font-semibold text-white">Запомните числа</h2>
+							<h2 class="text-xl font-semibold text-center">Запомните числа</h2>
 							<div
-								class="min-w-[60px] rounded-full bg-white px-3.5 py-1 text-center text-sm font-bold whitespace-nowrap text-[#0c1452]"
+								class="min-w-15 rounded-full bg-white px-3.5 py-1 text-center text-sm font-bold whitespace-nowrap text-[#0c1452]"
 							>
 								{countdown} сек
 							</div>
 						</div>
-						<p class="text-sm leading-normal text-white/50">
+						<p class="text-sm leading-normal">
 							Смотрите на последовательность до конца отсчета, затем введите ее в том
 							же порядке.
 						</p>
@@ -213,7 +208,7 @@
 						>
 							{#each currentSequence as value, index (index)}
 								<div
-									class="min-w-[52px] rounded-xl bg-white px-4 py-3 text-center text-2xl font-bold text-[#0c1452]"
+									class="min-w-13 rounded-xl bg-white px-4 py-3 text-center text-2xl font-bold text-[#0c1452]"
 								>
 									{value}
 								</div>
@@ -221,24 +216,24 @@
 						</div>
 					</div>
 				{:else if phase === 'input'}
-					<div class="flex flex-col gap-4 rounded-2xl bg-white/5 p-6">
+					<div class="flex flex-col gap-4 rounded-2xl p-6">
 						<div class="flex flex-col items-center justify-between gap-3">
-							<h2 class="text-xl font-semibold text-white">
+							<h2 class="text-xl font-semibold text-center">
 								Введите числа по порядку
 							</h2>
 							<div
-								class="min-w-[60px] rounded-full bg-white/20 px-3.5 py-1 text-center text-sm font-normal whitespace-nowrap text-white/70"
+								class="min-w-15 rounded-full px-3.5 py-1 text-center text-sm font-normal whitespace-nowrap"
 							>
 								Без ограничения
 							</div>
 						</div>
-						<p class="text-sm leading-normal text-white/50">
+						<p class="text-sm leading-normal">
 							Порядок важен: введите всю последовательность в одно поле через пробел,
 							запятую или точку с запятой.
 						</p>
 						<div class="flex flex-col gap-3">
 							<label class="flex flex-col gap-2" for="sequence-input">
-								<span class="text-sm text-white/50"
+								<span class="text-sm"
 									>Последовательность из {currentSequence.length} чисел</span
 								>
 								<input
@@ -249,7 +244,7 @@
 									value={recallInput}
 									oninput={(e) =>
 										updateInput((e.currentTarget as HTMLInputElement).value)}
-									class="rounded-xl border border-white/20 bg-white/10 p-3 px-4 text-base text-white transition-colors duration-200 outline-none placeholder:text-white/30 focus:border-white/50"
+									class="rounded-xl border border-white/20 bg-white p-3 px-4 text-base transition-colors duration-200 outline-none placeholder:text-white/30 focus:border-white/50"
 								/>
 							</label>
 						</div>
@@ -268,11 +263,11 @@
 				role="presentation"
 			>
 				<div
-					class="flex w-full max-w-xl flex-col items-center justify-center gap-5 rounded-3xl border border-white/10 bg-[#111e6c] p-8 shadow-2xl"
+					class="flex w-full max-w-xl flex-col items-center justify-center gap-5 rounded-3xl border border-white/10 bg-white p-8 shadow-2xl"
 					role="dialog"
 					aria-modal="true"
 				>
-					<h2 class="text-2xl font-bold text-white">Уровень {currentReview.level}</h2>
+					<h2 class="text-2xl font-bold text-center">Уровень {currentReview.level}</h2>
 					<p
 						class="text-sm {currentReview.isCorrect
 							? 'text-green-200'
@@ -283,25 +278,25 @@
 							: 'В последовательности есть ошибки.'}
 					</p>
 					<div class="grid grid-cols-2 gap-5">
-						<div>
+						<div class="flex flex-col justify-center items-center">
 							<h3
-								class="mb-2.5 text-sm font-medium tracking-widest text-white/50 uppercase"
+								class="mb-2.5 text-sm font-medium tracking-widest uppercase text-center"
 							>
 								Исходные числа
 							</h3>
 							<div class="flex flex-wrap gap-2">
 								{#each currentReview.sequence as value, idx (idx)}
 									<div
-										class="rounded-lg bg-white/10 px-3.5 py-2 text-lg font-semibold text-white"
+										class="rounded-lg bg-white/10 px-3.5 py-2 text-lg font-semibold"
 									>
 										{value}
 									</div>
 								{/each}
 							</div>
 						</div>
-						<div>
+						<div class="flex flex-col justify-center items-center">
 							<h3
-								class="mb-2.5 text-sm font-medium tracking-widest text-white/50 uppercase"
+								class="mb-2.5 text-sm font-medium tracking-widest uppercase text-center"
 							>
 								Ваш ввод
 							</h3>
@@ -310,8 +305,8 @@
 									<div
 										class="rounded-lg px-3.5 py-2 text-lg font-semibold {value ===
 										currentReview.sequence[idx]
-											? 'bg-green-500/35 text-green-200'
-											: 'bg-red-500/30 text-red-300'}"
+											? 'bg-green-500/35 '
+											: 'bg-red-500/30 '}"
 									>
 										{value}
 									</div>

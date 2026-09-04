@@ -1,8 +1,9 @@
 @import 'tailwindcss';
 
 :root {
-	--main-bg-color: var(--color-gray-800);
-	--main-text-color: var(--color-gray-50);
+	--main-bg-color: #e8f0fe;
+	--main-text-color: #2c3e50;
+	--main-accent-color: #d48c7a;
 
 	--button-green: rgb(15, 132, 15);
 	--button-red: #bf3023;
@@ -26,34 +27,47 @@
 * {
 	box-sizing: border-box;
 }
-
 html,
 body,
 p,
 h1,
 h2,
-h3 {
+h3,
+h4,
+label {
 	margin: 0;
 	padding: 0;
-	/* Убираем отступы по умолчанию */
+	color: var(--main-text-color);
 }
 
 h1 {
-	font-size: var(--text-2xl);
-	--tw-font-weight: var(--font-weight-bold);
-	font-weight: var(--font-weight-bold);
-	text-shadow:
-		0px 1px 1px var(--tw-text-shadow-color, rgb(0 0 0 / 0.1)),
-		0px 1px 2px var(--tw-text-shadow-color, rgb(0 0 0 / 0.1)),
-		0px 2px 4px var(--tw-text-shadow-color, rgb(0 0 0 / 0.1));
-	text-align: center;
+	font-size: clamp(1.5rem, 4vw, 2.5rem); /* минимум 24px, адаптивно, максимум 40px */
+	--tw-font-weight: var(--font-weight-black);
+	font-weight: var(--font-weight-black);
 }
 
 h2 {
-	font-size: var(--text-xl);
-	--tw-font-weight: var(--font-weight-bold);
-	font-weight: var(--font-weight-bold);
-	text-align: center;
+	font-size: clamp(1rem, 3vw, 1.5rem); /* 18px → 24px */
+	font-weight: var(--font-weight-medium);
+}
+
+h3 {
+	font-size: clamp(0.75rem, 2vw, 1.125rem); /* 14px → 18px */
+	--tw-font-weight: var(--font-weight-medium);
+	font-weight: var(--font-weight-medium);
+}
+
+h4 {
+	font-size: clamp(0.75rem, 1.5vw, 0.875rem); /* 12px → 14px */
+	--tw-font-weight: var(--font-weight-medium);
+	font-weight: var(--font-weight-medium);
+}
+
+label {
+	font-size: clamp(0.75rem, 1.5vw, 0.875rem);
+	--tw-font-weight: var(--font-weight-semibold);
+	font-weight: var(--font-weight-semibold);
+	text-align: left;
 }
 
 html,
@@ -66,8 +80,8 @@ body {
 
 body {
 	font-family: 'Roboto', sans-serif;
-	background-color: var(--color-gray-800);
-	color: var(--color-gray-50);
+	background-color: var(--main-bg-color);
+	color: var(--main-text-color);
 
 	display: flex;
 	flex-direction: column;

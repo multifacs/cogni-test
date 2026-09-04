@@ -1,10 +1,10 @@
 <section class="banner">
 
-<h1 class="font-bold max-md:hidden">Сон: зачем он нужен и как его улучшить</h1>
-<h3 class="font-bold text-sm md:hidden">Сон: зачем он нужен и как его улучшить</h3>
+<h1 class="font-bold max-md:hidden text-center">Сон: зачем он нужен и как его улучшить</h1>
+<h3 class="font-bold text-sm md:hidden text-center">Сон: зачем он нужен и как его улучшить</h3>
 
 </section>
-<main class="main">
+<main class="main" style="color:black">
 
 > *"Никто точно не знает, зачем мы спим, но без сна человек умирает через несколько дней."*
 

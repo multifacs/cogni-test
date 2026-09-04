@@ -11,7 +11,7 @@
 	} = $props();
 </script>
 
-<h2>Вспомните все три сочетания:</h2>
+<h2 class="text-center">Вспомните все три сочетания:</h2>
 <div class="flex w-full flex-col gap-2">
 	{#if category === 'words'}
 		<TextInput plain name="input1" bind:value={input1} placeholder="1. Исходное" />

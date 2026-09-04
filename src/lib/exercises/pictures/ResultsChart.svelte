@@ -24,12 +24,12 @@
 
 	const pointColor = (ctx: ScriptableContext<'line'>) => {
 		const result = ctx.raw as PicturesResult | undefined;
-		if (!result) return 'white';
+		if (!result) return 'var(--main-text-color)';
 		if (result.isCorrect === null) return getCSSVar('--color-gray-400');
 		return result.isCorrect ? getCSSVar('--color-green-500') : getCSSVar('--color-red-400');
 	};
 
-	Chart.defaults.color = 'white';
+	Chart.defaults.color = 'var(--main-text-color)';
 
 	let canvas: HTMLCanvasElement = $state(Object());
 	let chart = $state(Object());
@@ -71,9 +71,10 @@
 			},
 			options: {
 				onHover(event, chartElements) {
-					// @ts-ignore
-					const target = event.native ? event.native.target : event.chart.canvas;
-					target.style.cursor = chartElements.length ? 'pointer' : 'default';
+					const target = event.native?.target as HTMLElement | null;
+					if (target) {
+						target.style.cursor = chartElements.length ? 'pointer' : 'default';
+					}
 				},
 				responsive: true,
 				plugins: {
@@ -104,7 +105,6 @@
 					legend: {
 						labels: {
 							usePointStyle: true,
-							// @ts-ignore
 							generateLabels(chart) {
 								const original =
 									Chart.defaults.plugins.legend.labels.generateLabels(chart);

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, type Snippet } from 'svelte';
+	import { onMount, setContext, type Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
 	import { profileSurveyStore, userStore } from '$lib/stores/user';
 	import { pushService } from '$lib/pushService';
@@ -9,13 +9,30 @@
 	import NavBar from '$lib/components/ui/NavBar.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import { isSubscribed } from '$lib/utils/push';
+	import Header from '$lib/components/ui/Header.svelte';
 
 	let subscribed = $state(false);
 	let showModal = $state(false);
 	let showSpinner = $state(false);
 
-	let { data, children, leftAside }: { data: LayoutData; children: Snippet; leftAside: Snippet } =
-		$props();
+	let {
+		data,
+		children
+	}: {
+		data: LayoutData;
+		children: Snippet;
+	} = $props();
+
+	let headerText = $state('');
+
+	setContext('headerText', {
+		get value() {
+			return headerText;
+		},
+		set value(v: string) {
+			headerText = v;
+		}
+	});
 
 	onMount(async () => {
 		userStore.set(data.user);
@@ -52,7 +69,7 @@
 	{#if showModal}
 		<Modal bind:showModal>
 			{#snippet header()}
-				<h2 class="text-2xl text-white">Подпишитесь на push-уведомления</h2>
+				<h2 class="text-2xl text-white text-center">Подпишитесь на push-уведомления</h2>
 			{/snippet}
 			<div class="flex flex-col gap-4">
 				{#if showSpinner}
@@ -83,103 +100,60 @@
 </div>
 
 <div class="container">
-	<!-- <header class="header"></header> -->
-	<aside class="left-aside"></aside>
+	<header>
+		<Header text={headerText} />
+	</header>
 	{@render children()}
-	<aside class="right-aside"></aside>
-	<footer class="footer flex justify-center rounded-lg">
-		<!-- <div class="w-2/3 max-md:w-full"> -->
-		<div class="w-full">
-			<NavBar undiagnosed={data.undiagnosed} allowedPaths={data.allowedPaths} />
-		</div>
-	</footer>
+	<NavBar undiagnosed={data.undiagnosed} allowedPaths={data.allowedPaths} />
 </div>
 
 <style>
 	:global {
-		/* .container {
-			display: grid;
-			grid-template-rows: 3rem auto 1fr auto 3rem;
-			grid-template-columns: 1fr 4fr 1fr;
+		* {
+			box-sizing: border-box;
+		}
+
+		html,
+		body {
+			margin: 0;
+			padding: 0;
 			height: 100dvh;
-			grid-template-areas:
-				'header header header'
-				'left-aside banner right-aside'
-				'left-aside main right-aside'
-				'left-aside low-content right-aside'
-				'left-aside footer right-aside';
-			gap: 0.5rem;
-			padding: 0.5rem;
-			/* font-weight: 600;
-			font-size: 1.25rem;
-		} */
+			overflow: hidden;
+		}
 
 		.container {
+			background-color: var(--main-bg-color);
 			display: grid;
-			grid-template-rows: auto 1fr auto 3rem;
-			grid-template-columns: 1fr 4fr 1fr;
+			grid-template-rows: auto 1fr auto;
+			grid-template-columns: 1fr;
+
 			height: 100dvh;
+			width: 100dvw;
+			max-width: 100%;
 			grid-template-areas:
-				'left-aside banner right-aside'
-				'left-aside main right-aside'
-				'left-aside low-content right-aside'
-				'left-aside footer right-aside';
-			gap: 0.5rem;
-			padding: 0.5rem;
-			/* font-weight: 600; */
+				'banner'
+				'main'
+				'low-content '
+				'nav';
 			font-size: 1.25rem;
-		}
-
-		.header {
-			grid-area: header;
-			/* background-color: #f4b30018; */
-			padding: 1rem;
-			text-align: center;
-			display: flex;
-			justify-content: center;
-			align-items: center;
-		}
-
-		.left-aside {
-			grid-area: left-aside;
-			/* background-color: #0f9d581c; */
-			padding: 1rem;
-			display: flex;
-			justify-content: center;
-			align-items: center;
+			overflow: hidden;
 		}
 
 		.main {
 			grid-area: main;
-			background-color: #4286f433;
-			padding: 1rem;
-			/* display: flex;
-			justify-content: center;
-			align-items: center;
-			flex-direction: column;
-			gap: 1rem; */
-			overflow-x: auto; /* Enable horizontal scrolling */
-			overflow-y: auto; /* Optional: enable vertical scrolling too */
-			min-width: 0; /* Critical: allows flex children to shrink below content size */
-			border-radius: var(--radius-lg);
+			padding: 4%;
+			min-height: 0;
+			overflow-x: hidden;
+			overflow-y: auto;
+			min-width: 0;
+			color: var(--main-text-color);
 		}
 
 		.banner {
 			grid-area: banner;
-			border-radius: var(--radius-lg);
-			/* background-color: #db45370e; */
 			background-color: #4286f41b;
 			padding: 1rem;
 			text-align: center;
-			display: flex;
-			justify-content: center;
-			align-items: center;
-		}
-
-		.right-aside {
-			grid-area: right-aside;
-			/* background-color: #f4b3001f; */
-			padding: 1rem;
 			display: flex;
 			justify-content: center;
 			align-items: center;
@@ -187,52 +161,18 @@
 
 		.low-content {
 			grid-area: low-content;
-			/* background-color: #0f9d581d; */
-			background-color: #4286f42e;
-			padding: 0.5rem;
+			padding: 2% 15%;
 			border-radius: var(--radius-lg);
-			/* display: flex;
-			justify-content: center;
-			align-items: center; */
 		}
-
-		.footer {
-			grid-area: footer;
-			background-color: #4286f41b;
-			padding: 0.5rem;
-			text-align: center;
-			align-items: center;
-			display: flex;
-		}
-
-		/* ✅ Better breakpoint */
-		@media (max-width: 768px) {
-			.container {
-				grid-template-rows: 1rem 2rem 2rem 1fr 1.5rem 1.5rem 3rem;
-				grid-template-columns: 1fr;
-				grid-template-areas:
-					'banner'
-					'banner'
-					'main'
-					'main'
-					'low-content'
-					'low-content'
-					'footer';
-				gap: 0.3rem;
-				padding: 0.3rem;
-			}
-
-			.header {
-				display: none;
-			}
-
-			.left-aside {
-				display: none;
-			}
-
-			.right-aside {
-				display: none;
-			}
+	}
+	@media (min-width: 1024px) {
+		.container {
+			grid-template-rows: auto 1fr auto;
+			grid-template-columns: auto 1fr;
+			grid-template-areas:
+				'nav banner'
+				'nav main'
+				'nav low-content ';
 		}
 	}
 </style>

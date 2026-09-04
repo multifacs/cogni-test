@@ -1,32 +1,43 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 
 	let { undiagnosed, allowedPaths } = $props();
 
-	const paths = [
+	import type { PathnameWithSearchOrHash, ResolvedPathname } from '$app/types';
+	// resolve() has a variadic conditional signature (ResolveArgs<T>) that
+	// cannot accept the full route union — narrow it to the pathname overload.
+	const resolvePathname = resolve as (path: PathnameWithSearchOrHash) => ResolvedPathname;
+
+	const paths: { href: PathnameWithSearchOrHash; icon: string; text: string }[] = [
 		{
 			href: '/home',
-			icon: '🏠',
+			icon: '/nav_icons/home.svg',
 			text: 'Главная'
 		},
 		{
 			href: '/tests',
-			icon: '🧪',
+			icon: '/brain.svg',
 			text: 'Возраст'
 		},
 		{
-			href: '/gto',
-			icon: '🏆',
-			text: 'ГТО-М'
-		},
-		{
 			href: '/exercises',
-			icon: '📊',
+			icon: '/nav_icons/exercises.svg',
 			text: 'Тренажер'
 		},
 		{
+			href: '/gto',
+			icon: '/nav_icons/materials.svg',
+			text: 'ГТО-М'
+		},
+		{
+			href: '/materials',
+			icon: '/nav_icons/materials.svg',
+			text: 'Статьи'
+		},
+		{
 			href: '/profile',
-			icon: '⚙️',
+			icon: '/nav_icons/profile.svg',
 			text: 'Профиль'
 		}
 	];
@@ -34,28 +45,76 @@
 	function isAllowed(href: string) {
 		return !undiagnosed || allowedPaths.includes(href);
 	}
+
+	function isActive(href: string): boolean {
+		if (href === '/home') {
+			return page.url.pathname === href || page.url.pathname === '/';
+		}
+		return page.url.pathname.startsWith(href);
+	}
 </script>
 
-<nav class="flex w-full justify-around text-white">
-	{#each paths as path}
+<nav class="nav">
+	{#each paths as path (path.href)}
 		<a
-			href={path.href}
-			class={[
-				'flex',
-				'flex-col',
-				'items-center',
-				'text-sm',
-				'transition-colors',
-				'duration-200',
-				'max-xs:text-xs'
-			]}
-			class:text-blue-400={page.url.pathname.startsWith(path.href)}
+			href={resolvePathname(path.href)}
+			class="nav-link"
+			class:active={isActive(path.href)}
 			class:pointer-events-none={!isAllowed(path.href)}
 			class:cursor-not-allowed={!isAllowed(path.href)}
 			class:grayscale={!isAllowed(path.href)}
 		>
-			<span>{path.icon}</span>
-			<span>{path.text}</span>
+			<img src={path.icon} alt={path.text} />
+			<h4 class="nav-text text-center">{path.text}</h4>
 		</a>
 	{/each}
 </nav>
+
+<style>
+	.nav {
+		grid-area: nav;
+		background-color: #fff;
+		padding: 0.5rem;
+		text-align: center;
+		align-items: center;
+		display: flex;
+		justify-content: space-around;
+		width: 100%;
+	}
+
+	.nav-link {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-decoration: none;
+	}
+
+	.nav-link img {
+		width: 1.5rem;
+		height: 1.5rem;
+	}
+
+	.nav-text {
+		margin: 0;
+	}
+
+	.nav-link.active .nav-text {
+		color: #d48c7a;
+		font-weight: bolder;
+	}
+
+	.nav-link.active img {
+		opacity: 1;
+		filter: brightness(0) saturate(100%) invert(67%) sepia(18%) saturate(1048%)
+			hue-rotate(325deg) brightness(95%) contrast(92%);
+	}
+
+	@media (min-width: 1024px) {
+		.nav {
+			flex-direction: column;
+			justify-content: start;
+			padding-top: 100%;
+			gap: 10%;
+		}
+	}
+</style>

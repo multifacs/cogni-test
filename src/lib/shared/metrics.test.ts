@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { computeSessionScore, getRecommendations } from './metrics';
 import type { SkillMetric } from '$lib/types';
 
@@ -6,7 +6,8 @@ import type { SkillMetric } from '$lib/types';
 async function restoreRealModulesAndImportMetrics() {
 	vi.resetModules();
 	const actualTests = await vi.importActual<typeof import('$lib/tests')>('$lib/tests');
-	const actualExercises = await vi.importActual<typeof import('$lib/exercises')>('$lib/exercises');
+	const actualExercises =
+		await vi.importActual<typeof import('$lib/exercises')>('$lib/exercises');
 	vi.doMock('$lib/tests', () => actualTests);
 	vi.doMock('$lib/exercises', () => actualExercises);
 	return import('./metrics');
@@ -15,9 +16,6 @@ async function restoreRealModulesAndImportMetrics() {
 vi.mock('$lib/server/db/controllers/result', () => ({
 	getResults: vi.fn()
 }));
-
-// Helper to build attempts with a given property pattern
-type Attempt = Record<string, unknown>;
 
 describe('computeSessionScore', () => {
 	it('returns 0 for empty attempts', () => {
@@ -280,7 +278,14 @@ describe('getMetricScores', () => {
 	it('computes score from a single test session', async () => {
 		const { getResults } = await import('$lib/server/db/controllers/result');
 		vi.mocked(getResults).mockImplementation(async (type) => {
-			if (type === 'math') return [{ attempts: [{ isCorrect: true }, { isCorrect: false }] }];
+			if (type === 'math')
+				return [
+					{
+						sessionId: 's1',
+						createdAt: new Date().toISOString(),
+						attempts: [{ isCorrect: true }, { isCorrect: false }]
+					}
+				];
 			return [];
 		});
 		const { getMetricScores } = await restoreRealModulesAndImportMetrics();
@@ -295,8 +300,16 @@ describe('getMetricScores', () => {
 		vi.mocked(getResults).mockImplementation(async (type) => {
 			if (type === 'math') {
 				return [
-					{ attempts: [{ isCorrect: true }, { isCorrect: false }] }, // 50
-					{ attempts: [{ isCorrect: true }, { isCorrect: true }] } // 100
+					{
+						sessionId: 's1',
+						createdAt: new Date().toISOString(),
+						attempts: [{ isCorrect: true }, { isCorrect: false }]
+					}, // 50
+					{
+						sessionId: 's2',
+						createdAt: new Date().toISOString(),
+						attempts: [{ isCorrect: true }, { isCorrect: true }]
+					} // 100
 				];
 			}
 			return [];
@@ -309,8 +322,22 @@ describe('getMetricScores', () => {
 	it('averages scores when multiple tests contribute to the same metric', async () => {
 		const { getResults } = await import('$lib/server/db/controllers/result');
 		vi.mocked(getResults).mockImplementation(async (type) => {
-			if (type === 'stroop') return [{ attempts: [{ isCorrect: true }] }]; // 100
-			if (type === 'math') return [{ attempts: [{ isCorrect: false }] }]; // 0
+			if (type === 'stroop')
+				return [
+					{
+						sessionId: 's1',
+						createdAt: new Date().toISOString(),
+						attempts: [{ isCorrect: true }]
+					}
+				]; // 100
+			if (type === 'math')
+				return [
+					{
+						sessionId: 's1',
+						createdAt: new Date().toISOString(),
+						attempts: [{ isCorrect: false }]
+					}
+				]; // 0
 			return [];
 		});
 		const { getMetricScores } = await restoreRealModulesAndImportMetrics();
@@ -322,7 +349,14 @@ describe('getMetricScores', () => {
 	it('returns 100 for campimetry stage 2', async () => {
 		const { getResults } = await import('$lib/server/db/controllers/result');
 		vi.mocked(getResults).mockImplementation(async (type) => {
-			if (type === 'campimetry') return [{ attempts: [{ stage: 2 }] }];
+			if (type === 'campimetry')
+				return [
+					{
+						sessionId: 's1',
+						createdAt: new Date().toISOString(),
+						attempts: [{ stage: 2 }]
+					}
+				];
 			return [];
 		});
 		const { getMetricScores } = await restoreRealModulesAndImportMetrics();

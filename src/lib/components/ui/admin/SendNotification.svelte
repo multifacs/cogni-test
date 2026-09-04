@@ -2,10 +2,7 @@
 	import Input from '$lib/components/ui/admin/Input.svelte';
 	import Textarea from '$lib/components/ui/admin/Textarea.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import {
-		sendNotification,
-		type PushPayload
-	} from '$lib/utils/push';
+	import { sendNotification, type PushPayload } from '$lib/utils/push';
 
 	let payload: PushPayload = $state({
 		title: '',
@@ -17,7 +14,7 @@
 </script>
 
 <div class="flex flex-col justify-center items-center gap-4">
-	<h2>Send push (to yourself)</h2>
+	<h2 class="text-center">Send push (to yourself)</h2>
 	<Input id="title" type="text" name="title" placeholder="title" bind:value={payload.title} />
 
 	<Textarea
@@ -28,7 +25,7 @@
 		bind:value={payload.body}
 	/>
 
-    <label for="delay">Delay (seconds)</label>
+	<label for="delay">Delay (seconds)</label>
 	<Input type="number" name="delay" placeholder="Delay (seconds)" bind:value={delay} />
 	<Button color="green" onclick={() => sendNotification(payload, delay)}>Send</Button>
 </div>

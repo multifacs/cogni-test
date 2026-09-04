@@ -1,20 +1,27 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
+	import RecommendationCard from '$lib/components/ui/RecommendationCard.svelte';
+	import { getContext, onMount } from 'svelte';
 	export let data;
+
+	const headerContext = getContext<{ value: string }>('headerText');
+
+	onMount(() => {
+		if (headerContext) {
+			headerContext.value = 'Статьи';
+		}
+	});
 </script>
 
-<section class="banner">
-	<h1 class="text-3xl font-bold">Информационные материалы</h1>
-</section>
-<main class="main flex flex-col justify-center gap-4">
-	{#each data.articles as article}
-		<Button color="blue" goto={`/materials/${article.slug}`}>
-			{article.emoji}
-			{article.title}
-		</Button>
-	{/each}
+<main class="main flex flex-col gap-6">
+	<div class="flex flex-wrap justify-between gap-5 p-2">
+		{#each data.articles as article (article.slug)}
+			<RecommendationCard
+				title={article.title}
+				text={`Время чтения: ${article.time} минут`}
+				icon={article.emoji}
+				goto={`/materials/${article.slug}`}
+				button_text="Прочитать"
+			/>
+		{/each}
+	</div>
 </main>
-<section class="low-content flex justify-center items-center">
-	<!-- <h1 class="text-3xl font-bold">Информационные материалы</h1> -->
-	<p class="text-center text-lg max-md:text-sm">Полезные статьи для долголетия</p>
-</section>

@@ -32,8 +32,8 @@ export const actions: Actions = {
 		try {
 			await createWordSet(words);
 			return { success: true };
-		} catch (e: any) {
-			return fail(500, { error: e.message });
+		} catch (e) {
+			return fail(500, { error: e instanceof Error ? e.message : 'Неизвестная ошибка' });
 		}
 	},
 
@@ -55,8 +55,8 @@ export const actions: Actions = {
 		try {
 			await updateWordSet(id, words);
 			return { success: true };
-		} catch (e: any) {
-			return fail(500, { error: e.message });
+		} catch (e) {
+			return fail(500, { error: e instanceof Error ? e.message : 'Неизвестная ошибка' });
 		}
 	},
 
@@ -86,8 +86,8 @@ export const actions: Actions = {
 		try {
 			await deleteWordSet(id);
 			return { success: true };
-		} catch (e: any) {
-			return fail(400, { error: e.message });
+		} catch (e) {
+			return fail(400, { error: e instanceof Error ? e.message : 'Неизвестная ошибка' });
 		}
 	}
 };

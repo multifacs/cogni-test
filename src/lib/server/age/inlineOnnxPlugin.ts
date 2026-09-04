@@ -1,7 +1,13 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Plugin } from 'vite';
+
+type InlineOnnxPlugin = {
+	name: string;
+	buildStart: () => void;
+	resolveId: (source: string, importer?: string) => string | null;
+	load: (id: string) => string | null;
+};
 
 const virtualId = 'virtual:inline-onnx/';
 const prefix = '\0inline-onnx:';
@@ -28,7 +34,7 @@ export function assertOnnxModelsAvailable(modelsDir: string): void {
 	}
 }
 
-export function inlineOnnxPlugin(modelsDir: string = DEFAULT_MODELS_DIR): Plugin {
+export function inlineOnnxPlugin(modelsDir: string = DEFAULT_MODELS_DIR): InlineOnnxPlugin {
 	return {
 		name: 'inline-onnx',
 		buildStart() {
@@ -36,7 +42,7 @@ export function inlineOnnxPlugin(modelsDir: string = DEFAULT_MODELS_DIR): Plugin
 			assertOnnxModelsAvailable(modelsDir);
 		},
 		resolveId(source: string, importer?: string) {
-			if (!source.startsWith(virtualId)) return;
+			if (!source.startsWith(virtualId)) return null;
 			const relPath = source.slice(virtualId.length);
 			if (importer && !relPath.startsWith('/')) {
 				const abs = resolve(dirname(importer), relPath);

@@ -1,58 +1,54 @@
 <script lang="ts">
 	import { userStore } from '$lib/stores/user.js';
-	import { exerciseRegistry, exercises } from '$lib/exercises';
-	import { translate } from '$lib/utils/common';
 	import { onMount } from 'svelte';
+	import ExerciseCard from '$lib/components/ui/ExerciseCard.svelte';
+	import RecommendationCard from '$lib/components/ui/RecommendationCard.svelte';
+	import { getContext } from 'svelte';
 
 	let { data } = $props();
 	let exerciseSessionCounts: Record<string, number> = $state({});
+
+	const headerContext = getContext<{ value: string }>('headerText');
 
 	onMount(() => {
 		userStore.set(data.user || '');
 		if (data.exerciseSessionCounts) {
 			exerciseSessionCounts = data.exerciseSessionCounts;
 		}
+		if (headerContext) {
+			headerContext.value = 'Когнитивный тренажер';
+		}
 	});
 </script>
 
-<section class="banner">
-	<h1 class="text-3xl font-bold">Когнитивный тренажёр</h1>
-</section>
-<main class="main" style="display: flex; flex-direction: column; gap: 15px">
-	<div class="flex w-full flex-col gap-3">
-		{#each data.exercises as { name, title, path, img }}
-			<a
-				href={path}
-				class="flex items-center justify-between rounded-2xl bg-gray-600 p-3 shadow transition hover:bg-gray-100 hover:text-black"
-			>
-				<div class="flex flex-col gap-1">
-					<span class="text-lg">{title}</span>
-					{#if exerciseRegistry[name]?.result}
-						{#if exerciseSessionCounts[name]}
-							<span class="text-sm font-medium text-lime-200">
-								Пройдено: {exerciseSessionCounts[name]}
-							</span>
-						{:else}
-							<span class="text-sm text-orange-400"> Не пройдено </span>
-						{/if}
-					{/if}
-					{#if exercises.find((e) => e.name === name)?.user_metrics?.length}
-						<span class="text-sm text-blue-300">
-							Развивает: {exercises
-								.find((e) => e.name === name)
-								?.user_metrics?.map(translate)
-								.join(', ')}
-						</span>
-					{/if}
-				</div>
-				<img src={img} alt={name} class="h-14 w-14 rounded-xl bg-white" />
-			</a>
+<main class="main" style="display: flex; flex-direction: column; align-items: center;">
+	<div
+		class="content flex flex-col items-center justify-center gap-8 pt-[2%] pb-[4%] pl-[2%] pr-[2%]"
+	>
+		<h2 class="text-center">Регулярные тренировки помогают поддерживать когнитивные навыки</h2>
+		<RecommendationCard
+			title="Диагностика когнитивного возраста"
+			text="Пройдите тесты и узнайте свой возраст"
+			icon="/brain.svg"
+			goto="/tests"
+			button_text="Начать прохождение"
+		/>
+	</div>
+	<div class="cards flex flex-wrap justify-center gap-5 p-2">
+		{#each data.exercises as { name, title, path, img } (name)}
+			<ExerciseCard {name} {title} {path} {img} testSessionCounts={exerciseSessionCounts} />
 		{/each}
 	</div>
 </main>
-<section class="low-content flex items-center justify-center text-center">
-	<!-- <p class="text-sm"></p> -->
-	<p class="max-w-md text-center text-lg max-md:text-sm">
-		👼 Это только начало, следи за моим ростом 👼
-	</p>
-</section>
+
+<style>
+	@media (min-width: 1024px) {
+		.content {
+			width: 50%;
+		}
+		.cards {
+			padding: 2vw;
+			gap: 4vw;
+		}
+	}
+</style>

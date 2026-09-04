@@ -26,17 +26,17 @@
 
 	const pointColor = (ctx: ScriptableContext<'line'>) => {
 		const result = ctx.raw as RavenResult | undefined;
-		if (!result) return 'white';
+		if (!result) return 'var(--main-text-color)';
 		return result.isCorrect ? getCSSVar('--color-green-500') : getCSSVar('--color-red-400');
 	};
 
-	Chart.defaults.color = 'white';
+	Chart.defaults.color = 'var(--main-text-color)';
 
 	let canvas: HTMLCanvasElement = $state(Object());
 	let chart = $state(Object());
 
 	let avg = $state(0);
-	let allTime = $state(0);
+	// let allTime = $state(0);
 
 	function getResults(attempts: RavenAttemptRow[]): RavenResult[] {
 		return attempts.map((a, i) => ({
@@ -55,7 +55,6 @@
 		const s = summary(attempts);
 
 		avg = s.averageResponseTimeMs;
-		allTime = Math.round(s.totalDurationMs / 1000);
 
 		chart = new Chart(canvas, {
 			type: 'line',
@@ -73,10 +72,11 @@
 				]
 			},
 			options: {
-				onHover(event, chartElements) {
-					// @ts-ignore
-					const target = event.native ? event.native.target : event.chart.canvas;
-					target.style.cursor = chartElements.length ? 'pointer' : 'default';
+				onHover(event, chartElements, chart) {
+					const target = event.native?.target as HTMLElement | undefined;
+					(target ?? chart.canvas).style.cursor = chartElements.length
+						? 'pointer'
+						: 'default';
 				},
 				responsive: true,
 				plugins: {
@@ -135,7 +135,6 @@
 					legend: {
 						labels: {
 							usePointStyle: true,
-							// @ts-ignore
 							generateLabels(chart) {
 								const original =
 									Chart.defaults.plugins.legend.labels.generateLabels(chart);
@@ -225,21 +224,3 @@
 <div class="grid gap-2 w-full sm:w-4/5">
 	<canvas bind:this={canvas}></canvas>
 </div>
-
-<style>
-
-	.stats-row {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem 1.5rem;
-		font-size: 0.75rem;
-		color: #94a3b8;
-	}
-
-	@media (min-width: 640px) {
-		.stats-row {
-			gap: 0.75rem 1.5rem;
-			font-size: 0.85rem;
-		}
-	}
-</style>

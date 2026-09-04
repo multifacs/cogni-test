@@ -214,41 +214,53 @@
 </script>
 
 {#if !finished}
-	<div class="progress-block mb-4">
-		<div class="progress-copy">
+	<div class="progress-block mb-4 flex flex-col gap-2">
+		<div class="progress-copy text-[0.9rem]">
 			<span>Вопрос {currentIndex + 1} из {questions.length}</span>
 		</div>
-		<div class="progress-track" aria-hidden="true">
+		<div class="progress-track h-1.5 bg-white rounded-full overflow-hidden" aria-hidden="true">
 			<div
-				class="progress-value"
+				class="progress-value h-full bg-[#6fcf97] rounded-full transition-[width] duration-300"
 				style={`width: ${((currentIndex + 1) / questions.length) * 100}%`}
 			></div>
 		</div>
 	</div>
 
-	<div class="question-grid">
-		<div class:image-frame={Boolean(currentQuestion().image)} class="visual-panel">
+	<div class="question-grid grid grid-cols-1 gap-6 items-start sm:grid-cols-2">
+		<div
+			class="visual-panel rounded-2xl min-h-[200px] max-h-[300px] flex items-center justify-center overflow-hidden relative"
+		>
 			{#if currentQuestion().image}
-				<img src={currentQuestion().image} alt={currentQuestion().imageAlt ?? ''} />
+				<img
+					class="w-full h-auto max-h-[300px] object-cover block rounded-2xl"
+					src={currentQuestion().image}
+					alt={currentQuestion().imageAlt ?? ''}
+				/>
 			{:else}
-				<div class="memory-callout">
-					<p>Сосредоточьтесь на том, что вы уже видели раньше.</p>
-					<span>Здесь важно воспроизведение деталей по памяти.</span>
+				<div class="memory-callout p-6 rounded-2xl text-center w-full">
+					<p class="text-base mb-2">Сосредоточьтесь на том, что вы уже видели раньше.</p>
+					<span class="text-[0.85rem]"
+						>Здесь важно воспроизведение деталей по памяти.</span
+					>
 				</div>
 			{/if}
 		</div>
 
-		<div class="content-panel">
-			<p class="question-index">Шаг {currentQuestion().id}</p>
-			<h2>{currentQuestion().prompt}</h2>
-			<p class="question-helper">{currentQuestion().helper}</p>
+		<div class="content-panel flex flex-col gap-3 relative z-[1]">
+			<p class="question-index text-[0.8rem] uppercase tracking-[0.1em] m-0">
+				Шаг {currentQuestion().id}
+			</p>
+			<h2 class="text-center text-xl font-semibold m-0 leading-[1.4]">
+				{currentQuestion().prompt}
+			</h2>
+			<p class="question-helper text-[0.9rem] m-0">{currentQuestion().helper}</p>
 
 			{#if currentQuestion().kind === 'observe'}
 				<Button color="green" onclick={advanceObservation}>
 					{currentQuestion().buttonLabel}
 				</Button>
 			{:else}
-				<div class="answers-grid">
+				<div class="answers-grid flex flex-col gap-2.5">
 					{#each currentQuestion().options ?? [] as option (option.value)}
 						<Button color="blue" onclick={() => answerQuestion(option.value)}>
 							{option.label}
@@ -259,180 +271,3 @@
 		</div>
 	</div>
 {/if}
-
-<style>
-	.memory-test-shell {
-		min-height: 100vh;
-		display: flex;
-		justify-content: center;
-		align-items: flex-start;
-		padding: 40px 20px;
-		box-sizing: border-box;
-	}
-
-	.memory-test-card {
-		width: 100%;
-		max-width: 900px;
-		background: rgba(255, 255, 255, 0.08);
-		border-radius: 24px;
-		backdrop-filter: blur(8px);
-		padding: 32px;
-		box-sizing: border-box;
-		display: flex;
-		flex-direction: column;
-		gap: 24px;
-	}
-
-	.eyebrow {
-		font-size: 0.8rem;
-		text-transform: uppercase;
-		letter-spacing: 0.12em;
-		color: rgba(255, 255, 255, 0.5);
-		margin: 0;
-	}
-
-	.progress-block {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-	}
-	.progress-copy {
-		font-size: 0.9rem;
-		color: rgba(255, 255, 255, 0.7);
-	}
-	.progress-track {
-		height: 6px;
-		background: rgba(255, 255, 255, 0.15);
-		border-radius: 99px;
-		overflow: hidden;
-	}
-	.progress-value {
-		height: 100%;
-		background: white;
-		border-radius: 99px;
-		transition: width 0.3s ease;
-	}
-
-	.question-grid {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 24px;
-		align-items: start;
-	}
-
-	@media (max-width: 640px) {
-		.question-grid {
-			grid-template-columns: 1fr;
-		}
-	}
-
-	.visual-panel {
-		border-radius: 16px;
-		min-height: 200px;
-		max-height: 300px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		overflow: hidden;
-		position: relative;
-	}
-
-	.image-frame {
-		background: rgba(255, 255, 255, 0.05);
-	}
-	.visual-panel img {
-		width: 100%;
-		height: auto;
-		max-height: 300px;
-		object-fit: cover;
-		display: block;
-		border-radius: 16px;
-	}
-
-	.memory-callout {
-		padding: 24px;
-		background: rgba(255, 255, 255, 0.06);
-		border-radius: 16px;
-		text-align: center;
-		width: 100%;
-	}
-	.memory-callout p {
-		color: white;
-		font-size: 1rem;
-		margin: 0 0 8px;
-	}
-	.memory-callout span {
-		color: rgba(255, 255, 255, 0.5);
-		font-size: 0.85rem;
-	}
-
-	.content-panel {
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
-		position: relative;
-		z-index: 1;
-	}
-
-	.question-index {
-		font-size: 0.8rem;
-		color: rgba(255, 255, 255, 0.4);
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		margin: 0;
-	}
-
-	.content-panel h2 {
-		font-size: 1.25rem;
-		font-weight: 600;
-		color: white;
-		margin: 0;
-		line-height: 1.4;
-	}
-	.question-helper {
-		font-size: 0.9rem;
-		color: rgba(255, 255, 255, 0.55);
-		margin: 0;
-	}
-
-	.answers-grid {
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
-	}
-
-	.result-card {
-		max-width: 700px;
-		margin-inline: auto;
-	}
-	.result-card h1 {
-		font-size: 1.8rem;
-		font-weight: 700;
-		color: white;
-		margin: 0;
-	}
-
-	.result-score {
-		background: rgba(255, 255, 255, 0.08);
-		border-radius: 16px;
-		padding: 20px 24px;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-	}
-	.result-score strong {
-		font-size: 2rem;
-		font-weight: 700;
-		color: white;
-	}
-	.score-label {
-		font-size: 1.5rem;
-		color: rgb(255, 255, 255);
-		margin: 0 0 4px;
-	}
-
-	.result-actions {
-		display: flex;
-		justify-content: flex-start;
-	}
-</style>

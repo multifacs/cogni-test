@@ -4,11 +4,10 @@
 	import type { EmojiTrialRow } from './types';
 	import { formatMs, summary } from './results-adapter';
 
-	let { results }: { results: ExerciseResults; exerciseType?: string; meta?: string[] } =
-		$props();
+	let { results }: { results: ExerciseResults } = $props();
 
-	const rows = results as EmojiTrialRow[];
-	const s = summary(rows);
+	const rows = $derived(results as EmojiTrialRow[]);
+	const s = $derived(summary(rows));
 </script>
 
 <div class="grid grid-cols-4 gap-2 py-2 sm:gap-4">

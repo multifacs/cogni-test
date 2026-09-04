@@ -8,11 +8,11 @@
 </script>
 
 <section class="banner">
-	<h1 class="text-3xl font-bold">Метрики</h1>
+	<h1 class="text-3xl font-bold text-center">Метрики</h1>
 </section>
 <main class="main flex flex-col gap-3">
 	<div class="flex w-full flex-col gap-3">
-		{#each entries as [metric, score]}
+		{#each entries as [metric, score] (metric)}
 			<div class="flex items-center justify-between rounded-2xl bg-gray-600 p-4 shadow">
 				<span class="text-lg">{translate(metric)}</span>
 				<span

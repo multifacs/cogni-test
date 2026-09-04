@@ -5,15 +5,16 @@
 	import { error } from '@sveltejs/kit';
 	import { shuffle } from '$lib/utils';
 	import Button from '$lib/components/ui/Button.svelte';
+	import type { CampimetryResult } from './types';
 
 	let {
 		data,
 		gameEnd,
 		sendResults
 	}: {
-		data: any;
+		data: { silhouettes: Record<string, string> };
 		gameEnd: () => void;
-		sendResults: (results: any[]) => void;
+		sendResults: (results: CampimetryResult[]) => void;
 	} = $props();
 
 	let isGameRunning = $state(true);
@@ -151,12 +152,13 @@
 	</div>
 	{#if currentStage == 1}
 		<div class="row flex w-4/5 max-w-96 justify-between">
-			{#each silhouettes as s}
+			{#each silhouettes as s (s)}
 				<button
 					aria-label={`${s} button`}
-					class="max-xs:w-16 max-xs:h-16 h-[100px] w-[100px] cursor-pointer touch-none bg-white mask-contain select-none"
+					class="max-xs:w-16 max-xs:h-16 h-25 w-25 cursor-pointer touch-none bg-white mask-contain select-none"
 					disabled={!delta}
 					style={`
+						background-color: #9ca3af;
                         mask-image: url(${data.silhouettes[s]});
                         -webkit-mask-image: url(${data.silhouettes[s]});
                     `}
@@ -178,7 +180,7 @@
 		</p>
 	{/if}
 {:else}
-	<h1>Тест окончен</h1>
+	<h1 class="text-center">Тест окончен</h1>
 {/if}
 
 <style>
@@ -192,15 +194,15 @@
 
 	@media (orientation: portrait) {
 		.background {
-			width: 70vw;
-			height: 70vw;
+			width: 50vw;
+			height: 50vw;
 		}
 	}
 
 	@media (orientation: landscape) {
 		.background {
-			width: 50vh;
-			height: 50vh;
+			width: 40vh;
+			height: 40vh;
 		}
 	}
 </style>

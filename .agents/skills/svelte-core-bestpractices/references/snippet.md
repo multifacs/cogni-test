@@ -15,7 +15,12 @@ Snippets, and [render tags](@render), are a way to create reusable chunks of mar
 	{#if image.href}
 		<a href={image.href}>
 			<figure>
-				<img src={image.src} alt={image.caption} width={image.width} height={image.height} />
+				<img
+					src={image.src}
+					alt={image.caption}
+					width={image.width}
+					height={image.height}
+				/>
 				<figcaption>{image.caption}</figcaption>
 			</figure>
 		</a>
@@ -119,7 +124,7 @@ Within the template, snippets are values just like any other. As such, they can 
 	const fruits = [
 		{ name: 'apples', qty: 5, price: 2 },
 		{ name: 'bananas', qty: 10, price: 1 },
-		{ name: 'cherries', qty: 20, price: 0.5 },
+		{ name: 'cherries', qty: 20, price: 0.5 }
 	];
 </script>
 
@@ -221,7 +226,7 @@ Snippets implement the `Snippet` interface imported from `'svelte'`:
 	import type { Snippet } from 'svelte';
 
 	interface Props {
-		data: any[];
+		data;
 		children: Snippet;
 		row: Snippet<[any]>;
 	}
@@ -241,7 +246,7 @@ We can tighten things up further by declaring a generic, so that `data` and `row
 	let {
 		data,
 		children,
-		row,
+		row
 	}: {
 		data: T[];
 		children: Snippet;

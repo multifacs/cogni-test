@@ -28,11 +28,11 @@
 
 	const pointColor = (ctx: ScriptableContext<'line'>) => {
 		const result = ctx.raw as NBackResult | undefined;
-		if (!result) return 'white';
+		if (!result) return '--main-text-color';
 		return result.isCorrect ? getCSSVar('--color-green-500') : getCSSVar('--color-red-400');
 	};
 
-	Chart.defaults.color = 'white';
+	Chart.defaults.color = '--main-text-color';
 
 	let canvas: HTMLCanvasElement = $state(Object());
 	let chart = $state(Object());
@@ -70,10 +70,11 @@
 				]
 			},
 			options: {
-				onHover(event, chartElements) {
-					// @ts-ignore
-					const target = event.native ? event.native.target : event.chart.canvas;
-					target.style.cursor = chartElements.length ? 'pointer' : 'default';
+				onHover(event, chartElements, chart) {
+					const target = event.native?.target as HTMLElement | undefined;
+					(target ?? chart.canvas).style.cursor = chartElements.length
+						? 'pointer'
+						: 'default';
 				},
 				responsive: true,
 				plugins: {
@@ -83,8 +84,7 @@
 								const value = context[0].raw as NBackResult;
 								return `Ответ ${value.x}`;
 							},
-							afterTitle(context) {
-								const value = context[0].raw as NBackResult;
+							afterTitle() {
 								return `${domainLabel(s.domain)} / ${s.nBack}-back / ${targetLabel(s.target)}`;
 							},
 							beforeBody(context) {
@@ -101,7 +101,6 @@
 					legend: {
 						labels: {
 							usePointStyle: true,
-							// @ts-ignore
 							generateLabels(chart) {
 								const original =
 									Chart.defaults.plugins.legend.labels.generateLabels(chart);

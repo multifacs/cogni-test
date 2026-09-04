@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { session, user } from '$lib/server/db/schema';
+import { session } from '$lib/server/db/schema';
 import {
 	mathAttempt,
 	stroopAttempt,
@@ -28,12 +28,20 @@ import type {
 	MetaResult as ExerciseMetaResult
 } from '$lib/exercises/types';
 import short from 'short-uuid';
-import { eq, asc, desc } from 'drizzle-orm';
+import { eq, asc, type AnyColumn, type SQL } from 'drizzle-orm';
+import type { SessionResult } from '$lib/shared/metrics';
 
 export type AnySessionType = TestType | ExerciseType;
 type AnyMetaResult = TestMetaResult | ExerciseMetaResult;
 
-const attemptTableMap: Record<string, any> = {
+// Реестр из 17 гетерогенных drizzle-таблиц: дженерики PgTableWithColumns
+// не сводятся к одному типу, а union ломает перегрузки db.insert/.findMany.
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type AnyAttemptTable = any;
+type AnyRelationalTable = any;
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+const attemptTableMap: Record<string, AnyAttemptTable> = {
 	math: mathAttempt,
 	stroop: stroopAttempt,
 	memory: memoryAttempt,
@@ -53,7 +61,7 @@ const attemptTableMap: Record<string, any> = {
 	wordMorphingExercise: wordMorphingExerciseAttempt
 };
 
-function getQueryTableMap(): Record<string, any> {
+function getQueryTableMap(): Record<string, AnyRelationalTable> {
 	return {
 		math: db.query.mathAttempt,
 		stroop: db.query.stroopAttempt,
@@ -75,7 +83,7 @@ function getQueryTableMap(): Record<string, any> {
 	};
 }
 
-const orderByMap: Record<string, (fields: any) => any> = {
+const orderByMap: Record<string, (fields: Record<string, AnyColumn>) => SQL> = {
 	math: (f) => asc(f.attempt),
 	stroop: (f) => asc(f.attempt),
 	memory: (f) => asc(f.attempt),
@@ -120,7 +128,7 @@ export async function postResult(
 	if (!insertAttempt) throw new Error(`Unknown session type: ${sessionType}`);
 
 	await db.insert(insertAttempt).values(
-		attempts.map((attempt: any) => ({
+		attempts.map((attempt) => ({
 			...attempt,
 			sessionId
 		}))
@@ -129,11 +137,14 @@ export async function postResult(
 	return sessionId;
 }
 
-export async function getResults(sessionType: AnySessionType, userId: string): Promise<any[]> {
+export async function getResults(
+	sessionType: AnySessionType,
+	userId: string
+): Promise<SessionResult[]> {
 	const sessions = await db.query.session.findMany({
-		where: (fields: any, { eq, and }: any) =>
+		where: (fields, { eq, and }) =>
 			and(eq(fields.testType, sessionType), eq(fields.userId, userId)),
-		orderBy: (fields: any, { desc }: any) => desc(fields.createdAt)
+		orderBy: (fields, { desc }) => desc(fields.createdAt)
 	});
 
 	const queryTableMap = getQueryTableMap();
@@ -143,18 +154,17 @@ export async function getResults(sessionType: AnySessionType, userId: string): P
 	const orderBy = orderByMap[sessionType];
 	if (!orderBy) throw new Error(`Unknown session type: ${sessionType}`);
 
-	const results: any[] = [];
+	const results = [];
 
 	for (const s of sessions) {
 		const attempts = await attemptTable.findMany({
-			where: (fields: any) => eq(fields.sessionId, s.id),
+			where: (fields: Record<string, AnyColumn>) => eq(fields.sessionId, s.id),
 			orderBy
 		});
 
 		results.push({
 			sessionId: s.id,
 			createdAt: s.createdAt,
-			// @ts-ignore
 			attempts,
 			meta: s.meta ? JSON.parse(s.meta) : undefined
 		});
@@ -166,7 +176,7 @@ export async function getResults(sessionType: AnySessionType, userId: string): P
 export async function getLastResult(
 	sessionType: AnySessionType,
 	userId: string
-): Promise<any | null> {
+): Promise<SessionResult | null> {
 	const all = await getResults(sessionType, userId);
 	return all[0] ?? null;
 }

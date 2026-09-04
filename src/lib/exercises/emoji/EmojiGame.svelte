@@ -149,31 +149,31 @@
 {/if} -->
 
 {#if !finished}
-	<div class="flex flex-col items-center justify-center gap-6 text-white">
+	<div class="flex flex-col items-center justify-center gap-6">
 		<div class="grid w-full grid-cols-4 gap-4">
 			<div
-				class="flex flex-col items-center justify-center rounded-2xl bg-[#364b6c] p-2 text-center"
+				class="flex flex-col items-center justify-center rounded-2xl bg-white p-2 text-center"
 			>
 				<span class="mb-2 block text-sm opacity-70">Время</span><strong class="text-2xl"
 					>{timeLeft}s</strong
 				>
 			</div>
 			<div
-				class="flex flex-col items-center justify-center rounded-2xl bg-[#364b6c] p-4 text-center"
+				class="flex flex-col items-center justify-center rounded-2xl bg-white p-4 text-center"
 			>
 				<span class="mb-2 block text-sm opacity-70">Очки</span><strong class="text-2xl"
 					>{score}</strong
 				>
 			</div>
 			<div
-				class="flex flex-col items-center justify-center rounded-2xl bg-[#364b6c] p-4 text-center"
+				class="flex flex-col items-center justify-center rounded-2xl bg-white p-4 text-center"
 			>
 				<span class="mb-2 block text-sm opacity-70">Ошибки</span><strong class="text-2xl"
 					>{mistakes}</strong
 				>
 			</div>
 			<div
-				class="flex flex-col items-center justify-center rounded-2xl bg-[#364b6c] p-4 text-center"
+				class="flex flex-col items-center justify-center rounded-2xl bg-white p-4 text-center"
 			>
 				<span class="mb-2 block text-sm opacity-70">Точность</span><strong class="text-2xl"
 					>{accuracy}%</strong
@@ -182,7 +182,7 @@
 		</div>
 
 		<div
-			class="flex h-64 w-64 items-center justify-center rounded-3xl bg-[#364b6c] shadow-[0_10px_30px_rgba(0,0,0,0.3)]"
+			class="flex h-64 w-64 items-center justify-center rounded-3xl bg-white shadow-[0_10px_30px_rgba(0,0,0,0.3)]"
 		>
 			<div class="font-sans text-9xl select-none">
 				{currentEmoji}
@@ -192,7 +192,7 @@
 		{#if !started}
 			<div class="flex flex-col items-center justify-center gap-2">
 				<Button color="green" onclick={startTest}>Начать тест</Button>
-				<h2>Запомни эмодзи до начала</h2>
+				<h2 class="text-center">Запомни эмодзи до начала</h2>
 			</div>
 		{:else}
 			<div class="flex gap-4">

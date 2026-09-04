@@ -4,6 +4,11 @@
 	import type { Snippet } from 'svelte';
 	import type { MouseEventHandler } from 'svelte/elements';
 
+	import type { PathnameWithSearchOrHash, ResolvedPathname } from '$app/types';
+	// resolve() has a variadic conditional signature (ResolveArgs<T>) that
+	// cannot accept the full route union — narrow it to the pathname overload.
+	const resolvePathname = resolve as (path: PathnameWithSearchOrHash) => ResolvedPathname;
+
 	type ButtonColor =
 		| 'red'
 		| 'blue'
@@ -23,12 +28,12 @@
 		| 'violet'
 		| 'fuchsia'
 		| 'rose'
-		| 'cream';
+		| 'cream'
+		| 'secondary';
 	type OnclickType = MouseEventHandler<HTMLButtonElement> | null | undefined;
 	type TypeType = 'button' | 'submit' | 'reset' | null | undefined;
 	let {
 		id,
-		kind = 'normal',
 		color = 'green',
 		children,
 		onclick = undefined,
@@ -40,11 +45,10 @@
 		style: styleName = ''
 	}: {
 		id?: string;
-		kind?: string;
 		color: ButtonColor;
 		children: Snippet;
 		onclick?: OnclickType;
-		goto?: string;
+		goto?: PathnameWithSearchOrHash;
 		invalidateAll?: boolean;
 		disabled?: boolean;
 		type?: TypeType;
@@ -55,7 +59,7 @@
 	let resolvedOnclick = $derived(
 		goto
 			? () => {
-					gotoSvelte(resolve(goto), { invalidateAll });
+					gotoSvelte(resolvePathname(goto), { invalidateAll });
 				}
 			: onclick
 	);
@@ -72,22 +76,22 @@
 
 	const colorClasses: ColorClassesObject = {
 		red: {
-			bg: 'bg-red-700',
-			hover: 'hover:bg-red-800',
+			bg: 'bg-red-400',
+			hover: 'hover:bg-red-500',
 			ring: 'focus:ring-red-600',
 			offset: 'focus:ring-offset-red-300',
 			text: 'text-white'
 		},
 		blue: {
-			bg: 'bg-blue-700',
-			hover: 'hover:bg-blue-800',
+			bg: 'bg-blue-400',
+			hover: 'hover:bg-blue-500',
 			ring: 'focus:ring-blue-600',
 			offset: 'focus:ring-offset-blue-300',
 			text: 'text-white'
 		},
 		green: {
-			bg: 'bg-green-700',
-			hover: 'hover:bg-green-800',
+			bg: 'bg-[#6FCF97]',
+			hover: 'hover:bg-green-500',
 			ring: 'focus:ring-green-600',
 			offset: 'focus:ring-offset-green-300',
 			text: 'text-white'
@@ -203,6 +207,13 @@
 			ring: 'focus:ring-stone-200',
 			offset: 'focus:ring-offset-stone-100',
 			text: 'text-stone-900'
+		},
+		secondary: {
+			bg: 'bg-white',
+			hover: 'hover:bg-gray-50',
+			ring: 'focus:ring-gray-400',
+			offset: 'focus:ring-offset-gray-200',
+			text: 'text-gray-900'
 		}
 	};
 </script>

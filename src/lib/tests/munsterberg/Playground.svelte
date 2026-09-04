@@ -26,7 +26,7 @@
 	let innerHeight = $state(0);
 	let isGameRunning = $state(false);
 	let timer = $state(60);
-	let timerInterval: any = $state(null);
+	let timerInterval = $state<ReturnType<typeof setInterval> | undefined>(undefined);
 
 	let grid: Cell[][] = $state([]);
 	let words: string[] = $state([]);
@@ -241,7 +241,7 @@
 	});
 </script>
 
-<div
+<button
 	class="
 	pointer-events-auto
 	z-0
@@ -249,7 +249,7 @@
 	grid
 	cursor-pointer
 	touch-none
-	border-[1px]
+	border
 	border-gray-700
 	select-none
 	"
@@ -263,40 +263,42 @@
 	onpointerup={handleInteraction}
 	onpointerout={handleInteraction}
 >
-	{#each grid as row, i}
-		{#each row as cell, j}
+	{#each grid as row, i (i)}
+		{#each row as cell, j (j)}
 			<div
 				class="
 						cell
 						pointer-events-none
 						relative
-						z-[1]
+						z-1
 						box-border
 						flex
 						transform-gpu
 						touch-none
 						items-center
 						justify-center
-						border-[1px]
+						border
 						border-gray-700
 						text-center
 						transition-all
 						duration-300
 						select-none
-						{isSelected(i, j) ? 'selected z-[2] scale-110 overflow-hidden border-transparent shadow-md' : ''}
-						{cell.isCorrect ? 'correct text-gray-50' : ''}
-						{cell.isIncorrect ? 'incorrect text-gray-50' : ''}"
+						{isSelected(i, j) ? 'selected z-2 scale-110 overflow-hidden border-transparent shadow-md' : ''}
+						{cell.isCorrect ? 'correct text-black' : ''}
+						{cell.isIncorrect ? 'incorrect text-black' : ''}"
 			>
 				{cell.letter}
 			</div>
 		{/each}
 	{/each}
-</div>
+</button>
 {#if isGameRunning}
 	<!-- <h3>{`0${timer === 60 ? 1 : 0}:${timer % 60 < 10 ? '0' : ''}${timer % 60}`}</h3> -->
 	<ProgressBar min={0} max={60} progress={60 - timer} />
 {:else}
-	<h3>Вы отгадали {guessedCount}/{generatedWords.length} за {60 - timer} сек.</h3>
+	<h3 class="text-center">
+		Вы отгадали {guessedCount}/{generatedWords.length} за {60 - timer} сек.
+	</h3>
 {/if}
 
 <svelte:window bind:innerWidth bind:innerHeight />

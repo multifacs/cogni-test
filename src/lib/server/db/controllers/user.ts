@@ -45,9 +45,10 @@ export async function createUser(userInput: Partial<User>): Promise<User | null>
 		return newUser;
 	} catch (error) {
 		// Можно добавить более детальную обработку ошибок в зависимости от типа ошибки
-		throw new Error(
+		console.error(
 			`Failed to create user: ${error instanceof Error ? error.message : String(error)}`
 		);
+		return null;
 	}
 }
 
@@ -55,9 +56,6 @@ export async function getUserById(id: string): Promise<User | null> {
 	const [found] = await db.select().from(user).where(eq(user.id, id));
 	return found ?? null;
 }
-
-import type { TestType } from '$lib/tests/types';
-import type { ExerciseType } from '$lib/exercises/types';
 
 // Поля анкеты, которые проверяем на null
 const SURVEY_FIELDS = [

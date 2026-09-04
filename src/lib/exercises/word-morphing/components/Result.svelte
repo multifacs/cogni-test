@@ -10,8 +10,8 @@
 		currentShape,
 		currentColor
 	}: {
-		recalledCombos: any;
-		expectedCombos: any;
+		recalledCombos: string[];
+		expectedCombos: string[];
 		category: 'words' | 'shapes';
 		originalShape: Shape;
 		originalColor: Color;
@@ -30,9 +30,9 @@
 </script>
 
 <div class="flex flex-col gap-2">
-	<h2>Ваши ответы:</h2>
+	<h2 class="text-center">Ваши ответы:</h2>
 	<ol>
-		{#each recalledCombos as recalled, i}
+		{#each recalledCombos as recalled, i (i)}
 			<li
 				class="text-center"
 				style="color: {isCorrectCombination(recalled, expectedCombos[i])
@@ -46,10 +46,10 @@
 </div>
 
 <div class="flex flex-col gap-2">
-	<h2>Ожидаемые ответы:</h2>
+	<h2 class="text-center">Ожидаемые ответы:</h2>
 	{#if category === 'words'}
 		<ul>
-			{#each expectedCombos as expected}
+			{#each expectedCombos as expected (expected)}
 				<li class="text-center">{expected}</li>
 			{/each}
 		</ul>

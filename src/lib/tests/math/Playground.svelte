@@ -1,13 +1,16 @@
 <script lang="ts">
-	import Sign from './components/Sign.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import { translate } from '$lib/utils/common';
 	import { GameState } from './logic/controller.svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import '@fontsource/fira-code';
 
 	let { gameEnd, sendResults } = $props();
-	let gameState = $state(new GameState(gameEnd, sendResults));
+	let gameState = $state(
+		new GameState(
+			() => gameEnd,
+			() => sendResults
+		)
+	);
 
 	onMount(() => {
 		gameState.resetGame();
@@ -43,11 +46,9 @@
 
 {#if gameState.getState().isGameRunning}
 	{#if gameState.getState().currentLeft == 'stage'}
-		<h1>Тест начинается</h1>
+		<h1 class="text-center">Тест начинается</h1>
 	{:else}
-		<div
-			class="inequality grid grid-cols-[1fr_auto_1fr] items-center gap-5 text-4xl font-bold text-gray-50"
-		>
+		<div class="inequality grid grid-cols-[1fr_auto_1fr] items-center gap-5 text-4xl font-bold">
 			<div class="left justify-self-center">
 				{getPaddedLeft(gameState.getState().currentLeft)}
 			</div>
@@ -60,19 +61,17 @@
 		</div>
 	{/if}
 {:else}
-	<h1>Конец теста</h1>
+	<h1 class="text-center">Конец теста</h1>
 {/if}
 
 <div class="grid grid-cols-2 gap-2.5">
 	<Button
 		disabled={!gameState.getState().isGameRunning}
-		kind="big"
 		color="green"
 		onclick={() => handleAnswer(true)}>ДА</Button
 	>
 	<Button
 		disabled={!gameState.getState().isGameRunning}
-		kind="big"
 		color="red"
 		onclick={() => handleAnswer(false)}>НЕТ</Button
 	>

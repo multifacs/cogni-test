@@ -10,6 +10,9 @@ import { inlineOnnxPlugin } from './src/lib/server/age/inlineOnnxPlugin';
 
 // console.log('Vite config loaded with MODE:', process.env);
 
+// mkcert нужен только для dev/preview, не для тестов и сборки
+const isTest = !!process.env.VITEST; // Vitest выставляет эту переменную сам
+
 export default defineConfig({
 	esbuild: {
 		drop: process.env.MODE == 'PROD' ? ['console', 'debugger'] : []
@@ -17,7 +20,7 @@ export default defineConfig({
 	ssr: {
 		external: ['@libsql/client', '@libsql/core', '@libsql/hrana-client', 'onnxruntime-node']
 	},
-	plugins: [sveltekit(), tailwindcss(), mkcert(), inlineOnnxPlugin()],
+	plugins: [sveltekit(), tailwindcss(), ...(isTest ? [] : [mkcert()]), inlineOnnxPlugin()],
 	test: {
 		expect: { requireAssertions: true },
 		projects: [

@@ -56,13 +56,11 @@
 	};
 
 	let {
-		data,
 		gameEnd,
 		sendResults
 	}: {
-		data: any;
 		gameEnd: () => void;
-		sendResults: (results: any[]) => void;
+		sendResults: (results: WordMorphingSummaryRow[]) => void;
 	} = $props();
 
 	let selectedTimeOption: TimeOption = $state(timeOptions[0]);
@@ -134,7 +132,7 @@
 	let input2 = $state('');
 	let input3 = $state('');
 
-	let countdown = $state(30);
+	// let countdown = $state(30);
 	let timerEndsAt = $state<number | null>(null);
 	let currentTime = $state(Date.now());
 
@@ -453,15 +451,17 @@
 {#if showModal}
 	<Modal bind:showModal>
 		{#snippet header()}
-			<h2 class="text-2xl text-white">Подпишитесь на пуш-уведомления</h2>
+			<h2 class="text-2xl text-[var(--main-text-color) text-center">
+				Подпишитесь на пуш-уведомления
+			</h2>
 		{/snippet}
 		<div class="flex flex-col gap-4">
-			<p class="text-white">
+			<p>
 				Для корректной работы некоторых функций требуется подписка на уведомления. Например,
 				мы сможем отправлять вам напоминания о прохождении тестов.
 			</p>
-			<p class="text-white">Для подписки достаточно нажать зелёную кнопочку.</p>
-			<p class="text-white">
+			<p>Для подписки достаточно нажать зелёную кнопочку.</p>
+			<p>
 				Вы сможете подписаться или отписаться от push-уведомлений в любое время на странице
 				профиля.
 			</p>

@@ -2,8 +2,25 @@ import type { SkillMetric } from '$lib/types';
 import { tests } from '$lib/tests';
 import { exercises, EXERCISE_SLUG_TO_TEST_TYPE } from '$lib/exercises';
 import { getResults } from '$lib/server/db/controllers/result';
+import type { TestType } from '$lib/tests/types';
 
-export function computeSessionScore(sessionType: string, attempts: any[]): number {
+type AttemptLike = {
+	isCorrect?: boolean;
+	guessed?: boolean;
+	stage?: number;
+	efficiency?: number;
+	time?: number; // читает getFeaturesFromDB (munsterberg/stroop/swallow)
+	background?: string; // читает getFeaturesFromDB (swallow)
+};
+
+export type SessionResult = {
+	sessionId: string;
+	createdAt: string;
+	attempts: AttemptLike[];
+	meta?: unknown;
+};
+
+export function computeSessionScore(sessionType: string, attempts: AttemptLike[]): number {
 	if (!attempts?.length) return 0;
 
 	switch (sessionType) {
@@ -32,7 +49,7 @@ export function computeSessionScore(sessionType: string, attempts: any[]): numbe
 
 		case 'campimetry':
 		case 'campimetryExercise': {
-			const maxStage = Math.max(...attempts.map((a) => a.stage));
+			const maxStage = Math.max(...attempts.map((a) => a.stage ?? 0));
 			return Math.min(100, Math.round((maxStage / 2) * 100));
 		}
 
@@ -68,7 +85,7 @@ export async function getMetricScores(userId: string): Promise<MetricScores> {
 	const testPromises = tests
 		.filter((test) => test.admin_metrics?.length)
 		.map(async (test) => {
-			const sessions = await getResults(test.name as any, userId);
+			const sessions = await getResults(test.name as TestType, userId);
 			for (const session of sessions) {
 				const score = computeSessionScore(test.name, session.attempts);
 				for (const metric of test.admin_metrics!) {
@@ -82,7 +99,7 @@ export async function getMetricScores(userId: string): Promise<MetricScores> {
 		.map(async (ex) => {
 			const sessionType = EXERCISE_SLUG_TO_TEST_TYPE[ex.name];
 			if (!sessionType) return;
-			const sessions = await getResults(sessionType as any, userId);
+			const sessions = await getResults(sessionType, userId);
 			for (const session of sessions) {
 				const score = computeSessionScore(sessionType, session.attempts);
 				for (const metric of ex.admin_metrics!) {

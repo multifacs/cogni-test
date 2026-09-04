@@ -15,7 +15,6 @@ import type {
 } from '../types';
 import {
 	attributeCell,
-	cell,
 	cloneCellWithNewIds,
 	countCell,
 	markerMaskCell,
@@ -25,8 +24,7 @@ import {
 	positionCell,
 	radialCell,
 	regionTextureCell,
-	resetCellIds,
-	shapeElement
+	resetCellIds
 } from './cells';
 import type { RelationKind } from './cells';
 import {

@@ -1,4 +1,5 @@
 import type { SkillMetric } from '$lib/types';
+import type { Component } from 'svelte';
 import type { TestType } from './types';
 
 export type TestData = {
@@ -14,41 +15,41 @@ export type TestData = {
 export const tests: TestData[] = [
 	{
 		name: 'stroop',
-		title: 'Тест Струпа',
+		title: 'Цвет и смысл',
 		path: '/tests/stroop/about',
-		img: '/tests/stroop.jpg',
+		img: '/tests/stroop.svg',
 		admin_metrics: ['executive_function', 'short_memory', 'attention', 'thinking'],
 		user_metrics: ['executive_function']
 	},
 	{
 		name: 'math',
-		title: 'Aрифметический тест',
+		title: 'Быстрый счет',
 		path: '/tests/math/about',
-		img: '/tests/math.svg',
+		img: '/tests/math1.svg',
 		admin_metrics: ['attention', 'thinking', 'reaction_speed'],
 		user_metrics: ['reaction_speed']
 	},
 	{
 		name: 'munsterberg',
-		title: 'Тест Мюнстерберга',
+		title: 'Поиск слов',
 		path: '/tests/munsterberg/about',
-		img: '/tests/munsterberg.svg',
+		img: '/tests/munsterberg1.svg',
 		admin_metrics: ['attention', 'perception', 'verbal_function'],
 		user_metrics: ['perception']
 	},
 	{
 		name: 'campimetry',
-		title: 'Компьютерная кампиметрия',
+		title: 'Скрытая фигура',
 		path: '/tests/campimetry/about',
-		img: '/tests/campimetry.svg',
+		img: '/tests/campimetry1.svg',
 		admin_metrics: ['attention', 'perception', 'color_perception'],
 		user_metrics: ['perception']
 	},
 	{
 		name: 'memory',
-		title: 'Тест на память',
+		title: 'Слова и повторы',
 		path: '/tests/memory/about',
-		img: '/tests/memory.svg',
+		img: '/tests/memory1.svg',
 		admin_metrics: [
 			'attention',
 			'reaction_speed',
@@ -60,9 +61,9 @@ export const tests: TestData[] = [
 	},
 	{
 		name: 'swallow',
-		title: 'Тест «Ласточка»',
+		title: 'Полет птицы',
 		path: '/tests/swallow/about',
-		img: '/tests/swallow.svg',
+		img: '/tests/swallow1.svg',
 		admin_metrics: ['executive_function', 'spacial_perception', 'short_memory'],
 		user_metrics: ['spacial_perception']
 	}
@@ -70,10 +71,14 @@ export const tests: TestData[] = [
 
 export const TEST_ORDER: TestType[] = tests.map((t) => t.name as TestType);
 
+// Компонент с произвольными пропсами: страницы передают gameEnd/sendResults/data
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyComponent = Component<any>;
+
 type TestLoader = {
-	about: () => Promise<any>;
-	playground: () => Promise<any>;
-	resultsChart?: () => Promise<any>;
+	about: () => Promise<{ default: AnyComponent }>;
+	playground: () => Promise<{ default: AnyComponent }>;
+	resultsChart?: () => Promise<{ default: AnyComponent }>;
 };
 
 const testLoaders: Record<string, TestLoader> = {

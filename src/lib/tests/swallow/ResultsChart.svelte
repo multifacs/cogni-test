@@ -25,10 +25,9 @@
 		return result.isCorrect ? getCSSVar('--color-green-500') : getCSSVar('--color-red-400');
 	};
 
-	Chart.defaults.color = 'white';
+	Chart.defaults.color = 'var(--main-text-color)';
 
 	let canvas: HTMLCanvasElement = $state(Object());
-	let chart = $state(Object());
 
 	let stageNums: number[] = [0];
 
@@ -61,7 +60,7 @@
 		);
 		console.log(avg);
 
-		chart = new Chart(canvas, {
+		new Chart(canvas, {
 			type: 'line',
 			data: {
 				labels: parsedResults.map((el) => el.x).sort(compareNumbers),
@@ -79,10 +78,11 @@
 				})
 			},
 			options: {
-				onHover: function (event, chartElements) {
-                    // @ts-ignore
-					const target = event.native ? event.native.target : event.chart.canvas;
-					target.style.cursor = chartElements.length ? 'pointer' : 'default';
+				onHover(event, chartElements, chart) {
+					const target = event.native?.target as HTMLElement | undefined;
+					(target ?? chart.canvas).style.cursor = chartElements.length
+						? 'pointer'
+						: 'default';
 				},
 				responsive: true,
 				plugins: {
@@ -90,12 +90,10 @@
 						callbacks: {
 							title: (context) => {
 								const value = context[0].raw as Result;
-								const raw = value.raw;
 								return `Попытка ${value.x}`;
 							},
 							label: function (context) {
 								const value = context.raw as Result;
-								const raw = value.raw;
 								const isCorrect = value.isCorrect;
 								const status = isCorrect ? 'Верно' : 'Неверно';
 								return `Реакция: ${value.y} мс (${status})`;
@@ -106,10 +104,12 @@
 					legend: {
 						labels: {
 							usePointStyle: true,
-                            // @ts-ignore
 							generateLabels: (chart) => {
-								const original = Chart.defaults.plugins.legend.labels.generateLabels(chart);
-								console.log(Chart.defaults.plugins.legend.labels.generateLabels(chart));
+								const original =
+									Chart.defaults.plugins.legend.labels.generateLabels(chart);
+								console.log(
+									Chart.defaults.plugins.legend.labels.generateLabels(chart)
+								);
 								const fontColor = original[0]['fontColor'];
 								const strokeStyle = original[0]['strokeStyle'];
 								const newLabels = [];
@@ -120,7 +120,7 @@
 										fontColor,
 										fillStyle: 'rgba(255,99,132,0.4)',
 										strokeStyle: 'rgba(255,99,132,1)',
-										pointStyle: 'line',
+										pointStyle: 'line' as const,
 										lineDash: [6, 6],
 										hidden: false,
 										index: -1
@@ -130,7 +130,7 @@
 										fontColor,
 										fillStyle: getCSSVar('--color-green-500'),
 										strokeStyle,
-										pointStyle: 'circle',
+										pointStyle: 'circle' as const,
 										hidden: false,
 										index: -1
 									},
@@ -139,7 +139,7 @@
 										fontColor,
 										fillStyle: getCSSVar('--color-red-400'),
 										strokeStyle,
-										pointStyle: 'circle',
+										pointStyle: 'circle' as const,
 										hidden: false,
 										index: -2
 									}
@@ -173,16 +173,20 @@
 							maxRotation: 0,
 							minRotation: 0,
 							callback: (idx) => {
-								const direction = (parsedResults[idx as number].raw as SwallowResult).direction;
+								const direction = (
+									parsedResults[idx as number].raw as SwallowResult
+								).direction;
 								if (direction == 'up') return '▲';
 								if (direction == 'down') return '▼';
 								if (direction == 'left') return '◄';
 								if (direction == 'right') return '►';
 							},
 							color: (ctx) => {
-								const color = (parsedResults[ctx.index].raw as SwallowResult).background == 'blue'
-									? '--color-blue-500'
-									: '--color-red-500';
+								const color =
+									(parsedResults[ctx.index].raw as SwallowResult).background ==
+									'blue'
+										? '--color-blue-500'
+										: '--color-red-500';
 								return getCSSVar(color);
 							},
 							font: {
@@ -209,5 +213,5 @@
 </script>
 
 <p>Время прохождения теста: {allTime} с</p>
-<p>Среднее время реакции: {avg} мc</p>
+<p class="padding-bottom: 1rem;">Среднее время реакции: {avg} мc</p>
 <canvas bind:this={canvas}></canvas>

@@ -1,5 +1,3 @@
-import type { SkillMetric } from '$lib/types';
-
 export function translate(word: string): string {
 	const dict: Record<string, string> = {
 		red: 'Красный',

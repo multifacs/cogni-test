@@ -3,10 +3,16 @@
 	import Modal from '$lib/components/ui/Modal.svelte';
 	import Toast from '$lib/components/ui/Toast.svelte';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
 	let { data } = $props();
 
-	let wordInputs = $state<string[]>(Array(data.wordCount).fill(''));
+	let wordInputs = $state<string[]>([]);
+	$effect(() => {
+		// сброс при переходе между сессиями — компонент переиспользуется
+		const wordCount = data.wordCount;
+		wordInputs = Array(wordCount).fill('');
+	});
 	let isSubmitting = $state(false);
 	let showDisclaimer = $state(true);
 	let toastMessage = $state<string | null>(null);
@@ -24,7 +30,7 @@
 		});
 
 		if (response.ok) {
-			goto('/gto', { invalidateAll: true });
+			goto(resolve('/gto'), { invalidateAll: true });
 		} else {
 			const err = await response.json();
 			toastMessage = err.error || 'Ошибка отправки';
@@ -35,7 +41,7 @@
 </script>
 
 <section class="banner">
-	<h1 class="text-2xl font-bold">Последовательность слов</h1>
+	<h1 class="text-2xl font-bold text-center">Последовательность слов</h1>
 	<p class="text-gray-400">{data.sessionName}</p>
 	{#if !data.hasWordSet}
 		<p class="text-sm text-yellow-400">
@@ -46,7 +52,7 @@
 
 <main class="main flex flex-col items-center justify-center gap-4">
 	<div class="flex w-full max-w-xs flex-col gap-3">
-		{#each wordInputs as _, i}
+		{#each wordInputs as _, i (i)}
 			<div class="flex flex-col gap-1">
 				<label for="word-{i}" class="text-sm text-gray-400">{i + 1}-е слово</label>
 				<input
@@ -76,7 +82,7 @@
 {#if showDisclaimer}
 	<Modal bind:showModal={showDisclaimer}>
 		{#snippet header()}
-			<h2 class="text-2xl text-white">Внимание!</h2>
+			<h2 class="text-2xl text-white text-center">Внимание!</h2>
 		{/snippet}
 		<div class="flex flex-col gap-4">
 			<p class="text-white">

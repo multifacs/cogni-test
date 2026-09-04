@@ -20,7 +20,12 @@ export class StroopGame {
 	private generateTasks(): void {
 		let lastColor = '';
 		// Stage 1: Word color matches meaning
-		this.tasks.push({ stage: 0, word: 'stage 1', color: 'white', task: 'stage' } as Task);
+		this.tasks.push({
+			stage: 0,
+			word: 'stage 1',
+			color: 'var(--main-text-color)',
+			task: 'stage'
+		} as Task);
 		for (let i = 0; i < this.stageWordCounts[0]; i++) {
 			let color = this.getRandomTask();
 			while (color == lastColor) color = this.getRandomTask();
@@ -29,7 +34,12 @@ export class StroopGame {
 			this.tasks.push({ stage: 1, word: color, color: color, task: 'both' } as Task);
 		}
 
-		this.tasks.push({ stage: 0, word: 'stage 2', color: 'white', task: 'stage' } as Task);
+		this.tasks.push({
+			stage: 0,
+			word: 'stage 2',
+			color: 'var(--main-text-color)',
+			task: 'stage'
+		} as Task);
 		// Stage 2: Word color differs from meaning, task is to match meaning
 		for (let i = 0; i < this.stageWordCounts[1]; i++) {
 			const word = this.getRandomTask();
@@ -41,7 +51,12 @@ export class StroopGame {
 			this.tasks.push({ stage: 2, word, color, task: 'meaning' } as Task);
 		}
 
-		this.tasks.push({ stage: 0, word: 'stage 3', color: 'white', task: 'stage' } as Task);
+		this.tasks.push({
+			stage: 0,
+			word: 'stage 3',
+			color: 'var(--main-text-color)',
+			task: 'stage'
+		} as Task);
 		// Stage 3: Word color differs from meaning, task is to match color
 		for (let i = 0; i < this.stageWordCounts[2]; i++) {
 			const word = this.getRandomTask();

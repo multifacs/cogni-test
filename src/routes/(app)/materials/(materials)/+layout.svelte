@@ -1,13 +1,16 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
+	import { getContext, onMount } from 'svelte';
 	import type { LayoutProps } from './$types';
 
-	let { data, children }: LayoutProps = $props();
+	let { children }: LayoutProps = $props();
+	const headerContext = getContext<{ value: string }>('headerText');
+	onMount(() => {
+		if (headerContext) {
+			headerContext.value = 'Статьи';
+		}
+	});
 </script>
 
-{@render children()}
-<section class="low-content grid grid-cols-3 gap-4">
-	<div></div>
-	<Button color="red" goto="/materials">Назад</Button>
-	<div></div>
-</section>
+<main class="main flex flex-col gap-6">
+	{@render children()}
+</main>
