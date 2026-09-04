@@ -3,7 +3,14 @@ import { tests } from '$lib/tests';
 import { exercises, EXERCISE_SLUG_TO_TEST_TYPE } from '$lib/exercises';
 import { getResults } from '$lib/server/db/controllers/result';
 
-export function computeSessionScore(sessionType: string, attempts): number {
+type AttemptLike = {
+	isCorrect?: boolean;
+	guessed?: boolean;
+	stage?: number;
+	efficiency?: number;
+};
+
+export function computeSessionScore(sessionType: string, attempts: AttemptLike[]): number {
 	if (!attempts?.length) return 0;
 
 	switch (sessionType) {
@@ -32,7 +39,7 @@ export function computeSessionScore(sessionType: string, attempts): number {
 
 		case 'campimetry':
 		case 'campimetryExercise': {
-			const maxStage = Math.max(...attempts.map((a) => a.stage));
+			const maxStage = Math.max(...attempts.map((a) => a.stage ?? 0));
 			return Math.min(100, Math.round((maxStage / 2) * 100));
 		}
 

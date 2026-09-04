@@ -28,7 +28,7 @@ import type {
 	MetaResult as ExerciseMetaResult
 } from '$lib/exercises/types';
 import short from 'short-uuid';
-import { eq, asc } from 'drizzle-orm';
+import { eq, asc, type AnyColumn, type SQL } from 'drizzle-orm';
 
 export type AnySessionType = TestType | ExerciseType;
 type AnyMetaResult = TestMetaResult | ExerciseMetaResult;
@@ -75,7 +75,7 @@ function getQueryTableMap(): Record<string, any> {
 	};
 }
 
-const orderByMap: Record<string, (fields) => any> = {
+const orderByMap: Record<string, (fields: Record<string, AnyColumn>) => SQL> = {
 	math: (f) => asc(f.attempt),
 	stroop: (f) => asc(f.attempt),
 	memory: (f) => asc(f.attempt),
@@ -147,7 +147,7 @@ export async function getResults(sessionType: AnySessionType, userId: string): P
 
 	for (const s of sessions) {
 		const attempts = await attemptTable.findMany({
-			where: (fields) => eq(fields.sessionId, s.id),
+			where: (fields: Record<string, AnyColumn>) => eq(fields.sessionId, s.id),
 			orderBy
 		});
 
