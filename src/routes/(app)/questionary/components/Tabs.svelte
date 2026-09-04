@@ -1,5 +1,7 @@
 <!-- src/routes/questionary/components/Tabs.svelte -->
 <script lang="ts">
+	import type { Snippet } from 'svelte';
+
 	// Svelte 5 props
 	let {
 		tabs = [],
@@ -10,11 +12,11 @@
 		tabs: { id: string; label: string; disabled?: boolean }[];
 		activeTab: string;
 		onTabChange?: (id: string) => void;
-		children;
+		children?: Snippet;
 	} = $props();
 </script>
 
-<ul class="font-black w-full flex gap-1 text-center text-sm font-medium justify-center flex-wrap">
+<ul class="font-black w-full flex gap-1 text-center text-sm justify-center flex-wrap">
 	{#each tabs as tab (tab.label)}
 		<li class="me-2 shrink-0" class:max-md:flex-1={!tab.disabled && activeTab === tab.id}>
 			<button
