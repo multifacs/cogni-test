@@ -28,11 +28,16 @@ export const POST: RequestHandler = async ({ request }) => {
 				console.error('Failed to send to:', subscription.endpoint, error);
 
 				// Handle expired subscriptions
-				if (error.statusCode === 410 || error.statusCode === 404) {
+				const status = (error as { statusCode?: number } | null)?.statusCode;
+				if (status === 410 || status === 404) {
 					await subscriptionService.deactivateSubscription(subscription.endpoint);
 				}
 
-				return { success: false, endpoint: subscription.endpoint, error: error.message };
+				return {
+					success: false,
+					endpoint: subscription.endpoint,
+					error: error instanceof Error ? error.message : String(error)
+				};
 			}
 		});
 

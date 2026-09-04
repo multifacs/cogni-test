@@ -10,6 +10,11 @@
 	import RecommendationCard from '$lib/components/ui/RecommendationCard.svelte';
 	import { resolve } from '$app/paths';
 
+	interface BeforeInstallPromptEvent extends Event {
+		prompt(): Promise<void>;
+		userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
+	}
+
 	let { data } = $props();
 
 	function capitalize(str: string): string {
@@ -17,7 +22,7 @@
 		return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 	}
 
-	let diferredInstallEvent = $state(null);
+	let diferredInstallEvent = $state<BeforeInstallPromptEvent | null>(null);
 	let showInstallButton = $state(true);
 	let showInstallModal = $state(false);
 	let undiagnosed = $state(false);
@@ -48,7 +53,7 @@
 
 		window.addEventListener('beforeinstallprompt', (e) => {
 			e.preventDefault();
-			diferredInstallEvent = e;
+			diferredInstallEvent = e as BeforeInstallPromptEvent;
 			showInstallButton = true;
 			localforage.setItem('showInstallButton', true);
 		});
@@ -127,7 +132,7 @@
 		if (!browser) return false;
 		return (
 			window.matchMedia('(display-mode: standalone)').matches ||
-			window.navigator.standalone === true
+			(window.navigator as Navigator & { standalone?: boolean }).standalone === true
 		);
 	};
 </script>

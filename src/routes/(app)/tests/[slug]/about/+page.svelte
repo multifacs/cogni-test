@@ -7,7 +7,9 @@
 	const { data } = $props();
 	const slug = $derived(data.slug);
 	const test = $derived(testRegistry[slug]);
-	let Component = $state(null);
+
+	import type { Component as ComponentType } from 'svelte';
+	let Component = $state<ComponentType | null>(null);
 
 	// GTO session integration
 	const gtoSessionId = $derived(page.url.searchParams.get('gtoSessionId') ?? undefined);
