@@ -24,7 +24,7 @@ export async function getFeaturesFromDB(userId: string) {
 	if (swa?.attempts?.length) {
 		const red = swa.attempts.filter((a: { background: string }) => a.background === 'red'); // <-- из JSON
 		if (red.length) {
-			const times = red.attempts.map((a: { time: number | null }) => (a.time ?? 0) / 1000);
+			const times = red.map((a: { time: number | null }) => (a.time ?? 0) / 1000);
 			testMetrics.swallow_time_red = avg(times);
 		}
 	}

@@ -70,7 +70,7 @@ export function generateSequence(opts: {
 		}
 	} else {
 		const range = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-		for (let i = 0; i + nBack < total; i++) {}
+		// for (let i = 0; i + nBack < total; i++) {}
 		for (let i = 0; i < nBack; i++) {
 			const v = pick(range);
 			seq.push({ idx: i, domain: 'numbers', payload: { value: v }, truth: null });

@@ -33,7 +33,14 @@ import { eq, asc, type AnyColumn, type SQL } from 'drizzle-orm';
 export type AnySessionType = TestType | ExerciseType;
 type AnyMetaResult = TestMetaResult | ExerciseMetaResult;
 
-const attemptTableMap: Record<string, any> = {
+// Реестр из 17 гетерогенных drizzle-таблиц: дженерики PgTableWithColumns
+// не сводятся к одному типу, а union ломает перегрузки db.insert/.findMany.
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type AnyAttemptTable = any;
+type AnyRelationalTable = any;
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+const attemptTableMap: Record<string, AnyAttemptTable> = {
 	math: mathAttempt,
 	stroop: stroopAttempt,
 	memory: memoryAttempt,
@@ -53,7 +60,7 @@ const attemptTableMap: Record<string, any> = {
 	wordMorphingExercise: wordMorphingExerciseAttempt
 };
 
-function getQueryTableMap(): Record<string, any> {
+function getQueryTableMap(): Record<string, AnyRelationalTable> {
 	return {
 		math: db.query.mathAttempt,
 		stroop: db.query.stroopAttempt,
