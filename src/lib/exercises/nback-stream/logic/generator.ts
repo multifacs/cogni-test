@@ -1,4 +1,4 @@
-import type { Domain, TargetFeature, Stimulus, FigureStim } from '../types';
+import type { Domain, TargetFeature, Stimulus, FigureStim, NumberStim } from '../types';
 
 const SHAPES = ['circle', 'square', 'triangle', 'diamond', 'star', 'hex'];
 const COLORS = ['#EF4444', '#10B981', '#3B82F6', '#F59E0B', '#8B5CF6', '#14B8A6'];
@@ -77,7 +77,7 @@ export function generateSequence(opts: {
 		}
 		for (let i = nBack; i < total; i++) {
 			const wantMatch = Math.random() < matchRatio;
-			const refVal = seq[i - nBack].payload.value as number;
+			const refVal = (seq[i - nBack].payload as NumberStim).value;
 			let v = refVal;
 			if (!wantMatch) {
 				const cand = range.filter((x) => x !== refVal);
@@ -89,26 +89,27 @@ export function generateSequence(opts: {
 	// ограничим серии совпадений до 2
 	let streak = 0;
 	for (let i = 0; i < seq.length; i++) {
+		const stim = seq[i];
 		const t = seq[i].truth;
 		if (t === true) {
 			streak++;
 			if (streak > 2) {
-				if (seq[i].domain === 'figures') {
+				if (stim.domain === 'figures') {
 					const ref = seq[i - nBack].payload as FigureStim;
 					if (target === 'shape') {
 						const shapes = SHAPES.filter((s) => s !== ref.shape);
-						seq[i].payload.shape = pick(shapes);
+						stim.payload.shape = pick(shapes);
 					} else if (target === 'color') {
 						const colors = COLORS.filter((c) => c !== ref.color);
-						seq[i].payload.color = pick(colors);
+						stim.payload.color = pick(colors);
 					}
 				} else {
-					const refVal = seq[i - nBack].payload.value as number;
+					const refVal = (seq[i - nBack].payload as NumberStim).value;
 					const range = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 					const cand = range.filter((x) => x !== refVal);
-					seq[i].payload.value = pick(cand);
+					stim.payload.value = pick(cand);
 				}
-				seq[i].truth = false;
+				stim.truth = false;
 				streak = 0;
 			}
 		} else {
