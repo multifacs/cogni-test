@@ -22,7 +22,7 @@ export async function getFeaturesFromDB(userId: string) {
 	// 6. Switching
 	const swa = await getLastResult('swallow', userId);
 	if (swa?.attempts?.length) {
-		const red = swa.attempts.filter((a) => a.background === 'red'); // <-- из JSON
+		const red = swa.attempts.filter((a: { background: string }) => a.background === 'red'); // <-- из JSON
 		if (red.length) {
 			const times = red.attempts.map((a: { time: number | null }) => (a.time ?? 0) / 1000);
 			testMetrics.swallow_time_red = avg(times);
