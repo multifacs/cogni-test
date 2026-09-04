@@ -1,6 +1,7 @@
 <!-- src/routes/questionary/components/TableRow.svelte -->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	type CustomChoiceRow = { text: string; choice: string };
 
 	let {
 		label,
@@ -16,7 +17,7 @@
 		children
 	}: {
 		label: string;
-		value?;
+		value?: string | number | boolean | CustomChoiceRow[] | null;
 		type?: 'input' | 'value' | 'choice' | 'range' | 'custom-choice' | 'custom';
 		options?: { label: string; value: string }[];
 		isBoolean?: boolean;
@@ -29,7 +30,9 @@
 	} = $props();
 
 	// Парсинг входной строки в массив объектов
-	function parseInputToRows(input): { text: string; choice: string }[] {
+	function parseInputToRows(
+		input: string | number | boolean | CustomChoiceRow[] | null | undefined
+	): CustomChoiceRow[] {
 		if (type !== 'custom-choice') return [];
 
 		if (Array.isArray(input)) {
