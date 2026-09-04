@@ -4,16 +4,15 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import type { MetaResult, RegularResults } from '$lib/tests/types.js';
-	import { type SvelteComponent } from 'svelte';
+	import { type Component as ComponentType } from 'svelte';
 	import { testRegistry } from '$lib/tests';
 
 	const { data } = $props();
 	const slug = $derived(data.slug);
 	const test = $derived(testRegistry[slug]);
-	let Component: typeof SvelteComponent | null = $state(null);
+	let Component: ComponentType | null = $state(null);
 
 	let isGameEnd = $state(false);
-	let childComponent: InstanceType<typeof SvelteComponent> | null = $state(null);
 
 	// GTO session integration: read gtoSessionId from URL params
 	const gtoSessionId = $derived(page.url.searchParams.get('gtoSessionId') ?? undefined);
@@ -87,8 +86,7 @@
 
 {#if Component}
 	<main class="main flex flex-col items-center justify-evenly text-[--main-text-color]">
-		<Component bind:this={childComponent} gameEnd={onGameEnd} sendResults={onSendResults} {data}
-		></Component>
+		<Component gameEnd={onGameEnd} sendResults={onSendResults} {data}></Component>
 	</main>
 
 	{#if isGameEnd}

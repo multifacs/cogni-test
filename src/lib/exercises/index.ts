@@ -1,5 +1,6 @@
 import type { TestType } from '$lib/tests/types';
 import type { SkillMetric } from '$lib/types';
+import type { Component } from 'svelte';
 import type { ExerciseType } from './types';
 
 export type ExerciseData = {
@@ -113,10 +114,14 @@ export const exercises: ExerciseData[] = [
 	}
 ];
 
+// Компонент с произвольными пропсами: страницы передают gameEnd/sendResults/data
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyComponent = Component<any>;
+
 type ExerciseLoader = {
-	about: () => Promise<any>;
-	playground?: () => Promise<any>;
-	result?: () => Promise<any>;
+	about: () => Promise<{ default: AnyComponent }>;
+	playground?: () => Promise<{ default: AnyComponent }>;
+	result?: () => Promise<{ default: AnyComponent }>;
 };
 
 const exerciseLoaders: Record<string, ExerciseLoader> = {

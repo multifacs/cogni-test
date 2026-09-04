@@ -4,16 +4,15 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import type { MetaResult, ExerciseResults } from '$lib/exercises/types.js';
-	import { type SvelteComponent } from 'svelte';
+	import { type Component as ComponentType } from 'svelte';
 	import { exerciseRegistry, EXERCISE_SLUG_TO_TEST_TYPE } from '$lib/exercises';
 
 	const { data } = $props();
 	const slug = $derived(data.slug);
 	const exercise = $derived(exerciseRegistry[slug]);
-	let Component: typeof SvelteComponent | null = $state(null);
+	let Component: ComponentType | null = $state(null);
 
 	let isGameEnd = $state(false);
-	let childComponent: InstanceType<typeof SvelteComponent> | null = $state(null);
 
 	// GTO session integration: read gtoSessionId from URL params
 	const gtoSessionId = $derived(page.url.searchParams.get('gtoSessionId') ?? undefined);
@@ -94,7 +93,6 @@
 {#if Component}
 	<main class="main flex flex-col items-center justify-evenly">
 		<Component
-			bind:this={childComponent}
 			gameEnd={onGameEnd}
 			sendResults={exercise?.result || gtoSessionId ? onSendResults : undefined}
 			{data}
