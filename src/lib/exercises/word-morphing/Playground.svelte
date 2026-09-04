@@ -60,7 +60,7 @@
 		sendResults
 	}: {
 		gameEnd: () => void;
-		sendResults: (results) => void;
+		sendResults: (results: WordMorphingSummaryRow[]) => void;
 	} = $props();
 
 	let selectedTimeOption: TimeOption = $state(timeOptions[0]);

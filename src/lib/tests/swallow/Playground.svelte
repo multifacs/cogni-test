@@ -15,7 +15,7 @@
 	});
 	let lives = $state(3);
 	let timeLeft = $state(60);
-	let timer: ReturnType<typeof setInterval> | null = null;
+	let timer: ReturnType<typeof setInterval> | undefined;
 
 	let isGameOver = $derived(lives <= 0);
 
