@@ -67,7 +67,10 @@ export const POST: RequestHandler = async ({ request, params, cookies }) => {
 			await markParticipantTestsCompleted(params.id, userId);
 			return json({ success: true });
 		} catch (e) {
-			return json({ error: e.message }, { status: 400 });
+			return json(
+				{ error: e instanceof Error ? e.message : 'Unknown error' },
+				{ status: 400 }
+			);
 		}
 	}
 

@@ -1,4 +1,6 @@
+import type { TestType } from '$lib/tests/types';
 import type { SkillMetric } from '$lib/types';
+import type { ExerciseType } from './types';
 
 export type ExerciseData = {
 	name: string;
@@ -186,7 +188,7 @@ export const exerciseRegistry: Record<string, ExerciseData & ExerciseLoader> = O
 );
 
 /** Map exercise URL slug to the testType stored in the DB session table. */
-export const EXERCISE_SLUG_TO_TEST_TYPE: Record<string, string> = {
+export const EXERCISE_SLUG_TO_TEST_TYPE: Record<string, ExerciseType | TestType> = {
 	attention: 'attention',
 	campimetry: 'campimetry',
 	emoji: 'emoji',

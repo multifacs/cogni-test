@@ -2,6 +2,7 @@ import type { SkillMetric } from '$lib/types';
 import { tests } from '$lib/tests';
 import { exercises, EXERCISE_SLUG_TO_TEST_TYPE } from '$lib/exercises';
 import { getResults } from '$lib/server/db/controllers/result';
+import type { TestType } from '$lib/tests/types';
 
 type AttemptLike = {
 	isCorrect?: boolean;
@@ -75,7 +76,7 @@ export async function getMetricScores(userId: string): Promise<MetricScores> {
 	const testPromises = tests
 		.filter((test) => test.admin_metrics?.length)
 		.map(async (test) => {
-			const sessions = await getResults(test.name, userId);
+			const sessions = await getResults(test.name as TestType, userId);
 			for (const session of sessions) {
 				const score = computeSessionScore(test.name, session.attempts);
 				for (const metric of test.admin_metrics!) {

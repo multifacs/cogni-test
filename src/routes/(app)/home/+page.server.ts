@@ -40,10 +40,12 @@ export const load: PageServerLoad = async ({ cookies }) => {
 
 	// Fetch features used for age prediction
 	const features = await getFeaturesFromDB(userId);
-
-	// Run the ML model only if features exist
 	if (features) {
-		predictedAge = await runAgeModel(features);
+		// отсекаем метрики без данных — модель ждёт только числа
+		const cleanFeatures = Object.fromEntries(
+			Object.entries(features).filter(([, v]) => v !== null)
+		) as Record<string, number>;
+		predictedAge = await runAgeModel(cleanFeatures);
 	}
 
 	return {

@@ -27,7 +27,13 @@ export const load: PageServerLoad = async ({ cookies }) => {
 	if (!userId) return { exercises };
 
 	const features = await getFeaturesFromDB(userId);
-	if (features) predictedAge = await runAgeModel(features);
+	if (features) {
+		// отсекаем метрики без данных — модель ждёт только числа
+		const cleanFeatures = Object.fromEntries(
+			Object.entries(features).filter(([, v]) => v !== null)
+		) as Record<string, number>;
+		predictedAge = await runAgeModel(cleanFeatures);
+	}
 
 	const rawCounts = await getTestSessionCounts(userId);
 	for (const ex of exercises) {

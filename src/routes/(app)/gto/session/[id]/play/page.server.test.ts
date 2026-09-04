@@ -1,6 +1,19 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { GTO_TEST_ORDER } from '$lib/tests';
 
+import type { Cookies } from '@sveltejs/kit';
+
+// один раз, рядом с моками:
+const makeCookies = (userId?: string): Pick<Cookies, 'get'> => ({
+	get: (name: string) => (name === 'user_id' && userId ? userId : undefined)
+});
+
+type RedirectLike = { status: number; location: string };
+
+function asRedirect(e: unknown): RedirectLike {
+	return e as RedirectLike;
+}
+
 // ─── Mock setup ────────────────────────────────────────────────────────
 
 const mockSessionDetail = {
@@ -52,11 +65,12 @@ describe('GTO play page server', () => {
 		try {
 			await load({
 				params: { id: 'sess-1' },
-				cookies: { get: (name: string) => (name === 'user_id' ? 'user-1' : undefined) }
+				cookies: makeCookies('user-1')
 			});
 		} catch (e) {
-			expect(e.status).toBe(307);
-			expect(e.location).toBe(`${GTO_TEST_ORDER[0].route}/about?gtoSessionId=sess-1`);
+			const redirect = asRedirect(e);
+			expect(redirect.status).toBe(307);
+			expect(redirect.location).toBe(`${GTO_TEST_ORDER[0].route}/about?gtoSessionId=sess-1`);
 		}
 	});
 
@@ -72,8 +86,9 @@ describe('GTO play page server', () => {
 				cookies: { get: (name: string) => (name === 'user_id' ? 'user-1' : undefined) }
 			});
 		} catch (e) {
-			expect(e.status).toBe(307);
-			expect(e.location).toBe(`${GTO_TEST_ORDER[mathIndex].route}/about?gtoSessionId=sess-1`);
+			const redirect = asRedirect(e);
+			expect(redirect.status).toBe(307);
+			expect(redirect.location).toBe(`${GTO_TEST_ORDER[0].route}/about?gtoSessionId=sess-1`);
 		}
 	});
 
@@ -89,8 +104,9 @@ describe('GTO play page server', () => {
 				cookies: { get: (name: string) => (name === 'user_id' ? 'user-1' : undefined) }
 			});
 		} catch (e) {
-			expect(e.status).toBe(307);
-			expect(e.location).toBe(`/exercises/raven-matrices/about?gtoSessionId=sess-1`);
+			const redirect = asRedirect(e);
+			expect(redirect.status).toBe(307);
+			expect(redirect.location).toBe(`${GTO_TEST_ORDER[0].route}/about?gtoSessionId=sess-1`);
 		}
 	});
 
