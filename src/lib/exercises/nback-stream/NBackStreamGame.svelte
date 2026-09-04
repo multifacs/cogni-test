@@ -27,7 +27,7 @@
 	let startAt = 0;
 	let stimShownAt = 0;
 	let remainSec = $state(60);
-	let tickTimer = null;
+	let tickTimer: ReturnType<typeof setInterval> | undefined;
 
 	function pickTargetForFigures(): TargetFeature {
 		return Math.random() < 0.5 ? 'shape' : 'color';

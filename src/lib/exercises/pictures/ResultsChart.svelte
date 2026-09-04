@@ -71,8 +71,10 @@
 			},
 			options: {
 				onHover(event, chartElements) {
-					const target = event.native ? event.native.target : event.chart.canvas;
-					target.style.cursor = chartElements.length ? 'pointer' : 'default';
+					const target = event.native?.target as HTMLElement | null;
+					if (target) {
+						target.style.cursor = chartElements.length ? 'pointer' : 'default';
+					}
 				},
 				responsive: true,
 				plugins: {
