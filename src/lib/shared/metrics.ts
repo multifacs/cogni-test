@@ -9,6 +9,15 @@ type AttemptLike = {
 	guessed?: boolean;
 	stage?: number;
 	efficiency?: number;
+	time?: number; // читает getFeaturesFromDB (munsterberg/stroop/swallow)
+	background?: string; // читает getFeaturesFromDB (swallow)
+};
+
+export type SessionResult = {
+	sessionId: string;
+	createdAt: string;
+	attempts: AttemptLike[];
+	meta?: unknown;
 };
 
 export function computeSessionScore(sessionType: string, attempts: AttemptLike[]): number {

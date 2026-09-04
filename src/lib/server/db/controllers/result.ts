@@ -29,6 +29,7 @@ import type {
 } from '$lib/exercises/types';
 import short from 'short-uuid';
 import { eq, asc, type AnyColumn, type SQL } from 'drizzle-orm';
+import type { SessionResult } from '$lib/shared/metrics';
 
 export type AnySessionType = TestType | ExerciseType;
 type AnyMetaResult = TestMetaResult | ExerciseMetaResult;
@@ -136,7 +137,10 @@ export async function postResult(
 	return sessionId;
 }
 
-export async function getResults(sessionType: AnySessionType, userId: string): Promise<any[]> {
+export async function getResults(
+	sessionType: AnySessionType,
+	userId: string
+): Promise<SessionResult[]> {
 	const sessions = await db.query.session.findMany({
 		where: (fields, { eq, and }) =>
 			and(eq(fields.testType, sessionType), eq(fields.userId, userId)),
@@ -172,7 +176,7 @@ export async function getResults(sessionType: AnySessionType, userId: string): P
 export async function getLastResult(
 	sessionType: AnySessionType,
 	userId: string
-): Promise<any | null> {
+): Promise<SessionResult | null> {
 	const all = await getResults(sessionType, userId);
 	return all[0] ?? null;
 }
