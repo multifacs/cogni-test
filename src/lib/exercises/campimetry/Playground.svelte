@@ -155,7 +155,7 @@
 			{#each silhouettes as s (s)}
 				<button
 					aria-label={`${s} button`}
-					class="max-xs:w-16 max-xs:h-16 h-[100px] w-[100px] cursor-pointer touch-none bg-white mask-contain select-none"
+					class="max-xs:w-16 max-xs:h-16 h-25 w-25 cursor-pointer touch-none bg-white mask-contain select-none"
 					disabled={!delta}
 					style={`
 						background-color: #9ca3af;
