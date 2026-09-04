@@ -26,7 +26,7 @@
 	let innerHeight = $state(0);
 	let isGameRunning = $state(false);
 	let timer = $state(60);
-	let timerInterval = $state(null);
+	let timerInterval = $state<ReturnType<typeof setInterval> | null>(null);
 
 	let grid: Cell[][] = $state([]);
 	let words: string[] = $state([]);
