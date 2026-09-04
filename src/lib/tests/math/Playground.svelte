@@ -67,13 +67,11 @@
 <div class="grid grid-cols-2 gap-2.5">
 	<Button
 		disabled={!gameState.getState().isGameRunning}
-		kind="big"
 		color="green"
 		onclick={() => handleAnswer(true)}>ДА</Button
 	>
 	<Button
 		disabled={!gameState.getState().isGameRunning}
-		kind="big"
 		color="red"
 		onclick={() => handleAnswer(false)}>НЕТ</Button
 	>
