@@ -5,15 +5,16 @@
 	import { error } from '@sveltejs/kit';
 	import { shuffle } from '$lib/utils';
 	import Button from '$lib/components/ui/Button.svelte';
+	import type { CampimetryResult } from './types';
 
 	let {
 		data,
 		gameEnd,
 		sendResults
 	}: {
-		data;
+		data: { silhouettes: Record<string, string> };
 		gameEnd: () => void;
-		sendResults: (results) => void;
+		sendResults: (results: CampimetryResult[]) => void;
 	} = $props();
 
 	let isGameRunning = $state(true);
