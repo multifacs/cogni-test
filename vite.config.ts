@@ -5,7 +5,7 @@ import { playwright } from '@vitest/browser-playwright';
 import adapter from '@sveltejs/adapter-node';
 import { sveltekit } from '@sveltejs/kit/vite';
 import mkcert from 'vite-plugin-mkcert';
-import { inlineOnnxPlugin } from './src/lib/server/age/inlineOnnxPlugin';
+import { inlineOnnxPlugin } from './src/lib/server/age/inlineOnnxPlugin.ts';
 
 // Docs: src\lib\server\age\docs\onnxPlugin.md
 // Plugin source: src\lib\server\age\inlineOnnxPlugin.ts

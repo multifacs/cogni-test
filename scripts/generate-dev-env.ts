@@ -42,6 +42,7 @@ const env = [
 	`DATABASE_URL=${DATABASE_URL}`,
 	`MODE=${MODE}`,
 	`ADMIN_PASSWORD=${ADMIN_PASSWORD}`,
+	'ORIGIN=https://localhost:5173/',
 	''
 ].join('\n');
 
