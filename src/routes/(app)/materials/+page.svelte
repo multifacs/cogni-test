@@ -1,7 +1,7 @@
 <script lang="ts">
 	import RecommendationCard from '$lib/components/ui/RecommendationCard.svelte';
 	import { getContext, onMount } from 'svelte';
-	export let data;
+	let { data } = $props();
 
 	const headerContext = getContext<{ value: string }>('headerText');
 

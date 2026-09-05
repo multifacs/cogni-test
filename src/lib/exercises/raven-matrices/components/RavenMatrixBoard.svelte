@@ -2,7 +2,7 @@
 	import type { GeneratedRavenTask } from '../types';
 	import RavenCell from './RavenCell.svelte';
 
-	export let task: GeneratedRavenTask;
+	let { task }: { task: GeneratedRavenTask } = $props();
 </script>
 
 <div class="board-frame" aria-label="Матрица задания">

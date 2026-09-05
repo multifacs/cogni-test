@@ -1,13 +1,15 @@
 <script lang="ts">
-	export let perStage: {
+	type PerStage = {
 		stage: number;
 		durationMs: number;
 		cardsCount: number;
 		flipsCount: number;
 		mistakes: number;
-	}[] = [];
+	};
 
-	$: rows = perStage
+	let { perStage }: { perStage: PerStage[] } = $props();
+
+	const rows = $derived(perStage
 		.slice()
 		.sort((a, b) => a.stage - b.stage)
 		.map((s) => ({
@@ -16,14 +18,14 @@
 			efficiency: +(s.flipsCount / s.cardsCount).toFixed(2),
 			flips: s.flipsCount,
 			mistakes: s.mistakes
-		}));
+		})));
 
-	$: totalTimeSec = +rows.reduce((acc, r) => acc + r.durationSec, 0).toFixed(2);
-	$: totalFlips = rows.reduce((a, r) => a + r.flips, 0);
-	$: totalMistakes = rows.reduce((a, r) => a + r.mistakes, 0);
-	$: meanEff = rows.length
+	const totalTimeSec = $derived(+rows.reduce((acc, r) => acc + r.durationSec, 0).toFixed(2));
+	const totalFlips = $derived(rows.reduce((a, r) => a + r.flips, 0));
+	const totalMistakes = $derived(rows.reduce((a, r) => a + r.mistakes, 0));
+	const meanEff = $derived(rows.length
 		? +(rows.reduce((a, r) => a + r.efficiency, 0) / rows.length).toFixed(2)
-		: 0;
+		: 0);
 
 	// увеличил viewBox и PAD_TOP
 	const VBX = 100,
@@ -35,7 +37,7 @@
 	const plotW = VBX - PAD_LEFT - PAD_RIGHT;
 	const plotH = VBY - PAD_TOP - PAD_BOTTOM;
 
-	$: maxEff = rows.length ? Math.max(...rows.map((r) => r.efficiency)) : 1;
+	const maxEff = $derived(rows.length ? Math.max(...rows.map((r) => r.efficiency)) : 1);
 
 	function xPos(i: number) {
 		return PAD_LEFT + ((i + 0.5) / rows.length) * plotW;

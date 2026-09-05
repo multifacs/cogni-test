@@ -1,9 +1,15 @@
 <script lang="ts">
-	export let className = '';
+	import type { Snippet } from "svelte";
+
+	let { children, className }: { children: Snippet; className: string } = $props();
 </script>
 
 <div class="card {className}">
-	<slot />
+	{#if children}
+		{@render children()}
+	{:else}
+		<p>No children present</p>
+	{/if}
 </div>
 
 <style>
