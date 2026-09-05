@@ -24,8 +24,7 @@ vite.config.ts.timestamp-*
 # Playwright
 test-results
 # SQLite
+drizzle
 *.db
 *.db-wal
 *.db-shm
-
-drizzle
