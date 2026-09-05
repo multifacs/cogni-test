@@ -111,20 +111,36 @@
 		delta += increment;
 		if (currentChannel == 'a')
 			for (let i = 0; i < increment; i++) {
-				currentOp == '+' ? currentSilhouetteColor.incA() : currentSilhouetteColor.decA();
+				if (currentOp == '+') {
+					currentSilhouetteColor.incA();
+				} else {
+					currentSilhouetteColor.decA();
+				}
 			}
 		if (currentChannel == 'b')
 			for (let i = 0; i < increment; i++) {
-				currentOp == '+' ? currentSilhouetteColor.incB() : currentSilhouetteColor.decB();
+				if (currentOp == '+') {
+					currentSilhouetteColor.incB();
+				} else {
+					currentSilhouetteColor.decB();
+				}
 			}
 	}
 
 	function changeColor() {
 		if (delta > 0) {
 			if (currentChannel == 'a')
-				currentOp == '+' ? currentSilhouetteColor.incA() : currentSilhouetteColor.decA();
+				if (currentOp == '+') {
+					currentSilhouetteColor.incA();
+				} else {
+					currentSilhouetteColor.decA();
+				}
 			if (currentChannel == 'b')
-				currentOp == '+' ? currentSilhouetteColor.incB() : currentSilhouetteColor.decB();
+				if (currentOp == '+') {
+					currentSilhouetteColor.incB();
+				} else {
+					currentSilhouetteColor.decB();
+				}
 		}
 		if (currentStage == 1) delta++;
 		if (currentStage == 2) delta--;
