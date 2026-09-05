@@ -1,11 +1,28 @@
-import { describe, it, expect } from 'vitest';
-import { drizzle } from 'drizzle-orm/libsql';
-import { createClient } from '@libsql/client';
+import { describe, it, expect, vi } from 'vitest';
 import { eq } from 'drizzle-orm';
-import * as schema from './schema';
 import { user } from './schema';
-import { postResult } from './controllers/result';
 import { sql } from 'drizzle-orm';
+
+vi.mock('$lib/server/db', async () => {
+	const { drizzle } = await import('drizzle-orm/libsql');
+	const { createClient } = await import('@libsql/client');
+	const { migrate } = await import('drizzle-orm/libsql/migrator');
+	const schema = await import('./schema');
+	const { fileURLToPath } = await import('node:url');
+	const { dirname, join } = await import('node:path');
+
+	const client = createClient({ url: ':memory:' });
+	const db = drizzle(client, { schema });
+	const __dirname = dirname(fileURLToPath(import.meta.url));
+	const migrationsFolder = join(__dirname, '../../../../drizzle');
+	await migrate(db, { migrationsFolder });
+
+	return { db };
+});
+
+import { postResult } from './controllers/result';
+import { db } from '$lib/server/db';
+
 import type { StroopResult, Color } from '$lib/tests/stroop/types';
 import type { MathResult, Sign } from '$lib/tests/math/types';
 import type { MemoryResult } from '$lib/tests/memory/types';
@@ -136,17 +153,14 @@ function genMunsterberg(n: number): { results: MunsterbergResult[]; words: strin
 	return { results, words: chosen };
 }
 
-function getDb() {
-	const url = process.env.DATABASE_URL;
-	if (!url) return null;
-	const client = createClient({ url });
-	return drizzle(client, { schema });
-}
-
-describe.skipIf(!process.env.DATABASE_URL)('seed results', () => {
+describe('seed results', () => {
 	it('populates last-active user with random test results', async () => {
-		const db = getDb();
-		if (!db) throw new Error('Test database not initialized (DATABASE_URL missing?)');
+		await db.insert(user).values({
+			firstname: 'Te',
+			lastname: 'St',
+			birthday: new Date(),
+			sex: 'male'
+		});
 
 		const [lastUser] = await db
 			.select()

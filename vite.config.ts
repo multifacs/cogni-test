@@ -20,6 +20,7 @@ export default defineConfig({
 		drop: process.env.MODE == 'PROD' ? ['console', 'debugger'] : []
 	},
 	ssr: {
+		noExternal: true,
 		external: ['@libsql/client', '@libsql/core', '@libsql/hrana-client', 'onnxruntime-node']
 	},
 	plugins: [

@@ -27,7 +27,6 @@
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
-		"@libsql/client": "^0.17.3",
 		"@playwright/test": "^1.60.0",
 		"@sveltejs/adapter-node": "^5.5.4",
 		"@sveltejs/kit": "^2.63.0",
@@ -35,7 +34,8 @@
 		"@tailwindcss/forms": "^0.5.11",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.3.0",
-		"@types/node": "^24.13.3",
+		"@types/node": "^26.4.1",
+		"@types/web-push": "^3.6.4",
 		"@vitest/browser-playwright": "^4.1.8",
 		"auth": "^1.6.23",
 		"better-auth": "^1.6.23",
@@ -59,22 +59,22 @@
 		"vite": "^8.0.16",
 		"vite-plugin-mkcert": "^2.1.0",
 		"vitest": "^4.1.8",
-		"vitest-browser-svelte": "^2.1.1"
-	},
-	"dependencies": {
-		"@fontsource/comic-neue": "^5.3.0",
-		"@fontsource/fira-code": "^5.3.0",
-		"@fontsource/roboto": "^5.3.0",
-		"@types/web-push": "^3.6.4",
-		"chart.js": "^4.5.1",
-		"chartjs-plugin-annotation": "^3.1.0",
-		"dotenv": "^17.4.2",
-		"localforage": "^1.10.0",
-		"onnxruntime-node": "^1.29.0",
+		"vitest-browser-svelte": "^2.1.1",
 		"short-uuid": "^6.0.3",
 		"uuid": "^14.0.2",
 		"web-push": "^3.6.7",
-		"xlsx": "^0.18.5"
+		"xlsx": "^0.18.5",
+		"@fontsource/comic-neue": "^5.3.0",
+		"@fontsource/fira-code": "^5.3.0",
+		"@fontsource/roboto": "^5.3.0",
+		"chart.js": "^4.5.1",
+		"chartjs-plugin-annotation": "^3.1.0",
+		"dotenv": "^17.4.2",
+		"localforage": "^1.10.0"
+	},
+	"dependencies": {
+		"onnxruntime-node": "^1.29.0",
+		"@libsql/client": "^0.18.0"
 	},
 	"allowScripts": {
 		"esbuild@0.18.20": true,

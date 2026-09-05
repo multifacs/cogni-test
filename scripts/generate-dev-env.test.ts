@@ -45,7 +45,8 @@ describe('generate-dev-env CLI', () => {
 		expect(lines[3]).toBe('DATABASE_URL=file:./sqlite.db');
 		expect(lines[4]).toBe('MODE=DEV');
 		expect(lines[5]).toMatch(/^ADMIN_PASSWORD=/);
-		expect(lines[6]).toBe(''); // trailing newline => exactly 10 lines of content
+		expect(lines[6]).toBe('ORIGIN=https://localhost:5173/');
+		expect(lines[7]).toBe(''); // trailing newline => exactly 10 lines of content
 
 		// Verify it ends with newline
 		expect(content.endsWith('\n')).toBe(true);
