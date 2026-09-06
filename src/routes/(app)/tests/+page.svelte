@@ -61,30 +61,28 @@
 		<Spinner></Spinner>
 	{:else}
 		<div class="glass-scene">
-			<div class="glass-bg" aria-hidden="true">
+			<!-- <div class="glass-bg" aria-hidden="true">
 				<div class="glass-blob glass-blob--top"></div>
 				<div class="glass-blob glass-blob--bottom"></div>
-			</div>
+			</div> -->
 
-			<div class="tests-content">
-				{#if Object.keys(testSessionCounts).length < data.tests.length}
-					<div class="glass-card flex w-full flex-col gap-2 rounded-3xl p-4 text-center shadow">
-						<p class="mt-2 text-xl font-semibold">У вас есть непройденные тесты</p>
-						<p class="mt-1 text-sm opacity-80">Запустить потоковое прохождение?</p>
-						<Button color="red" onclick={runAll}>Начать</Button>
-					</div>
-				{/if}
-				<div class="content flex flex-col items-center justify-center gap-8 pt-[2%] pb-[4%]">
-					<h2 class="text-center cta-headline">
-						Регулярные тренировки помогают поддерживать когнитивные навыки
-					</h2>
-					<Button color="green">Запуск потокового прохождения</Button>
+			{#if Object.keys(testSessionCounts).length < data.tests.length}
+				<div class="glass-card flex w-full flex-col gap-2 rounded-3xl p-4 text-center shadow">
+					<p class="mt-2 text-xl font-semibold">У вас есть непройденные тесты</p>
+					<p class="mt-1 text-sm opacity-80">Запустить потоковое прохождение?</p>
+					<Button color="red" onclick={runAll}>Начать</Button>
 				</div>
-				<div class="cards flex flex-wrap justify-center gap-5 p-2">
-					{#each data.tests as { name, title, path, img } (title)}
-						<ExerciseCard {name} {title} {path} {img} {testSessionCounts} />
-					{/each}
-				</div>
+			{/if}
+			<div class="content flex flex-col items-center justify-center gap-8 pt-[2%] pb-[4%]">
+				<h2 class="text-center cta-headline">
+					Регулярные тренировки помогают поддерживать когнитивные навыки
+				</h2>
+				<Button color="green">Запуск потокового прохождения</Button>
+			</div>
+			<div class="cards flex flex-wrap justify-center gap-5 p-2">
+				{#each data.tests as { name, title, path, img } (title)}
+					<ExerciseCard {name} {title} {path} {img} {testSessionCounts} />
+				{/each}
 			</div>
 		</div>
 	{/if}

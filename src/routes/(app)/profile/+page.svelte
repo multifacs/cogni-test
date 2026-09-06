@@ -89,10 +89,10 @@
 	{:then u}
 		{#if u && u.id}
 			<div class="glass-scene">
-				<div class="glass-bg" aria-hidden="true">
+				<!-- <div class="glass-bg" aria-hidden="true">
 					<div class="glass-blob glass-blob--top"></div>
 					<div class="glass-blob glass-blob--bottom"></div>
-				</div>
+				</div> -->
 
 				<div class="profile-content">
 					<!-- Identity -->

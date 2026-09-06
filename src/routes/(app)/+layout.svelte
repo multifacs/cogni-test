@@ -146,7 +146,8 @@
 			overflow-x: hidden;
 			overflow-y: auto;
 			min-width: 0;
-			color: var(--main-text-color);
+			/*color: var(--main-text-color);*/
+			background: var(--login-bg);
 		}
 
 		.banner {

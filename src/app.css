@@ -105,7 +105,7 @@ select {
 	position: relative;
 	min-height: 100%;
 	overflow: hidden;
-	background: var(--login-bg);
+	/*background: var(--login-bg);*/
 }
 
 .glass-bg {
