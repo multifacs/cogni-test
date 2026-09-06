@@ -5,7 +5,6 @@
 import { describe, it, expect } from 'vitest';
 import { sql } from 'drizzle-orm';
 import { user } from './schema';
-import { db } from '$lib/server/db';
 
 const FIRST_NAMES = [
 	'АЛЕКСАНДР',
@@ -77,6 +76,7 @@ function generateRandomUser() {
 
 describe.skipIf(!process.env.SEED_DB)('seed users', () => {
 	it('inserts N random users and count increases by N', async () => {
+		const { db } = await import('$lib/server/db');
 		const count = 10;
 
 		const before = await db.select({ count: sql<number>`count(*)` }).from(user);

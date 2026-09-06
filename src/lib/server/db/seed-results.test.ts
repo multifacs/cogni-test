@@ -5,8 +5,6 @@
 import { describe, it, expect } from 'vitest';
 import { eq, sql } from 'drizzle-orm';
 import { user } from './schema';
-import { db } from '$lib/server/db';
-import { postResult } from './controllers/result';
 import {
 	campimetryAttempt,
 	mathAttempt,
@@ -140,6 +138,8 @@ function genMunsterberg(n: number): { results: MunsterbergResult[]; words: strin
 
 describe.skipIf(!process.env.SEED_DB)('seed results', () => {
 	it('populates last active user with random results for all 6 test types', async () => {
+		const { db } = await import('$lib/server/db');
+		const { postResult } = await import('./controllers/result');
 		let [targetUser] = await db
 			.select()
 			.from(user)
