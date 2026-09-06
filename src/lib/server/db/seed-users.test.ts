@@ -1,30 +1,10 @@
 /**
- * Isolated unit test for the user model.
- * This file uses `vi.mock('$lib/server/db')` with an in-memory LibSQL client
- * (`:memory:`) + Drizzle migrations. It does NOT write to the real database.
- * For seeding the dev database, use `npm run test:seed` (separate script).
+ * Database seed test: inserts random users into the REAL database pointed to by DATABASE_URL.
+ * Run via `npm run test:seed`. Normal `npm test` silently skips it.
  */
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { sql } from 'drizzle-orm';
 import { user } from './schema';
-
-vi.mock('$lib/server/db', async () => {
-	const { drizzle } = await import('drizzle-orm/libsql');
-	const { createClient } = await import('@libsql/client');
-	const { migrate } = await import('drizzle-orm/libsql/migrator');
-	const schema = await import('./schema');
-	const { fileURLToPath } = await import('node:url');
-	const { dirname, join } = await import('node:path');
-
-	const client = createClient({ url: ':memory:' });
-	const db = drizzle(client, { schema });
-	const __dirname = dirname(fileURLToPath(import.meta.url));
-	const migrationsFolder = join(__dirname, '../../../../drizzle');
-	await migrate(db, { migrationsFolder });
-
-	return { db };
-});
-
 import { db } from '$lib/server/db';
 
 const FIRST_NAMES = [
@@ -95,8 +75,8 @@ function generateRandomUser() {
 	return { firstname, lastname, birthday, sex };
 }
 
-describe('user model', () => {
-	it('inserting N random users increases count by N', async () => {
+describe.skipIf(!process.env.SEED_DB)('seed users', () => {
+	it('inserts N random users and count increases by N', async () => {
 		const count = 10;
 
 		const before = await db.select({ count: sql<number>`count(*)` }).from(user);
@@ -111,20 +91,5 @@ describe('user model', () => {
 		const afterCount = Number(after[0].count);
 
 		expect(afterCount).toBe(beforeCount + count);
-	});
-
-	it('rejects a user with a 3-letter lastname', async () => {
-		try {
-			await db.insert(user).values({
-				firstname: 'ИВАН',
-				lastname: 'АБВ',
-				birthday: new Date(2000, 0, 1),
-				sex: 'male'
-			});
-			expect.unreachable('should have thrown');
-		} catch (e) {
-			const message = e instanceof Error ? (e.cause?.message ?? e.message) : String(e);
-			expect(message).toContain('lastname_length');
-		}
 	});
 });

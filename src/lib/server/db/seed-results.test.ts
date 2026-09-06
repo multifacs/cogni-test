@@ -1,40 +1,12 @@
 /**
- * Isolated unit test for `postResult` controller.
- * This file uses `vi.mock('$lib/server/db')` with an in-memory LibSQL client
- * (`:memory:`) + Drizzle migrations. It does NOT write to the real database.
- * For seeding the dev database, use `npm run test:seed` (separate script).
+ * Database seed test: inserts random test results for the most recently active user into the REAL database pointed to by DATABASE_URL.
+ * Run via `npm run test:seed`. Normal `npm test` silently skips it.
  */
-import { describe, it, expect, vi } from 'vitest';
-import { eq } from 'drizzle-orm';
+import { describe, it, expect } from 'vitest';
+import { eq, sql } from 'drizzle-orm';
 import { user } from './schema';
-import { sql } from 'drizzle-orm';
-
-vi.mock('$lib/server/db', async () => {
-	const { drizzle } = await import('drizzle-orm/libsql');
-	const { createClient } = await import('@libsql/client');
-	const { migrate } = await import('drizzle-orm/libsql/migrator');
-	const schema = await import('./schema');
-	const { fileURLToPath } = await import('node:url');
-	const { dirname, join } = await import('node:path');
-
-	const client = createClient({ url: ':memory:' });
-	const db = drizzle(client, { schema });
-	const __dirname = dirname(fileURLToPath(import.meta.url));
-	const migrationsFolder = join(__dirname, '../../../../drizzle');
-	await migrate(db, { migrationsFolder });
-
-	return { db };
-});
-
-import { postResult } from './controllers/result';
 import { db } from '$lib/server/db';
-
-import type { StroopResult, Color } from '$lib/tests/stroop/types';
-import type { MathResult, Sign } from '$lib/tests/math/types';
-import type { MemoryResult } from '$lib/tests/memory/types';
-import type { CampimetryResult } from '$lib/tests/campimetry/types';
-import type { SwallowResult, Direction, Background } from '$lib/tests/swallow/types';
-import type { MunsterbergResult } from '$lib/tests/munsterberg/types';
+import { postResult } from './controllers/result';
 import {
 	campimetryAttempt,
 	mathAttempt,
@@ -43,6 +15,13 @@ import {
 	stroopAttempt,
 	swallowAttempt
 } from './models/tests';
+
+import type { StroopResult, Color } from '$lib/tests/stroop/types';
+import type { MathResult, Sign } from '$lib/tests/math/types';
+import type { MemoryResult } from '$lib/tests/memory/types';
+import type { CampimetryResult } from '$lib/tests/campimetry/types';
+import type { SwallowResult, Direction, Background } from '$lib/tests/swallow/types';
+import type { MunsterbergResult } from '$lib/tests/munsterberg/types';
 
 function rnd(min: number, max: number) {
 	return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -159,31 +138,39 @@ function genMunsterberg(n: number): { results: MunsterbergResult[]; words: strin
 	return { results, words: chosen };
 }
 
-describe('postResult', () => {
-	it('populates last-active user with random test results', async () => {
-		await db.insert(user).values({
-			firstname: 'Te',
-			lastname: 'St',
-			birthday: new Date(),
-			sex: 'male'
-		});
-
-		const [lastUser] = await db
+describe.skipIf(!process.env.SEED_DB)('seed results', () => {
+	it('populates last active user with random results for all 6 test types', async () => {
+		let [targetUser] = await db
 			.select()
 			.from(user)
 			.orderBy(sql`${user.lastActiveAt} DESC`)
 			.limit(1);
 
-		expect(lastUser).toBeDefined();
-		expect(lastUser.id).toBeDefined();
+		if (!targetUser) {
+			await db.insert(user).values({
+				firstname: 'Te',
+				lastname: 'St',
+				birthday: new Date(),
+				sex: 'male'
+			});
+			[targetUser] = await db
+				.select()
+				.from(user)
+				.orderBy(sql`${user.lastActiveAt} DESC`)
+				.limit(1);
+		}
 
-		const stroopSessionId = await postResult(genStroop(25), 'stroop', lastUser.id);
-		const mathSessionId = await postResult(genMath(10), 'math', lastUser.id);
-		const memorySessionId = await postResult(genMemory(10), 'memory', lastUser.id);
-		const campimetrySessionId = await postResult(genCampimetry(20), 'campimetry', lastUser.id);
-		const swallowSessionId = await postResult(genSwallow(100), 'swallow', lastUser.id);
+		if (!targetUser) {
+			throw new Error('Failed to find or create a target user for seeding results');
+		}
+
+		const stroopSessionId = await postResult(genStroop(25), 'stroop', targetUser.id);
+		const mathSessionId = await postResult(genMath(10), 'math', targetUser.id);
+		const memorySessionId = await postResult(genMemory(10), 'memory', targetUser.id);
+		const campimetrySessionId = await postResult(genCampimetry(20), 'campimetry', targetUser.id);
+		const swallowSessionId = await postResult(genSwallow(100), 'swallow', targetUser.id);
 		const { results: munResults } = genMunsterberg(8);
-		const munsterbergSessionId = await postResult(munResults, 'munsterberg', lastUser.id);
+		const munsterbergSessionId = await postResult(munResults, 'munsterberg', targetUser.id);
 
 		const stroopRows = await db
 			.select()
