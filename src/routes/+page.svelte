@@ -138,11 +138,7 @@
 		align-items: center;
 		justify-content: center;
 		padding: 1rem;
-		/* subtle mesh of cool gradients */
-		background:
-			radial-gradient(ellipse 120% 80% at 20% 10%, rgba(100, 149, 237, 0.25), transparent 60%),
-			radial-gradient(ellipse 100% 100% at 80% 90%, rgba(212, 140, 122, 0.2), transparent 55%),
-			linear-gradient(180deg, #e8f0fe 0%, #dce8fb 100%);
+		background: var(--login-bg);
 	}
 
 	.login-bg {
@@ -284,6 +280,7 @@
 			padding: 1.25rem;
 			border-radius: 1.25rem;
 			gap: 1.25rem;
+			justify-content: center;
 		}
 
 		.login-logo {
