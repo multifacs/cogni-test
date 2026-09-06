@@ -27,7 +27,9 @@ import type {
 	ExerciseType,
 	MetaResult as ExerciseMetaResult
 } from '$lib/exercises/types';
-import short from 'short-uuid';
+
+import { generate } from 'short-uuid';
+
 import { eq, asc, type AnyColumn, type SQL } from 'drizzle-orm';
 import type { SessionResult } from '$lib/shared/metrics';
 
@@ -111,9 +113,7 @@ export async function postResult(
 	const hasMeta = 'meta' in results;
 	const meta = hasMeta ? JSON.stringify((results as AnyMetaResult).meta) : undefined;
 
-	console.log(short, short.generate);
-
-	const sessionId = short.generate();
+	const sessionId = generate();
 
 	await db.insert(session).values({
 		id: sessionId,

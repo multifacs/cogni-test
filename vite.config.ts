@@ -21,7 +21,7 @@ export default defineConfig({
 	},
 	ssr: {
 		noExternal: true,
-		external: ['@libsql/client', '@libsql/core', '@libsql/hrana-client', 'onnxruntime-node']
+		external: ['@libsql/client', '@libsql/core', '@libsql/hrana-client', 'onnxruntime-node', 'short-uuid', 'web-push']
 	},
 	plugins: [
 		tailwindcss(),
