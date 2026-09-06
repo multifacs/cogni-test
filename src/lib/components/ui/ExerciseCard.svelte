@@ -26,7 +26,9 @@
 <style>
 	.card {
 		overflow: hidden;
-		background-color: #fff;
+		background: rgba(255, 255, 255, 0.72);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
 		border-radius: 1rem;
 		display: flex;
 		flex-direction: column;
@@ -35,6 +37,16 @@
 		height: clamp(5rem, 40.5vw, 15rem);
 		justify-content: space-between;
 		padding-bottom: 2vw;
+		box-shadow:
+			0 1px 2px rgba(0, 0, 0, 0.04),
+			0 8px 24px rgba(0, 0, 0, 0.08),
+			0 24px 64px rgba(30, 60, 114, 0.12);
+	}
+
+	@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+		.card {
+			background: #ffffff;
+		}
 	}
 
 	.img {

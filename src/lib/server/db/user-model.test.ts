@@ -1,9 +1,31 @@
-import { describe, expect, it } from 'vitest';
-import { drizzle } from 'drizzle-orm/libsql';
-import { createClient } from '@libsql/client';
-import * as schema from './schema';
-import { user } from './schema';
+/**
+ * Isolated unit test for the user model.
+ * This file uses `vi.mock('$lib/server/db')` with an in-memory LibSQL client
+ * (`:memory:`) + Drizzle migrations. It does NOT write to the real database.
+ * For seeding the dev database, use `npm run seed:db` (separate script).
+ */
+import { describe, it, expect, vi } from 'vitest';
 import { sql } from 'drizzle-orm';
+import { user } from './schema';
+
+vi.mock('$lib/server/db', async () => {
+	const { drizzle } = await import('drizzle-orm/libsql');
+	const { createClient } = await import('@libsql/client');
+	const { migrate } = await import('drizzle-orm/libsql/migrator');
+	const schema = await import('./schema');
+	const { fileURLToPath } = await import('node:url');
+	const { dirname, join } = await import('node:path');
+
+	const client = createClient({ url: ':memory:' });
+	const db = drizzle(client, { schema });
+	const __dirname = dirname(fileURLToPath(import.meta.url));
+	const migrationsFolder = join(__dirname, '../../../../drizzle');
+	await migrate(db, { migrationsFolder });
+
+	return { db };
+});
+
+import { db } from '$lib/server/db';
 
 const FIRST_NAMES = [
 	'АЛЕКСАНДР',
@@ -64,7 +86,7 @@ function randomDate(minAge: number, maxAge: number): Date {
 	return new Date(year, month, day);
 }
 
-export function generateRandomUser() {
+function generateRandomUser() {
 	const sex = Math.random() < 0.5 ? ('male' as const) : ('female' as const);
 	const firstname = randomFrom(FIRST_NAMES);
 	const lastname = randomFrom(LAST_NAMES);
@@ -73,17 +95,9 @@ export function generateRandomUser() {
 	return { firstname, lastname, birthday, sex };
 }
 
-function getDb() {
-	const url = process.env.DATABASE_URL;
-	if (!url) return null;
-	const client = createClient({ url });
-	return drizzle(client, { schema });
-}
-
-describe.skipIf(!process.env.DATABASE_URL)('seed users', () => {
-	it('populates the database with random users', async () => {
-		const count = parseInt(process.env.SEED_COUNT || '50', 10);
-		const db = getDb()!;
+describe('user model', () => {
+	it('inserting N random users increases count by N', async () => {
+		const count = 10;
 
 		const before = await db.select({ count: sql<number>`count(*)` }).from(user);
 		const beforeCount = Number(before[0].count);
@@ -97,26 +111,19 @@ describe.skipIf(!process.env.DATABASE_URL)('seed users', () => {
 		const afterCount = Number(after[0].count);
 
 		expect(afterCount).toBe(beforeCount + count);
-
-		console.log(`✓ Seeded ${count} users (total: ${afterCount})`);
 	});
 
 	it('rejects a user with a 3-letter lastname', async () => {
-		const db = getDb()!;
-
-		const result = db.insert(user).values({
-			firstname: 'ИВАН',
-			lastname: 'АБВ',
-			birthday: new Date(2000, 0, 1),
-			sex: 'male'
-		});
-
 		try {
-			await result;
+			await db.insert(user).values({
+				firstname: 'ИВАН',
+				lastname: 'АБВ',
+				birthday: new Date(2000, 0, 1),
+				sex: 'male'
+			});
 			expect.unreachable('should have thrown');
 		} catch (e) {
-			const cause = e instanceof Error ? (e.cause as Error | undefined) : undefined;
-			const message = cause?.message ?? (e instanceof Error ? e.message : String(e));
+			const message = e instanceof Error ? (e.cause?.message ?? e.message) : String(e);
 			expect(message).toContain('lastname_length');
 		}
 	});

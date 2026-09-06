@@ -1,3 +1,9 @@
+/**
+ * Isolated unit test for `postResult` controller.
+ * This file uses `vi.mock('$lib/server/db')` with an in-memory LibSQL client
+ * (`:memory:`) + Drizzle migrations. It does NOT write to the real database.
+ * For seeding the dev database, use `npm run seed:db` (separate script).
+ */
 import { describe, it, expect, vi } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { user } from './schema';
@@ -153,7 +159,7 @@ function genMunsterberg(n: number): { results: MunsterbergResult[]; words: strin
 	return { results, words: chosen };
 }
 
-describe('seed results', () => {
+describe('postResult', () => {
 	it('populates last-active user with random test results', async () => {
 		await db.insert(user).values({
 			firstname: 'Te',
