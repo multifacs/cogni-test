@@ -8,6 +8,8 @@
 	import DateInput from '$lib/components/ui/login-form/DateInput.svelte';
 	import TextInput from '$lib/components/ui/login-form/TextInput.svelte';
 
+	let { form } = $props();
+
 	let firstname = $state('');
 	let lastname = $state('');
 	let birthdate = $state('');
@@ -17,7 +19,7 @@
 	let lastnameError = $state('');
 	let dateError = $state('');
 
-	let consentChecked = $state(true);
+	let consentChecked = $state(false);
 
 	onMount(() => {
 		userStore.set(null);
@@ -37,16 +39,14 @@
 </script>
 
 <div class="login-wrapper">
-	<div class="login-bg" aria-hidden="true">
-		<div class="login-blob login-blob--top"></div>
-		<div class="login-blob login-blob--bottom"></div>
-	</div>
-
 	<div class="login-card">
 		<div class="flex items-center gap-4 text-center sm:flex-col">
 			<img src="/logo.svg" class="h-auto w-8 sm:w-14" alt="Cogni-Test logo" />
-			<h1 class="leading-[1.15] text-sm sm:text-2xl font-bold sm:font-extrabold tracking-[-0.01em]">
-				Добро пожаловать в Cogni Test!
+			<h1
+				class="text-sm leading-[1.15] font-bold tracking-[-0.01em] sm:text-2xl sm:font-extrabold"
+			>
+				<span class="whitespace-nowrap">Добро пожаловать</span>
+				<span class="whitespace-nowrap"> в Cogni-Test!</span>
 			</h1>
 		</div>
 
@@ -82,7 +82,7 @@
 			</div>
 
 			<div class="sex-row">
-				<label for="sex">Введите ваш пол</label>
+				<span class="sex-caption">Введите ваш пол</span>
 				<div class="sex-options">
 					<label class="sex-label">
 						<input type="radio" name="sex" bind:group={sex} value="male" />
@@ -109,7 +109,7 @@
 					Согласен(а) на
 					<a
 						href={resolve('/consent')}
-						class="underline hover:opacity-80"
+						class="underline hover:text-[var(--main-accent-color)]"
 						target="_blank"
 					>
 						обработку персональных данных
@@ -117,14 +117,11 @@
 				</label>
 			</div>
 
-			<Button
-				type="submit"
-				color="green"
-				disabled={isSubmitDisabled()}
-				class="disabled:bg-gray-600 disabled:text-gray-200 disabled:opacity-100"
-			>
-				Войти
-			</Button>
+			{#if form?.message}
+				<p class="server-error" role="alert">{form.message}</p>
+			{/if}
+
+			<Button type="submit" color="green" disabled={isSubmitDisabled()}>Войти</Button>
 		</form>
 	</div>
 </div>
@@ -139,38 +136,6 @@
 		align-items: center;
 		justify-content: center;
 		padding: 1rem;
-	}
-
-	.login-bg {
-		position: absolute;
-		inset: 0;
-		overflow: hidden;
-		pointer-events: none;
-		z-index: 0;
-	}
-
-	.login-blob {
-		position: absolute;
-		border-radius: 50%;
-		filter: blur(80px);
-		pointer-events: none;
-		z-index: 0;
-	}
-
-	.login-blob--top {
-		width: 28rem;
-		height: 28rem;
-		top: -6rem;
-		left: -8rem;
-		background: rgba(144, 202, 249, 0.35);
-	}
-
-	.login-blob--bottom {
-		width: 24rem;
-		height: 24rem;
-		bottom: -6rem;
-		right: -8rem;
-		background: rgba(212, 140, 122, 0.25);
 	}
 
 	.login-card {
@@ -219,9 +184,20 @@
 		font-size: clamp(0.75rem, 1.5vw, 0.875rem);
 	}
 
+	.sex-caption {
+		font-weight: var(--font-weight-semibold);
+	}
+
 	.sex-options {
 		display: flex;
 		gap: 1rem;
+	}
+
+	.sex-options input {
+		width: 1.1rem;
+		height: 1.1rem;
+		accent-color: var(--main-accent-color);
+		cursor: pointer;
 	}
 
 	.sex-label {
@@ -242,26 +218,30 @@
 	}
 
 	.consent-checkbox {
-		width: 1.125rem;
-		height: 1.125rem;
-		margin-top: 0.15rem;
+		width: 1.25rem;
+		height: 1.25rem;
+		margin-top: 0.1rem;
 		flex-shrink: 0;
 		cursor: pointer;
+		accent-color: var(--main-accent-color);
+	}
+
+	.server-error {
+		color: var(--error-color);
+		font-size: 0.875rem;
+		line-height: 1.4;
 	}
 
 	@media (max-width: 639px) {
 		.login-wrapper {
 			padding: 0.5rem;
-			align-items: flex-start;
 		}
 
 		.login-card {
 			max-width: 100%;
-			min-height: calc(100dvh - 1rem);
 			padding: 1.25rem;
 			border-radius: 1.25rem;
 			gap: 1.25rem;
-			justify-content: center;
 		}
 
 		/* Ensure touch targets stay >= 44px */

@@ -1,7 +1,24 @@
 <script lang="ts">
 	import { SvelteDate } from 'svelte/reactivity';
 
-	let { name, value = $bindable(), required, errorMessage = $bindable() } = $props();
+	import { INPUT_CLASS } from './inputStyles';
+
+	let {
+		id = undefined,
+		name,
+		value = $bindable(),
+		required,
+		errorMessage = $bindable()
+	} = $props();
+
+	const inputId = $derived(id ?? name);
+
+	// Держим последний текст ошибки, пока слот сворачивается,
+	// иначе контент исчезает раньше анимации и закрытие становится мгновенным
+	let lastError = $state('');
+	$effect(() => {
+		if (errorMessage) lastError = errorMessage;
+	});
 
 	function handleInput(e: Event) {
 		const input = e.target as HTMLInputElement;
@@ -28,10 +45,6 @@
 		input.value = formatted;
 		value = formatted;
 		errorMessage = '';
-
-		// Проверяем валидность только когда дата полностью введена
-		validateDate(formatted);
-		console.log(val);
 	}
 
 	function handleKeyDown(e: KeyboardEvent) {
@@ -53,6 +66,10 @@
 				errorMessage = '';
 			}
 		}
+	}
+
+	function handleBlur() {
+		validateDate(value);
 	}
 
 	function validateDate(dateStr: string) {
@@ -101,12 +118,13 @@
 			return false;
 		}
 
-		console.log(errorMessage);
+		errorMessage = '';
 		return true;
 	}
 </script>
 
 <input
+	id={inputId}
 	{required}
 	{name}
 	type="text"
@@ -115,23 +133,39 @@
 	placeholder="ДД.ММ.ГГГГ"
 	oninput={handleInput}
 	onkeydown={handleKeyDown}
+	onblur={handleBlur}
 	maxlength="10"
-	class={`
-	max-xs:text-base
-	max-xs:p-1
-	xs:p-2.5
-	block
-	w-full
-	rounded-lg
-    border
-	bg-[#E5E7EB]
-	p-2
-    text-(--main-text-color)
-    placeholder-gray-400
-    outline-0
-    transition
-	focus:border-[var(--main-accent-color)]
-    focus:ring-[var(--main-accent-color)]
-	${errorMessage ? 'border-red-500' : 'border-gray-600'}
-  `}
+	aria-invalid={errorMessage ? 'true' : undefined}
+	aria-describedby={errorMessage ? `${inputId}-error` : undefined}
+	class={`${INPUT_CLASS} ${errorMessage ? 'border-[var(--error-color)]' : 'border-gray-600'}`}
 />
+<div class="err-collapse" class:open={!!errorMessage}>
+	<div>
+		<p
+			id={errorMessage ? `${inputId}-error` : undefined}
+			class="pt-1 text-sm text-[var(--error-color)]"
+			aria-live="polite"
+		>
+			{errorMessage || lastError}
+		</p>
+	</div>
+</div>
+
+<style>
+	.err-collapse {
+		display: grid;
+		grid-template-rows: 0fr;
+		transition: grid-template-rows 0.25s ease;
+	}
+	.err-collapse.open {
+		grid-template-rows: 1fr;
+	}
+	.err-collapse > div {
+		overflow: hidden;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.err-collapse {
+			transition: none;
+		}
+	}
+</style>

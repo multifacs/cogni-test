@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { createUser, getUserById, getUsersAnalytics } from '$lib/server/db';
 import { checkFormData, formDataToUser } from '$lib/utils';
 import type { User } from '$lib/server/db/types';
@@ -9,19 +9,20 @@ import { getLatestActiveGtoSession, addParticipant } from '$lib/server/db/contro
 
 export const load: PageServerLoad = async ({ cookies }) => {
 	const userId = cookies.get('user_id');
-	if (!userId) return;
-	const user: User | null = await getUserById(userId);
-	if (!user) {
+	if (userId) {
+		const user: User | null = await getUserById(userId);
+		if (user) redirect(307, '/home');
+		// Кука есть, но пользователя нет — чистим и показываем логин,
+		// вместо редиректа на /home (иначе петля: /home → / → /home).
 		cookies.delete('user_id', { path: '/' });
 	}
-	redirect(307, '/home');
 };
 
 export const actions = {
 	login: async ({ cookies, request }) => {
 		const data = await request.formData();
 		if (!checkFormData(data)) {
-			console.log('error data');
+			return fail(400, { message: 'Проверьте правильность заполнения полей' });
 		}
 		let id;
 		try {
@@ -30,13 +31,16 @@ export const actions = {
 				id = response.id;
 			}
 		} catch (error) {
-			console.log(error);
+			console.error('createUser failed:', error);
+			return fail(500, { message: 'Не удалось сохранить данные. Попробуйте ещё раз' });
 		}
 
 		if (id) {
 			cookies.set('user_id', id, { path: '/', secure: true, maxAge: 60 * 60 * 24 * 30 });
 			redirect(307, '/home');
 		}
+
+		return fail(500, { message: 'Не удалось создать пользователя. Попробуйте ещё раз' });
 	},
 
 	logout: async ({ cookies }) => {

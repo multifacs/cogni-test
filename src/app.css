@@ -3,7 +3,10 @@
 :root {
 	--main-bg-color: #e8f0fe;
 	--main-text-color: #2c3e50;
-	--main-accent-color: #d48c7a;
+	--main-accent-color: #1f3d7a;
+	--input-bg-color: #e5e7eb;
+	/* Приглушённый красный для текстов/рамок ошибок (тёплый, в тон пастельной палитре; контраст на белом ≥ 4.5:1) */
+	--error-color: #b5544b;
 	--avatar-bg-color: #d48c7a;
 	--avatar-text-color: #4a241a;
 
@@ -51,7 +54,6 @@ h4,
 label {
 	margin: 0;
 	padding: 0;
-	color: var(--main-text-color);
 }
 
 h1 {
