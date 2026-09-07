@@ -19,21 +19,37 @@
 
 ## 2. Токены (`:root` из `src/app.css`)
 
-| Токен                    | Значение                                                                                                                                                                                                                                | Назначение                                                             |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `--main-bg-color`        | `#e8f0fe`                                                                                                                                                                                                                               | Базовый фон body.                                                      |
-| `--main-text-color`      | `#2c3e50`                                                                                                                                                                                                                               | Главный цвет текста.                                                   |
-| `--main-accent-color`    | `#d48c7a`                                                                                                                                                                                                                               | **Брендовый терракотовый** — аватар, полоса карточки упражнения, blob. |
-| `--button-green`         | `rgb(15, 132, 15)`                                                                                                                                                                                                                      | **Единственный CTA-акцент** (основные действия).                       |
-| `--button-red`           | `#bf3023`                                                                                                                                                                                                                               | Деструктивное / второстепенное действие.                               |
-| `--button-blue`          | `#007acc`                                                                                                                                                                                                                               | Существует, не используется в glass-экранах.                           |
-| `--login-bg`             | `radial-gradient(ellipse 120% 80% at 20% 10%, rgba(100, 149, 237, 0.25), transparent 60%), radial-gradient(ellipse 100% 100% at 80% 90%, rgba(212, 140, 122, 0.2), transparent 55%), linear-gradient(180deg, #e8f0fe 0%, #dce8fb 100%)` | **Трёхслойный градиент** для glass-сцены.                              |
-| `--font-weight-black`    | Tailwind v4                                                                                                                                                                                                                             | `h1` (через `var(--font-weight-black)`).                               |
-| `--font-weight-bold`     | Tailwind v4                                                                                                                                                                                                                             | `Header`, `ExerciseCard`, `RecommendationCard`.                        |
-| `--font-weight-medium`   | Tailwind v4                                                                                                                                                                                                                             | `h2`, `h3`, `h4` по умолчанию.                                         |
-| `--font-weight-semibold` | Tailwind v4                                                                                                                                                                                                                             | `label`.                                                               |
+| Токен                    | Значение                                                                                                                                                                       | Назначение                                                             |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------- |
+| `--main-bg-color`        | `#e8f0fe`                                                                                                                                                                      | Плоский цвет (бывший фон body). Сейчас — только `color` в munsterberg `Playground`. |
+| `--main-text-color`      | `#2c3e50`                                                                                                                                                                      | Главный цвет текста.                                                   |
+| `--main-accent-color`    | `#d48c7a`                                                                                                                                                                      | **Брендовый терракотовый** — полоса карточки упражнения, blob.        |
+| `--avatar-bg-color`      | `#d48c7a`                                                                                                                                                                      | **Фолбэк** фона аватара (в рантайме переопределяется динамикой).      |
+| `--avatar-text-color`    | `#4a241a`                                                                                                                                                                      | **Фолбэк** текста аватара (см. §7).                                    |
+| `--button-green`         | `#a8d5b9` / hover `#93c9a8` / текст `#123f23`                                                                                                                                 | **Единственный CTA-акцент** (основные действия).                       |
+| `--button-red`           | `#f5b8ae` / hover `#efa79a` / текст `#6f2a1f`                                                                                                                                  | Деструктивное / второстепенное действие.                               |
+| `--button-blue`          | `#b3d0f5` / hover `#9dbff1` / текст `#1f3d7a`                                                                                                                                  | Второстепенное действие («Отписаться»).                               |
+| `--app-bg`               | `radial-gradient(ellipse 120% 80% at 20% 10%, rgba(100, 149, 237, 0.25), transparent 60%), radial-gradient(ellipse 100% 100% at 80% 90%, rgba(212, 140, 122, 0.2), transparent 55%), linear-gradient(180deg, #e8f0fe 0%, #dce8fb 100%)` | **Глобальный трёхслойный градиент** — фон `body` на всех страницах приложения. |
+| `--font-weight-black`    | Tailwind v4                                                                                                                                                                    | `h1` (через `var(--font-weight-black)`).                              |
+| `--font-weight-bold`     | Tailwind v4                                                                                                                                                                    | `Header`, `ExerciseCard`, `RecommendationCard`.                       |
+| `--font-weight-medium`   | Tailwind v4                                                                                                                                                                    | `h2`, `h3`, `h4` по умолчанию.                                        |
+| `--font-weight-semibold` | Tailwind v4                                                                                                                                                                    | `label`.                                                               |
 
 > `--font-weight-*` не объявлены вручную в `:root`; Tailwind v4 декларирует эти кастомные свойства в своём `theme`, а глобальный `h2` в `app.css` наследует их (поэтому scoped-класс с явным `font-weight: 800` обязателен для главных заголовков).
+
+### 2.1 Кнопочная палитра: пастель + тёмный текст в тон
+
+**Принцип: светлая пастельная заливка + тёмный текст в том же тоне.** Не «светлая заливка + белый текст» — белый на пастели не даёт WCAG 4.5:1. Полный набор на цвет (заливка / hover / текст):
+
+| Цвет   | Заливка   | Hover     | Текст    | Контраст |
+| ------ | --------- | --------- | -------- | -------- |
+| green  | `#a8d5b9` | `#93c9a8` | `#123f23` | 7.3:1    |
+| red    | `#f5b8ae` | `#efa79a` | `#6f2a1f` | 6.1:1    |
+| blue   | `#b3d0f5` | `#9dbff1` | `#1f3d7a` | 6.6:1    |
+
+- Hover — та же заливка, чуть темнее: контраст при наведении **растёт**, не падает.
+- Токены соответствуют гамме «Мята» (выбрана из трёх вариантов превью: Мята / Пудра / Графит).
+- Остальные цвета `Button` (`gray`, `yellow`, `purple`, …) пока на Tailwind-классах с `text-white` — используются вне glass-экранов.
 
 ---
 
@@ -46,11 +62,12 @@
   position: relative;
   min-height: 100%;
   overflow: hidden;       /* НЕ auto — иначе вложенный скролл */
-  background: var(--login-bg);
+  /* фон не задан: прозрачен, глобальный градиент — на body (var(--app-bg)) */
 }
 ```
 
 - **Корневая обёртка** контента внутри `(app)/+layout.svelte`.
+- Фон `body` (`var(--app-bg)`) задаётся глобально в `app.css` — `.glass-scene` его не перекрывает.
 - Сам логин (`+page.svelte`) использует собственную `.login-wrapper`, не `.glass-scene`.
 - Внутренние страницы добавляют локально:
     ```css
@@ -182,7 +199,7 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  background: var(--login-bg);
+  /* фон не задан: прозрачен, глобальный градиент — на body (var(--app-bg)) */
 }
 ```
 
@@ -278,17 +295,19 @@
 
 ## 6. Цветовая дисциплина
 
-| Роль              | Значение                              | Где                                         |
-| ----------------- | ------------------------------------- | ------------------------------------------- |
-| Бренд / акцент    | `#d48c7a` (`--main-accent-color`)     | Полоса `ExerciseCard`, аватар, тёплый blob. |
-| CTA-основной      | `rgb(15, 132, 15)` (`--button-green`) | `<Button color="green">`                    |
-| CTA-деструктивный | `#bf3023` (`--button-red`)            | «Отписаться», «Нет, спасибо»                |
-| Ghost             | `transparent` + `#6b7280`             | `.glass-ghost-btn` («Выйти»)                |
-| Текст             | `#2c3e50` (`--main-text-color`)       | Везде                                       |
-| Caption           | `#6b7280`, `#9ca3af`                  | Подписи «нет данных», хинты                 |
+| Роль              | Значение                                  | Где                                         |
+| ----------------- | ----------------------------------------- | ------------------------------------------- |
+| Бренд / акцент    | `#d48c7a` (`--main-accent-color`)         | Полоса `ExerciseCard`, тёплый blob.         |
+| CTA-основной      | `#a8d5b9` + текст `#123f23`               | `<Button color="green">`                    |
+| CTA-второстепенный| `#b3d0f5` + текст `#1f3d7a`                | `<Button color="blue">` («Отписаться»)      |
+| CTA-деструктивный | `#f5b8ae` + текст `#6f2a1f`               | `<Button color="red">` («Выйти»)           |
+| Ghost             | `transparent` + `#6b7280`                 | `.glass-ghost-btn`                          |
+| Текст             | `#2c3e50` (`--main-text-color`)           | Везде                                       |
+| Caption           | `#6b7280`, `#9ca3af`                      | Подписи «нет данных», хинты                 |
+| Аватар            | динамический `hsl(H 45% 78%/22%)`         | см. §7                                      |
 
 - **Антипример (удалён):** розовый `#FCE7F3` баннер на `/tests`.
-- **Правило:** не добавляй новые цвета без обоснования.
+- **Правило:** не добавляй новые цвета без обоснования. Пастельные кнопки с тёмным текстом — норма системы; тёмные насыщенные заливки с белым текстом (`rgb(15,132,15)`, `#bf3023`) — устаревший подход, не возвращаться к нему.
 
 ---
 
@@ -296,56 +315,70 @@
 
 Файл: `src/routes/(app)/profile/+page.svelte`.
 
-```svelte
-<div class="avatar">{getInitials(u.firstname, u.lastname)}</div>
+### 7.1 Динамический пастельный цвет
+
+Цвет аватара вычисляется из `u.id` — **детерминированно**: один и тот же юзер на любом устройстве и при любых перезагрузках видит один и тот же цвет.
+
+```ts
+function avatarStyle(id: string | number): string {
+	let h = 0;
+	for (const ch of String(id)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+	const hue = h % 360;
+	return `--avatar-bg-color: hsl(${hue} 45% 78%); --avatar-text-color: hsl(${hue} 45% 22%);`;
+}
 ```
 
-```css
-.avatar {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 50%;
-  background: var(--main-accent-color);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  flex-shrink: 0;
-}
+```svelte
+<div style={avatarStyle(u.id)} class="... bg-(--avatar-bg-color) text-(--avatar-text-color) ...">
+	{getInitials(u.firstname, u.lastname)}
+</div>
+```
+
+- Фон — `hsl(hue 45% 78%)` (пастель), текст — `hsl(hue 45% 22%)` (тёмный в тон). Контраст ≥ 6.0:1 на любом оттенке (посчитано по WCAG для всех 360 hue).
+- Насыщенность 45% / светлота 78% согласованы с пастельной кнопочной гаммой — аватар не спорит с системой, но остаётся индивидуальным.
+- Токены `--avatar-bg-color` / `--avatar-text-color` в `app.css` — **статический фолбэк**; inline-переменные из `avatarStyle()` их переопределяют. Tailwind-классы `bg-(--avatar-bg-color)` / `text-(--avatar-text-color)` неизменны — меняются только значения переменных.
+- **Не меняй формат** (насыщенность/светлоту) без пересчёта контраста.
+
+### 7.2 Инициалы
+
+```svelte
+<div class="avatar">{getInitials(u.firstname, u.lastname)}</div>
 ```
 
 **Guard на пустые поля:**
 
 ```ts
 function getInitials(firstname?: string, lastname?: string): string {
-  const f = firstname?.[0] ?? '';
-  const l = lastname?.[0] ?? '';
-  const initials = (f + l).trim();
-  return initials ? initials.toUpperCase() : '?';
+	const f = firstname?.[0] ?? '';
+	const l = lastname?.[0] ?? '';
+	const initials = (f + l).trim();
+	return initials ? initials.toUpperCase() : '?';
 }
 ```
 
 - Если имя/фамилия пустые — показывается **«?»**.
-- На мобильных: `3.5rem / font-size: 1.25rem`.
+- На мобильных: `3.5rem / font-size: 1.25rem` (`max-sm:h-14 max-sm:w-14 max-sm:text-xl`).
+- **Имена в БД хранятся в uppercase** и выводятся как есть (`displayName()`) — без пересборки регистра. Не добавляй `capitalize()`/`titleCase` в отображение имени.
 
 ---
 
 ## 8. Empty-state паттерн
 
-### 8.1 Метрики: «—» + «нет данных»
+### 8.1 Метрики: MetricTile с «—» + «нет данных»
+
+Компонент: `src/routes/(app)/profile/components/MetricTile.svelte`. Пустым считается только `null` / `undefined` / `''` — `value={0}` валиден и отображается («Тренировок: 0»), не используй falsy-проверки.
 
 ```svelte
-<div class="glass-card metric-tile">
-  <div class="metric-title">Когн. возраст</div>
-  <div class="metric-value">{predictedAge ?? '—'}</div>
-  {#if predictedAge == null}
-    <div class="metric-caption">нет данных</div>
-  {/if}
-</div>
+<!-- placeholder-плитки без value — задел под будущую статистику -->
+<MetricTile title="Когн. возраст" value={...} />
+<MetricTile title="Дата проверки" />
+<MetricTile title="Тренировок" />
+<MetricTile title="Серия" />
 ```
+
+- «Когн. возраст» заполняется из серверного лоадера (`+page.server.ts` → `getFeaturesFromDB` → `runAgeModel`): «23 года» — округление + склонение `pluralAge()`.
+- «Дата проверки» / «Тренировок» / «Серия» — **осознанные placeholder'ы**, не мёртвый UI; данные подключатся позже.
+- Сетка: `grid-cols-4` → `2×2` на мобильных.
 
 ### 8.2 Отсутствие возраста: «??» + title
 
@@ -354,6 +387,20 @@ function getInitials(firstname?: string, lastname?: string): string {
 ```
 
 - «??» используй только когда нет контейнера `.metric-tile` (например, блок `predictedAge` на `/tests`).
+
+### 8.3 Возраст: склонение
+
+```ts
+function pluralAge(n: number): string {
+	const n10 = n % 10;
+	const n100 = n % 100;
+	if (n10 === 1 && n100 !== 11) return 'год';
+	if (n10 >= 2 && n10 <= 4 && (n100 < 10 || n100 >= 20)) return 'года';
+	return 'лет';
+}
+```
+
+- Всегда парой: `{n} {pluralAge(n)}` — «21 год», «22 года», «25 лет». Не хардкодь «лет».
 
 ---
 
@@ -382,6 +429,9 @@ function getInitials(firstname?: string, lastname?: string): string {
 - [ ] Blob'ы: `aria-hidden="true"`, `pointer-events: none`.
 - [ ] Карточки: `.glass-card` с `@supports`-фоллбеком.
 - [ ] Цвета только из токенов; нет случайных hex'ов.
+- [ ] Кнопки red/green/blue: текст из `-text`-токенов (тёмный в тон), не `text-white`; контраст пары заливка/текст ≥ 4.5:1 (включая hover).
+- [ ] Возраст: `{n} {pluralAge(n)}` — склонение «год/года/лет».
+- [ ] Аватар: цвет через `avatarStyle(u.id)`; не хардкодить фон.
 
 ---
 
@@ -389,10 +439,13 @@ function getInitials(firstname?: string, lastname?: string): string {
 
 | Раздел           | Файл                                        | Строки                             |
 | ---------------- | ------------------------------------------- | ---------------------------------- |
-| Токены (`:root`) | `src/app.css`                               | 3–28                               |
-| Общие CSS-классы | `src/app.css`                               | 104–174                            |
+| Токены (`:root`) | `src/app.css`                               | 3–38                               |
+| Кнопочные токены | `src/app.css`                               | 10–19                              |
+| Общие CSS-классы | `src/app.css`                               | 113–183                            |
 | Fullscreen-логин | `src/routes/+page.svelte`                   | 39–141, 176–198                    |
-| Профиль          | `src/routes/(app)/profile/+page.svelte`     | 84–328                             |
+| Профиль          | `src/routes/(app)/profile/+page.svelte`     | 95–199                             |
+| Лоадер профиля   | `src/routes/(app)/profile/+page.server.ts`  | весь файл                          |
+| MetricTile       | `src/routes/(app)/profile/components/MetricTile.svelte` | весь файл              |
 | Tests            | `src/routes/(app)/tests/+page.svelte`       | 59–158                             |
 | ExerciseCard     | `src/lib/components/ui/ExerciseCard.svelte` | 26–60                              |
 | Layout структура | `src/routes/(app)/+layout.svelte`           | 110–177                            |

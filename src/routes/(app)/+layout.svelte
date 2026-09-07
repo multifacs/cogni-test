@@ -122,7 +122,6 @@
 		}
 
 		.container {
-			background-color: var(--main-bg-color);
 			display: grid;
 			grid-template-rows: auto 1fr auto;
 			grid-template-columns: 1fr;
@@ -147,7 +146,6 @@
 			overflow-y: auto;
 			min-width: 0;
 			/*color: var(--main-text-color);*/
-			background: var(--login-bg);
 		}
 
 		.banner {
