@@ -137,7 +137,7 @@
 	<div class="flex flex-col gap-6">
 		<!-- Generate random sets -->
 		<div class="flex flex-col gap-3 rounded-xl border border-gray-700 bg-white p-4">
-			<h2 class="text-lg font-semibold">Сгенерировать случайные сеты</h2>
+			<h2 class="text-lg font-semibold text-center">Сгенерировать случайные сеты</h2>
 			{#if generateError}
 				<p class="rounded-lg bg-red-900/30 px-3 py-2 text-sm text-red-300">
 					{generateError}
@@ -145,7 +145,7 @@
 			{/if}
 			<div class="flex items-end gap-3">
 				<label class="flex flex-col gap-1">
-					<span class="text-xs ">Количество сетов</span>
+					<span class="text-xs">Количество сетов</span>
 					<input
 						type="number"
 						min="1"
@@ -162,13 +162,13 @@
 
 		<!-- Create manually -->
 		<div class="flex flex-col gap-3 rounded-xl border border-gray-700 bg-white p-4">
-			<h2 class="text-lg font-semibold">Создать сет вручную</h2>
+			<h2 class="text-lg font-semibold text-center">Создать сет вручную</h2>
 			{#if createError}
 				<p class="rounded-lg bg-red-900/30 px-3 py-2 text-sm text-red-300">{createError}</p>
 			{/if}
 			<div class="flex flex-col gap-2">
 				<label class="flex flex-col gap-1">
-					<span class="text-xs ">5 слов через запятую</span>
+					<span class="text-xs">5 слов через запятую</span>
 					<input
 						type="text"
 						bind:value={newWords}
@@ -185,7 +185,7 @@
 		<!-- Existing sets -->
 		<div class="flex flex-col gap-3">
 			<div class="flex items-center gap-3">
-				<h2 class="text-lg font-semibold">Существующие сеты</h2>
+				<h2 class="text-lg font-semibold text-center">Существующие сеты</h2>
 				<span class="text-sm text-gray-400">({data.wordSets.length})</span>
 			</div>
 
@@ -218,9 +218,7 @@
 							class="flex flex-col gap-3 rounded-xl border border-gray-700 bg-white p-4"
 						>
 							<div class="flex items-center justify-between">
-								<span class="text-sm font-semibold "
-									>Сет {ws.setNumber}</span
-								>
+								<span class="text-sm font-semibold">Сет {ws.setNumber}</span>
 								<span class="text-xs text-gray-500">{formatDate(ws.createdAt)}</span
 								>
 							</div>
@@ -252,12 +250,11 @@
 							{:else}
 								<!-- Display mode -->
 								<div class="flex flex-wrap gap-1.5">
-									{#each ws.words as word, i}
+									{#each ws.words as word, i (i)}
 										<span
 											class="rounded-md bg-(--main-accent-color) px-2.5 py-1 text-sm font-medium text-white"
 										>
-											<span class="mr-1 text-xs ">{i + 1}.</span
-											>{word}
+											<span class="mr-1 text-xs">{i + 1}.</span>{word}
 										</span>
 									{/each}
 								</div>

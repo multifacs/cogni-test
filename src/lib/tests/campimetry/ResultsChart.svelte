@@ -2,7 +2,7 @@
 	import Chart from 'chart.js/auto';
 	import annotationPlugin from 'chartjs-plugin-annotation';
 
-	import { Colors, Scale, type CoreScaleOptions, type ScriptableContext } from 'chart.js';
+	import { Colors, type ScriptableContext } from 'chart.js';
 	Chart.register(Colors);
 	Chart.register(annotationPlugin);
 
@@ -36,7 +36,6 @@
 	Chart.defaults.color = 'var(--main-text-color)';
 
 	let canvas: HTMLCanvasElement = $state(Object());
-	let chart = $state(Object());
 
 	const stageNums: number[] = [2];
 
@@ -58,8 +57,10 @@
 			});
 	}
 
-	const allTime = Math.round(results.reduce((a, b) => a + b.time, 0) / 1000);
-	const avg = Math.round(((results.reduce((a, b) => a + b.time, 0) / results.length) * 2) / 1000);
+	const allTime = $derived(Math.round(results.reduce((a, b) => a + b.time, 0) / 1000));
+	const avg = $derived(
+		Math.round(((results.reduce((a, b) => a + b.time, 0) / results.length) * 2) / 1000)
+	);
 
 	let parsedResults: Result[];
 
@@ -103,7 +104,7 @@
 		parsedResults = getResults(testType, results);
 		console.log(parsedResults);
 
-		chart = new Chart(canvas, {
+		new Chart(canvas, {
 			type: 'line',
 			data: {
 				labels: parsedResults.map((el) => el.x).sort(compareNumbers),
@@ -120,10 +121,11 @@
 				})
 			},
 			options: {
-				onHover: function (event, chartElements) {
-					// @ts-ignore
-					const target = event.native ? event.native.target : event.chart.canvas;
-					target.style.cursor = chartElements.length ? 'pointer' : 'default';
+				onHover(event, chartElements, chart) {
+					const target = event.native?.target as HTMLElement | undefined;
+					(target ?? chart.canvas).style.cursor = chartElements.length
+						? 'pointer'
+						: 'default';
 				},
 				responsive: true,
 				plugins: {
@@ -143,7 +145,6 @@
 					legend: {
 						labels: {
 							usePointStyle: true,
-							// @ts-ignore
 							generateLabels: (chart) => {
 								const original =
 									Chart.defaults.plugins.legend.labels.generateLabels(chart);
@@ -160,7 +161,7 @@
 										fontColor,
 										fillStyle: getCSSVar('--color-red-400'),
 										strokeStyle,
-										pointStyle: 'circle',
+										pointStyle: 'circle' as const,
 										hidden: false,
 										index: -1
 									},
@@ -169,7 +170,7 @@
 										fontColor,
 										fillStyle: getCSSVar('--color-green-500'),
 										strokeStyle,
-										pointStyle: 'circle',
+										pointStyle: 'circle' as const,
 										hidden: false,
 										index: -1
 									},
@@ -178,7 +179,7 @@
 										fontColor,
 										fillStyle: getCSSVar('--color-sky-400'),
 										strokeStyle,
-										pointStyle: 'circle',
+										pointStyle: 'circle' as const,
 										hidden: false,
 										index: -2
 									}

@@ -45,7 +45,7 @@
 		stages?: StageConfig[];
 	} = $props();
 
-	const FLIP_MS = 220; // длительность флипа
+	// const FLIP_MS = 220; // длительность флипа
 	const MISMATCH_SHOW_MS = 650; // держим неверную пару открытой
 
 	// ---- State ----
@@ -61,7 +61,9 @@
 		if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
 			try {
 				return crypto.randomUUID();
-			} catch {}
+			} catch (e) {
+				console.error(e);
+			}
 		}
 		// простой фолбэк
 		const rnd = () =>
@@ -308,17 +310,13 @@
 		--match-ring: rgba(0, 255, 120, 0.85);
 	}
 
-	.wrap {
-		padding: 1rem;
-	}
-
 	.btn {
 		padding: 0.6rem 1rem;
 		border-radius: 0.8rem;
 		background: transparent;
 	}
 	.btn-primary {
-		background: #6FCF97;
+		background: #6fcf97;
 		color: #fff;
 	}
 

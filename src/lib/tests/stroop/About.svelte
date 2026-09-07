@@ -1,7 +1,7 @@
 <script>
-	import Card from "$lib/components/ui/Card.svelte";
-
+	import Card from '$lib/components/ui/Card.svelte';
 </script>
+
 <Card>
 	<b class="sm:text-xl">Задание:</b>
 

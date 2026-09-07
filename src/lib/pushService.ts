@@ -1,9 +1,9 @@
 // src/lib/pushService.js
 import { browser } from '$app/environment';
-import { env } from '$env/dynamic/public'; 
+import { env } from '$env/dynamic/public';
 
 export class PushService {
-	private vapidPublicKey: string = "";
+	private vapidPublicKey: string = '';
 
 	constructor() {
 		if (env.PUBLIC_VAPID_KEY) {
@@ -62,7 +62,8 @@ export class PushService {
 
 			return subscription;
 		} catch (e) {
-			throw new Error(`${e}`);
+			console.error(e);
+			return null;
 		}
 	}
 

@@ -15,9 +15,7 @@
 	});
 	let lives = $state(3);
 	let timeLeft = $state(60);
-	let timer: any = null;
-	let phase: 'intro' | 'test' | 'result' = 'intro';
-	let results = [];
+	let timer: ReturnType<typeof setInterval> | undefined;
 
 	let isGameOver = $derived(lives <= 0);
 
@@ -36,8 +34,6 @@
 		game = new BirdGame();
 		lives = 3;
 		timeLeft = 60;
-		results = [];
-		phase = 'test';
 		currentTask = game.getCurrentTask();
 		game.startNextTask();
 
@@ -52,7 +48,6 @@
 	function handleAnswer(answer: Direction) {
 		game.handleAnswer(answer);
 		lives = game.getLives();
-		results = game.getResults();
 
 		if (game.isGameOver()) {
 			stopGame();
@@ -66,7 +61,6 @@
 	export function stopGame() {
 		clearInterval(timer);
 		game.setLives(0);
-		phase = 'result';
 		gameEnd();
 		sendResults(game.getResults());
 	}
@@ -85,7 +79,7 @@
 
 <div class="top-bar flex items-center justify-center">
 	<div class="lives">
-		{#each Array(lives) as _, i}
+		{#each Array(lives) as _, i (i)}
 			<span class="heart">❤️</span>
 		{/each}
 	</div>
@@ -94,12 +88,12 @@
 
 {#if lives}
 	{#if currentTask.background === 'blue'}
-		<h2>Куда летит ласточка?</h2>
+		<h2 class="text-center">Куда летит ласточка?</h2>
 	{:else}
-		<h2>Откуда летит ласточка?</h2>
+		<h2 class="text-center">Откуда летит ласточка?</h2>
 	{/if}
 {:else}
-	<h1>Конец теста</h1>
+	<h1 class="text-center">Конец теста</h1>
 {/if}
 
 <div

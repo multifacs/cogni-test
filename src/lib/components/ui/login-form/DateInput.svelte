@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { SvelteDate } from 'svelte/reactivity';
+
 	let { name, value = $bindable(), required, errorMessage = $bindable() } = $props();
 
 	function handleInput(e: Event) {
@@ -91,7 +93,7 @@
 
 		// Проверка что дата не больше текущей
 		const inputDate = new Date(year, month - 1, day);
-		const today = new Date();
+		const today = new SvelteDate();
 		today.setHours(0, 0, 0, 0); // Сбрасываем время для точного сравнения
 
 		if (inputDate > today) {
@@ -124,7 +126,7 @@
     border
 	bg-[#E5E7EB]
 	p-2
-    text-white
+    text-(--main-text-color)
     placeholder-gray-400
     outline-0
     transition

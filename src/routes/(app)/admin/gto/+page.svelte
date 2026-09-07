@@ -4,6 +4,8 @@
 	import { invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import { getContext, onMount } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
+	import { resolve } from '$app/paths';
 
 	const headerContext = getContext<{ value: string }>('headerText');
 
@@ -31,7 +33,7 @@
 		} else {
 			selectedUsers.add(id);
 		}
-		selectedUsers = new Set(selectedUsers); // trigger reactivity
+		selectedUsers = new SvelteSet(selectedUsers); // trigger reactivity
 	}
 
 	function formatDate(dateStr: string | null) {
@@ -72,7 +74,7 @@
 		try {
 			const fd = new FormData(form);
 			await fetch('?/create', { method: 'POST', body: fd });
-			selectedUsers = new Set();
+			selectedUsers = new SvelteSet();
 			await invalidateAll();
 		} catch {
 			createError = 'Ошибка создания сессии';
@@ -82,14 +84,13 @@
 	}
 </script>
 
-
 <main class="main overflow-auto p-4">
 	<div class="flex flex-col gap-6">
 		<!-- Existing sessions -->
 		<div class="flex flex-col gap-3">
-			<h2 class="text-xl font-semibold">Существующие сессии</h2>
+			<h2 class="text-xl font-semibold text-center">Существующие сессии</h2>
 			{#if data.sessions.length === 0}
-				<div class="flex flex-col items-center gap-2 py-6 ">
+				<div class="flex flex-col items-center gap-2 py-6">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						class="h-10 w-10 opacity-40"
@@ -108,9 +109,9 @@
 				</div>
 			{:else}
 				<div class="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
-					{#each data.sessions as s}
+					{#each data.sessions as s (s.id)}
 						<a
-							href="/admin/gto/{s.id}"
+							href={resolve(`/admin/gto/${s.id}`)}
 							class="group flex items-center justify-between rounded-xl border border-gray-700 bg-white p-3 transition-colors hover:border-gray-600 hover:bg-gray-700/50"
 						>
 							<div class="flex min-w-0 flex-col">
@@ -149,7 +150,7 @@
 
 		<!-- Link to word sets -->
 		<a
-			href="/admin/gto/word-sets"
+			href={resolve('/admin/gto/word-sets')}
 			class="flex items-center justify-between rounded-xl border border-gray-700 bg-white p-4 transition-colors hover:border-gray-600 hover:bg-gray-700/30"
 		>
 			<div class="flex items-center gap-3">
@@ -169,14 +170,12 @@
 				</svg>
 				<div class="flex flex-col">
 					<span class="font-medium">Сеты слов</span>
-					<span class="text-xs "
-						>Создание, редактирование и генерация сетов</span
-					>
+					<span class="text-xs">Создание, редактирование и генерация сетов</span>
 				</div>
 			</div>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
-				class="h-5 w-5 "
+				class="h-5 w-5"
 				viewBox="0 0 20 20"
 				fill="currentColor"
 			>
@@ -196,14 +195,14 @@
 				handleCreateSession(e.currentTarget);
 			}}
 		>
-			<h2 class="text-xl font-semibold">Создать сессию</h2>
+			<h2 class="text-xl font-semibold text-center">Создать сессию</h2>
 
 			{#if createError}
 				<p class="rounded-lg bg-red-900/30 px-3 py-2 text-sm text-red-300">{createError}</p>
 			{/if}
 
 			<label class="flex flex-col gap-1">
-				<span class="text-sm font-medium ">Название сессии</span>
+				<span class="text-sm font-medium">Название сессии</span>
 				<input
 					type="text"
 					name="name"
@@ -213,15 +212,15 @@
 			</label>
 
 			<!-- Hidden inputs for selected users -->
-			{#each Array.from(selectedUsers) as userId}
+			{#each Array.from(selectedUsers) as userId (userId)}
 				<input type="hidden" name="participantIds" value={userId} />
 			{/each}
 
 			<!-- Participant selection -->
 			<div class="flex flex-col gap-2">
 				<div class="flex flex-wrap items-center gap-3">
-					<h3 class="text-lg font-medium">Участники</h3>
-					<span class="text-sm ">({selectedUsers.size} выбрано)</span>
+					<h3 class="text-lg font-medium text-center">Участники</h3>
+					<span class="text-sm">({selectedUsers.size} выбрано)</span>
 					<div class="flex-1"></div>
 					<Button
 						color="green"
@@ -234,7 +233,7 @@
 					<div class="relative">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
-							class="absolute left-2.5 top-2.5 h-4 w-4 "
+							class="absolute left-2.5 top-2.5 h-4 w-4"
 							viewBox="0 0 20 20"
 							fill="currentColor"
 						>
@@ -258,7 +257,7 @@
 				</div>
 
 				{#if filteredUsers.length === 0}
-					<p class="py-4 text-center text-sm ">
+					<p class="py-4 text-center text-sm">
 						{searchQuery || filterRecent
 							? 'Пользователи не найдены'
 							: 'Нет авторизованных пользователей'}
@@ -311,7 +310,7 @@
 								<div class="flex shrink-0 items-center gap-1.5">
 									{#if u.missingSurveyFields.length > 0}
 										<span
-											class="rounded-full bg-red-500/40 px-2 py-0.5 text-xs "
+											class="rounded-full bg-red-500/40 px-2 py-0.5 text-xs"
 											title={missingFieldLabels(u.missingSurveyFields)}
 										>
 											{u.missingSurveyFields.length}

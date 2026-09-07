@@ -1,32 +1,31 @@
 <script lang="ts">
 	let { age, realAge } = $props();
+	let displayAge = $derived(age === null || age === undefined ? null : Math.round(age));
 
-	let trackerStatus = $derived(() => {
-		if (age === null || age === undefined || realAge === null || realAge === undefined) {
+	let trackerStatus = $derived.by(() => {
+		if (displayAge === null || realAge === null || realAge === undefined) {
 			return 'unknown';
 		}
-		if (age < realAge) return 'better';
-		if (age === realAge) return 'equal';
+		if (displayAge < realAge) return 'better';
+		if (displayAge === realAge) return 'equal';
 		return 'worse';
 	});
 
-	let statusText = $derived(() => {
-		const status = trackerStatus();
-		if (status === 'unknown') {
+	let statusText = $derived.by(() => {
+		if (trackerStatus === 'unknown') {
 			return 'Пройдите тесты, чтобы узнать свой возраст';
 		}
-		if (status === 'better') {
+		if (trackerStatus === 'better') {
 			return `Поздравляем! Ваш когнитивный возраст моложе реального!`;
 		}
-		if (status === 'equal') {
+		if (trackerStatus === 'equal') {
 			return 'Отлично! Ваш когнитивный возраст совпадает с реальным!';
 		}
 		return `Регулярные тренировки помогут улучшить результат`;
 	});
 
-	let trackerImage = $derived(() => {
-		const status = trackerStatus();
-		switch (status) {
+	let trackerImage = $derived.by(() => {
+		switch (trackerStatus) {
 			case 'better':
 				return '/tracker/tracker_better.svg';
 			case 'equal':
@@ -41,12 +40,12 @@
 
 <div class="card">
 	<div>
-		<h2 style="font-weight: var(--font-weight-bold);">Ваш когнитивный возраст</h2>
-		<h1>{age} лет</h1>
+		<p class="text-center text-base font-medium">Ваш когнитивный возраст</p>
+		<p class="text-center text-3xl font-bold">{displayAge ?? '??'} лет</p>
 	</div>
 
-	<h4>{statusText()}</h4>
-	<img class="img" src={trackerImage()} alt="Tracker" />
+	<p class="text-center text-sm">{statusText}</p>
+	{#if trackerImage}<img class="img" src={trackerImage} alt="Tracker" />{/if}
 </div>
 
 <style>

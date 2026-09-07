@@ -5,16 +5,16 @@
 </script>
 
 {#if category === 'words'}
-	<h2>Выберите новое существительное:</h2>
+	<h2 class="text-center">Выберите новое существительное:</h2>
 	<div class="grid max-w-lg grid-cols-2 gap-4">
-		{#each nounChoices as noun}
+		{#each nounChoices as noun (noun)}
 			<Button color="green" onclick={() => setNoun(noun)}>{noun}</Button>
 		{/each}
 	</div>
 {:else}
-	<h2>Выберите новый цвет:</h2>
+	<h2 class="text-center">Выберите новый цвет:</h2>
 	<div class="grid grid-cols-3 gap-4">
-		{#each colorChoices as color}
+		{#each colorChoices as color (color)}
 			<button
 				class="flex cursor-pointer flex-col items-center p-2 transition-all duration-200 hover:scale-105 hover:shadow-md"
 				onclick={() => setNoun(color)}

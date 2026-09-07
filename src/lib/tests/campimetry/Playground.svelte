@@ -8,10 +8,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	let { data, gameEnd, sendResults } = $props();
 
-	console.log(data);
-
 	let isGameRunning = $state(false);
-	let showResults = $state(false);
 
 	let game: CampimetryGame = $state(Object());
 	let silhouettes: string[] = $state([]);
@@ -31,7 +28,6 @@
 	});
 
 	export function resetGame() {
-		showResults = false;
 		currentStage = 1;
 		delta = 0;
 		game = new CampimetryGame(Object.keys(data.silhouettes));
@@ -110,20 +106,36 @@
 		console.log('added ', increment);
 		if (currentChannel == 'a')
 			for (let i = 0; i < increment; i++) {
-				currentOp == '+' ? currentSilhouetteColor.incA() : currentSilhouetteColor.decA();
+				if (currentOp == '+') {
+					currentSilhouetteColor.incA();
+				} else {
+					currentSilhouetteColor.decA();
+				}
 			}
 		if (currentChannel == 'b')
 			for (let i = 0; i < increment; i++) {
-				currentOp == '+' ? currentSilhouetteColor.incB() : currentSilhouetteColor.decB();
+				if (currentOp == '+') {
+					currentSilhouetteColor.incB();
+				} else {
+					currentSilhouetteColor.decB();
+				}
 			}
 	}
 
 	function changeColor() {
 		if (delta > 0) {
 			if (currentChannel == 'a')
-				currentOp == '+' ? currentSilhouetteColor.incA() : currentSilhouetteColor.decA();
+				if (currentOp == '+') {
+					currentSilhouetteColor.incA();
+				} else {
+					currentSilhouetteColor.decA();
+				}
 			if (currentChannel == 'b')
-				currentOp == '+' ? currentSilhouetteColor.incB() : currentSilhouetteColor.decB();
+				if (currentOp == '+') {
+					currentSilhouetteColor.incB();
+				} else {
+					currentSilhouetteColor.decB();
+				}
 		}
 		if (currentStage == 1) delta++;
 		if (currentStage == 2) delta--;
@@ -142,7 +154,7 @@
 
 	<div class="background" style={`background-color: ${currentBackgroundColor.toString()}`}>
 		<div
-			class="silhouette max-xs:w-16 max-xs:h-16 h-32 w-32 mask-contain"
+			class="max-xs:w-16 max-xs:h-16 h-32 w-32 mask-contain"
 			style={`
         background-color: ${currentSilhouetteColor.toString()};
         mask-image: url(${data.silhouettes[currentSilhouette]});
@@ -161,14 +173,14 @@
 		</div>
 	{/if}
 	<div
-		class="silhouette-choices row flex w-4/5 max-w-96 justify-between {currentStage != 1
+		class="gap-[4vw] m-[4vw] row flex w-4/5 max-w-96 justify-between {currentStage != 1
 			? 'invisible'
 			: ''}"
 	>
-		{#each silhouettes as s}
+		{#each silhouettes as s (s)}
 			<button
 				aria-label={`${s} button`}
-				class="choice-btn max-xs:w-16 max-xs:h-16 h-[100px] w-[100px] cursor-pointer touch-none rounded-xl bg-white mask-contain ring-2
+				class="choice-btn max-xs:w-16 max-xs:h-16 h-25 w-25 cursor-pointer touch-none rounded-xl bg-white mask-contain ring-2
 					ring-transparent transition-[ring-color] duration-150 select-none hover:ring-gray-400 active:ring-gray-600 disabled:ring-transparent"
 				disabled={!delta}
 				style={`
@@ -207,7 +219,7 @@
 				d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
 			/>
 		</svg>
-		<h1 class="text-2xl font-bold">Тест окончен</h1>
+		<h1 class="text-2xl font-bold text-center">Тест окончен</h1>
 		<p class="text-gray-500">Результаты отправлены</p>
 	</div>
 {/if}
@@ -222,15 +234,6 @@
 		border-radius: 1.5rem;
 		box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.08);
 		overflow: hidden;
-	}
-
-	.silhouette {
-	}
-
-	.silhouette-choices {
-		/* background-color: grey; */
-		gap: 4vw;
-		margin: 4vw;
 	}
 
 	/* Вертикальная ориентация */

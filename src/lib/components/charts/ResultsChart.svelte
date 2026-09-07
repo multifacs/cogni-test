@@ -49,32 +49,24 @@
 	Chart.defaults.color = 'white';
 
 	let canvas: HTMLCanvasElement = $state(Object());
-	let chart = $state(Object());
 
-	let maxStage: number = Math.max(
-		...results.map((item) => {
-			if ('stage' in item) {
-				return item.stage;
-			}
-			return 0;
-		})
-	);
-	if (!maxStage || maxStage == 1) maxStage = 0;
+	const maxStage = $derived.by(() => {
+		const max = Math.max(...results.map((item) => ('stage' in item ? item.stage : 0)), 0);
+		if (!max || max === 1) return 0;
+		if (testType == 'campimetry') return 0;
+		return max;
+	});
 
-	if (testType == 'campimetry') maxStage = 0;
-
-	let stageNums: number[] = [];
-	for (let i = 1; i <= maxStage; i++) stageNums.push(i);
-	if (!maxStage) stageNums = [0];
+	const stageNums = $derived.by(() => {
+		if (!maxStage) return [0];
+		return Array.from({ length: maxStage }, (_, i) => i + 1);
+	});
 
 	function compareNumbers(a: number, b: number) {
 		return a - b;
 	}
 
-	function getResults(
-		testType: TestType,
-		results: RegularResults
-	): Result[] {
+	function getResults(testType: TestType, results: RegularResults): Result[] {
 		console.log(results);
 		if (testType == 'stroop') {
 			return (results as StroopResult[]).map((result) => {
@@ -138,7 +130,7 @@
 		);
 		console.log(avg);
 
-		chart = new Chart(canvas, {
+		new Chart(canvas, {
 			type: 'line',
 			data: {
 				labels: parsedResults.map((el) => el.x).sort(compareNumbers),
@@ -159,10 +151,11 @@
 				})
 			},
 			options: {
-				onHover: function (event, chartElements) {
-                    // @ts-ignore
-					const target = event.native ? event.native.target : event.chart.canvas;
-					target.style.cursor = chartElements.length ? 'pointer' : 'default';
+				onHover: (event, chartElements) => {
+					const target = event.native?.target;
+					if (target instanceof HTMLElement) {
+						target.style.cursor = chartElements.length ? 'pointer' : 'default';
+					}
 				},
 				responsive: true,
 				plugins: {
@@ -176,7 +169,7 @@
 								const value = context[0].raw as Result;
 								const raw = value.raw;
 								if (testType == 'math') {
-                                    const mathResult = raw as MathResult;
+									const mathResult = raw as MathResult;
 									return `${mathResult.left} ${mathResult.sign} ${mathResult.right}`;
 								}
 								return `Попытка ${value.x}`;
@@ -185,7 +178,7 @@
 								const value = context[0].raw as Result;
 								const raw = value.raw;
 								if (testType == 'math') {
-                                    const mathResult = raw as MathResult;
+									const mathResult = raw as MathResult;
 									return `Ответ: ${mathResult.userAnswer ? 'да' : 'нет'}`;
 								}
 								return '';
@@ -202,7 +195,6 @@
 					legend: {
 						labels: {
 							usePointStyle: true,
-                            // @ts-ignore
 							generateLabels: (chart) => {
 								const original =
 									Chart.defaults.plugins.legend.labels.generateLabels(chart);
@@ -219,7 +211,7 @@
 										fontColor,
 										fillStyle: 'rgba(255,99,132,0.4)',
 										strokeStyle: 'rgba(255,99,132,1)',
-										pointStyle: 'line',
+										pointStyle: 'line' as const,
 										lineDash: [6, 6],
 										hidden: false,
 										index: -1
@@ -229,7 +221,7 @@
 										fontColor,
 										fillStyle: getCSSVar('--color-green-500'),
 										strokeStyle,
-										pointStyle: 'circle',
+										pointStyle: 'circle' as const,
 										hidden: false,
 										index: -1
 									},
@@ -238,7 +230,7 @@
 										fontColor,
 										fillStyle: getCSSVar('--color-red-400'),
 										strokeStyle,
-										pointStyle: 'circle',
+										pointStyle: 'circle' as const,
 										hidden: false,
 										index: -2
 									}

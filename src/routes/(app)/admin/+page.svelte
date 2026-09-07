@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
-	import Header from '$lib/components/ui/Header.svelte';
 	import { getContext, onMount } from 'svelte';
 
 	const headerContext = getContext<{ value: string }>('headerText');

@@ -5,10 +5,7 @@ import type { User } from '$lib/server/db/types';
 import type { Actions } from './$types';
 import type { PageServerLoad } from './$types';
 import { getProfileSurvey, updateProfileSurvey } from '$lib/server/db/controllers/survey';
-import {
-	getLatestActiveGtoSession,
-	addParticipant
-} from '$lib/server/db/controllers/gto';
+import { getLatestActiveGtoSession, addParticipant } from '$lib/server/db/controllers/gto';
 
 export const load: PageServerLoad = async ({ cookies }) => {
 	const userId = cookies.get('user_id');
@@ -49,7 +46,10 @@ export const actions = {
 
 	save: async ({ cookies, request }) => {
 		const data = await request.formData();
-		const dataAsObject = Object.fromEntries(data.entries());
+		const dataAsObject = Object.fromEntries(data.entries()) as Record<
+			string,
+			FormDataEntryValue | boolean
+		>;
 		if ('isGamer' in dataAsObject) {
 			dataAsObject.isGamer = dataAsObject.isGamer === '0' ? false : true;
 		}
@@ -68,7 +68,9 @@ export const actions = {
 				const session = await getLatestActiveGtoSession();
 				if (session) {
 					await addParticipant(session.id, userId);
-					console.log(`Auto-added user ${userId} to GTO session "${session.name}" (${session.id})`);
+					console.log(
+						`Auto-added user ${userId} to GTO session "${session.name}" (${session.id})`
+					);
 				}
 			}
 		}

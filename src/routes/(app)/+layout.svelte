@@ -17,12 +17,10 @@
 
 	let {
 		data,
-		children,
-		leftAside
+		children
 	}: {
 		data: LayoutData;
 		children: Snippet;
-		leftAside: Snippet;
 	} = $props();
 
 	let headerText = $state('');
@@ -71,7 +69,7 @@
 	{#if showModal}
 		<Modal bind:showModal>
 			{#snippet header()}
-				<h2 class="text-2xl text-white">Подпишитесь на push-уведомления</h2>
+				<h2 class="text-2xl text-white text-center">Подпишитесь на push-уведомления</h2>
 			{/snippet}
 			<div class="flex flex-col gap-4">
 				{#if showSpinner}
@@ -106,7 +104,7 @@
 		<Header text={headerText} />
 	</header>
 	{@render children()}
-	<NavBar />
+	<NavBar undiagnosed={data.undiagnosed} allowedPaths={data.allowedPaths} />
 </div>
 
 <style>
@@ -137,7 +135,6 @@
 				'main'
 				'low-content '
 				'nav';
-			/* padding: 0.5rem; */
 			font-size: 1.25rem;
 			overflow: hidden;
 		}
@@ -166,7 +163,6 @@
 			grid-area: low-content;
 			padding: 2% 15%;
 			border-radius: var(--radius-lg);
-
 		}
 	}
 	@media (min-width: 1024px) {

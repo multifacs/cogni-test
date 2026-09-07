@@ -5,9 +5,11 @@
 	import { page } from '$app/state';
 
 	const { data } = $props();
-	const slug = data.slug;
+	const slug = $derived(data.slug);
 	const test = $derived(testRegistry[slug]);
-	let Component: any = $state(null);
+
+	import type { Component as ComponentType } from 'svelte';
+	let Component = $state<ComponentType | null>(null);
 
 	// GTO session integration
 	const gtoSessionId = $derived(page.url.searchParams.get('gtoSessionId') ?? undefined);
@@ -21,10 +23,12 @@
 		}
 	});
 
+	import type { PathnameWithSearchOrHash } from '$app/types';
+
 	const playgroundUrl = $derived(
-		gtoSessionId
+		(gtoSessionId
 			? `/tests/${slug}/playground?gtoSessionId=${gtoSessionId}`
-			: `/tests/${slug}/playground`
+			: `/tests/${slug}/playground`) satisfies PathnameWithSearchOrHash
 	);
 </script>
 

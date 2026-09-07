@@ -1,8 +1,15 @@
+import type { TestType } from '$lib/tests/types';
+import type { SkillMetric } from '$lib/types';
+import type { Component } from 'svelte';
+import type { ExerciseType } from './types';
+
 export type ExerciseData = {
 	name: string;
 	title: string;
 	path: string;
 	img: string;
+	admin_metrics?: SkillMetric[];
+	user_metrics?: SkillMetric[];
 };
 
 export type { ExerciseType, ExerciseResult, ExerciseResults } from './types';
@@ -12,29 +19,44 @@ export const exercises: ExerciseData[] = [
 		name: 'word-morphing',
 		title: 'Цепочка слов',
 		path: '/exercises/word-morphing/about',
-		img: '/exercises/word-morphing1.svg'
+		img: '/exercises/word-morphing1.svg',
+		admin_metrics: [
+			'working_memory',
+			'short_memory',
+			'long_memory',
+			'perception',
+			'attention',
+			'thinking'
+		],
+		user_metrics: ['memory']
 	},
 	{
 		name: 'campimetry',
 		title: 'Поле зрения',
 		path: '/exercises/campimetry/about',
-		img: '/tests/campimetry1.svg'
+		img: '/tests/campimetry1.svg',
+		admin_metrics: ['attention', 'perception', 'color_perception'],
+		user_metrics: ['perception']
 	},
 	{
 		name: 'memory-match',
 		title: 'Найди пару',
 		path: '/exercises/memory-match/about',
-		img: '/exercises/memory-match1.svg'
+		img: '/exercises/memory-match1.svg',
+		admin_metrics: ['spacial_perception', 'short_memory', 'attention'],
+		user_metrics: ['memory']
 	},
 	{
 		name: 'nback-stream',
 		title: 'Повторы в ряду',
 		path: '/exercises/nback-stream/about',
-		img: '/exercises/n-back1.svg'
+		img: '/exercises/n-back1.svg',
+		admin_metrics: ['executive_function', 'perception', 'attention', 'short_memory'],
+		user_metrics: ['memory']
 	},
 	{
 		name: 'raven-matrices',
-		title: 'Матрицы',
+		title: 'Матрицы Равена',
 		path: '/exercises/raven-matrices/about',
 		img: '/exercises/raven-matrices1.svg'
 	},
@@ -73,25 +95,33 @@ export const exercises: ExerciseData[] = [
 		title: 'Цепочка букв',
 		path: '/exercises/letters/about',
 		img: '/exercises/letters1.svg'
+	},
+	{
+		name: 'road-trip',
+		title: 'По дороге на работу',
+		path: '/exercises/road-trip/about',
+		img: '/exercises/road-trip.svg',
+		admin_metrics: ['perception', 'verbal_function', 'thinking'],
+		user_metrics: ['perception']
+	},
+	{
+		name: 'not-lost',
+		title: 'По дороге на работу',
+		path: '/exercises/not-lost/about',
+		img: '/exercises/not-lost.svg',
+		admin_metrics: ['spacial_perception', 'spacial_orientation', 'short_memory'],
+		user_metrics: ['spacial_perception']
 	}
-	// {
-	// 	name: 'road-trip',
-	// 	title: 'По дороге на работу',
-	// 	path: '/exercises/road-trip/about',
-	// 	img: '/exercises/road-trip.svg'
-	// },
-	// {
-	// 	name: 'not-lost',
-	// 	title: 'По дороге на работу',
-	// 	path: '/exercises/not-lost/about',
-	// 	img: '/exercises/not-lost.svg'
-	// }
 ];
 
+// Компонент с произвольными пропсами: страницы передают gameEnd/sendResults/data
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyComponent = Component<any>;
+
 type ExerciseLoader = {
-	about: () => Promise<any>;
-	playground?: () => Promise<any>;
-	result?: () => Promise<any>;
+	about: () => Promise<{ default: AnyComponent }>;
+	playground?: () => Promise<{ default: AnyComponent }>;
+	result?: () => Promise<{ default: AnyComponent }>;
 };
 
 const exerciseLoaders: Record<string, ExerciseLoader> = {
@@ -163,7 +193,7 @@ export const exerciseRegistry: Record<string, ExerciseData & ExerciseLoader> = O
 );
 
 /** Map exercise URL slug to the testType stored in the DB session table. */
-export const EXERCISE_SLUG_TO_TEST_TYPE: Record<string, string> = {
+export const EXERCISE_SLUG_TO_TEST_TYPE: Record<string, ExerciseType | TestType> = {
 	attention: 'attention',
 	campimetry: 'campimetry',
 	emoji: 'emoji',

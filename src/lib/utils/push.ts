@@ -60,7 +60,7 @@ export async function scheduleNotificationToAll(
 	scheduledFor: number
 ) {
 	try {
-		let res = await fetch('/api/push/schedule-for-all', {
+		const res = await fetch('/api/push/schedule-for-all', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'

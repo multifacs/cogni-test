@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Card from '$lib/components/ui/Card.svelte';
-	import NBackStreamGame from './NBackStreamGame.svelte';
 </script>
 
 <Card>

@@ -4,8 +4,7 @@
 	import type { PicturesTrialRow } from './types';
 	import { formatMs, summary } from './results-adapter';
 
-	let { results }: { results: ExerciseResults; exerciseType?: string; meta?: string[] } =
-		$props();
+	let { results }: { results: ExerciseResults } = $props();
 
 	const rows = $derived(results as PicturesTrialRow[]);
 	const s = $derived(summary(rows));

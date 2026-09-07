@@ -1,7 +1,8 @@
 <script lang="ts">
   import type { Stimulus } from "./types";
   import { fly } from "svelte/transition";
-  export let current: Stimulus | null = null;
+
+  let { current }: { current: Stimulus | null } = $props();
 
   function shapeSvg(shape: string, color: string) {
     if (shape === 'circle') return `<circle cx="64" cy="64" r="48" fill="${color}"/>`;

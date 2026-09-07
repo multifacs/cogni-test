@@ -13,9 +13,8 @@
 	});
 </script>
 
-
 <main class="main flex flex-col items-center justify-center gap-4">
-	<div class="grid grid-cols-3 gap-[1%]" >
+	<div class="grid grid-cols-3 gap-[1%]">
 		<div class="bg-white rounded-lg border border-blue-900 p-3">
 			<SendNotification />
 		</div>

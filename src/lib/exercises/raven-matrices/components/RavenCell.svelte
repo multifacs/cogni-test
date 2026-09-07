@@ -1,10 +1,7 @@
 <script lang="ts">
 	import type { CellElement, CellSpec, RegionKind, ShapeKind, TextureKind } from '../types';
 
-	export let cell: CellSpec | null = null;
-	export let missing = false;
-	export let cellId = 'raven-cell';
-	export let compact = false;
+	let { cell = null, missing = false, cellId = 'raven-cell', compact = false }: { cell: CellSpec | null; missing: boolean; cellId: string; compact: boolean } = $props();
 
 	function shapePoints(shape: ShapeKind, cx: number, cy: number, size: number): string {
 		const r = size / 2;

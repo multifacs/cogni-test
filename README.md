@@ -70,3 +70,15 @@ files. Server side tests expected to be in `src/**/*.{test,spec}.{js,ts}` files.
 
 There is an example of a client side test in
 [`src/lib/exercises/word-morphing/components/Result.svelte.spec.ts`](src/lib/exercises/word-morphing/components/Result.svelte.spec.ts).
+
+# только серверные тесты (наш случай — Node-окружение)
+
+npx vitest run --project server
+
+# watch-режим для итераций — сам перезапускается при сохранении
+
+npx vitest src/lib/server/age/inlineOnnxPlugin.test.ts
+
+# с подробным выводом каждого expect
+
+npx vitest run src/lib/server/age/inlineOnnxPlugin.test.ts --reporter=verbose

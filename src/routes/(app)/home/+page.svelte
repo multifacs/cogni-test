@@ -4,9 +4,16 @@
 	import { getContext, onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import localforage from 'localforage';
+	import { goto } from '$app/navigation';
 	import { userStore } from '$lib/stores/user';
 	import AgeCard from '$lib/components/ui/AgeCard.svelte';
 	import RecommendationCard from '$lib/components/ui/RecommendationCard.svelte';
+	import { resolve } from '$app/paths';
+
+	interface BeforeInstallPromptEvent extends Event {
+		prompt(): Promise<void>;
+		userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
+	}
 
 	let { data } = $props();
 
@@ -15,15 +22,16 @@
 		return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 	}
 
-	let diferredInstallEvent: any | null = $state(null);
+	let diferredInstallEvent = $state<BeforeInstallPromptEvent | null>(null);
 	let showInstallButton = $state(true);
-	let showModal = $state(false);
+	let showInstallModal = $state(false);
+	let undiagnosed = $state(false);
 	let userName = $state('Пользователь');
 	let greeting = $state('Добрый день');
 	let realAge = $state<number | null>(null);
-	let predictedAge = $state<number | null>(null);
 
 	const headerContext = getContext<{ value: string }>('headerText');
+
 	function updateGreetingAndHeader() {
 		const hour = new Date().getHours();
 		let newGreeting;
@@ -33,17 +41,38 @@
 
 		greeting = newGreeting;
 
-		// Обновляем хедер
 		if (headerContext) {
 			headerContext.value = `${greeting}, ${userName}!`;
 		}
 	}
 
 	onMount(() => {
+		if (data.hasUnfinishedTests && !data.loggedInAdmin) {
+			undiagnosed = true;
+		}
+
+		window.addEventListener('beforeinstallprompt', (e) => {
+			e.preventDefault();
+			diferredInstallEvent = e as BeforeInstallPromptEvent;
+			showInstallButton = true;
+			localforage.setItem('showInstallButton', true);
+		});
+
+		window.addEventListener('appinstalled', () => {
+			showInstallButton = false;
+			localforage.setItem('showInstallButton', false);
+			showInstallModal = false;
+		});
+
+		if (checkStandaloneMode()) {
+			showInstallButton = false;
+			localforage.setItem('showInstallButton', false);
+		}
+
 		updateGreetingAndHeader();
 		const unsubscribeUser = userStore.subscribe((user) => {
 			if (user) {
-				const rawName = (user as any).firstname || 'пользователь';
+				const rawName = user.firstname || 'пользователь';
 				userName = capitalize(rawName);
 
 				const userBirthday = user.birthday || null;
@@ -60,41 +89,18 @@
 					}
 					realAge = age;
 				}
-				if (data?.predictedAge !== null && data?.predictedAge !== undefined) {
-					predictedAge = Math.round(data.predictedAge);
-				}
 				updateGreetingAndHeader();
 			}
 		});
 
-		(async () => {
-			const lfShowInstallButton: boolean | null =
-				await localforage.getItem('showInstallButton');
+		// Асинхронная часть — не блокирует монтирование
+		localforage.getItem<boolean | null>('showInstallButton').then((lfShowInstallButton) => {
 			if (lfShowInstallButton === false) {
 				showInstallButton = false;
 			} else if (lfShowInstallButton === null) {
 				showInstallButton = true;
 			}
-
-			window.addEventListener('beforeinstallprompt', (e) => {
-				e.preventDefault();
-				diferredInstallEvent = e;
-				showInstallButton = true;
-				localforage.setItem('showInstallButton', true);
-			});
-
-			window.addEventListener('appinstalled', () => {
-				showInstallButton = false;
-				localforage.setItem('showInstallButton', false);
-				showModal = false;
-			});
-
-			// don't show button if user in the standalone app
-			if (checkStandaloneMode()) {
-				showInstallButton = false;
-				localforage.setItem('showInstallButton', false);
-			}
-		})();
+		});
 
 		return () => {
 			unsubscribeUser();
@@ -113,96 +119,112 @@
 				localforage.setItem('showInstallButton', false);
 			}
 		} else {
-			showModal = true;
+			showInstallModal = true;
 		}
+	}
+
+	function handleRunAll() {
+		localforage.setItem('runAllMode', true);
+		goto(resolve('/tests'));
 	}
 
 	const checkStandaloneMode = () => {
 		if (!browser) return false;
 		return (
 			window.matchMedia('(display-mode: standalone)').matches ||
-			(window.navigator as any).standalone === true
+			(window.navigator as Navigator & { standalone?: boolean }).standalone === true
 		);
 	};
 </script>
 
-<main class="main">
-	<div class="flex flex-col items-center gap-6">
-		<!-- <div class="p-4">
-			<h2>Вы тренируете память уже</h2>
-			<h1>5 дней</h1>
-		</div> -->
-
-		<!-- подгружать данные о том, когда пользователь заходил и сколько дней подряд-->
-		<div class="main-content gap-6">
-			<AgeCard age={predictedAge} {realAge}></AgeCard>
-			<div class="justify-beetwen n flex flex-col justify-around gap-6">
-				<Button color="green" goto="/exercises">Продолжить тренировки</Button>
-				<RecommendationCard
-					title="Совет дня"
-					text="Статья: как физическая активность влияет на память"
-					icon="icons/book-open.svg"
-					goto="/materials"
-					button_text="Прочитать"
-				/>
-			</div>
-		</div>
-
-		{#if showInstallButton}
-			<div class="flex w-full max-w-xs flex-col gap-4 text-center">
-				<h3 class="text-lg">Вы также можете установить приложение на своем устройстве</h3>
-				<Button color="green" onclick={handleInstall}>Установить приложение</Button>
-			</div>
-		{/if}
-		{#if showModal}
-			<Modal bind:showModal>
-				{#snippet header()}
-					<div class="flex flex-col gap-4">
-						<h2 class="text-2xl ">
-							Установка приложения на не chrome-based браузерах
-						</h2>
-						<p >Похоже, Вы используете firefox или safari.</p>
-						<p >
-							Если Вы используете <b>Safari</b>, то вы можете установить приложение на
-							своем устройстве вручную.
-						</p>
-						<ol class="list-inside list-decimal ">
-							<li>
-								<b>Нажмите «Поделиться»</b>: Найдите иконку "Поделиться" (квадрат со
-								стрелкой, смотрящей вверх) внизу или вверху экрана и нажмите на нее.
-							</li>
-							<li>
-								<b>Выберите «На экран «Домой»»:</b> В появившемся меню прокрутите вниз
-								и выберите этот пункт.
-							</li>
-							<li>
-								<b>Подтвердите установку:</b> Задайте имя для ярлыка и нажмите Добавить
-								в правом верхнем углу.
-							</li>
-							<li>
-								<b>Готово:</b> Иконка PWA появится на главном экране, и при нажатии он
-								будет запускаться как отдельное приложение.
-							</li>
-						</ol>
-						<p class="">
-							<b>Firefox</b> не поддерживает установку pwa приложений. В этом случае воспользуйтесь
-							другим браузером.
-						</p>
-					</div>
-				{/snippet}
-				<div class="flex flex-col gap-4">
-					<Button color="green" onclick={() => (showModal = false)}>Понятно</Button>
-					<Button
-						color="red"
-						onclick={() => {
-							localforage.setItem('showInstallButton', false);
-							showModal = false;
-						}}>Больше не показывать</Button
-					>
+<main class="main flex flex-col items-center justify-center-safe">
+	{#if !undiagnosed}
+		<div class="flex flex-col items-center gap-6">
+			<div class="main-content gap-6">
+				<AgeCard age={data.predictedAge} {realAge} />
+				<div class="justify-beetwen n flex flex-col justify-around gap-6">
+					<Button color="green" goto="/exercises">Продолжить тренировки</Button>
+					<RecommendationCard
+						title="Совет дня"
+						text="Статья: как физическая активность влияет на память"
+						icon="/icons/book-open.svg"
+						goto="/materials"
+						button_text="Прочитать"
+					/>
 				</div>
-			</Modal>
-		{/if}
-	</div>
+			</div>
+
+			{#if showInstallButton}
+				<div class="flex w-full max-w-xs flex-col gap-4 text-center">
+					<h3 class="text-lg text-center">
+						Вы также можете установить приложение на своем устройстве
+					</h3>
+					<Button color="green" onclick={handleInstall}>Установить приложение</Button>
+				</div>
+			{/if}
+			{#if showInstallModal}
+				<Modal bind:showModal={showInstallModal}>
+					{#snippet header()}
+						<div class="flex flex-col gap-4">
+							<h2 class="text-2xl text-center">
+								Установка приложения на не chrome-based браузерах
+							</h2>
+							<p>Похоже, Вы используете firefox или safari.</p>
+							<p>
+								Если Вы используете <b>Safari</b>, то вы можете установить
+								приложение на своем устройстве вручную.
+							</p>
+							<ol class="list-inside list-decimal">
+								<li>
+									<b>Нажмите «Поделиться»</b>: Найдите иконку "Поделиться"
+									(квадрат со стрелкой, смотрящей вверх) внизу или вверху экрана и
+									нажмите на нее.
+								</li>
+								<li>
+									<b>Выберите «На экран «Домой»»:</b> В появившемся меню прокрутите
+									вниз и выберите этот пункт.
+								</li>
+								<li>
+									<b>Подтвердите установку:</b> Задайте имя для ярлыка и нажмите Добавить
+									в правом верхнем углу.
+								</li>
+								<li>
+									<b>Готово:</b> Иконка PWA появится на главном экране, и при нажатии
+									он будет запускаться как отдельное приложение.
+								</li>
+							</ol>
+							<p class="">
+								<b>Firefox</b> не поддерживает установку pwa приложений. В этом случае
+								воспользуйтесь другим браузером.
+							</p>
+						</div>
+					{/snippet}
+					<div class="flex flex-col gap-4">
+						<Button color="green" onclick={() => (showInstallModal = false)}
+							>Понятно</Button
+						>
+						<Button
+							color="red"
+							onclick={() => {
+								localforage.setItem('showInstallButton', false);
+								showInstallModal = false;
+							}}>Больше не показывать</Button
+						>
+					</div>
+				</Modal>
+			{/if}
+		</div>
+	{:else}
+		<div class="flex w-full max-w-xs flex-col gap-4 mx-auto text-center">
+			<h2 class="text-center">
+				Пройдите начальную диагностику, чтобы узнать свой когнитивный возраст.
+			</h2>
+			<p class="text-base">
+				После этого Вам откроется тренажёр и много других интересных возможностей.
+			</p>
+			<Button color="green" onclick={handleRunAll}>Пройти диагностику</Button>
+		</div>
+	{/if}
 </main>
 
 <style>

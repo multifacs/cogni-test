@@ -9,7 +9,6 @@
 	// Game state
 	let currentWord: Word = $state('stage 1');
 	let currentColor: Color | 'var(--main-text-color)' = $state('var(--main-text-color)');
-	let score = 0;
 	const DURATION = 5;
 	let timeLeft = $state(DURATION);
 
@@ -32,7 +31,6 @@
 
 	export function resetGame() {
 		game = new StroopGame();
-		score = 0;
 		isTestRunning = true;
 		nextTask();
 	}
@@ -84,7 +82,6 @@
 		clearTimer();
 
 		game.handleAnswer(color as Color);
-		score = game.getResults().filter((x) => x.isCorrect).length;
 		nextTask();
 	}
 
@@ -115,16 +112,16 @@
 
 <div class="color-text flex h-20 flex-col items-center justify-center">
 	{#if isTestRunning}
-		<h1 style="color: {currentColor};">{translate(currentWord)}</h1>
+		<h1 class="text-center" style="color: {currentColor};">{translate(currentWord)}</h1>
 		{#if currentWord.includes('stage')}
 			<p class="text-center sm:text-xl">{stageInstructions[checkWordStage(currentWord)]}</p>
 		{/if}
 	{:else}
-		<h1>Конец теста</h1>
+		<h1 class="text-center">Конец теста</h1>
 	{/if}
 </div>
 <div class="grid grid-cols-[1fr_1fr] gap-4">
-	{#each Object.values(colors) as color}
+	{#each Object.values(colors) as color (color)}
 		<button
 			class="max-xs:w-16 max-xs:h-12 h-16 w-20 cursor-pointer border-none"
 			style="background-color: {color};"
@@ -136,14 +133,3 @@
 {#if isTestRunning}
 	<p class="sm:text-xl">Осталось времени: {timeLeft} сек</p>
 {/if}
-
-<style>
-	.color-button {
-		padding: 10px 20px;
-		margin: 5px;
-		width: 80px;
-		height: 60px;
-		border: none;
-		cursor: pointer;
-	}
-</style>

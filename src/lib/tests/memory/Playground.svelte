@@ -27,9 +27,6 @@
 	let timeLeft = $state(0);
 	let timer: ReturnType<typeof setInterval>;
 
-	let score = $state(0);
-	let isHome = $state(true);
-	let isTestRunning = $state(false);
 	let phase: 'waiting' | 'memorize' | 'task' | 'result' = $state('waiting');
 
 	// Загрузка слов из файла
@@ -46,9 +43,6 @@
 		console.log('Загаданные слова:', memorizationWords);
 		console.log('Задания:', allTasks);
 
-		isHome = false;
-		isTestRunning = true;
-		score = 0;
 		startWaitingPhase();
 	}
 
@@ -106,16 +100,11 @@
 	function handleAnswer(answer: boolean) {
 		if (timer) clearInterval(timer);
 		game.handleSelection(answer);
-
-		const results = game.getResults();
-		score = results.filter((x) => x.isCorrect).length;
-
 		nextWord();
 	}
 
 	export function stopGame() {
 		phase = 'result';
-		isTestRunning = false;
 		gameEnd();
 		sendResults({
 			results: game.getResults(),
@@ -134,12 +123,12 @@
 	<p class="sm:text-2xl">Запомните слова:</p>
 	<div class="flex flex-col gap-2">
 		<div class="mem-grid">
-			{#each memorizationWords.slice(0, 3) as word}
+			{#each memorizationWords.slice(0, 3) as word (word)}
 				<Button color="green">{word}</Button>
 			{/each}
 		</div>
 		<div class="mem-grid">
-			{#each memorizationWords.slice(3, 6) as word}
+			{#each memorizationWords.slice(3, 6) as word (word)}
 				<Button color="green">{word}</Button>
 			{/each}
 		</div>
@@ -147,14 +136,14 @@
 	<p class="sm:text-2xl">Осталось времени: {timeLeft} сек</p>
 {:else if phase === 'task'}
 	<p class="sm:text-2xl">Было ли это слово?</p>
-	<h1>{currentWord}</h1>
+	<h1 class="text-center">{currentWord}</h1>
 	<div class="color-grid">
-		<Button kind="big" color="green" onclick={() => handleAnswer(true)}>ДА</Button>
-		<Button kind="big" color="red" onclick={() => handleAnswer(false)}>НЕТ</Button>
+		<Button color="green" onclick={() => handleAnswer(true)}>ДА</Button>
+		<Button color="red" onclick={() => handleAnswer(false)}>НЕТ</Button>
 	</div>
 	<p class="sm:text-2xl">Осталось времени: {timeLeft} сек</p>
 {:else}
-	<h1>Конец теста</h1>
+	<h1 class="text-center">Конец теста</h1>
 {/if}
 
 <style>
@@ -169,13 +158,5 @@
 		justify-content: center;
 		gap: 1.5rem;
 		margin-bottom: 0.5rem;
-	}
-
-	.mem-word {
-		font-size: 16px;
-		font-weight: bold;
-		background-color: rgb(2, 125, 27);
-		padding: 0.5rem 1rem;
-		border-radius: 6px;
 	}
 </style>

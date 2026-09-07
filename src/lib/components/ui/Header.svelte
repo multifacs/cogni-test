@@ -5,7 +5,10 @@
 <div class="banner">
 	<div class="flex items-center justify-between gap-4">
 		<img src="/logo.svg" alt="Icon" class="icon" />
-		<h2 style="font-weight: var(--font-weight-bold); --tw-font-weight: var(--font-weight-bold)">
+		<h2
+			class="text-center"
+			style="font-weight: var(--font-weight-bold); --tw-font-weight: var(--font-weight-bold)"
+		>
 			{text}
 		</h2>
 	</div>

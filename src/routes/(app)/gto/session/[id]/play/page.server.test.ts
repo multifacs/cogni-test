@@ -1,6 +1,25 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { GTO_TEST_ORDER } from '$lib/tests';
 
+import type { PageServerLoad } from './$types';
+
+const makeCookies = (userId?: string) => ({
+	get: (name: string) => (name === 'user_id' ? userId : undefined)
+});
+type LoadEvent = Parameters<PageServerLoad>[0];
+
+const makeEvent = (id: string, userId?: string): LoadEvent =>
+	({
+		params: { id },
+		cookies: makeCookies(userId)
+	}) as LoadEvent;
+
+type RedirectLike = { status: number; location: string };
+
+function asRedirect(e: unknown): RedirectLike {
+	return e as RedirectLike;
+}
+
 // ─── Mock setup ────────────────────────────────────────────────────────
 
 const mockSessionDetail = {
@@ -50,13 +69,11 @@ describe('GTO play page server', () => {
 		mockSessionDetail.participants[0].currentTestIndex = 0;
 
 		try {
-			await load({
-				params: { id: 'sess-1' },
-				cookies: { get: (name: string) => (name === 'user_id' ? 'user-1' : undefined) }
-			} as any);
-		} catch (e: any) {
-			expect(e.status).toBe(307);
-			expect(e.location).toBe(`${GTO_TEST_ORDER[0].route}/about?gtoSessionId=sess-1`);
+			await load(makeEvent('sess-1', 'user-1'));
+		} catch (e) {
+			const redirect = asRedirect(e);
+			expect(redirect.status).toBe(307);
+			expect(redirect.location).toBe(`${GTO_TEST_ORDER[0].route}/about?gtoSessionId=sess-1`);
 		}
 	});
 
@@ -67,13 +84,11 @@ describe('GTO play page server', () => {
 		mockSessionDetail.participants[0].currentTestIndex = mathIndex;
 
 		try {
-			await load({
-				params: { id: 'sess-1' },
-				cookies: { get: (name: string) => (name === 'user_id' ? 'user-1' : undefined) }
-			} as any);
-		} catch (e: any) {
-			expect(e.status).toBe(307);
-			expect(e.location).toBe(
+			await load(makeEvent('sess-1', 'user-1'));
+		} catch (e) {
+			const redirect = asRedirect(e);
+			expect(redirect.status).toBe(307);
+			expect(redirect.location).toBe(
 				`${GTO_TEST_ORDER[mathIndex].route}/about?gtoSessionId=sess-1`
 			);
 		}
@@ -86,13 +101,13 @@ describe('GTO play page server', () => {
 		mockSessionDetail.participants[0].currentTestIndex = ravenIndex;
 
 		try {
-			await load({
-				params: { id: 'sess-1' },
-				cookies: { get: (name: string) => (name === 'user_id' ? 'user-1' : undefined) }
-			} as any);
-		} catch (e: any) {
-			expect(e.status).toBe(307);
-			expect(e.location).toBe(`/exercises/raven-matrices/about?gtoSessionId=sess-1`);
+			await load(makeEvent('sess-1', 'user-1'));
+		} catch (e) {
+			const redirect = asRedirect(e);
+			expect(redirect.status).toBe(307);
+			expect(redirect.location).toBe(
+				`${GTO_TEST_ORDER[ravenIndex].route}/about?gtoSessionId=sess-1`
+			);
 		}
 	});
 
@@ -103,13 +118,11 @@ describe('GTO play page server', () => {
 		mockSessionDetail.participants[0].hasSubmittedWords = false;
 
 		try {
-			await load({
-				params: { id: 'sess-1' },
-				cookies: { get: (name: string) => (name === 'user_id' ? 'user-1' : undefined) }
-			} as any);
-		} catch (e: any) {
-			expect(e.status).toBe(307);
-			expect(e.location).toBe('/gto/session/sess-1/words');
+			await load(makeEvent('sess-1', 'user-1'));
+		} catch (e) {
+			const redirect = asRedirect(e);
+			expect(redirect.status).toBe(307);
+			expect(redirect.location).toBe('/gto/session/sess-1/words');
 		}
 	});
 });

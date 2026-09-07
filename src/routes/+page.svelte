@@ -8,8 +8,6 @@
 	import DateInput from '$lib/components/ui/login-form/DateInput.svelte';
 	import TextInput from '$lib/components/ui/login-form/TextInput.svelte';
 
-	let { data } = $props();
-
 	let firstname = $state('');
 	let lastname = $state('');
 	let birthdate = $state('');
@@ -40,13 +38,13 @@
 </script>
 
 <form
-	class="mx-auto flex w-full max-w-sm flex-col gap-4 rounded-3xl bg-[var(--main-bg-color)] bg-white p-6 text-white shadow-xl"
+	class="mx-auto flex w-full max-w-sm flex-col gap-4 rounded-3xl bg-(--main-bg-color) p-6 text-white shadow-xl"
 	method="POST"
 	action="?/login"
 	use:enhance
 >
 	<div class="flex justify-center gap-5">
-		<img src="/logo.svg" class="w-[25%]" />
+		<img src="/logo.svg" class="w-[25%]" alt="Cogni-Test logo" />
 		<h1 style="text-align: left; font-size: clamp(1.2rem, 3vw, 2rem);">
 			Добро пожаловать в Cogni Test!
 		</h1>
@@ -95,11 +93,7 @@
 		/>
 		<label for="consent" class="select-none">
 			Согласен(а) на
-			<a
-				href={resolve('/consent')}
-				class="underline hover:opacity-80"
-				target="_blank"
-			>
+			<a href={resolve('/consent')} class="underline hover:opacity-80" target="_blank">
 				обработку персональных данных
 			</a>
 		</label>

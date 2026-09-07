@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { getActiveGtoSessionsForUser } from './gto';
 
-let mockRows: any[] = [
+let mockRows = [
 	{
 		gtoSessionId: 'sess-1',
 		name: 'Test Session',

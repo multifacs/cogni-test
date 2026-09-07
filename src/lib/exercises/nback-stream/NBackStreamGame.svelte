@@ -27,7 +27,7 @@
 	let startAt = 0;
 	let stimShownAt = 0;
 	let remainSec = $state(60);
-	let tickTimer: any = null;
+	let tickTimer: ReturnType<typeof setInterval> | undefined;
 
 	function pickTargetForFigures(): TargetFeature {
 		return Math.random() < 0.5 ? 'shape' : 'color';
@@ -141,20 +141,12 @@
 		gameEnd();
 	}
 
-	function restart() {
-		clicks = [];
-		lastClickTs = null;
-		seq = [];
-		phase = 'config';
-		clearInterval(tickTimer);
-	}
-
 	onDestroy(() => clearInterval(tickTimer));
 </script>
 
 {#if phase === 'config'}
 	<div class="flex flex-col gap-4">
-		<h2 class="text-xl font-semibold">Выберите режим</h2>
+		<h2 class="text-xl font-semibold text-center">Выберите режим</h2>
 		<div class="grid max-w-xl grid-cols-2 gap-4">
 			<button
 				class="card {domain === 'figures' ? 'selected' : ''}"

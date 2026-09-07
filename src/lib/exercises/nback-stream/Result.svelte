@@ -2,13 +2,12 @@
 	import ResultsChart from './ResultsChart.svelte';
 	import type { ExerciseResults } from '$lib/exercises/types';
 	import type { NBackTrialRow } from './types';
-	import { formatMs, summary, domainLabel, targetLabel } from './results-adapter';
+	import { formatMs, summary, domainLabel } from './results-adapter';
 
-	let { results }: { results: ExerciseResults; exerciseType?: string; meta?: string[] } =
-		$props();
+	let { results }: { results: ExerciseResults } = $props();
 
-	const rows = results as NBackTrialRow[];
-	const s = summary(rows);
+	const rows = $derived(results as NBackTrialRow[]);
+	const s = $derived(summary(rows));
 </script>
 
 <div class="grid grid-cols-4 gap-2 py-2 sm:gap-4">

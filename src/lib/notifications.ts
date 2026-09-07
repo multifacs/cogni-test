@@ -23,8 +23,10 @@ export async function scheduleTestReminder(testSlug: string, delayMinutes: numbe
 
 	// Register background sync (for when tab is closed)
 	if ('serviceWorker' in navigator) {
-		const registration = (await navigator.serviceWorker.ready) as ServiceWorkerRegistration;
-		if ('sync' in registration) {
+		const registration = (await navigator.serviceWorker.ready) as ServiceWorkerRegistration & {
+			sync?: { register: (tag: string) => Promise<void> };
+		};
+		if (registration.sync) {
 			await registration.sync.register(`reminder-${reminder.id}`);
 		}
 	}
@@ -45,4 +47,3 @@ async function showNotification(testSlug: string) {
 		requireInteraction: true
 	});
 }
-

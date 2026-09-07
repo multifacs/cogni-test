@@ -34,7 +34,10 @@
 
 	let { data }: PageProps = $props();
 	let editingName = $state(false);
-	let sessionName = $state(data.session.name);
+
+	let sessionName = $derived(data.session.name);
+	// если после сохранения имени сервер вернёт обновлённый data — поле корректно обновится; ручные правки пользователя не перетрутся, пока data.session.name не изменится реально)
+
 	let savingMetrics = new SvelteSet<string>();
 	let toastMessage = $state<string | null>(null);
 	let toastType = $state<'error' | 'success' | 'info'>('info');
@@ -87,10 +90,6 @@
 			);
 		}
 	});
-
-	function formatDate(dateStr: string) {
-		return new Date(dateStr).toLocaleString('ru-RU');
-	}
 
 	function fmt(val: number | null, decimals = 2): string {
 		if (val === null) return '—';
@@ -273,22 +272,17 @@
 				let avgReactionLeft: number | string | null = null;
 				let accuracyLeft: number | string | null = null;
 
-				const hasDbButton =
-					m.editableMetrics.buttonTestFileName &&
-					m.editableMetrics.buttonTestNumber != null;
-				if (hasDbButton) {
+				const buttonTestFileName = m.editableMetrics.buttonTestFileName;
+				const buttonTestNumber = m.editableMetrics.buttonTestNumber;
+				if (buttonTestFileName && buttonTestNumber != null) {
 					const result = await getResultForParticipant(
-						m.editableMetrics.buttonTestFileName!,
-						m.editableMetrics.buttonTestNumber
+						buttonTestFileName,
+						buttonTestNumber
 					);
-					avgReactionLeft =
-						result.left?.avgReaction ?? (hasDbButton ? 'файл не загружен' : null);
-					accuracyLeft =
-						result.left?.accuracy ?? (hasDbButton ? 'файл не загружен' : null);
-					avgReactionRight =
-						result.right?.avgReaction ?? (hasDbButton ? 'файл не загружен' : null);
-					accuracyRight =
-						result.right?.accuracy ?? (hasDbButton ? 'файл не загружен' : null);
+					avgReactionLeft = result.left?.avgReaction ?? 'файл не загружен';
+					accuracyLeft = result.left?.accuracy ?? 'файл не загружен';
+					avgReactionRight = result.right?.avgReaction ?? 'файл не загружен';
+					accuracyRight = result.right?.accuracy ?? 'файл не загружен';
 				}
 
 				rows.push({
@@ -392,48 +386,47 @@
 
 <svelte:window onclick={closeMenuOutside} />
 
-
 <main class="main overflow-auto p-4">
-<section >
-	<div class="flex items-center justify-center gap-3">
-		{#if editingName}
-			<div class="flex items-center gap-2">
-				<input
-					type="text"
-					bind:value={sessionName}
-					class="rounded-lg bg-gray-700 px-3 py-1.5 text-2xl font-bold text-white"
-					onkeydown={(e) => e.key === 'Enter' && handleRename()}
-				/>
-				<Button color="green" onclick={handleRename}>Сохранить</Button>
-				<Button color="gray" onclick={() => (editingName = false)}>Отмена</Button>
-			</div>
-		{:else}
-			<h1 class="text-2xl font-bold">{data.session.name}</h1>
-			<button
-				class="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-700 hover:text-white"
-				onclick={() => (editingName = true)}
-				aria-label="Переименовать"
-			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					class="h-4 w-4"
-					viewBox="0 0 20 20"
-					fill="currentColor"
-				>
-					<path
-						d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
+	<section>
+		<div class="flex items-center justify-center gap-3">
+			{#if editingName}
+				<div class="flex items-center gap-2">
+					<input
+						type="text"
+						bind:value={sessionName}
+						class="rounded-lg bg-gray-700 px-3 py-1.5 text-2xl font-bold text-white"
+						onkeydown={(e) => e.key === 'Enter' && handleRename()}
 					/>
-				</svg>
-			</button>
-		{/if}
-		<span
-			class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm {statusStyle.bg} {statusStyle.text}"
-		>
-			<span class="h-2 w-2 rounded-full {statusStyle.dot}"></span>
-			{statusStyle.label}
-		</span>
-	</div>
-</section>
+					<Button color="green" onclick={handleRename}>Сохранить</Button>
+					<Button color="gray" onclick={() => (editingName = false)}>Отмена</Button>
+				</div>
+			{:else}
+				<h1 class="text-2xl font-bold text-center">{data.session.name}</h1>
+				<button
+					class="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-700 hover:text-white"
+					onclick={() => (editingName = true)}
+					aria-label="Переименовать"
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						class="h-4 w-4"
+						viewBox="0 0 20 20"
+						fill="currentColor"
+					>
+						<path
+							d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
+						/>
+					</svg>
+				</button>
+			{/if}
+			<span
+				class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm {statusStyle.bg} {statusStyle.text}"
+			>
+				<span class="h-2 w-2 rounded-full {statusStyle.dot}"></span>
+				{statusStyle.label}
+			</span>
+		</div>
+	</section>
 	<div class="flex flex-col gap-4">
 		<!-- Session control menu -->
 		{#if data.session.status !== 'completed'}
@@ -456,7 +449,7 @@
 				</button>
 				{#if menuOpen}
 					<div
-						class="absolute top-full left-0 z-10 mt-1 min-w-[200px] rounded-lg border border-gray-700 bg-gray-800 py-1 shadow-xl"
+						class="absolute top-full left-0 z-10 mt-1 min-w-50 rounded-lg border border-gray-700 bg-gray-800 py-1 shadow-xl"
 					>
 						{#if data.session.status === 'active'}
 							<button
@@ -556,7 +549,7 @@
 				</button>
 				{#if menuOpen}
 					<div
-						class="absolute top-full left-0 z-10 mt-1 min-w-[200px] rounded-lg border border-gray-700 bg-gray-800 py-1 shadow-xl"
+						class="absolute top-full left-0 z-10 mt-1 min-w-50 rounded-lg border border-gray-700 bg-gray-800 py-1 shadow-xl"
 					>
 						<button
 							class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-green-300 transition-colors hover:bg-gray-700"
@@ -610,7 +603,7 @@
 							type="text"
 							bind:value={participantSearch}
 							placeholder="Поиск по имени или ГТО-М ID..."
-							class="rounded-lg bg-[#] px-3 py-2 text-sm"
+							class="rounded-lg bg-[#E5E7EB] px-3 py-2 text-sm"
 						/>
 						<label class="flex items-center gap-1.5 text-sm whitespace-nowrap">
 							<input type="checkbox" bind:checked={filterRecent} class="rounded" />
@@ -639,7 +632,7 @@
 										<span class="truncate text-sm font-medium"
 											>{u.firstname} {u.lastname}</span
 										>
-										<span class="text-xs ">
+										<span class="text-xs">
 											{u.sex === 'male' ? 'М' : 'Ж'} · {u.age} лет
 											{#if u.gtoId}
 												· ГТО-М: {u.gtoId}
@@ -687,7 +680,7 @@
 			</div>
 		{:else}
 			<div class="flex items-center gap-3">
-				<h2 class="text-lg font-semibold">Участники</h2>
+				<h2 class="text-lg font-semibold text-center">Участники</h2>
 				<span class="text-sm text-gray-400"
 					>({filteredMetrics.length}/{data.metrics.length})</span
 				>
@@ -709,12 +702,12 @@
 						type="text"
 						placeholder="Поиск участников..."
 						bind:value={metricsSearch}
-						class="rounded-lg bg-[#E5E7EB]  py-2 pr-3 pl-8 text-sm"
+						class="rounded-lg bg-[#E5E7EB] py-2 pr-3 pl-8 text-sm"
 					/>
 				</div>
 			</div>
 			{#if filteredMetrics.length === 0}
-				<p class="py-4 text-center text-sm text-gray-400 ">Участники не найдены</p>
+				<p class="py-4 text-center text-sm text-gray-400">Участники не найдены</p>
 			{:else}
 				<div class="flex flex-col gap-3">
 					{#each filteredMetrics as m, i (m.participantId)}
@@ -723,14 +716,20 @@
 						{@const isSaving = savingMetrics.has(m.participantId)}
 						{@const effectiveButtonFile =
 							selectedButtonFile.get(m.participantId) ?? em.buttonTestFileName}
-						<div
-							class="rounded-xl border border-gray-700 bg-white transition-colors"
-						>
+						<div class="rounded-xl border border-gray-700 bg-white transition-colors">
 							<!-- Card header — always visible -->
-							<button
-								class="flex w-full items-center gap-3 px-4 py-3 text-left"
+							<div
+								role="button"
+								tabindex={0}
+								class="flex w-full cursor-pointer select-none items-center gap-3 px-4 py-3 text-left"
 								onclick={() =>
 									(expandedParticipant = isExpanded ? null : m.participantId)}
+								onkeydown={(e) => {
+									if (e.key === 'Enter' || e.key === ' ') {
+										e.preventDefault();
+										expandedParticipant = isExpanded ? null : m.participantId;
+									}
+								}}
 							>
 								<span
 									class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-(--main-accent-color) text-sm font-bold text-white"
@@ -838,7 +837,7 @@
 										/>
 									</svg>
 								</div>
-							</button>
+							</div>
 
 							<!-- Expanded content -->
 							{#if isExpanded}
@@ -851,21 +850,20 @@
 											<!-- Stroop -->
 											<div class="rounded-lg bg-[#E5E7EB] p-3">
 												<h4
-													class="mb-2 text-xs font-semibold tracking-wider text-blue-400 uppercase"
+													class="mb-2 text-xs font-semibold tracking-wider text-blue-400 uppercase text-center"
 												>
 													Струп
 												</h4>
 												<div class="flex flex-col gap-1.5 text-sm">
-													{#each [{ label: 'Этап 1', data: m.stroop.stage1 }, { label: 'Этап 2', data: m.stroop.stage2 }, { label: 'Этап 3', data: m.stroop.stage3 }] as stage}
+													{#each [{ label: 'Этап 1', data: m.stroop.stage1 }, { label: 'Этап 2', data: m.stroop.stage2 }, { label: 'Этап 3', data: m.stroop.stage3 }] as stage (stage.label)}
 														<div class="flex items-center gap-2">
-															<span
-																class="w-16 shrink-0 text-xs "
+															<span class="w-16 shrink-0 text-xs"
 																>{stage.label}</span
 															>
 															<span class="tabular-nums"
 																>{fmt(stage.data.meanTime)}с</span
 															>
-															<span class="text-xs "
+															<span class="text-xs"
 																>σ{fmt(stage.data.stdDevTime)}</span
 															>
 															<span
@@ -886,14 +884,13 @@
 											<!-- Math -->
 											<div class="rounded-lg bg-[#E5E7EB] p-3">
 												<h4
-													class="mb-2 text-xs font-semibold tracking-wider text-emerald-400 uppercase"
+													class="mb-2 text-xs font-semibold tracking-wider text-emerald-400 uppercase text-center"
 												>
 													Арифметика
 												</h4>
 												<div class="flex flex-col gap-1 text-sm">
 													<div class="flex items-center gap-2">
-														<span
-															class="w-16 shrink-0 text-xs "
+														<span class="w-16 shrink-0 text-xs"
 															>Среднее</span
 														>
 														<span class="tabular-nums"
@@ -901,17 +898,13 @@
 														>
 													</div>
 													<div class="flex items-center gap-2">
-														<span
-															class="w-16 shrink-0 text-xs "
-															>σ</span
-														>
+														<span class="w-16 shrink-0 text-xs">σ</span>
 														<span class="tabular-nums"
 															>{fmt(m.math.stdDevTime)}</span
 														>
 													</div>
 													<div class="flex items-center gap-2">
-														<span
-															class="w-16 shrink-0 text-xs "
+														<span class="w-16 shrink-0 text-xs"
 															>Точность</span
 														>
 														<span
@@ -931,14 +924,13 @@
 											<!-- Munsterberg -->
 											<div class="rounded-lg bg-[#E5E7EB] p-3">
 												<h4
-													class="mb-2 text-xs font-semibold tracking-wider text-amber-400 uppercase"
+													class="mb-2 text-xs font-semibold tracking-wider text-amber-400 uppercase text-center"
 												>
 													Мюнстерберг
 												</h4>
 												<div class="flex flex-col gap-1 text-sm">
 													<div class="flex items-center gap-2">
-														<span
-															class="w-16 shrink-0 text-xs "
+														<span class="w-16 shrink-0 text-xs"
 															>Среднее</span
 														>
 														<span class="tabular-nums"
@@ -946,17 +938,13 @@
 														>
 													</div>
 													<div class="flex items-center gap-2">
-														<span
-															class="w-16 shrink-0 text-xs "
-															>σ</span
-														>
+														<span class="w-16 shrink-0 text-xs">σ</span>
 														<span class="tabular-nums"
 															>{fmt(m.munsterberg.stdDevTime)}</span
 														>
 													</div>
 													<div class="flex items-center gap-2">
-														<span
-															class="w-16 shrink-0 text-xs "
+														<span class="w-16 shrink-0 text-xs"
 															>Доля</span
 														>
 														<span class="tabular-nums"
@@ -966,8 +954,7 @@
 														>
 													</div>
 													<div class="flex items-center gap-2">
-														<span
-															class="w-16 shrink-0 text-xs "
+														<span class="w-16 shrink-0 text-xs"
 															>Кол-во</span
 														>
 														<span class="tabular-nums"
@@ -980,14 +967,14 @@
 											<!-- Campimetry -->
 											<div class="rounded-lg bg-[#E5E7EB] p-3">
 												<h4
-													class="mb-2 text-xs font-semibold tracking-wider text-rose-400 uppercase"
+													class="mb-2 text-xs font-semibold tracking-wider text-rose-400 uppercase text-center"
 												>
 													Кампиметрия
 												</h4>
 												<div class="flex flex-col gap-1.5 text-sm">
-													{#each [{ label: 'Этап 1', data: m.campimetry.stage1 }, { label: 'Этап 2', data: m.campimetry.stage2 }] as stage}
+													{#each [{ label: 'Этап 1', data: m.campimetry.stage1 }, { label: 'Этап 2', data: m.campimetry.stage2 }] as stage (stage.label)}
 														<div class="flex flex-col gap-1">
-															<span class="text-xs "
+															<span class="text-xs"
 																>{stage.label}</span
 															>
 															<div
@@ -998,12 +985,12 @@
 																		stage.data.meanTime
 																	)}с</span
 																>
-																<span class="text-xs "
+																<span class="text-xs"
 																	>σ{fmt(
 																		stage.data.stdDevTime
 																	)}</span
 																>
-																<span class="text-xs "
+																<span class="text-xs"
 																	>δ{fmt(
 																		stage.data.meanDelta
 																	)}</span
@@ -1012,9 +999,7 @@
 														</div>
 													{/each}
 													<div class="mt-1 border-t bg-[#E5E7EB] pt-1">
-														<span class="text-xs "
-															>Разброс (эт. 2)</span
-														>
+														<span class="text-xs">Разброс (эт. 2)</span>
 														<div class="flex gap-3 pl-2 text-xs">
 															<span class="text-yellow-400"
 																>Недож: {m.campimetry
@@ -1038,14 +1023,13 @@
 											<!-- Memory -->
 											<div class="rounded-lg bg-[#E5E7EB] p-3">
 												<h4
-													class="mb-2 text-xs font-semibold tracking-wider text-cyan-400 uppercase"
+													class="mb-2 text-xs font-semibold tracking-wider text-cyan-400 uppercase text-center"
 												>
 													Память
 												</h4>
 												<div class="flex flex-col gap-1 text-sm">
 													<div class="flex items-center gap-2">
-														<span
-															class="w-16 shrink-0 text-xs "
+														<span class="w-16 shrink-0 text-xs"
 															>Среднее</span
 														>
 														<span class="tabular-nums"
@@ -1053,17 +1037,13 @@
 														>
 													</div>
 													<div class="flex items-center gap-2">
-														<span
-															class="w-16 shrink-0 text-xs "
-															>σ</span
-														>
+														<span class="w-16 shrink-0 text-xs">σ</span>
 														<span class="tabular-nums"
 															>{fmt(m.memory.stdDevTime)}</span
 														>
 													</div>
 													<div class="flex items-center gap-2">
-														<span
-															class="w-16 shrink-0 text-xs "
+														<span class="w-16 shrink-0 text-xs"
 															>Точность</span
 														>
 														<span
@@ -1078,8 +1058,7 @@
 														</span>
 													</div>
 													<div class="flex items-center gap-2">
-														<span
-															class="w-16 shrink-0 text-xs "
+														<span class="w-16 shrink-0 text-xs"
 															>Точность</span
 														>
 														<span
@@ -1099,14 +1078,13 @@
 											<!-- Swallow -->
 											<div class="rounded-lg bg-[#E5E7EB] p-3">
 												<h4
-													class="mb-2 text-xs font-semibold tracking-wider text-teal-400 uppercase"
+													class="mb-2 text-xs font-semibold tracking-wider text-teal-400 uppercase text-center"
 												>
 													Ласточка
 												</h4>
 												<div class="flex flex-col gap-1 text-sm">
 													<div class="flex items-center gap-2">
-														<span
-															class="w-16 shrink-0 text-xs "
+														<span class="w-16 shrink-0 text-xs"
 															>Среднее</span
 														>
 														<span class="tabular-nums"
@@ -1114,17 +1092,13 @@
 														>
 													</div>
 													<div class="flex items-center gap-2">
-														<span
-															class="w-16 shrink-0 text-xs "
-															>σ</span
-														>
+														<span class="w-16 shrink-0 text-xs">σ</span>
 														<span class="tabular-nums"
 															>{fmt(m.swallow.stdDevTime)}</span
 														>
 													</div>
 													<div class="flex items-center gap-2">
-														<span
-															class="w-16 shrink-0 text-xs "
+														<span class="w-16 shrink-0 text-xs"
 															>Точность</span
 														>
 														<span
@@ -1144,14 +1118,13 @@
 											<!-- Raven -->
 											<div class="rounded-lg bg-[#E5E7EB] p-3">
 												<h4
-													class="mb-2 text-xs font-semibold tracking-wider text-violet-400 uppercase"
+													class="mb-2 text-xs font-semibold tracking-wider text-violet-400 uppercase text-center"
 												>
 													Матрицы Равена
 												</h4>
 												<div class="flex flex-col gap-1 text-sm">
 													<div class="flex items-center gap-2">
-														<span
-															class="w-20 shrink-0 text-xs "
+														<span class="w-20 shrink-0 text-xs"
 															>Всего</span
 														>
 														<span class="tabular-nums"
@@ -1160,8 +1133,7 @@
 														>
 													</div>
 													<div class="flex items-center gap-2">
-														<span
-															class="w-20 shrink-0 text-xs "
+														<span class="w-20 shrink-0 text-xs"
 															>Точность</span
 														>
 														<span
@@ -1176,8 +1148,7 @@
 														</span>
 													</div>
 													<div class="flex items-center gap-2">
-														<span
-															class="w-20 shrink-0 text-xs "
+														<span class="w-20 shrink-0 text-xs"
 															>Среднее</span
 														>
 														<span class="tabular-nums"
@@ -1189,15 +1160,12 @@
 												</div>
 
 												<div class="mt-2 border-t border-gray-700 pt-2">
-													<span class="text-xs"
-														>По сложности</span
-													>
+													<span class="text-xs">По сложности</span>
 													<div
 														class="mt-1 grid grid-cols-3 gap-2 text-xs"
 													>
 														<div>
-															<span class="">Легкие</span
-															>
+															<span class="">Легкие</span>
 															<div class="tabular-nums">
 																{m.raven.byDifficulty.level1
 																	.correct}/{m.raven.byDifficulty
@@ -1205,9 +1173,7 @@
 															</div>
 														</div>
 														<div>
-															<span class=""
-																>Средние</span
-															>
+															<span class="">Средние</span>
 															<div class="tabular-nums">
 																{m.raven.byDifficulty.level2
 																	.correct}/{m.raven.byDifficulty
@@ -1215,9 +1181,7 @@
 															</div>
 														</div>
 														<div>
-															<span class=""
-																>Сложные</span
-															>
+															<span class="">Сложные</span>
 															<div class="tabular-nums">
 																{m.raven.byDifficulty.level3
 																	.correct}/{m.raven.byDifficulty
@@ -1229,9 +1193,7 @@
 
 												{#if Object.keys(m.raven.byTaskClass).length > 0}
 													<div class="mt-2 border-t border-gray-700 pt-2">
-														<span class="text-xs"
-															>По классу задач</span
-														>
+														<span class="text-xs">По классу задач</span>
 														<div
 															class="mt-1 flex flex-col gap-0.5 text-xs"
 														>
@@ -1239,9 +1201,7 @@
 																<div
 																	class="flex items-center justify-between"
 																>
-																	<span
-																		>{info.label}</span
-																	>
+																	<span>{info.label}</span>
 																	<span class="tabular-nums"
 																		>{info.correct}/{info.total}</span
 																	>
@@ -1258,7 +1218,7 @@
 											class="rounded-lg border border-gray-700 bg-[#E5E7EB] p-4"
 										>
 											<h4
-												class="mb-3 text-xs font-semibold tracking-wider  uppercase"
+												class="mb-3 text-xs font-semibold tracking-wider uppercase text-center"
 											>
 												Редактируемые данные
 											</h4>
@@ -1283,9 +1243,7 @@
 											>
 												<!-- Balance test -->
 												<label class="flex flex-col gap-1">
-													<span class="text-xs "
-														>Тест на баланс</span
-													>
+													<span class="text-xs">Тест на баланс</span>
 													<select
 														name="balanceTest"
 														class="rounded-lg bg-white px-3 py-2 text-sm"
@@ -1305,9 +1263,7 @@
 
 												<!-- Maze Q1/Q2/Q3 -->
 												<label class="flex flex-col gap-1">
-													<span class="text-xs "
-														>Лабиринт Q1</span
-													>
+													<span class="text-xs">Лабиринт Q1</span>
 													<input
 														type="number"
 														name="mazeQ1"
@@ -1320,9 +1276,7 @@
 													/>
 												</label>
 												<label class="flex flex-col gap-1">
-													<span class="text-xs "
-														>Лабиринт Q2</span
-													>
+													<span class="text-xs">Лабиринт Q2</span>
 													<input
 														type="number"
 														name="mazeQ2"
@@ -1335,9 +1289,7 @@
 													/>
 												</label>
 												<label class="flex flex-col gap-1">
-													<span class="text-xs "
-														>Лабиринт Q3</span
-													>
+													<span class="text-xs">Лабиринт Q3</span>
 													<input
 														type="number"
 														name="mazeQ3"
@@ -1352,9 +1304,7 @@
 
 												<!-- Maze VR -->
 												<label class="flex flex-col gap-1">
-													<span class="text-xs "
-														>Лабиринт VR №</span
-													>
+													<span class="text-xs">Лабиринт VR №</span>
 													<input
 														type="number"
 														name="mazeVRNumber"
@@ -1364,9 +1314,7 @@
 													/>
 												</label>
 												<label class="flex flex-col gap-1">
-													<span class="text-xs "
-														>Лабиринт VR файл</span
-													>
+													<span class="text-xs">Лабиринт VR файл</span>
 													<input
 														type="text"
 														name="mazeVRFileName"
@@ -1378,9 +1326,7 @@
 
 												<!-- Button test file -->
 												<label class="flex flex-col gap-1">
-													<span class="text-xs "
-														>Кнопочки файл</span
-													>
+													<span class="text-xs">Кнопочки файл</span>
 													<input
 														type="text"
 														name="buttonTestFileName"
@@ -1439,9 +1385,7 @@
 
 												<!-- Button test number -->
 												<label class="flex flex-col gap-1">
-													<span class="text-xs "
-														>Кнопочки №</span
-													>
+													<span class="text-xs">Кнопочки №</span>
 													<input
 														type="number"
 														name="buttonTestNumber"
@@ -1464,8 +1408,7 @@
 
 												<!-- Logic -->
 												<label class="flex flex-col gap-1">
-													<span class="text-xs ">Логика</span
-													>
+													<span class="text-xs">Логика</span>
 													<input
 														type="number"
 														name="logic"
@@ -1480,9 +1423,7 @@
 
 												<!-- Word set -->
 												<label class="flex flex-col gap-1">
-													<span class="text-xs "
-														>Сет слов</span
-													>
+													<span class="text-xs">Сет слов</span>
 													<select
 														name="wordSetNumber"
 														class="rounded-lg bg-white px-3 py-2 text-sm"
@@ -1533,15 +1474,13 @@
 												</div>
 											</form>
 										</div>
-										<div
-											class="rounded-lg border border-gray-700 bg-white p-4"
-										>
+										<div class="rounded-lg border border-gray-700 bg-white p-4">
 											<h2
-												class="mb-3 text-xs font-semibold tracking-wider  uppercase"
+												class="mb-3 text-xs font-semibold tracking-wider uppercase text-center"
 											>
 												Выбранные слова:
 											</h2>
-											<p class="text-center ">
+											<p class="text-center">
 												{m.submittedWords?.join(', ')}
 											</p>
 										</div>
@@ -1553,7 +1492,7 @@
 				</div>
 				<!-- Button test file upload -->
 				<details class="rounded-lg border border-gray-700 bg-white p-4" open>
-					<summary class="cursor-pointer text-sm font-medium ">
+					<summary class="cursor-pointer text-sm font-medium">
 						Файлы кнопочных тестов
 						{#if fileNumbersWithStatus.length > 0}
 							<span
@@ -1565,7 +1504,7 @@
 					</summary>
 					<div class="mt-3 space-y-3">
 						<div
-							class="rounded-lg border border-yellow-800/50 bg-yellow-200 p-2 text-xs "
+							class="rounded-lg border border-yellow-800/50 bg-yellow-200 p-2 text-xs"
 						>
 							Данные кнопочных тестов хранятся только в этом браузере. Другие
 							администраторы не увидят загруженные файлы.

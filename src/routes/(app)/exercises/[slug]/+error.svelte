@@ -1,5 +1,4 @@
 <script>
-	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
 </script>
 
@@ -8,5 +7,5 @@
 </main>
 
 <section class="low-content grid grid-cols-1">
-	<Button color="red" goto={`/exercises`}>Назад к упражнениям</Button>
+	<Button color="red" goto="/exercises">Назад к упражнениям</Button>
 </section>

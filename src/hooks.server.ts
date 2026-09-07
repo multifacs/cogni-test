@@ -6,6 +6,7 @@ import { scheduledPushNotifications, pushSubscriptions } from '$lib/server/db/sc
 import { webpush } from '$lib/server/webpush';
 import { eq, and, lte } from 'drizzle-orm';
 import { formatDateLog } from '$lib/utils';
+import { WebPushError } from 'web-push';
 
 declare global {
 	var __notification_worker__: NodeJS.Timeout | null;
@@ -94,11 +95,12 @@ export async function processScheduledNotifications() {
 						notificationId: notification.id,
 						endpoint: subscription.endpoint
 					};
-				} catch (error: any) {
+				} catch (error) {
 					console.error('Failed to send scheduled notification:', notification.id, error);
 
 					// Handle expired subscriptions
-					if (error.statusCode === 410 || error.statusCode === 404) {
+					const status = (error as { statusCode?: number } | null)?.statusCode;
+					if (status === 410 || status === 404) {
 						await db
 							.update(pushSubscriptions)
 							.set({ isActive: false })
@@ -113,7 +115,8 @@ export async function processScheduledNotifications() {
 					return {
 						success: false,
 						notificationId: notification.id,
-						error: error.message
+						error:
+							error instanceof WebPushError && [410, 404].includes(error.statusCode)
 					};
 				}
 			})
@@ -145,13 +148,12 @@ let isProcessing = false;
 // Use globalThis to persist across HMR
 const WORKER_KEY = '__notification_worker__';
 
-
 // Worker function that runs every 3 seconds
 function startWorker() {
 	// Check if worker already exists globally
 	if (globalThis[WORKER_KEY]) {
 		console.log('Worker already running globally, restarting...');
-		stopWorker()
+		stopWorker();
 	}
 
 	// Fix for terminal input issues

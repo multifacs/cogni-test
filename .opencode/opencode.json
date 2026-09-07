@@ -1,9 +1,4 @@
 {
 	"$schema": "https://opencode.ai/config.json",
-	"plugin": ["@sveltejs/opencode"],
-	"permission": {
-		"external_directory": {
-			"../": "allow"
-		}
-	}
+	"plugin": ["@sveltejs/opencode"]
 }

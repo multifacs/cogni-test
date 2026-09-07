@@ -149,7 +149,7 @@
 {/if} -->
 
 {#if !finished}
-	<div class="flex flex-col items-center justify-center gap-6 ">
+	<div class="flex flex-col items-center justify-center gap-6">
 		<div class="grid w-full grid-cols-4 gap-4">
 			<div
 				class="flex flex-col items-center justify-center rounded-2xl bg-white p-2 text-center"
@@ -192,7 +192,7 @@
 		{#if !started}
 			<div class="flex flex-col items-center justify-center gap-2">
 				<Button color="green" onclick={startTest}>Начать тест</Button>
-				<h2>Запомни эмодзи до начала</h2>
+				<h2 class="text-center">Запомни эмодзи до начала</h2>
 			</div>
 		{:else}
 			<div class="flex gap-4">

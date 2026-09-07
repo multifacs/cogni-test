@@ -2,6 +2,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import type { LettersTrialRow, RoundEntry } from './types';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	let {
 		gameEnd,
@@ -31,7 +32,6 @@
 	let showInterval: ReturnType<typeof setInterval> | null = null;
 	let gameInterval: ReturnType<typeof setInterval> | null = null;
 
-	let testStartedAt = 0;
 	let inputStartedAt = 0;
 	let answerLog: RoundEntry[] = [];
 
@@ -65,15 +65,16 @@
 		showing = true;
 
 		if (showInterval) clearInterval(showInterval);
-		showInterval = setInterval(() => {
+		const interval = setInterval(() => {
 			showTime--;
 			if (showTime < 0) {
-				clearInterval(showInterval);
+				clearInterval(interval);
 				showInterval = null;
 				showing = false;
 				inputStartedAt = Date.now();
 			}
 		}, 1000);
+		showInterval = interval;
 	}
 
 	function startGame() {
@@ -83,7 +84,6 @@
 		elapsed = 0;
 		maxSpan = 0;
 		numLetters = START_LENGTH;
-		testStartedAt = Date.now();
 		inputStartedAt = 0;
 		answerLog = [];
 		timeoutTriggered = false;
@@ -144,10 +144,10 @@
 	}
 
 	function handleKeyDown(e: KeyboardEvent) {
-		const input = e.target as HTMLInputElement;
-		console.log(e);
+		// const input = e.target as HTMLInputElement;
+		// console.log(e);
 
-		const letterMap = new Map<string, string>();
+		const letterMap = new SvelteMap<string, string>();
 
 		letterMap.set('KeyQ', 'Й');
 		letterMap.set('KeyW', 'Ц');
@@ -203,16 +203,16 @@
 
 {#if started && showing}
 	<div class="flex flex-col items-center justify-center gap-4">
-		<p class="text-center text-xl ">Запомните буквы!</p>
+		<p class="text-center text-xl">Запомните буквы!</p>
 
-		<div class="grid max-w-4xl grid-cols-[repeat(3,auto)] justify-center gap-[15px]">
-			<p class="text-center text-base ">
+		<div class="grid max-w-4xl grid-cols-[repeat(3,auto)] justify-center gap-4">
+			<p class="text-center text-base">
 				Показ: {showTime > 0 ? showTime : 0} сек
 			</p>
 			<p class="text-center text-base font-semibold text-[#4caf50]">
 				Букв: {lettersToShow.length}
 			</p>
-			<p class="text-center text-base ">
+			<p class="text-center text-base">
 				Время игры: {elapsed} сек
 			</p>
 		</div>
@@ -233,13 +233,13 @@
 {:else if started}
 	<div class="flex flex-col items-center justify-center gap-4">
 		<div class="grid max-w-4xl grid-cols-[repeat(3,auto)] justify-center gap-4">
-			<p class="text-center text-base ">
+			<p class="text-center text-base">
 				Время: {elapsed} сек
 			</p>
 			<p class="text-center text-base font-semibold text-[#4caf50]">
 				Выбрано: {userAnswer.length} / {lettersToShow.length}
 			</p>
-			<p class="text-center text-base ">
+			<p class="text-center text-base">
 				{userAnswer.length ? userAnswer.join('') : '—'}
 			</p>
 		</div>
@@ -263,7 +263,7 @@
 	</div>
 {:else if finished}
 	<div class="flex flex-col items-center justify-center gap-3">
-		<p class="text-lg font-semibold ">
+		<p class="text-lg font-semibold">
 			{timeoutTriggered ? 'Время вышло' : 'Тест завершён'}
 		</p>
 	</div>

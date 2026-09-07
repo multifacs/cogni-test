@@ -4,37 +4,32 @@
 	import ResultsChart from './ResultsChart.svelte';
 
 	let {
-		results,
-		exerciseType,
-		meta
+		results
 	}: {
 		results: ExerciseResults;
-		exerciseType?: string;
-		meta?: string[];
 	} = $props();
 
-	const chartData = results.map((r_raw) => {
-		const r = r_raw as MemoryMatchSummaryRow;
-		return {
-			stage: r.stage,
-			durationMs: r.durationMs,
-			cardsCount: r.cardsCount,
-			flipsCount: r.flipsCount,
-			mistakes: r.mistakes
-		};
-	});
+	const chartData = $derived(
+		results.map((r_raw) => {
+			const r = r_raw as MemoryMatchSummaryRow;
+			return {
+				stage: r.stage,
+				durationMs: r.durationMs,
+				cardsCount: r.cardsCount,
+				flipsCount: r.flipsCount,
+				mistakes: r.mistakes
+			};
+		})
+	);
 
-	const totalDurationMs = results.reduce(
-		(a: number, b_raw: any) => a + (b_raw as MemoryMatchSummaryRow).durationMs,
-		0
+	const totalDurationMs = $derived(
+		results.reduce((a: number, b_raw) => a + (b_raw as MemoryMatchSummaryRow).durationMs, 0)
 	);
-	const totalFlips = results.reduce(
-		(a: number, b_raw: any) => a + (b_raw as MemoryMatchSummaryRow).flipsCount,
-		0
+	const totalFlips = $derived(
+		results.reduce((a: number, b_raw) => a + (b_raw as MemoryMatchSummaryRow).flipsCount, 0)
 	);
-	const totalMistakes = results.reduce(
-		(a: number, b_raw: any) => a + (b_raw as MemoryMatchSummaryRow).mistakes,
-		0
+	const totalMistakes = $derived(
+		results.reduce((a: number, b_raw) => a + (b_raw as MemoryMatchSummaryRow).mistakes, 0)
 	);
 </script>
 

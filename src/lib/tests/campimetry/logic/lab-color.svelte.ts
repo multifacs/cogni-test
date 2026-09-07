@@ -68,7 +68,7 @@ export class LabColor {
 		if (Object.keys(colors).indexOf(color) != -1) {
 			this.colorName = color;
 
-			let { l, a, b } = colors[color];
+			const { l, a, b } = colors[color];
 			this.l = l;
 			this.a = a;
 			this.b = b;

@@ -3,13 +3,9 @@
 	import type { ExerciseResults } from '$lib/exercises/types';
 
 	let {
-		results,
-		exerciseType,
-		meta
+		results
 	}: {
 		results: ExerciseResults;
-		exerciseType?: string;
-		meta?: string[];
 	} = $props();
 
 	function durationLabel(seconds: number): string {

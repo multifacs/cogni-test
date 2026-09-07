@@ -1,6 +1,7 @@
 <!-- src/routes/questionary/components/TableRow.svelte -->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	type CustomChoiceRow = { text: string; choice: string };
 
 	let {
 		label,
@@ -16,7 +17,7 @@
 		children
 	}: {
 		label: string;
-		value?: any;
+		value?: string | number | boolean | CustomChoiceRow[] | null;
 		type?: 'input' | 'value' | 'choice' | 'range' | 'custom-choice' | 'custom';
 		options?: { label: string; value: string }[];
 		isBoolean?: boolean;
@@ -29,7 +30,9 @@
 	} = $props();
 
 	// Парсинг входной строки в массив объектов
-	function parseInputToRows(input: any): { text: string; choice: string }[] {
+	function parseInputToRows(
+		input: string | number | boolean | CustomChoiceRow[] | null | undefined
+	): CustomChoiceRow[] {
 		if (type !== 'custom-choice') return [];
 
 		if (Array.isArray(input)) {
@@ -224,7 +227,7 @@
 					<option class="text-gray-700" value={null} disabled selected hidden
 						>Выберите вариант...</option
 					>
-					{#each options as opt}
+					{#each options as opt (opt.label)}
 						<option value={opt.value}>{opt.label}</option>
 					{/each}
 				</select>
@@ -250,7 +253,7 @@
 			</div>
 		{:else if type === 'custom-choice'}
 			<div class="flex w-full flex-col gap-2">
-				{#each rows as row, i}
+				{#each rows as row, i (i)}
 					<div class="flex items-center gap-2">
 						<input
 							type="text"
@@ -271,7 +274,7 @@
 									text-black outline-none open:text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
 							>
 								<option value="">(без выбора)</option>
-								{#each options as opt}
+								{#each options as opt (opt.label)}
 									<option value={opt.value}>{opt.label}</option>
 								{/each}
 							</select>

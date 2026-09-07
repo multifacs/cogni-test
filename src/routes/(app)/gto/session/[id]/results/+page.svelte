@@ -17,7 +17,7 @@
 </script>
 
 <section class="banner">
-	<h1 class="text-2xl font-bold">{data.session.name}</h1>
+	<h1 class="text-2xl font-bold text-center">{data.session.name}</h1>
 </section>
 
 <main class="main overflow-auto p-4">
@@ -25,7 +25,9 @@
 		<!-- Word score -->
 		{#if m.wordScore !== null}
 			<div class="rounded-xl border border-purple-700/40 bg-purple-900/20 p-4">
-				<h3 class="mb-2 text-sm font-semibold text-purple-300">Последовательность слов</h3>
+				<h3 class="mb-2 text-sm font-semibold text-purple-300 text-center">
+					Последовательность слов
+				</h3>
 				<div class="flex items-center gap-3">
 					<span class="text-3xl font-bold text-purple-200">{m.wordScore}</span>
 					<span class="text-sm text-purple-400">из 5 слов</span>
@@ -47,7 +49,9 @@
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
 			<!-- Stroop -->
 			<div class="rounded-lg bg-gray-900/50 p-3">
-				<h4 class="mb-2 text-xs font-semibold uppercase tracking-wider text-blue-400">
+				<h4
+					class="mb-2 text-xs font-semibold uppercase tracking-wider text-blue-400 text-center"
+				>
 					Струп
 				</h4>
 				<div class="flex flex-col gap-1.5 text-sm">
@@ -72,7 +76,9 @@
 
 			<!-- Math -->
 			<div class="rounded-lg bg-gray-900/50 p-3">
-				<h4 class="mb-2 text-xs font-semibold uppercase tracking-wider text-emerald-400">
+				<h4
+					class="mb-2 text-xs font-semibold uppercase tracking-wider text-emerald-400 text-center"
+				>
 					Арифметика
 				</h4>
 				<div class="flex flex-col gap-1 text-sm">
@@ -101,7 +107,9 @@
 
 			<!-- Munsterberg -->
 			<div class="rounded-lg bg-gray-900/50 p-3">
-				<h4 class="mb-2 text-xs font-semibold uppercase tracking-wider text-amber-400">
+				<h4
+					class="mb-2 text-xs font-semibold uppercase tracking-wider text-amber-400 text-center"
+				>
 					Мюнстерберг
 				</h4>
 				<div class="flex flex-col gap-1 text-sm">
@@ -126,7 +134,9 @@
 
 			<!-- Campimetry -->
 			<div class="rounded-lg bg-gray-900/50 p-3">
-				<h4 class="mb-2 text-xs font-semibold uppercase tracking-wider text-rose-400">
+				<h4
+					class="mb-2 text-xs font-semibold uppercase tracking-wider text-rose-400 text-center"
+				>
 					Кампиметрия
 				</h4>
 				<div class="flex flex-col gap-1.5 text-sm">
@@ -163,7 +173,9 @@
 
 			<!-- Memory -->
 			<div class="rounded-lg bg-gray-900/50 p-3">
-				<h4 class="mb-2 text-xs font-semibold uppercase tracking-wider text-cyan-400">
+				<h4
+					class="mb-2 text-xs font-semibold uppercase tracking-wider text-cyan-400 text-center"
+				>
 					Память
 				</h4>
 				<div class="flex flex-col gap-1 text-sm">
@@ -192,7 +204,9 @@
 
 			<!-- Swallow -->
 			<div class="rounded-lg bg-gray-900/50 p-3">
-				<h4 class="mb-2 text-xs font-semibold uppercase tracking-wider text-teal-400">
+				<h4
+					class="mb-2 text-xs font-semibold uppercase tracking-wider text-teal-400 text-center"
+				>
 					Ласточка
 				</h4>
 				<div class="flex flex-col gap-1 text-sm">
@@ -221,7 +235,9 @@
 
 			<!-- Raven -->
 			<div class="rounded-lg bg-gray-900/50 p-3">
-				<h4 class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-400">
+				<h4
+					class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-400 text-center"
+				>
 					Матрицы Равена
 				</h4>
 				<div class="flex flex-col gap-1 text-sm">
@@ -296,7 +312,9 @@
 
 		<!-- Editable metrics (read-only) -->
 		<div class="rounded-lg border border-gray-700 bg-gray-900/30 p-4">
-			<h4 class="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+			<h4
+				class="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400 text-center"
+			>
 				Дополнительные данные
 			</h4>
 			<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

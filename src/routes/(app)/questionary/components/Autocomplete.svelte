@@ -5,6 +5,12 @@
 	let { query = $bindable() } = $props();
 	let isOpen = $state(false);
 
+	type City = {
+		name: string;
+		name_en?: string;
+		type: string;
+	};
+
 	// filter only cities with type === "Город"
 	const cityOptions = cities.filter((c) => c.type === 'Город');
 
@@ -21,12 +27,12 @@
 			: cityOptions.slice(0, 3)
 	);
 
-	function selectCity(city) {
+	function selectCity(city: City) {
 		query = city.name;
 		isOpen = false;
 	}
 
-	function handleInput(e) {
+	function handleInput(e: Event & { currentTarget: HTMLInputElement }) {
 		query = e.currentTarget.value;
 		isOpen = true;
 	}
@@ -52,7 +58,7 @@
 		<ul
 			class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded border border-blue-300 bg-white shadow"
 		>
-			{#each filtered as city}
+			{#each filtered as city (city.id)}
 				<li class="cursor-pointer px-3 py-2 hover:bg-blue-50">
 					<button class="w-full text-left" onclick={() => selectCity(city)}>
 						{city.name} ({city.region.name})

@@ -1,16 +1,34 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 
-	const paths = [
+	let { undiagnosed, allowedPaths } = $props();
+
+	import type { PathnameWithSearchOrHash, ResolvedPathname } from '$app/types';
+	// resolve() has a variadic conditional signature (ResolveArgs<T>) that
+	// cannot accept the full route union — narrow it to the pathname overload.
+	const resolvePathname = resolve as (path: PathnameWithSearchOrHash) => ResolvedPathname;
+
+	const paths: { href: PathnameWithSearchOrHash; icon: string; text: string }[] = [
 		{
 			href: '/home',
 			icon: '/nav_icons/home.svg',
 			text: 'Главная'
 		},
 		{
+			href: '/tests',
+			icon: '/brain.svg',
+			text: 'Возраст'
+		},
+		{
 			href: '/exercises',
 			icon: '/nav_icons/exercises.svg',
 			text: 'Тренажер'
+		},
+		{
+			href: '/gto',
+			icon: '/nav_icons/materials.svg',
+			text: 'ГТО-М'
 		},
 		{
 			href: '/materials',
@@ -24,6 +42,10 @@
 		}
 	];
 
+	function isAllowed(href: string) {
+		return !undiagnosed || allowedPaths.includes(href);
+	}
+
 	function isActive(href: string): boolean {
 		if (href === '/home') {
 			return page.url.pathname === href || page.url.pathname === '/';
@@ -33,14 +55,17 @@
 </script>
 
 <nav class="nav">
-	{#each paths as path}
+	{#each paths as path (path.href)}
 		<a
-			href={path.href}
+			href={resolvePathname(path.href)}
 			class="nav-link"
 			class:active={isActive(path.href)}
+			class:pointer-events-none={!isAllowed(path.href)}
+			class:cursor-not-allowed={!isAllowed(path.href)}
+			class:grayscale={!isAllowed(path.href)}
 		>
 			<img src={path.icon} alt={path.text} />
-			<h4 class="nav-text">{path.text}</h4>
+			<h4 class="nav-text text-center">{path.text}</h4>
 		</a>
 	{/each}
 </nav>
@@ -64,19 +89,24 @@
 		text-decoration: none;
 	}
 
-	/* Текст по умолчанию - серый */
+	.nav-link img {
+		width: 1.5rem;
+		height: 1.5rem;
+	}
+
 	.nav-text {
 		margin: 0;
 	}
 
 	.nav-link.active .nav-text {
-		color: #D48C7A;
+		color: #d48c7a;
 		font-weight: bolder;
 	}
 
 	.nav-link.active img {
 		opacity: 1;
-		filter: brightness(0) saturate(100%) invert(67%) sepia(18%) saturate(1048%) hue-rotate(325deg) brightness(95%) contrast(92%);
+		filter: brightness(0) saturate(100%) invert(67%) sepia(18%) saturate(1048%)
+			hue-rotate(325deg) brightness(95%) contrast(92%);
 	}
 
 	@media (min-width: 1024px) {
