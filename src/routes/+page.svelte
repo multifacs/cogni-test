@@ -43,17 +43,14 @@
 	</div>
 
 	<div class="login-card">
-		<div class="login-header">
-			<img src="/logo.svg" class="login-logo" alt="Cogni-Test logo" />
-			<h1 class="login-title">Добро пожаловать в Cogni Test!</h1>
+		<div class="flex items-center gap-4 text-center sm:flex-col">
+			<img src="/logo.svg" class="h-auto w-8 sm:w-14" alt="Cogni-Test logo" />
+			<h1 class="leading-[1.15] text-sm sm:text-2xl font-bold sm:font-extrabold tracking-[-0.01em]">
+				Добро пожаловать в Cogni Test!
+			</h1>
 		</div>
 
-		<form
-			class="login-form"
-			method="POST"
-			action="?/login"
-			use:enhance
-		>
+		<form class="login-form" method="POST" action="?/login" use:enhance>
 			<div class="field">
 				<label for="firstname">Введите ваше имя</label>
 				<TextInput
@@ -110,7 +107,11 @@
 				/>
 				<label for="consent" class="select-none">
 					Согласен(а) на
-					<a href={resolve('/consent')} class="underline hover:opacity-80" target="_blank">
+					<a
+						href={resolve('/consent')}
+						class="underline hover:opacity-80"
+						target="_blank"
+					>
 						обработку персональных данных
 					</a>
 				</label>
@@ -198,25 +199,6 @@
 		}
 	}
 
-	.login-header {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 1rem;
-		text-align: center;
-	}
-
-	.login-logo {
-		width: 4.5rem;
-		height: auto;
-	}
-
-	.login-title {
-		font-weight: 800;
-		letter-spacing: -0.01em;
-		line-height: 1.15;
-	}
-
 	.login-form {
 		display: flex;
 		flex-direction: column;
@@ -281,10 +263,6 @@
 			border-radius: 1.25rem;
 			gap: 1.25rem;
 			justify-content: center;
-		}
-
-		.login-logo {
-			width: 3.5rem;
 		}
 
 		/* Ensure touch targets stay >= 44px */
