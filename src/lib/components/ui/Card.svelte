@@ -5,7 +5,7 @@
 </script>
 
 <div
-	class="flex h-fit w-fit flex-col items-center gap-4 rounded-2xl bg-white p-8 {className}"
+	class="flex h-fit w-fit flex-col items-stretch gap-4 rounded-2xl bg-white p-8 {className}"
 >
 	{#if children}
 		{@render children()}

@@ -34,7 +34,7 @@
 </script>
 
 {#if Component}
-	<main class="main text-justify flex flex-col items-center justify-center-safe w-full">
+	<main class="main flex w-full flex-col items-center justify-center-safe text-justify">
 		<Card className="w-full max-w-5xl">
 			<Component></Component>
 		</Card>
