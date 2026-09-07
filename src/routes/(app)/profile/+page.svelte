@@ -10,12 +10,12 @@
 	import { isSubscribed } from '$lib/utils/push';
 	import MetricTile from './components/MetricTile.svelte';
 
-	// let { data } = $props();
+	let { data }: { data: { predictedAge: number | null } } = $props();
 	const user = derived(userStore, ($userStore) => $userStore);
 	const headerContext = getContext<{ value: string }>('headerText');
 	let subscribed = $state(false);
 	let showSpinner = $state(false);
-	let predictedAge = $state<number | null>(null);
+	let subscribeError = $state('');
 	onMount(async () => {
 		if (headerContext) {
 			headerContext.value = 'Профиль';
@@ -40,15 +40,17 @@
 		return age;
 	}
 
-	export function formatDate(date: Date): string {
-		const day = String(date.getDate()).padStart(2, '0');
-		const month = String(date.getMonth() + 1).padStart(2, '0');
-		const year = date.getFullYear();
-		return `${day}.${month}.${year}`;
+	function pluralAge(n: number): string {
+		const n10 = n % 10;
+		const n100 = n % 100;
+		if (n10 === 1 && n100 !== 11) return 'год';
+		if (n10 >= 2 && n10 <= 4 && (n100 < 10 || n100 >= 20)) return 'года';
+		return 'лет';
 	}
 
-	function capitalize(str: string): string {
-		return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+	// Names are stored uppercase in the DB — display as-is, no re-casing
+	function displayName(str: string): string {
+		return str || 'Пользователь';
 	}
 
 	function getInitials(firstname?: string, lastname?: string): string {
@@ -58,15 +60,24 @@
 		return initials ? initials.toUpperCase() : '?';
 	}
 
+	// Deterministic pastel hue from user id — same user always gets same color
+	function avatarStyle(id: string | number): string {
+		let h = 0;
+		for (const ch of String(id)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+		const hue = h % 360;
+		return `--avatar-bg-color: hsl(${hue} 45% 78%); --avatar-text-color: hsl(${hue} 45% 22%);`;
+	}
+
 	async function subscribe() {
 		try {
 			showSpinner = true;
+			subscribeError = '';
 			await pushService.subscribe();
-			showSpinner = false;
 			subscribed = true;
-			console.log('Subscribed successfully');
 		} catch (error) {
 			console.error('Failed to subscribe:', error);
+			subscribeError = 'Не удалось подписаться. Попробуйте ещё раз.';
+		} finally {
 			showSpinner = false;
 		}
 	}
@@ -75,7 +86,6 @@
 		try {
 			await pushService.unsubscribe();
 			subscribed = false;
-			console.log('Unsubscribed successfully');
 		} catch (error) {
 			console.error('Failed to unsubscribe:', error);
 		}
@@ -90,36 +100,40 @@
 	{:then u}
 		{#if u && u.id}
 			<div class="flex w-full flex-col items-center justify-center">
-				<div class="mx-0 flex w-full max-w-5xl flex-col gap-6">
+				<div class="flex w-full max-w-5xl flex-col gap-6">
 					<!-- Identity -->
 					<div class="glass-card flex flex-col gap-4 p-6">
 						<div class="flex items-center gap-4">
 							<div
+								style={avatarStyle(u.id)}
 								class="flex
-										h-16
-										w-16
-										shrink-0
-										items-center
-										justify-center
-										rounded-[50%]
-										bg-(--main-accent-color)
-										text-2xl
-										font-bold
-										text-white
-										uppercase
-										max-sm:h-14
-										max-sm:w-14
-										max-sm:text-xl
-										"
+									h-16
+									w-16
+									shrink-0
+									items-center
+									justify-center
+									rounded-[50%]
+									bg-(--avatar-bg-color)
+									text-2xl
+									font-bold
+									text-(--avatar-text-color)
+									uppercase
+									max-sm:h-14
+									max-sm:w-14
+									max-sm:text-xl
+									"
 							>
 								{getInitials(u.firstname, u.lastname)}
 							</div>
 							<div class="identity-text">
-								<h2 class="text-3xl leading-4 font-extrabold max-sm:text-2xl">
-									{capitalize(u.firstname)}
-									{capitalize(u.lastname)}
+								<h2 class="text-3xl font-extrabold max-sm:text-2xl">
+									{displayName(u.firstname)}
+									{displayName(u.lastname)}
 								</h2>
-								<p class="text-base opacity-80">{formatAge(u.birthday)} лет</p>
+								<p class="text-base opacity-80">
+									{formatAge(u.birthday)}
+									{pluralAge(formatAge(u.birthday))}
+								</p>
 							</div>
 						</div>
 						<p class="text-sm text-gray-500">
@@ -132,7 +146,12 @@
 					<div
 						class="grid grid-cols-[repeat(4,1fr)] gap-4 max-sm:grid-cols-[repeat(2,1fr)]"
 					>
-						<MetricTile title="Когн. возраст" value={predictedAge} />
+						<MetricTile
+							title="Когн. возраст"
+							value={data.predictedAge !== null && data.predictedAge !== undefined
+								? `${Math.round(data.predictedAge)} ${pluralAge(Math.round(data.predictedAge))}`
+								: undefined}
+						/>
 						<MetricTile title="Дата проверки" />
 						<MetricTile title="Тренировок" />
 						<MetricTile title="Серия" />
@@ -149,13 +168,16 @@
 								{#if showSpinner}
 									<div class="flex items-center justify-center gap-2">
 										<Spinner />
-										<p class="text-sm">
-											Перезагрузите страницу, если загрузка идет долго
-										</p>
+										<p class="text-sm">Подписываемся…</p>
 									</div>
 								{:else}
-									<Button color="green" onclick={subscribe}>Подписаться</Button>
+									<Button color="green" onclick={subscribe} class="max-sm:w-full"
+										>Подписаться</Button
+									>
 								{/if}
+							{/if}
+							{#if subscribeError}
+								<p class="text-sm text-red-600">{subscribeError}</p>
 							{/if}
 						</div>
 						<form method="POST" action="/?/logout" use:enhance>
@@ -169,5 +191,9 @@
 				<p class="text-red-500">Пользователь не найден. Возможно, вы не вошли в систему.</p>
 			</div>
 		{/if}
+	{:catch}
+		<div class="flex justify-center p-8">
+			<p class="text-red-500">Не удалось загрузить профиль. Попробуйте обновить страницу.</p>
+		</div>
 	{/await}
 </main>

@@ -9,8 +9,9 @@
 
 <div class="glass-card flex flex-col items-center justify-center gap-1 p-5 text-center">
 	<div class="text-sm opacity-80">{title}</div>
-	<div class="text-2xl font-bold">{value ? value : '—'}</div>
-	{#if !value}
+	{#if value !== null && value !== undefined && value !== ''}
+		<div class="text-2xl font-bold">{value}</div>
+	{:else}
 		<div class="text-xs text-gray-400">Нет данных</div>
 	{/if}
 </div>

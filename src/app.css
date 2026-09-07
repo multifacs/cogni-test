@@ -4,10 +4,19 @@
 	--main-bg-color: #e8f0fe;
 	--main-text-color: #2c3e50;
 	--main-accent-color: #d48c7a;
+	--avatar-bg-color: #d48c7a;
+	--avatar-text-color: #4a241a;
 
-	--button-green: rgb(15, 132, 15);
-	--button-red: #bf3023;
-	--button-blue: #007acc;
+	/* Пастельные кнопки: светлая заливка + тёмный текст в тон (WCAG ≥ 4.5:1) */
+	--button-green: #a8d5b9;
+	--button-green-hover: #93c9a8;
+	--button-green-text: #123f23;
+	--button-red: #f5b8ae;
+	--button-red-hover: #efa79a;
+	--button-red-text: #6f2a1f;
+	--button-blue: #b3d0f5;
+	--button-blue-hover: #9dbff1;
+	--button-blue-text: #1f3d7a;
 
 	/* campimetry */
 	--camp-black: #141414;
