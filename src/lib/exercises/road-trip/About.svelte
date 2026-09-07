@@ -1,4 +1,4 @@
-<section class="mx-auto flex max-w-3xl flex-col gap-2 space-y-4 p-2 leading-relaxed">
+<div class="flex flex-col gap-4 text-left leading-relaxed">
 	<p>
 		У нас есть один из главных инструментов каждого дня — наши вербальные навыки. К 35–40 годам
 		у нас накапливается огромный запас слов, который зависит от образа жизни и профессии. Но с
@@ -27,16 +27,12 @@
 	<p>
 		Вечером попробуйте вспомнить хотя бы 3 из них. Это хорошая тренировка памяти и фантазии! 🎩
 	</p>
-</section>
+</div>
 
 <style>
-	p {
-		margin-bottom: 1.2em;
-	}
 	.example {
 		padding: 10px;
 		border-left: 4px solid #4a90e2;
-		margin: 10px 0;
 		font-family: monospace;
 		text-align: left;
 	}
