@@ -69,7 +69,7 @@
 	{#if showModal}
 		<Modal bind:showModal>
 			{#snippet header()}
-				<h2 class="text-2xl text-white text-center">Подпишитесь на push-уведомления</h2>
+				<h2 class="text-center text-2xl">Подпишитесь на push-уведомления</h2>
 			{/snippet}
 			<div class="flex flex-col gap-4">
 				{#if showSpinner}
@@ -77,17 +77,15 @@
 						class="flex w-full flex-col items-center justify-center gap-2 align-middle"
 					>
 						<Spinner></Spinner>
-						<p class="text-center text-white">
-							Перезагрузите страницу, если загрузка идет долго
-						</p>
+						<p class="text-center">Перезагрузите страницу, если загрузка идет долго</p>
 					</div>
 				{:else}
-					<p class="text-white">
+					<p>
 						Для корректной работы некоторых функций требуется подписка на уведомления.
 						Например, мы сможем отправлять вам напоминания о прохождении тестов.
 					</p>
-					<p class="text-white">Для подписки достаточно нажать зелёную кнопочку.</p>
-					<p class="text-white">
+					<p>Для подписки достаточно нажать зелёную кнопочку.</p>
+					<p>
 						Вы сможете подписаться или отписаться от push-уведомлений в любое время на
 						странице профиля.
 					</p>

@@ -109,8 +109,7 @@
 					Согласен(а) на
 					<a
 						href={resolve('/consent')}
-						class="underline hover:text-[var(--main-accent-color)]"
-						target="_blank"
+						class="underline hover:text-(--main-accent-color)"
 					>
 						обработку персональных данных
 					</a>
