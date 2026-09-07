@@ -8,6 +8,7 @@
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import { pushService } from '$lib/pushService';
 	import { isSubscribed } from '$lib/utils/push';
+	import MetricTile from './components/MetricTile.svelte';
 
 	// let { data } = $props();
 	const user = derived(userStore, ($userStore) => $userStore);
@@ -81,72 +82,68 @@
 	}
 </script>
 
-<main class="main profile-main">
+<main class="main flex flex-col items-center justify-center-safe">
 	{#await $user}
 		<div class="flex justify-center p-8">
 			<p>Загрузка...</p>
 		</div>
 	{:then u}
 		{#if u && u.id}
-			<div class="glass-scene">
-				<!-- <div class="glass-bg" aria-hidden="true">
-					<div class="glass-blob glass-blob--top"></div>
-					<div class="glass-blob glass-blob--bottom"></div>
-				</div> -->
-
-				<div class="profile-content">
+			<div class="flex w-full flex-col items-center justify-center">
+				<div class="mx-0 flex w-full max-w-5xl flex-col gap-6">
 					<!-- Identity -->
-					<div class="glass-card identity-card">
-						<div class="identity-row">
-							<div class="avatar">{getInitials(u.firstname, u.lastname)}</div>
+					<div class="glass-card flex flex-col gap-4 p-6">
+						<div class="flex items-center gap-4">
+							<div
+								class="flex
+										h-16
+										w-16
+										shrink-0
+										items-center
+										justify-center
+										rounded-[50%]
+										bg-(--main-accent-color)
+										text-2xl
+										font-bold
+										text-white
+										uppercase
+										max-sm:h-14
+										max-sm:w-14
+										max-sm:text-xl
+										"
+							>
+								{getInitials(u.firstname, u.lastname)}
+							</div>
 							<div class="identity-text">
-								<h2 class="profile-name">{capitalize(u.firstname)} {capitalize(u.lastname)}</h2>
-								<p class="profile-age">{formatAge(u.birthday)} лет</p>
+								<h2 class="text-3xl leading-4 font-extrabold max-sm:text-2xl">
+									{capitalize(u.firstname)}
+									{capitalize(u.lastname)}
+								</h2>
+								<p class="text-base opacity-80">{formatAge(u.birthday)} лет</p>
 							</div>
 						</div>
-						<p class="profile-hint">
+						<p class="text-sm text-gray-500">
 							Заполните анкету, чтобы сделать результаты диагностики точнее
 						</p>
 						<Button color="green" goto="/questionary">Перейти к анкете</Button>
 					</div>
 
 					<!-- Metrics -->
-					<div class="metrics-grid">
-						<div class="glass-card metric-tile">
-							<div class="metric-title">Когн. возраст</div>
-							<div class="metric-value">{predictedAge ?? '—'}</div>
-							{#if predictedAge == null}
-								<div class="metric-caption">нет данных</div>
-							{/if}
-						</div>
-						<div class="glass-card metric-tile">
-							<div class="metric-title">Дата проверки</div>
-							<div class="metric-value">—</div>
-							<div class="metric-caption">нет данных</div>
-						</div>
-						<div class="glass-card metric-tile">
-							<div class="metric-title">Тренировок</div>
-							<div class="metric-value">—</div>
-							<div class="metric-caption">нет данных</div>
-						</div>
-						<div class="glass-card metric-tile">
-							<div class="metric-title">Серия</div>
-							<div class="metric-value">—</div>
-							<div class="metric-caption">нет данных</div>
-						</div>
+					<div
+						class="grid grid-cols-[repeat(4,1fr)] gap-4 max-sm:grid-cols-[repeat(2,1fr)]"
+					>
+						<MetricTile title="Когн. возраст" value={predictedAge} />
+						<MetricTile title="Дата проверки" />
+						<MetricTile title="Тренировок" />
+						<MetricTile title="Серия" />
 					</div>
 
 					<!-- Settings -->
-					<div class="glass-card settings-card">
-						<h3>Уведомления</h3>
-						<div class="settings-actions">
+					<div class="glass-card flex w-full justify-between gap-4 p-6 max-sm:flex-col">
+						<div class="flex items-center gap-3 max-sm:w-full">
 							{#if subscribed}
-								<Button
-									color="secondary"
-									class="border border-gray-300"
-									onclick={unsubscribe}
-								>
-									Отписаться
+								<Button color="blue" onclick={unsubscribe} class="max-sm:w-full">
+									Отписаться от уведомлений
 								</Button>
 							{:else}
 								{#if showSpinner}
@@ -162,167 +159,15 @@
 							{/if}
 						</div>
 						<form method="POST" action="/?/logout" use:enhance>
-							<button type="submit" class="glass-ghost-btn">Выйти</button>
+							<Button color="red" class="max-sm:w-full" type="submit">Выйти</Button>
 						</form>
 					</div>
 				</div>
 			</div>
 		{:else}
 			<div class="flex justify-center p-8">
-				<p class="text-red-500">
-					Пользователь не найден. Возможно, вы не вошли в систему.
-				</p>
+				<p class="text-red-500">Пользователь не найден. Возможно, вы не вошли в систему.</p>
 			</div>
 		{/if}
 	{/await}
 </main>
-
-<style>
-	.profile-main {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-	}
-
-	.glass-scene {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		width: 100%;
-	}
-
-	.profile-content {
-		position: relative;
-		z-index: 1;
-		width: 100%;
-		max-width: 64rem;
-		margin: 0 auto;
-		padding: 2rem 1.5rem;
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
-	}
-
-	.identity-card {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-		padding: 1.5rem;
-	}
-
-	.identity-row {
-		display: flex;
-		align-items: center;
-		gap: 1rem;
-	}
-
-	.avatar {
-		width: 4rem;
-		height: 4rem;
-		border-radius: 50%;
-		background: var(--main-accent-color);
-		color: white;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-size: 1.5rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		flex-shrink: 0;
-	}
-
-	.profile-name {
-		font-weight: 800;
-		font-size: 1.75rem;
-		line-height: 1.2;
-	}
-
-	.profile-age {
-		font-size: 1rem;
-		opacity: 0.8;
-	}
-
-	.profile-hint {
-		font-size: 0.875rem;
-		color: #6b7280;
-	}
-
-	.metrics-grid {
-		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: 1rem;
-	}
-
-	.metric-tile {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 1.25rem;
-		text-align: center;
-		gap: 0.25rem;
-	}
-
-	.metric-title {
-		font-size: 0.875rem;
-		opacity: 0.8;
-	}
-
-	.metric-value {
-		font-size: 1.5rem;
-		font-weight: 700;
-	}
-
-	.metric-caption {
-		font-size: 0.75rem;
-		color: #9ca3af;
-	}
-
-	.settings-card {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-		padding: 1.5rem;
-	}
-
-	.settings-card h3 {
-		text-align: left;
-	}
-
-	.settings-actions {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-	}
-
-	.glass-ghost-btn {
-		align-self: flex-start;
-	}
-
-	@media (max-width: 639px) {
-		.profile-content {
-			padding: 1rem;
-			gap: 1rem;
-		}
-
-		.identity-card,
-		.settings-card {
-			padding: 1.25rem;
-		}
-
-		.metrics-grid {
-			grid-template-columns: repeat(2, 1fr);
-		}
-
-		.profile-name {
-			font-size: 1.5rem;
-		}
-
-		.avatar {
-			width: 3.5rem;
-			height: 3.5rem;
-			font-size: 1.25rem;
-		}
-	}
-</style>
