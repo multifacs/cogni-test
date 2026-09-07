@@ -237,6 +237,9 @@ describe('getRecommendations', () => {
 			exercises: [],
 			EXERCISE_SLUG_TO_TEST_TYPE: {}
 		}));
+		vi.doMock('$lib/articles', () => ({
+			articles: []
+		}));
 
 		vi.resetModules();
 

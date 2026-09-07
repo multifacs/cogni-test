@@ -15,9 +15,7 @@ const exerciseToSessionType: Record<string, string> = {
 	pictures: 'pictures',
 	numbers: 'numbers',
 	flanker: 'flanker',
-	letters: 'letters',
-	'road-trip': 'road-trip',
-	'not-lost': 'not-lost'
+	letters: 'letters'
 };
 
 export const load: PageServerLoad = async ({ cookies }) => {

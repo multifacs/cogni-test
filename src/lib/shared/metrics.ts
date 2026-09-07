@@ -1,8 +1,15 @@
 import type { SkillMetric } from '$lib/types';
 import { tests } from '$lib/tests';
 import { exercises, EXERCISE_SLUG_TO_TEST_TYPE } from '$lib/exercises';
+import { articles } from '$lib/articles';
 import { getResults } from '$lib/server/db/controllers/result';
 import type { TestType } from '$lib/tests/types';
+
+/** Слабые метрики → статьи-практики из /materials (бывшие упражнения road-trip и not-lost). */
+const articleMetrics: Record<string, SkillMetric[]> = {
+	'road-trip': ['perception', 'verbal_function', 'thinking'],
+	'not-lost': ['spacial_perception', 'spacial_orientation', 'short_memory']
+};
 
 type AttemptLike = {
 	isCorrect?: boolean;
@@ -156,6 +163,19 @@ export function getRecommendations(
 			});
 			seenNames.add(exMatch.name);
 			continue;
+		}
+
+		const articleMatch = articles.find(
+			(a) => articleMetrics[a.slug]?.includes(weakMetric) && !seenNames.has(a.slug)
+		);
+		if (articleMatch) {
+			recommendations.push({
+				name: articleMatch.slug,
+				title: articleMatch.title,
+				path: `/materials/${articleMatch.slug}`,
+				img: articleMatch.emoji
+			});
+			seenNames.add(articleMatch.slug);
 		}
 	}
 
