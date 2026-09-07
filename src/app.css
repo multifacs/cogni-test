@@ -112,14 +112,6 @@ select {
 	font: inherit;
 } */
 
-/* Shared glass design system */
-.glass-scene {
-	position: relative;
-	min-height: 100%;
-	overflow: hidden;
-	/*background: var(--app-bg);*/
-}
-
 .glass-bg {
 	position: absolute;
 	inset: 0;

@@ -58,39 +58,41 @@
 	}
 </script>
 
-<main class="glass-scene main flex flex-col items-center justify-center-safe gap-12">
-	{#if runAllMode}
-		<Spinner></Spinner>
-	{:else}
-		<!-- <div class="glass-bg" aria-hidden="true">
-				<div class="glass-blob glass-blob--top"></div>
-				<div class="glass-blob glass-blob--bottom"></div>
-			</div> -->
+<main class="main flex w-full flex-col items-center justify-center-safe">
+	<div class="flex w-full max-w-5xl flex-col items-center justify-center-safe gap-4 sm:gap-12">
+		{#if runAllMode}
+			<Spinner></Spinner>
+		{:else}
+			<!-- <div class="glass-bg" aria-hidden="true">
+					<div class="glass-blob glass-blob--top"></div>
+					<div class="glass-blob glass-blob--bottom"></div>
+				</div> -->
 
-		<!-- {#if Object.keys(testSessionCounts).length < data.tests.length}
-			<div class="glass-card flex w-full flex-col gap-2 rounded-3xl p-4 text-center shadow">
-				<p class="mt-2 text-xl font-semibold">У вас есть непройденные тесты</p>
-				<p class="mt-1 text-sm opacity-80">Запустить потоковое прохождение?</p>
-				<Button color="red" onclick={runAll}>Начать</Button>
+			<!-- {#if Object.keys(testSessionCounts).length < data.tests.length}
+				<div class="glass-card flex w-full flex-col gap-2 rounded-3xl p-4 text-center shadow">
+					<p class="mt-2 text-xl font-semibold">У вас есть непройденные тесты</p>
+					<p class="mt-1 text-sm opacity-80">Запустить потоковое прохождение?</p>
+					<Button color="red" onclick={runAll}>Начать</Button>
+				</div>
+			{/if} -->
+
+			<div class="w-fill">
+				<RecommendationCard
+					title="Запуск потокового прохождения"
+					text="Регулярные тренировки помогают поддерживать когнитивные навыки"
+					icon="/brain.svg"
+					goto="/tests"
+					button_text="Начать прохождение"
+				/>
 			</div>
-		{/if} -->
 
-		<div class="max-w-5xl">
-			<RecommendationCard
-				title="Запуск потокового прохождения"
-				text="Регулярные тренировки помогают поддерживать когнитивные навыки"
-				icon="/brain.svg"
-				goto="/tests"
-				button_text="Начать прохождение"
-			/>
-		</div>
-
-		<div class="cards flex flex-wrap justify-center gap-5">
-			{#each data.tests as { name, title, path, img } (title)}
-				<ExerciseCard {name} {title} {path} {img} {testSessionCounts} />
-			{/each}
-		</div>
-	{/if}
+			<div class="flex flex-wrap justify-around gap-6 sm:justify-center">
+				{#each data.tests as { name, title, path, img } (title)}
+					<ExerciseCard {name} {title} {path} {img} {testSessionCounts} />
+				{/each}
+			</div>
+		{/if}
+	</div>
 </main>
 
 <!-- <div class="low-content grid grid-cols-3 gap-5 text-center items-center">
@@ -106,51 +108,3 @@
 	<p class="text-xs font-medium max-md:hidden">Я только учусь, и я могу ошибаться</p>
 	<p class="text-xs font-medium md:hidden">Могу ошибаться</p>
 </div> -->
-
-<style>
-	.tests-content {
-		position: relative;
-		z-index: 1;
-		width: 100%;
-		max-width: 64rem;
-		margin: 0 auto;
-		padding: 2rem 1.5rem;
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
-	}
-
-	.cta-headline {
-		font-weight: 800;
-	}
-
-	.low-content {
-		background: rgba(255, 255, 255, 0.72);
-		backdrop-filter: blur(12px);
-		-webkit-backdrop-filter: blur(12px);
-		box-shadow:
-			0 1px 2px rgba(0, 0, 0, 0.04),
-			0 8px 24px rgba(0, 0, 0, 0.08),
-			0 24px 64px rgba(30, 60, 114, 0.12);
-		color: var(--main-text-color);
-	}
-
-	@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-		.low-content {
-			background: #ffffff;
-		}
-	}
-
-	@media (max-width: 639px) {
-		.tests-content {
-			padding: 1rem;
-			gap: 1rem;
-		}
-	}
-
-	@media (min-width: 1024px) {
-		.cards {
-			gap: 4vw;
-		}
-	}
-</style>

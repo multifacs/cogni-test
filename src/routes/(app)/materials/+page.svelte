@@ -12,8 +12,8 @@
 	});
 </script>
 
-<main class="main flex flex-col gap-6">
-	<div class="flex flex-wrap justify-between gap-5 p-2">
+<main class="main flex w-full flex-col items-center justify-center-safe">
+	<div class="flex max-w-5xl w-full flex-col items-center justify-center-safe gap-6">
 		{#each data.articles as article (article.slug)}
 			<RecommendationCard
 				title={article.title}
