@@ -172,7 +172,7 @@
 									</div>
 								{:else}
 									<Button color="green" onclick={subscribe} class="max-sm:w-full"
-										>Подписаться</Button
+										>Подписаться на уведомления</Button
 									>
 								{/if}
 							{/if}

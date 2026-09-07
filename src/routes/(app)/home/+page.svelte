@@ -143,7 +143,6 @@
 			<div class="main-content gap-6">
 				<AgeCard age={data.predictedAge} {realAge} />
 				<div class="justify-beetwen n flex flex-col justify-around gap-6">
-					<Button color="green" goto="/exercises">Продолжить тренировки</Button>
 					<RecommendationCard
 						title="Совет дня"
 						text="Статья: как физическая активность влияет на память"
@@ -151,6 +150,7 @@
 						goto="/materials"
 						button_text="Прочитать"
 					/>
+					<Button color="green" goto="/exercises">Продолжить тренировки</Button>
 				</div>
 			</div>
 

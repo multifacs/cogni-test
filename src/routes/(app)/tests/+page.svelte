@@ -8,6 +8,8 @@
 	import localforage from 'localforage';
 	import { getContext, onMount } from 'svelte';
 
+	import RecommendationCard from '$lib/components/ui/RecommendationCard.svelte';
+
 	let { data } = $props();
 
 	let testSessionCounts: Record<string, number> = $state({});
@@ -56,38 +58,42 @@
 	}
 </script>
 
-<main class="main flex flex-col gap-3">
+<main class="glass-scene main flex flex-col items-center justify-center-safe gap-12">
 	{#if runAllMode}
 		<Spinner></Spinner>
 	{:else}
-		<div class="glass-scene">
-			<!-- <div class="glass-bg" aria-hidden="true">
+		<!-- <div class="glass-bg" aria-hidden="true">
 				<div class="glass-blob glass-blob--top"></div>
 				<div class="glass-blob glass-blob--bottom"></div>
 			</div> -->
 
-			{#if Object.keys(testSessionCounts).length < data.tests.length}
-				<div class="glass-card flex w-full flex-col gap-2 rounded-3xl p-4 text-center shadow">
-					<p class="mt-2 text-xl font-semibold">У вас есть непройденные тесты</p>
-					<p class="mt-1 text-sm opacity-80">Запустить потоковое прохождение?</p>
-					<Button color="red" onclick={runAll}>Начать</Button>
-				</div>
-			{/if}
-			<div class="content flex flex-col items-center justify-center gap-8 pt-[2%] pb-[4%]">
-				<h2 class="text-center cta-headline">
-					Регулярные тренировки помогают поддерживать когнитивные навыки
-				</h2>
-				<Button color="green">Запуск потокового прохождения</Button>
+		<!-- {#if Object.keys(testSessionCounts).length < data.tests.length}
+			<div class="glass-card flex w-full flex-col gap-2 rounded-3xl p-4 text-center shadow">
+				<p class="mt-2 text-xl font-semibold">У вас есть непройденные тесты</p>
+				<p class="mt-1 text-sm opacity-80">Запустить потоковое прохождение?</p>
+				<Button color="red" onclick={runAll}>Начать</Button>
 			</div>
-			<div class="cards flex flex-wrap justify-center gap-5 p-2">
-				{#each data.tests as { name, title, path, img } (title)}
-					<ExerciseCard {name} {title} {path} {img} {testSessionCounts} />
-				{/each}
-			</div>
+		{/if} -->
+
+		<div class="max-w-5xl">
+			<RecommendationCard
+				title="Запуск потокового прохождения"
+				text="Регулярные тренировки помогают поддерживать когнитивные навыки"
+				icon="/brain.svg"
+				goto="/tests"
+				button_text="Начать прохождение"
+			/>
+		</div>
+
+		<div class="cards flex flex-wrap justify-center gap-5">
+			{#each data.tests as { name, title, path, img } (title)}
+				<ExerciseCard {name} {title} {path} {img} {testSessionCounts} />
+			{/each}
 		</div>
 	{/if}
 </main>
-<div class="low-content grid grid-cols-3 gap-5 text-center items-center">
+
+<!-- <div class="low-content grid grid-cols-3 gap-5 text-center items-center">
 	<p class="text-xs font-medium max-md:hidden">Когнитивный возраст</p>
 	<p class="text-xs font-medium md:hidden">Когнитивный возраст</p>
 	<p class="mt-1 text-3xl font-bold">
@@ -99,16 +105,9 @@
 	</p>
 	<p class="text-xs font-medium max-md:hidden">Я только учусь, и я могу ошибаться</p>
 	<p class="text-xs font-medium md:hidden">Могу ошибаться</p>
-</div>
+</div> -->
 
 <style>
-	.glass-scene {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-	}
-
 	.tests-content {
 		position: relative;
 		z-index: 1;
