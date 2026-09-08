@@ -711,9 +711,9 @@ export type GtoTestSessionRow = {
 	rowid: number;
 };
 
-export function latestTestSessionByType<T extends { testType: string; createdAt: string; rowid: number }>(
-	sessions: T[]
-): Map<string, T> {
+export function latestTestSessionByType<
+	T extends { testType: string; createdAt: string; rowid: number }
+>(sessions: T[]): Map<string, T> {
 	const map = new Map<string, T>();
 	for (const s of sessions) {
 		const existing = map.get(s.testType);

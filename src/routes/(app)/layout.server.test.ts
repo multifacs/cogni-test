@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { getUserById } from '$lib/server/db';
 import { getProfileSurvey } from '$lib/server/db/controllers/survey';
 import { getTestSessionCounts } from '$lib/server/db/controllers/test';
-import type { LayoutServerLoad } from './$types';
+import type { LayoutServerData, LayoutServerLoad } from './$types';
 
 const makeCookies = (opts: { userId?: string; loggedInAdmin?: string } = {}) => ({
 	get: (name: string) => {
@@ -14,7 +14,10 @@ const makeCookies = (opts: { userId?: string; loggedInAdmin?: string } = {}) => 
 
 type LoadEvent = Parameters<LayoutServerLoad>[0];
 
-const makeEvent = (pathname: string, opts: { userId?: string; loggedInAdmin?: string } = {}): LoadEvent =>
+const makeEvent = (
+	pathname: string,
+	opts: { userId?: string; loggedInAdmin?: string } = {}
+): LoadEvent =>
 	({
 		cookies: makeCookies(opts),
 		url: { pathname } as URL
@@ -57,12 +60,10 @@ describe('(app) layout server load', () => {
 		vi.clearAllMocks();
 		vi.mocked(getUserById).mockResolvedValue({
 			id: 'user-1',
-			vkId: null,
-			firstName: 'Test',
-			lastName: 'User',
-			age: 30,
-			isAdmin: false,
-			createdAt: new Date().toISOString()
+			firstname: 'Test',
+			lastname: 'User',
+			birthday: new Date(1990, 0, 1),
+			sex: 'male'
 		});
 		vi.mocked(getProfileSurvey).mockResolvedValue(null);
 	});
@@ -73,7 +74,7 @@ describe('(app) layout server load', () => {
 		// no test sessions = unfinished tests
 		vi.mocked(getTestSessionCounts).mockResolvedValue({});
 
-		const result = await load(makeEvent('/gto', { userId: 'user-1' }));
+		const result = (await load(makeEvent('/gto', { userId: 'user-1' }))) as LayoutServerData;
 		expect(result).toBeDefined();
 		expect(result.undiagnosed).toBe(true);
 		expect(result.allowedPaths).toContain('/gto');
@@ -99,7 +100,9 @@ describe('(app) layout server load', () => {
 
 		vi.mocked(getTestSessionCounts).mockResolvedValue({});
 
-		const result = await load(makeEvent('/metrics', { userId: 'user-1', loggedInAdmin: 'true' }));
+		const result = (await load(
+			makeEvent('/metrics', { userId: 'user-1', loggedInAdmin: 'true' })
+		)) as LayoutServerData;
 		expect(result).toBeDefined();
 		expect(result.undiagnosed).toBe(false);
 	});
@@ -117,7 +120,9 @@ describe('(app) layout server load', () => {
 			swallow: 1
 		});
 
-		const result = await load(makeEvent('/metrics', { userId: 'user-1' }));
+		const result = (await load(
+			makeEvent('/metrics', { userId: 'user-1' })
+		)) as LayoutServerData;
 		expect(result).toBeDefined();
 		expect(result.undiagnosed).toBe(false);
 	});

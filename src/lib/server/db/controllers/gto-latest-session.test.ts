@@ -47,9 +47,7 @@ describe('latestTestSessionByType', () => {
 	});
 
 	it('does not include missing types', () => {
-		const sessions = [
-			{ testType: 'stroop', createdAt: '2024-01-01T00:00:00Z', rowid: 1 }
-		];
+		const sessions = [{ testType: 'stroop', createdAt: '2024-01-01T00:00:00Z', rowid: 1 }];
 		const result = latestTestSessionByType(sessions);
 		expect(result.get('math')).toBeUndefined();
 	});
