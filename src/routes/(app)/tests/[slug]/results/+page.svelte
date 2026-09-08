@@ -60,13 +60,13 @@
 	});
 </script>
 
-<main class="main flex flex-col gap-2">
+<main class="main flex flex-col gap-2 w-full max-w-5xl mx-auto items-center justify-center-safe">
 	{#if !results}
 		<Spinner></Spinner>
 		<p>Загрузка теста {slug}...</p>
 	{:else if results.length != 0}
 		{#each results as result (result.sessionId)}
-			<Card>
+			<Card className="w-full p-1!">
 				<button
 					class={`flex w-full cursor-pointer items-center justify-between rounded-t-2xl px-4 py-3 transition-colors hover:bg-gray-100 ${openedSessionId != result.sessionId ? 'hover:rounded-b-2xl' : ''}`}
 					onclick={() => toggleSession(result.sessionId)}

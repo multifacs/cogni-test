@@ -34,7 +34,7 @@
 	};
 </script>
 
-<main class="main box-border flex min-h-full flex-col gap-2">
+<main class="main flex flex-col gap-2 w-full max-w-5xl mx-auto items-center justify-center-safe">
 	{#if !results}
 		<Spinner />
 		<p>Загрузка результатов...</p>
