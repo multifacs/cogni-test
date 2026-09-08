@@ -701,6 +701,37 @@ export type ParticipantMetrics = {
 	submittedWords: string[] | null;
 };
 
+export type GtoTestSessionRow = {
+	id: string;
+	testType: string;
+	meta: string | null;
+	userId: string;
+	gtoSessionId: string | null;
+	createdAt: string;
+	rowid: number;
+};
+
+export function latestTestSessionByType<T extends { testType: string; createdAt: string; rowid: number }>(
+	sessions: T[]
+): Map<string, T> {
+	const map = new Map<string, T>();
+	for (const s of sessions) {
+		const existing = map.get(s.testType);
+		if (!existing) {
+			map.set(s.testType, s);
+			continue;
+		}
+		// Sort by createdAt desc, then rowid desc
+		if (
+			s.createdAt > existing.createdAt ||
+			(s.createdAt === existing.createdAt && s.rowid > existing.rowid)
+		) {
+			map.set(s.testType, s);
+		}
+	}
+	return map;
+}
+
 export async function getGtoSessionMetrics(gtoSessionId: string): Promise<ParticipantMetrics[]> {
 	const sessionDetail = await getGtoSessionById(gtoSessionId);
 
@@ -718,11 +749,19 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 
 	// Batch load all test sessions for this GTO session
 	const allTestSessions = await db
-		.select()
+		.select({
+			id: session.id,
+			testType: session.testType,
+			meta: session.meta,
+			userId: session.userId,
+			gtoSessionId: session.gtoSessionId,
+			createdAt: session.createdAt,
+			rowid: sql<number>`rowid`.as('rowid')
+		})
 		.from(session)
 		.where(and(eq(session.gtoSessionId, gtoSessionId), inArray(session.userId, userIds)));
 
-	const testSessionsByUser = new Map<string, typeof allTestSessions>();
+	const testSessionsByUser = new Map<string, (typeof allTestSessions)[number][]>();
 	for (const ts of allTestSessions) {
 		const list = testSessionsByUser.get(ts.userId) ?? [];
 		list.push(ts);
@@ -842,9 +881,10 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 		);
 
 		const testSessions = testSessionsByUser.get(participant.userId) ?? [];
+		const latestByType = latestTestSessionByType(testSessions);
 
 		// ─── Stroop ─────────────────────────────────────────────
-		const stroopSession = testSessions.find((s) => s.testType === 'stroop');
+		const stroopSession = latestByType.get('stroop');
 		const stroopMetrics: ParticipantMetrics['stroop'] = {
 			stage1: { meanTime: null, stdDevTime: null, accuracy: 0 },
 			stage2: { meanTime: null, stdDevTime: null, accuracy: 0 },
@@ -866,7 +906,7 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 		}
 
 		// ─── Math ───────────────────────────────────────────────
-		const mathSession = testSessions.find((s) => s.testType === 'math');
+		const mathSession = latestByType.get('math');
 		let mathMetrics: SimpleTestMetrics = { meanTime: null, stdDevTime: null, accuracy: 0 };
 
 		if (mathSession) {
@@ -881,7 +921,7 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 		}
 
 		// ─── Munsterberg ────────────────────────────────────────
-		const munsterbergSession = testSessions.find((s) => s.testType === 'munsterberg');
+		const munsterbergSession = latestByType.get('munsterberg');
 		let munsterbergMetrics: MunsterbergMetrics = {
 			meanTime: null,
 			stdDevTime: null,
@@ -903,7 +943,7 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 		}
 
 		// ─── Campimetry ────────────────────────────────────────
-		const campimetrySession = testSessions.find((s) => s.testType === 'campimetry');
+		const campimetrySession = latestByType.get('campimetry');
 		const campimetryMetrics: CampimetryMetrics = {
 			stage1: { meanTime: null, stdDevTime: null, meanDelta: null },
 			stage2: { meanTime: null, stdDevTime: null, meanDelta: null },
@@ -942,7 +982,7 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 		}
 
 		// ─── Memory ─────────────────────────────────────────────
-		const memorySession = testSessions.find((s) => s.testType === 'memory');
+		const memorySession = latestByType.get('memory');
 		let memoryMetrics: SimpleTestMetrics = { meanTime: null, stdDevTime: null, accuracy: 0 };
 
 		if (memorySession) {
@@ -957,7 +997,7 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 		}
 
 		// ─── Swallow ────────────────────────────────────────────
-		const swallowSession = testSessions.find((s) => s.testType === 'swallow');
+		const swallowSession = latestByType.get('swallow');
 		let swallowMetrics: SimpleTestMetrics & { totalTime: number } = {
 			meanTime: null,
 			stdDevTime: null,
@@ -978,7 +1018,7 @@ export async function getGtoSessionMetrics(gtoSessionId: string): Promise<Partic
 		}
 
 		// ─── Raven ──────────────────────────────────────────────
-		const ravenSession = testSessions.find((s) => s.testType === 'ravenMatrices');
+		const ravenSession = latestByType.get('ravenMatrices');
 		let ravenMetrics: RavenMetrics = {
 			totalQuestions: 0,
 			correctCount: 0,
