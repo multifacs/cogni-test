@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, setContext, type Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
+	import { page } from '$app/state';
 	import { profileSurveyStore, userStore } from '$lib/stores/user';
 	import { pushService } from '$lib/pushService';
 
@@ -24,6 +25,14 @@
 	} = $props();
 
 	let headerText = $state('');
+
+	// Hide the bottom nav on very small phones (<sm, 640px) inside content
+	// sections — test/exercise/article screens need every pixel of height.
+	// Section roots (/tests, /exercises, /materials) keep the nav: they have
+	// no "back" button, so the nav is the only way out of the section there.
+	const hideNavOnSmallScreens = $derived(
+		/^\/(tests|exercises|materials)\/.+/.test(page.url.pathname)
+	);
 
 	setContext('headerText', {
 		get value() {
@@ -102,7 +111,13 @@
 		<Header text={headerText} />
 	</header>
 	{@render children()}
-	<NavBar undiagnosed={data.undiagnosed} allowedPaths={data.allowedPaths} />
+	<!-- On very small phones (<sm) inside content sections the nav is hidden
+	     via CSS — those pages have their own "Назад" button and need the height.
+	     Section roots (/tests, /exercises, /materials) keep the nav: they have
+	     no "back" button, so the nav is the only way out of the section there. -->
+	<div class="nav-slot" class:nav-hidden={hideNavOnSmallScreens}>
+		<NavBar undiagnosed={data.undiagnosed} allowedPaths={data.allowedPaths} />
+	</div>
 </div>
 
 <style>
@@ -160,6 +175,21 @@
 			grid-area: low-content;
 			padding: 2% 15%;
 			border-radius: var(--radius-lg);
+		}
+
+		/* display: contents keeps <nav> the actual grid item (as before the
+		   wrapper existed), so it still stretches over the full 'nav' area.
+		   The wrapper only exists to hide the nav on <sm via display:none. */
+		.nav-slot {
+			display: contents;
+		}
+
+		/* Very small phones: hide the bottom nav inside content sections
+		   (tests/exercises/materials subpages). Only <sm (<640px). */
+		@media (max-width: 639px) {
+			.nav-slot.nav-hidden {
+				display: none;
+			}
 		}
 	}
 	@media (min-width: 1024px) {

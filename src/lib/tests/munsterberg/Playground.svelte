@@ -16,7 +16,6 @@
 	// Total width = GRID_COLS * CELL_W + (GRID_COLS + 1) * 1 (borders)
 	const BORDER_PX = 1;
 	const TOTAL_BORDER_W = (GRID_COLS + 1) * BORDER_PX;
-	const PADDING = 32; // 1rem padding on each side from .main
 
 	let CELL_W = $state(42);
 	let CELL_H = $state(42);
@@ -47,12 +46,42 @@
 	});
 
 	function recalcCellSize() {
-		if (innerWidth <= 0) return;
-		const available = innerWidth - PADDING;
+		// Measure the real available width from the grid's own parent (.main has padding: 4%)
+		const parent = overlay.parentElement;
+		let availableW: number;
+		if (parent) {
+			const cs = getComputedStyle(parent);
+			availableW =
+				parent.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+		} else {
+			availableW = innerWidth;
+		}
+		// Available height: .main is the scroll container (grid rows:
+		// banner / main / low-content / nav) — everything outside it is chrome.
+		// The grid is main's first item and the flexible justify-evenly gaps
+		// collapse to zero once the content fills the area, so the whole
+		// content box is usable.
+		const main = overlay.closest('main, .main') as HTMLElement | null;
+		let availableH: number;
+		if (main) {
+			const cs = getComputedStyle(main);
+			const padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+			availableH = main.clientHeight - padY;
+		} else {
+			availableH = innerHeight;
+		}
+		// Reserve space for the ProgressBar / result heading rendered below the grid
+		availableH -= 28;
 		const desktopW = 42;
-		const calculatedW = Math.floor((available - TOTAL_BORDER_W) / GRID_COLS);
+		// On narrow screens CELL_H = CELL_W * 0.85, so convert the height
+		// budget into a width constraint through that ratio
+		const cellRatio = 0.85;
+		const TOTAL_BORDER_H = (GRID_ROWS + 1) * BORDER_PX;
+		const wByWidth = Math.floor((availableW - TOTAL_BORDER_W) / GRID_COLS);
+		const wByHeight = Math.floor((availableH - TOTAL_BORDER_H) / GRID_ROWS / cellRatio);
+		const calculatedW = Math.min(wByWidth, wByHeight);
 		// Use calculated size on small screens, cap at desktop default on larger
-		CELL_W = Math.min(calculatedW, desktopW);
+		CELL_W = Math.min(Math.max(calculatedW, 14), desktopW);
 		// Proportional height: on desktop 1:1, on narrower screens slightly shorter
 		CELL_H = CELL_W >= desktopW ? desktopW : Math.floor(CELL_W * 0.85);
 	}
@@ -186,10 +215,15 @@
 	}
 
 	function getEventSelection(e: TouchEvent | PointerEvent): Selection | null {
+		// clientX/Y are viewport-relative; getBoundingClientRect() is too,
+		// so this stays correct regardless of scroll position or offset parents.
+		// No preventDefault here: the grid has touch-action: none (touch-none),
+		// so the browser will not scroll while dragging over it.
+		const rect = overlay.getBoundingClientRect();
 		const x = 'touches' in e ? e.touches[0].clientX : e.clientX;
 		const y = 'touches' in e ? e.touches[0].clientY : e.clientY;
-		const j = clamp(Math.floor((x - overlay.offsetLeft) / CELL_W), 0, GRID_COLS - 1);
-		const i = clamp(Math.floor((y - overlay.offsetTop) / CELL_H), 0, GRID_ROWS - 1);
+		const j = clamp(Math.floor((x - rect.left) / CELL_W), 0, GRID_COLS - 1);
+		const i = clamp(Math.floor((y - rect.top) / CELL_H), 0, GRID_ROWS - 1);
 		return isNaN(i) || isNaN(j) ? null : { row: i, fromCol: j, toCol: j };
 	}
 
@@ -283,7 +317,7 @@
 						transition-all
 						duration-300
 						select-none
-						{isSelected(i, j) ? 'selected z-2 scale-110 overflow-hidden border-transparent shadow-md' : ''}
+						{isSelected(i, j) ? 'selected z-2 overflow-hidden border-transparent shadow-md' : ''}
 						{cell.isCorrect ? 'correct text-black' : ''}
 						{cell.isIncorrect ? 'incorrect text-black' : ''}"
 			>
