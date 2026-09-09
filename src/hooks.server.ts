@@ -1,5 +1,7 @@
 import type { Handle } from '@sveltejs/kit';
 
+import { seedDefaultUserOnStartup } from '$lib/server/db/seed/default-user';
+
 // src/lib/server/notificationScheduler.ts
 import { db } from '$lib/server/db';
 import { scheduledPushNotifications, pushSubscriptions } from '$lib/server/db/schema';
@@ -229,6 +231,9 @@ process.on('SIGINT', () => {
 
 // Start the worker when the server starts
 startWorker();
+// Idempotent dev seed: creates default USR user with test results when MODE === 'DEV' (see src/lib/server/db/seed/default-user.ts)
+// fail-soft by design: must not block or crash server boot
+void seedDefaultUserOnStartup();
 
 // SvelteKit handle hook
 export const handle: Handle = async ({ event, resolve }) => {
