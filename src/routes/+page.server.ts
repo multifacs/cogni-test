@@ -5,7 +5,7 @@ import type { User } from '$lib/server/db/types';
 import type { Actions } from './$types';
 import type { PageServerLoad } from './$types';
 import { getProfileSurvey, updateProfileSurvey } from '$lib/server/db/controllers/survey';
-import { getLatestActiveGtoSession, addParticipant } from '$lib/server/db/controllers/gto';
+import { autoAddToLatestActiveSession } from '$lib/server/db/controllers/gto';
 
 export const load: PageServerLoad = async ({ cookies }) => {
 	const userId = cookies.get('user_id');
@@ -62,21 +62,16 @@ export const actions = {
 		}
 		console.log('Data received in save action:', dataAsObject);
 		const userId = cookies.get('user_id')!;
-		updateProfileSurvey(userId, dataAsObject);
 
-		// Auto-add user to the latest active GTO session when they fill in their GTO-M ID
+		const existingSurvey = await getProfileSurvey(userId);
+		const hadGtoId = !!existingSurvey?.gtoId;
+
+		await updateProfileSurvey(userId, dataAsObject);
+
+		// Auto-add user to the latest active GTO session when they fill in their GTO-M ID for the first time
 		const gtoId = dataAsObject.gtoId as string | undefined;
-		if (gtoId && gtoId.trim()) {
-			const existingSurvey = await getProfileSurvey(userId);
-			if (!existingSurvey?.gtoId) {
-				const session = await getLatestActiveGtoSession();
-				if (session) {
-					await addParticipant(session.id, userId);
-					console.log(
-						`Auto-added user ${userId} to GTO session "${session.name}" (${session.id})`
-					);
-				}
-			}
+		if (gtoId && gtoId.trim() && !hadGtoId) {
+			await autoAddToLatestActiveSession(userId);
 		}
 	},
 

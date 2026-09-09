@@ -7,8 +7,9 @@
 	import { resolve } from '$app/paths';
 	import type { PathnameWithSearchOrHash } from '$app/types';
 	import { getContext, onMount } from 'svelte';
+	import { enhance } from '$app/forms';
 
-	let { data } = $props();
+	let { data, form } = $props();
 
 	const headerContext = getContext<{ value: string }>('headerText');
 	onMount(() => {
@@ -94,6 +95,28 @@
 
 <main class="main overflow-auto p-4">
 	<div class="flex flex-col gap-6">
+		{#if !data.profileSurvey?.gtoId}
+			<div class="flex flex-col gap-4 rounded-xl border border-gray-700 bg-white p-4">
+				<h2 class="text-center text-lg font-semibold text-gray-900">
+					Введите ваш ГТО-М ID
+				</h2>
+				<p class="text-center text-sm text-gray-500">
+					ГТО-М ID выдаёт организатор исследования. После ввода вы попадёте в анкету.
+				</p>
+				<form method="POST" action="?/saveGtoId" use:enhance class="flex flex-col gap-3">
+					<input
+						name="gtoId"
+						type="text"
+						placeholder="Ваш ГТО-М ID"
+						class="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-1 focus:ring-green-500 focus:outline-hidden"
+					/>
+					{#if form?.error}
+						<p class="text-sm text-red-600">{form.error}</p>
+					{/if}
+					<Button color="green" type="submit" class="w-full">Продолжить</Button>
+				</form>
+			</div>
+		{/if}
 		{#if data.activeSessions.length === 0 && data.completedSessions.length === 0}
 			<div class="flex flex-col items-center gap-3 py-10 text-gray-400">
 				<svg
@@ -129,7 +152,7 @@
 						>
 							<!-- Session header -->
 							<div class="flex items-center justify-between">
-								<h2 class="truncate text-lg font-semibold text-center">
+								<h2 class="truncate text-center text-lg font-semibold">
 									{session.name}
 								</h2>
 								<span
@@ -298,7 +321,7 @@
 			<!-- Completed sessions -->
 			{#if data.completedSessions.length > 0}
 				<div class="flex items-center gap-3">
-					<h2 class="text-lg font-semibold text-center">Завершённые сессии</h2>
+					<h2 class="text-center text-lg font-semibold">Завершённые сессии</h2>
 					<span class="text-sm text-gray-400">({data.completedSessions.length})</span>
 				</div>
 				<div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
@@ -308,7 +331,7 @@
 							class="flex flex-col gap-3 rounded-xl border border-gray-700 bg-gray-800/30 p-4 transition-colors"
 						>
 							<div class="flex items-center justify-between">
-								<h2 class="truncate text-lg font-semibold text-center">
+								<h2 class="truncate text-center text-lg font-semibold">
 									{session.name}
 								</h2>
 								<span
@@ -351,7 +374,7 @@
 {#if showDisclaimer}
 	<Modal bind:showModal={showDisclaimer}>
 		{#snippet header()}
-			<h2 class="text-2xl text-white text-center">
+			<h2 class="text-center text-2xl text-white">
 				{#if disclaimerType === 'tests'}
 					{selectedSession.currentTestIndex > 0
 						? 'Продолжить тестирование?'

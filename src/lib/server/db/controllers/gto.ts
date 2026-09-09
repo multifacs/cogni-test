@@ -20,6 +20,7 @@ import type { TaskClass } from '$lib/exercises/raven-matrices/types';
 import { generate } from 'short-uuid';
 import { eq, and, desc, sql, inArray } from 'drizzle-orm';
 import { missingFieldLabels } from '$lib/survey-field-labels';
+import { getProfileSurvey, updateProfileSurvey } from './survey';
 
 export { missingFieldLabels as computeMissingSurveyFieldLabels };
 
@@ -1317,4 +1318,46 @@ export async function getWordSetWords(wordSetId: string): Promise<string[]> {
 	const [set] = await db.select().from(gtoWordSet).where(eq(gtoWordSet.id, wordSetId));
 	if (!set) return [];
 	return [set.word1, set.word2, set.word3, set.word4, set.word5];
+}
+
+// ─── autoAddToLatestActiveSession ─────────────────────────────────────
+
+export async function autoAddToLatestActiveSession(userId: string): Promise<void> {
+	const session = await getLatestActiveGtoSession();
+	if (!session) {
+		return;
+	}
+
+	const existing = await db
+		.select({ id: gtoSessionParticipant.id })
+		.from(gtoSessionParticipant)
+		.where(
+			and(
+				eq(gtoSessionParticipant.gtoSessionId, session.id),
+				eq(gtoSessionParticipant.userId, userId)
+			)
+		)
+		.limit(1);
+
+	if (existing.length > 0) {
+		return;
+	}
+
+	await addParticipant(session.id, userId);
+}
+
+// ─── setGtoIdAndAutoAdd ───────────────────────────────────────────────
+
+export async function setGtoIdAndAutoAdd(
+	userId: string,
+	gtoId: string
+): Promise<'saved' | 'already-set'> {
+	const existing = await getProfileSurvey(userId);
+	if (existing?.gtoId) {
+		return 'already-set';
+	}
+
+	await updateProfileSurvey(userId, { gtoId });
+	await autoAddToLatestActiveSession(userId);
+	return 'saved';
 }
