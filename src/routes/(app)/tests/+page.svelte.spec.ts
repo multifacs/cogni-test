@@ -28,16 +28,25 @@ vi.mock('$app/paths', () => ({
 // ─── Фикстуры ─────────────────────────────────────────────────────────
 
 const testsFixture = [
-	{ name: 'stroop', title: 'Цвет и смысл', path: '/tests/stroop/about', img: '/tests/stroop.svg' },
+	{
+		name: 'stroop',
+		title: 'Цвет и смысл',
+		path: '/tests/stroop/about',
+		img: '/tests/stroop.svg'
+	},
 	{ name: 'math', title: 'Быстрый счет', path: '/tests/math/about', img: '/tests/math1.svg' },
-	{ name: 'munsterberg', title: 'Поиск слов', path: '/tests/munsterberg/about', img: '/tests/munsterberg1.svg' }
+	{
+		name: 'munsterberg',
+		title: 'Поиск слов',
+		path: '/tests/munsterberg/about',
+		img: '/tests/munsterberg1.svg'
+	}
 ];
 
 function makeData(options: { testSessionCounts?: Record<string, number> } = {}) {
 	return {
 		tests: testsFixture,
-		testSessionCounts: options.testSessionCounts ?? {},
-		user: ''
+		testSessionCounts: options.testSessionCounts ?? {}
 	};
 }
 

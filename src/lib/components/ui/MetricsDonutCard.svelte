@@ -50,7 +50,7 @@
 	href={resolvePathname('/metrics' as PathnameWithSearchOrHash)}
 	onclick={handleClick}
 	onkeydown={handleKeydown}
-	aria-label="Метрики"
+	aria-label="Открыть раздел Метрики"
 >
 	<h2 class="card-title">Метрики</h2>
 	{#if !hasData || shares.length === 0}

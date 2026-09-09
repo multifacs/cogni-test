@@ -85,7 +85,16 @@ describe('MetricsDonutCard', () => {
 		expect(mockGoto).toHaveBeenCalledWith(expect.stringMatching(/\metrics$/));
 	});
 
-	it('(e) sector count and geometry are consistent with share>0 metrics', async () => {
+	it('(e) interactive element has descriptive aria-label', async () => {
+		const zeroScores = scoresFor(new Array(13).fill(0));
+		const { container } = await render(MetricsDonutCard, {
+			props: { metricScores: zeroScores, hasData: false }
+		});
+		const link = container.querySelector('a')!;
+		expect(link.getAttribute('aria-label')).toBe('Открыть раздел Метрики');
+	});
+
+	it('(f) sector count and geometry are consistent with share>0 metrics', async () => {
 		const values = new Array(13).fill(0);
 		values[5] = 5; // reaction_speed
 		values[7] = 15; // spacial_perception

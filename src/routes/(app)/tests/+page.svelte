@@ -6,7 +6,6 @@
 	const resolvePathname = resolve as (path: PathnameWithSearchOrHash) => ResolvedPathname;
 	import ExerciseCard from '$lib/components/ui/ExerciseCard.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
-	import { userStore } from '$lib/stores/user.js';
 	import localforage from 'localforage';
 	import { getContext, onMount } from 'svelte';
 	import RecommendationCard from '$lib/components/ui/RecommendationCard.svelte';
@@ -22,7 +21,6 @@
 		if (headerContext) {
 			headerContext.value = 'Диагностика';
 		}
-		userStore.set(data.user || '');
 
 		const flag = await localforage.getItem('runAllMode');
 		if (flag && data.tests.length > 0) {

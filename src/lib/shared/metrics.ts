@@ -4,6 +4,7 @@ import { exercises, EXERCISE_SLUG_TO_TEST_TYPE } from '$lib/exercises';
 import { articles } from '$lib/articles';
 import { getResults } from '$lib/server/db/controllers/result';
 import type { TestType } from '$lib/tests/types';
+import { SKILL_METRICS } from './metricShares.js';
 
 /** Слабые метрики → статьи-практики из /materials (бывшие упражнения road-trip и not-lost). */
 const articleMetrics: Record<string, SkillMetric[]> = {
@@ -72,22 +73,7 @@ export function computeSessionScore(sessionType: string, attempts: AttemptLike[]
 type MetricScores = Record<SkillMetric, number>;
 
 export async function getMetricScores(userId: string): Promise<MetricScores> {
-	const allMetrics: SkillMetric[] = [
-		'executive_function',
-		'memory',
-		'attention',
-		'thinking',
-		'perception',
-		'reaction_speed',
-		'verbal_function',
-		'spacial_perception',
-		'spacial_orientation',
-		'short_memory',
-		'working_memory',
-		'long_memory',
-		'color_perception'
-	];
-	const scores: Record<string, number[]> = Object.fromEntries(allMetrics.map((m) => [m, []]));
+	const scores: Record<string, number[]> = Object.fromEntries(SKILL_METRICS.map((m) => [m, []]));
 
 	const testPromises = tests
 		.filter((test) => test.admin_metrics?.length)
@@ -118,7 +104,7 @@ export async function getMetricScores(userId: string): Promise<MetricScores> {
 	await Promise.all([...testPromises, ...exercisePromises]);
 
 	const result = {} as MetricScores;
-	for (const metric of allMetrics) {
+	for (const metric of SKILL_METRICS) {
 		const arr = scores[metric];
 		result[metric] = arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
 	}
