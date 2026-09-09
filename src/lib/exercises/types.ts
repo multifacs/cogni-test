@@ -1,5 +1,5 @@
 import type { AttentionTrialRow } from './attention/types';
-import type { CampimetryResult } from './campimetry/types';
+import type { CampimetryResult } from '$lib/tests/campimetry/types';
 import type { EmojiTrialRow } from './emoji/types';
 import type { FlankerTrialRow } from './flanker/types';
 import type { LettersTrialRow } from './letters/types';

@@ -222,6 +222,8 @@
 	{id}
 	style={`${styleName}`}
 	class={`
+	flex
+	justify-center
 	cursor-pointer
 	active:scale-95
 	active:ring-2

@@ -6,7 +6,19 @@
 	import { shuffle } from '$lib/utils';
 
 	import Button from '$lib/components/ui/Button.svelte';
-	let { data, gameEnd, sendResults } = $props();
+	import type { CampimetryResult } from './types';
+
+	let {
+		data,
+		gameEnd,
+		sendResults,
+		fullPalette = false
+	}: {
+		data: { silhouettes: Record<string, string> };
+		gameEnd: () => void;
+		sendResults?: (results: CampimetryResult[]) => void;
+		fullPalette?: boolean;
+	} = $props();
 
 	let isGameRunning = $state(false);
 
@@ -21,6 +33,8 @@
 
 	let currentStage = $state(1);
 	let delta = $state(0);
+	let taskColors: string[] = $state([]);
+	let currentColorIndex = $state(0);
 
 	onMount(async () => {
 		console.log(Object.keys(data.silhouettes));
@@ -30,7 +44,9 @@
 	export function resetGame() {
 		currentStage = 1;
 		delta = 0;
-		game = new CampimetryGame(Object.keys(data.silhouettes));
+		game = new CampimetryGame(Object.keys(data.silhouettes), { fullPalette });
+		taskColors = game.getTaskColors();
+		currentColorIndex = 0;
 		isGameRunning = true;
 		nextTask();
 	}
@@ -57,7 +73,7 @@
 	export function stopGame() {
 		isGameRunning = false;
 		gameEnd();
-		sendResults(game.getResults());
+		sendResults?.(game.getResults());
 	}
 
 	function getSilhouetteChoices(num: number, correct: string): string[] {
@@ -74,7 +90,9 @@
 	function nextTask() {
 		if (!isGameRunning || game.isGameOver()) return stopGame();
 		game.startNextTask();
+		currentColorIndex = game.getCurrentColorIndex();
 		const currentTask = game.getCurrentTask();
+		if (!currentTask) return stopGame();
 		console.log(currentTask);
 		updateState(
 			getSilhouetteChoices(2, currentTask.silhouette),
@@ -144,12 +162,15 @@
 </script>
 
 {#if isGameRunning}
-	<!-- Progress bar -->
-	<div class="mx-auto mb-2 h-1.5 w-4/5 max-w-96 overflow-hidden rounded-full bg-gray-200">
-		<div
-			class="h-full rounded-full bg-blue-500 transition-all duration-300"
-			style={`width: ${(game.getCurrentTaskNumber() / game.getTotalTasks()) * 100}%`}
-		></div>
+	<!-- Progress dots: один кружок на задачу, цвет = цвет задачи -->
+	<div class="mx-auto mb-2 flex w-4/5 max-w-96 flex-wrap items-center justify-center gap-1">
+		{#each taskColors as color, i (i)}
+			<span
+				aria-hidden="true"
+				class="progress-dot {i == currentColorIndex ? 'progress-dot-current' : ''}"
+				style={`--dot-color: var(--camp-${color})`}
+			></span>
+		{/each}
 	</div>
 
 	<div class="background" style={`background-color: ${currentBackgroundColor.toString()}`}>
@@ -173,14 +194,14 @@
 		</div>
 	{/if}
 	<div
-		class="gap-[4vw] m-[4vw] row flex w-4/5 max-w-96 justify-between {currentStage != 1
+		class="row m-6 grid w-4/5 max-w-96 grid-cols-3 justify-items-center gap-6 {currentStage != 1
 			? 'invisible'
 			: ''}"
 	>
 		{#each silhouettes as s (s)}
 			<button
 				aria-label={`${s} button`}
-				class="choice-btn max-xs:w-16 max-xs:h-16 h-25 w-25 cursor-pointer touch-none rounded-xl bg-white mask-contain ring-2
+				class="choice-btn max-xs:w-16 max-xs:h-16 aspect-square h-25 w-25 cursor-pointer touch-none rounded-xl bg-white mask-contain ring-2
 					ring-transparent transition-[ring-color] duration-150 select-none hover:ring-gray-400 active:ring-gray-600 disabled:ring-transparent"
 				disabled={!delta}
 				style={`
@@ -200,7 +221,7 @@
 		{#if currentStage == 1}
 			Изменяйте оттенок, пока силуэт не станет различимым, а затем выберите правильный силуэт.
 		{:else}
-			Изменяйте оттенок, пока силуэт не перестанет быть виден. Затем нажмите "Больне не
+			Изменяйте оттенок, пока силуэт не перестанет быть виден. Затем нажмите "Больше не
 			видно".
 		{/if}
 	</p>
@@ -219,12 +240,29 @@
 				d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
 			/>
 		</svg>
-		<h1 class="text-2xl font-bold text-center">Тест окончен</h1>
+		<h1 class="text-center text-2xl font-bold">Тест окончен</h1>
 		<p class="text-gray-500">Результаты отправлены</p>
 	</div>
 {/if}
 
 <style>
+	.progress-dot {
+		width: 14px;
+		height: 14px;
+		border-radius: 9999px;
+		background-color: var(--dot-color, #cccccc);
+		transition:
+			box-shadow 0.15s,
+			transform 0.15s;
+	}
+
+	.progress-dot-current {
+		box-shadow:
+			0 0 0 3px #fff,
+			0 0 0 5px var(--main-accent-color);
+		transform: scale(1.1);
+	}
+
 	.background {
 		display: flex;
 		justify-content: center;
