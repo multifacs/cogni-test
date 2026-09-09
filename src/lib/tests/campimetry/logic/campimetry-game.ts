@@ -13,8 +13,12 @@ export class CampimetryGame {
 
 	private allColors = Object.keys(colors);
 
-	constructor(silhouettes: string[]) {
+	/** Use the full color palette instead of a random ~60% subset (exercise mode). */
+	private fullPalette: boolean;
+
+	constructor(silhouettes: string[], options?: { fullPalette?: boolean }) {
 		this.silhouettes = silhouettes.slice();
+		this.fullPalette = options?.fullPalette ?? false;
 		this.generateTasks();
 	}
 
@@ -22,21 +26,7 @@ export class CampimetryGame {
 	 * Generates tasks for all stages.
 	 */
 	private generateTasks(): void {
-		let NUM_OF_COLORS = Math.round((this.allColors.length / 5) * 3);
-
-		const colors: Array<string> = [];
-
-		for (let i = 4; i < 9; i += 2) {
-			const randomChoice = Math.round(Math.random());
-			colors.push(this.allColors[i + randomChoice]);
-		}
-		NUM_OF_COLORS -= 3;
-
-		const restOfColors = this.allColors.slice(0, 4);
-		shuffle(restOfColors);
-
-		colors.push(...restOfColors.slice(0, NUM_OF_COLORS));
-		shuffle(colors);
+		const colors: Array<string> = this.fullPalette ? this.pickAllColors() : this.pickColorSubset();
 		console.log(colors);
 
 		colors.forEach((color) => {
@@ -105,6 +95,33 @@ export class CampimetryGame {
 			op,
 			color
 		};
+	}
+
+	/** Full palette — one task pair per color (exercise mode). */
+	private pickAllColors(): string[] {
+		const all = this.allColors.slice();
+		shuffle(all);
+		return all;
+	}
+
+	/** Random ~60% subset of the palette (test mode). */
+	private pickColorSubset(): string[] {
+		let NUM_OF_COLORS = Math.round((this.allColors.length / 5) * 3);
+
+		const colors: Array<string> = [];
+
+		for (let i = 4; i < 9; i += 2) {
+			const randomChoice = Math.round(Math.random());
+			colors.push(this.allColors[i + randomChoice]);
+		}
+		NUM_OF_COLORS -= 3;
+
+		const restOfColors = this.allColors.slice(0, 4);
+		shuffle(restOfColors);
+
+		colors.push(...restOfColors.slice(0, NUM_OF_COLORS));
+		shuffle(colors);
+		return colors;
 	}
 
 	/**

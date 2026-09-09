@@ -6,7 +6,19 @@
 	import { shuffle } from '$lib/utils';
 
 	import Button from '$lib/components/ui/Button.svelte';
-	let { data, gameEnd, sendResults } = $props();
+	import type { CampimetryResult } from './types';
+
+	let {
+		data,
+		gameEnd,
+		sendResults,
+		fullPalette = false
+	}: {
+		data: { silhouettes: Record<string, string> };
+		gameEnd: () => void;
+		sendResults?: (results: CampimetryResult[]) => void;
+		fullPalette?: boolean;
+	} = $props();
 
 	let isGameRunning = $state(false);
 
@@ -30,7 +42,7 @@
 	export function resetGame() {
 		currentStage = 1;
 		delta = 0;
-		game = new CampimetryGame(Object.keys(data.silhouettes));
+		game = new CampimetryGame(Object.keys(data.silhouettes), { fullPalette });
 		isGameRunning = true;
 		nextTask();
 	}
@@ -57,7 +69,7 @@
 	export function stopGame() {
 		isGameRunning = false;
 		gameEnd();
-		sendResults(game.getResults());
+		sendResults?.(game.getResults());
 	}
 
 	function getSilhouetteChoices(num: number, correct: string): string[] {
@@ -173,14 +185,14 @@
 		</div>
 	{/if}
 	<div
-		class="gap-[4vw] m-[4vw] row flex w-4/5 max-w-96 justify-between {currentStage != 1
+		class="row m-6 grid w-4/5 max-w-96 grid-cols-3 justify-items-center gap-6 {currentStage != 1
 			? 'invisible'
 			: ''}"
 	>
 		{#each silhouettes as s (s)}
 			<button
 				aria-label={`${s} button`}
-				class="choice-btn max-xs:w-16 max-xs:h-16 h-25 w-25 cursor-pointer touch-none rounded-xl bg-white mask-contain ring-2
+				class="choice-btn max-xs:w-16 max-xs:h-16 h-25 w-25 aspect-square cursor-pointer touch-none rounded-xl bg-white mask-contain ring-2
 					ring-transparent transition-[ring-color] duration-150 select-none hover:ring-gray-400 active:ring-gray-600 disabled:ring-transparent"
 				disabled={!delta}
 				style={`
@@ -200,7 +212,7 @@
 		{#if currentStage == 1}
 			Изменяйте оттенок, пока силуэт не станет различимым, а затем выберите правильный силуэт.
 		{:else}
-			Изменяйте оттенок, пока силуэт не перестанет быть виден. Затем нажмите "Больне не
+			Изменяйте оттенок, пока силуэт не перестанет быть виден. Затем нажмите "Больше не
 			видно".
 		{/if}
 	</p>
