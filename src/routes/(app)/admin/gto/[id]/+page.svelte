@@ -20,8 +20,8 @@
 		type StoredButtonPair,
 		type FileNumberStatus
 	} from '$lib/client/gto-button-data';
-	import { initMetricsDraft, collectMetricsFromDraft } from './table-helpers';
-	import { onMount } from 'svelte';
+	import { initMetricsDraft, collectMetricsFromDraft, rebuildDraftMap } from './table-helpers';
+	import { onMount, untrack } from 'svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { getContext } from 'svelte';
 
@@ -384,16 +384,17 @@
 		})
 	);
 
-	let draftMap = $state(new SvelteMap<string, ReturnType<typeof initMetricsDraft>>());
+	let draftMap = $state.raw(new SvelteMap<string, ReturnType<typeof initMetricsDraft>>());
+	let savedParticipantId: string | null = null;
 
-	// Rebuild draftMap whenever filtered metrics change (e.g. after invalidateAll)
+	// Rebuild draftMap from server data, preserving unsaved drafts of other rows.
+	// We read draftMap via untrack to break the reactivity loop that would occur
+	// if the effect depended on draftMap itself.
 	$effect(() => {
-		const next = new SvelteMap<string, ReturnType<typeof initMetricsDraft>>();
-		for (const m of data.metrics) {
-			next.set(m.participantId, initMetricsDraft(m, data.wordSetIdMap.get(m.participantId)));
-		}
+		const prev = untrack(() => draftMap);
+		const next = rebuildDraftMap(data.metrics, data.wordSetIdMap, prev, savedParticipantId);
+		savedParticipantId = null; // consume flag BEFORE assigning draftMap
 		draftMap = next;
-		// Prevent reactivity loop — only respond to data change, not draftMap itself
 	});
 
 	function setDraft(
@@ -410,6 +411,7 @@
 		const draft = draftMap.get(participantId);
 		if (!draft) return;
 		const payload = collectMetricsFromDraft(draft);
+		savedParticipantId = participantId;
 		await handleSaveMetrics(participantId, payload);
 	}
 </script>

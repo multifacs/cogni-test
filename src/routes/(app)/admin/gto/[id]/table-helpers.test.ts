@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { initMetricsDraft, collectMetricsFromDraft } from './table-helpers';
+import { initMetricsDraft, collectMetricsFromDraft, rebuildDraftMap } from './table-helpers';
 import type { ParticipantMetrics } from '$lib/server/db/controllers/gto';
 
 describe('initMetricsDraft', () => {
@@ -189,5 +189,198 @@ describe('collectMetricsFromDraft', () => {
 
 		const payload = collectMetricsFromDraft(draft);
 		expect(Object.keys(payload)).toHaveLength(0);
+	});
+});
+
+describe('rebuildDraftMap', () => {
+	function makeParticipant(
+		id: string,
+		overrides: Partial<ParticipantMetrics['editableMetrics']> = {}
+	) {
+		return {
+			participantId: id,
+			userId: `u-${id}`,
+			firstname: 'User',
+			lastname: 'Test',
+			email: null,
+			sex: 'male',
+			age: 30,
+			missingSurveyFields: [],
+			stroop: {
+				stage1: { meanTime: null, accuracy: null, total: 0, correct: 0 },
+				stage2: { meanTime: null, accuracy: null, total: 0, correct: 0 },
+				stage3: { meanTime: null, accuracy: null, total: 0, correct: 0 }
+			},
+			math: { meanTime: null, accuracy: null, total: 0, correct: 0 },
+			munsterberg: { meanTime: null, accuracy: null, total: 0, correct: 0 },
+			campimetry: { meanTime: null, accuracy: null, total: 0, correct: 0 },
+			memory: { meanTime: null, accuracy: null, total: 0, correct: 0 },
+			swallow: { meanTime: null, accuracy: null, total: 0, correct: 0, totalTime: 0 },
+			raven: {
+				total: 0,
+				correct: 0,
+				meanTime: null,
+				byDifficulty: {
+					easy: { total: 0, correct: 0 },
+					medium: { total: 0, correct: 0 },
+					hard: { total: 0, correct: 0 }
+				},
+				byTaskClass: Object.create(null)
+			},
+			editableMetrics: {
+				id: `m-${id}`,
+				balanceTest: '15-30',
+				mazeQ1: 0.5,
+				mazeQ2: 1,
+				mazeQ3: 0,
+				mazeVRNumber: 42,
+				mazeVRFileName: 'vr.dat',
+				buttonTestNumber: 7,
+				buttonTestFileName: 'bt.xls',
+				logic: 1,
+				wordSetNumber: 3,
+				...overrides
+			},
+			wordScore: null,
+			submittedWords: null
+		} as unknown as ParticipantMetrics;
+	}
+
+	it('fresh build (no prevDrafts): every row gets initMetricsDraft values from server data', () => {
+		const metrics = [makeParticipant('A')];
+		const wordSetIdMap = new Map([['A', 'ws-A']]);
+
+		const result = rebuildDraftMap(metrics, wordSetIdMap, undefined, null);
+		expect(result.size).toBe(1);
+		expect(result.get('A')?.balanceTest).toBe('15-30');
+		expect(result.get('A')?.wordSetId).toBe('ws-A');
+	});
+
+	it('carry-over with savedId=null: prev drafts for A and B with user-typed field changes are preserved', () => {
+		const metrics = [makeParticipant('A'), makeParticipant('B')];
+		const wordSetIdMap = new Map([
+			['A', 'ws-A'],
+			['B', 'ws-B']
+		]);
+		const prevDrafts = new Map([
+			[
+				'A',
+				{ ...initMetricsDraft(metrics[0], 'ws-A'), balanceTest: 'changed-A', mazeQ1: '99' }
+			],
+			['B', { ...initMetricsDraft(metrics[1], 'ws-B'), logic: '66' }]
+		]);
+
+		const result = rebuildDraftMap(metrics, wordSetIdMap, prevDrafts, null);
+		expect(result.size).toBe(2);
+		// A preserved with user-typed changes
+		expect(result.get('A')?.balanceTest).toBe('changed-A');
+		expect(result.get('A')?.mazeQ1).toBe('99');
+		expect(result.get('A')?.wordSetId).toBe('ws-A');
+		// B preserved with user-typed changes
+		expect(result.get('B')?.logic).toBe('66');
+		expect(result.get('B')?.mazeQ2).toBe('1');
+		expect(result.get('B')?.wordSetId).toBe('ws-B');
+	});
+
+	it('savedId=A: A refreshed from server values, B draft preserved', () => {
+		const metrics = [
+			makeParticipant('A', { balanceTest: 'server-A-new', mazeQ1: 0.25 }),
+			makeParticipant('B', { balanceTest: 'server-B', mazeQ1: 1.5 })
+		];
+		const wordSetIdMap = new Map([
+			['A', 'ws-A-new'],
+			['B', 'ws-B']
+		]);
+		const prevDrafts = new Map([
+			[
+				'A',
+				{
+					...initMetricsDraft(makeParticipant('A'), 'ws-A-old'),
+					balanceTest: 'draft-A',
+					mazeQ1: '55'
+				}
+			],
+			[
+				'B',
+				{
+					...initMetricsDraft(makeParticipant('B'), 'ws-B'),
+					balanceTest: 'draft-B',
+					mazeQ1: '88'
+				}
+			]
+		]);
+
+		const result = rebuildDraftMap(metrics, wordSetIdMap, prevDrafts, 'A');
+		expect(result.size).toBe(2);
+		// A refreshed from server (ignore prev draft)
+		expect(result.get('A')?.balanceTest).toBe('server-A-new');
+		expect(result.get('A')?.mazeQ1).toBe('0.25');
+		expect(result.get('A')?.wordSetId).toBe('ws-A-new');
+		// B preserved from draft
+		expect(result.get('B')?.balanceTest).toBe('draft-B');
+		expect(result.get('B')?.mazeQ1).toBe('88');
+		expect(result.get('B')?.wordSetId).toBe('ws-B');
+	});
+
+	it('new participant C appears in metrics and gets fresh draft', () => {
+		const metrics = [
+			makeParticipant('A'),
+			makeParticipant('C', { balanceTest: 'new-C', mazeQ1: 9 })
+		];
+		const wordSetIdMap = new Map([
+			['A', 'ws-A'],
+			['C', 'ws-C']
+		]);
+		const prevDrafts = new Map([
+			['A', { ...initMetricsDraft(metrics[0], 'ws-A'), balanceTest: 'draft-A' }]
+		]);
+
+		const result = rebuildDraftMap(metrics, wordSetIdMap, prevDrafts, null);
+		expect(result.size).toBe(2);
+		expect(result.get('A')?.balanceTest).toBe('draft-A');
+		// C gets fresh server values
+		expect(result.get('C')?.balanceTest).toBe('new-C');
+		expect(result.get('C')?.mazeQ1).toBe('9');
+		expect(result.get('C')?.wordSetId).toBe('ws-C');
+	});
+
+	it('participant removed from metrics is absent from result map', () => {
+		const metrics = [makeParticipant('A')];
+		const wordSetIdMap = new Map([['A', 'ws-A']]);
+		const prevDrafts = new Map([
+			['A', { ...initMetricsDraft(makeParticipant('A'), 'ws-A'), balanceTest: 'draft-A' }],
+			['B', { ...initMetricsDraft(makeParticipant('B'), 'ws-B'), balanceTest: 'draft-B' }]
+		]);
+
+		const result = rebuildDraftMap(metrics, wordSetIdMap, prevDrafts, null);
+		expect(result.size).toBe(1);
+		expect(result.has('A')).toBe(true);
+		expect(result.has('B')).toBe(false);
+	});
+
+	it('wordSetId re-sync: user-typed fields preserved but wordSetId updated from server map', () => {
+		const metrics = [makeParticipant('A', { balanceTest: 'server-A', mazeQ1: 0.5 })];
+		const wordSetIdMap = new Map([['A', 'ws-new']]);
+		const prevDrafts = new Map([
+			[
+				'A',
+				{
+					...initMetricsDraft(makeParticipant('A'), 'ws-old'),
+					balanceTest: 'draft-A',
+					mazeQ2: 'draft-mazeQ2',
+					wordSetId: 'ws-old'
+				}
+			]
+		]);
+
+		const result = rebuildDraftMap(metrics, wordSetIdMap, prevDrafts, null);
+		expect(result.size).toBe(1);
+		// User-typed fields preserved
+		expect(result.get('A')?.balanceTest).toBe('draft-A');
+		expect(result.get('A')?.mazeQ2).toBe('draft-mazeQ2');
+		// wordSetId re-synced from map
+		expect(result.get('A')?.wordSetId).toBe('ws-new');
+		// Server-only field refreshed
+		expect(result.get('A')?.mazeQ1).toBe('0.5');
 	});
 });

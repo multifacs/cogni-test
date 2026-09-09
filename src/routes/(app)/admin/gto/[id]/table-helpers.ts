@@ -1,6 +1,7 @@
 /** @fileoverview Pure helpers for the admin GTO results table */
 
-import type { GtoEditableMetricDetail, ParticipantMetrics } from '$lib/server/db/controllers/gto';
+import { SvelteMap } from 'svelte/reactivity';
+import type { ParticipantMetrics } from '$lib/server/db/controllers/gto';
 
 export type MetricsDraft = {
 	balanceTest: string;
@@ -59,4 +60,29 @@ export function collectMetricsFromDraft(draft: MetricsDraft): Record<string, str
 	if (draft.mazeVRFileName) payload.mazeVRFileName = draft.mazeVRFileName;
 	if (draft.buttonTestFileName) payload.buttonTestFileName = draft.buttonTestFileName;
 	return payload;
+}
+
+export function rebuildDraftMap(
+	metrics: ParticipantMetrics[],
+	wordSetIdMap: Map<string, string | undefined | null>,
+	prevDrafts: Map<string, MetricsDraft> | null | undefined,
+	savedParticipantId: string | null
+): SvelteMap<string, MetricsDraft> {
+	const next = new SvelteMap<string, MetricsDraft>();
+	for (const m of metrics) {
+		if (m.participantId === savedParticipantId) {
+			next.set(m.participantId, initMetricsDraft(m, wordSetIdMap.get(m.participantId)));
+		} else {
+			const carried = prevDrafts?.get(m.participantId);
+			if (carried) {
+				next.set(m.participantId, {
+					...carried,
+					wordSetId: wordSetIdMap.get(m.participantId) ?? ''
+				});
+			} else {
+				next.set(m.participantId, initMetricsDraft(m, wordSetIdMap.get(m.participantId)));
+			}
+		}
+	}
+	return next;
 }
