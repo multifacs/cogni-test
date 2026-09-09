@@ -63,9 +63,9 @@ Vitest 5 в browser-режиме затирает `ssr.external`: хук `config
 3. `test.server.deps.external` в vitest НЕ влияет на путь `ssrLoadModule`/`SSRCompatModuleRunner` — это отдельный резолвер.
 4. Источник шума в браузерных тестах: heartbeat `fetch('/api/ping')` в `(app)/+layout.svelte` → загрузка `api/ping/+server.ts` → CJS-цепочка (`short-uuid`). Любой тест, монтирующий layout, триггерит SSR-загрузку роутов.
 
-### Известные открытые вопросы
+### Campimetry click-through: промахи trusted-click без app.css (решено, 2026-09)
 
-- Campimetry-тесты падают с "Game did not finish within the click budget" — вероятно, `test.browser.locators.exact: true` по умолчанию в vitest 5. Не чинено. План: изолированный прогон spec-файла с полным логом + A/B с `locators: { exact: false }` в browser-блоке client-проекта.
+Симптом: после апгрейда vitest 5 оба campimetry-теста падали «Game did not finish within the click budget». Причина: спек не импортировал `app.css` → Tailwind-классы инертны → choice-кнопки рендерились ~16×6px вместо 100×100px (`h-25 w-25`); trusted-клик vitest 5 по такой мишени попадает нестабильно — событие уходит в пустоту без ошибок (тихий no-op, бюджет кликов исчерпывается). Доказано диагностикой: `elementFromPoint` в центре кнопки возвращал её саму, untrusted `el.click()` работал всегда — обработчики и логика игры исправны. Гипотеза про exact-локаторы не подтвердилась. Фикс: `import '../../../app.css';` в спеке (паттерн app-layout / munsterberg / Button). Правило: browser-спеки, кликающие по элементам с Tailwind-размерами, обязаны импортировать `app.css` — иначе мишени деградируют до UA-дефолтов и trusted-клик становится ненадёжным.
 
 ### Быстрая верификация после изменений vite.config.ts
 
