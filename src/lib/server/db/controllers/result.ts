@@ -103,7 +103,8 @@ const orderByMap: Record<string, (fields: Record<string, AnyColumn>) => SQL> = {
 	pictures: (f) => asc(f.questionIndex),
 	campimetryExercise: (f) => asc(f.attempt),
 	ravenMatrices: (f) => asc(f.taskIndex),
-	wordMorphingExercise: (f) => asc(f.comboIndex)
+	wordMorphingExercise: (f) => asc(f.comboIndex),
+	rhythm: (f) => asc(f.attempt)
 };
 
 export async function postResult(
