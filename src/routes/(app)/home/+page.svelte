@@ -8,6 +8,7 @@
 	import { userStore } from '$lib/stores/user';
 	import AgeCard from '$lib/components/ui/AgeCard.svelte';
 	import RecommendationCard from '$lib/components/ui/RecommendationCard.svelte';
+	import MetricsDonutCard from '$lib/components/ui/MetricsDonutCard.svelte';
 	import { resolve } from '$app/paths';
 
 	interface BeforeInstallPromptEvent extends Event {
@@ -142,7 +143,7 @@
 		<div class="flex flex-col items-center gap-6">
 			<div class="main-content gap-6">
 				<AgeCard age={data.predictedAge} {realAge} />
-				<div class="justify-beetwen n flex flex-col justify-around gap-6">
+				<div class="flex flex-col justify-around justify-between gap-6">
 					<RecommendationCard
 						title="Совет дня"
 						text="Статья: как физическая активность влияет на память"
@@ -150,13 +151,14 @@
 						goto="/materials"
 						button_text="Прочитать"
 					/>
+					<MetricsDonutCard metricScores={data.metricScores} hasData={data.hasData} />
 					<Button color="green" goto="/exercises">Продолжить тренировки</Button>
 				</div>
 			</div>
 
 			{#if showInstallButton}
 				<div class="flex w-full max-w-xs flex-col gap-4 text-center">
-					<h3 class="text-lg text-center">
+					<h3 class="text-center text-lg">
 						Вы также можете установить приложение на своем устройстве
 					</h3>
 					<Button color="green" onclick={handleInstall}>Установить приложение</Button>
@@ -166,7 +168,7 @@
 				<Modal bind:showModal={showInstallModal}>
 					{#snippet header()}
 						<div class="flex flex-col gap-4">
-							<h2 class="text-2xl text-center">
+							<h2 class="text-center text-2xl">
 								Установка приложения на не chrome-based браузерах
 							</h2>
 							<p>Похоже, Вы используете firefox или safari.</p>
@@ -215,13 +217,14 @@
 			{/if}
 		</div>
 	{:else}
-		<div class="flex w-full max-w-xs flex-col gap-4 mx-auto text-center">
+		<div class="mx-auto flex w-full max-w-xs flex-col gap-4 text-center">
 			<h2 class="text-center">
 				Пройдите начальную диагностику, чтобы узнать свой когнитивный возраст.
 			</h2>
 			<p class="text-base">
 				После этого Вам откроется тренажёр и много других интересных возможностей.
 			</p>
+			<MetricsDonutCard metricScores={data.metricScores} hasData={data.hasData} />
 			<Button color="green" onclick={handleRunAll}>Пройти диагностику</Button>
 		</div>
 	{/if}

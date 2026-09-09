@@ -13,7 +13,8 @@
 		goto,
 		icon,
 		variant = 'row',
-		button_text = 'Читать'
+		button_text = 'Читать',
+		onclick
 	}: {
 		title: string;
 		text: string;
@@ -21,13 +22,21 @@
 		icon: string;
 		variant?: 'row' | 'card';
 		button_text?: string;
+		onclick?: () => void;
 	} = $props();
 
 	const href = $derived(resolvePathname(goto as PathnameWithSearchOrHash));
+
+	function handleClick(event: MouseEvent) {
+		if (onclick) {
+			event.preventDefault();
+			onclick();
+		}
+	}
 </script>
 
 {#if variant === 'row'}
-	<a class="row" {href}>
+	<a class="row" {href} onclick={handleClick}>
 		<img class="row-icon" src={icon} alt="" />
 		<span class="row-body">
 			<h2 class="row-title">{title}</h2>
@@ -47,7 +56,7 @@
 		</svg>
 	</a>
 {:else}
-	<a class="card" {href}>
+	<a class="card" {href} onclick={handleClick}>
 		<div class="card-top">
 			<img class="card-icon" src={icon} alt="" />
 			<h2 class="card-title">{title}</h2>
