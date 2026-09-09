@@ -97,6 +97,12 @@ export const exercises: ExerciseData[] = [
 		img: '/exercises/letters1.svg'
 	},
 	{
+		name: 'rhythm',
+		title: 'Ритм',
+		path: '/exercises/rhythm/about',
+		img: '/exercises/rhythm.svg'
+	},
+	{
 		name: 'road-trip',
 		title: 'По дороге на работу',
 		path: '/exercises/road-trip/about',
@@ -180,6 +186,11 @@ const exerciseLoaders: Record<string, ExerciseLoader> = {
 		playground: () => import('./letters/Playground.svelte'),
 		result: () => import('./letters/Result.svelte')
 	},
+	rhythm: {
+		about: () => import('./rhythm/About.svelte'),
+		playground: () => import('./rhythm/Playground.svelte'),
+		result: () => import('./rhythm/Result.svelte')
+	},
 	'road-trip': {
 		about: () => import('./road-trip/About.svelte')
 	},
@@ -204,5 +215,6 @@ export const EXERCISE_SLUG_TO_TEST_TYPE: Record<string, ExerciseType | TestType>
 	numbers: 'numbers',
 	pictures: 'pictures',
 	'raven-matrices': 'ravenMatrices',
-	'word-morphing': 'wordMorphingExercise'
+	'word-morphing': 'wordMorphingExercise',
+	rhythm: 'rhythm'
 };

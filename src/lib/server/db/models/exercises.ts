@@ -205,3 +205,15 @@ export const wordMorphingExerciseAttempt = sqliteTable('word_morphing_exercise_a
 		.default(sql`CURRENT_TIMESTAMP`)
 		.notNull()
 });
+
+export const rhythmAttempt = sqliteTable('rhythm_attempt', {
+	id: text('id').primaryKey().notNull().$defaultFn(generate),
+	attempt: integer('attempt').notNull(),
+	note: integer('note').notNull(),
+	sessionId: text('session_id')
+		.notNull()
+		.references(() => session.id),
+	createdAt: text('created_at')
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull()
+});
