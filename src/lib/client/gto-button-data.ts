@@ -39,7 +39,16 @@ export type FileNumberStatus = {
 
 // ─── Localforage store ───────────────────────────────────────────────
 
-const buttonStore = localforage.createInstance({ name: 'gto-buttons' });
+type LocalForage = typeof localforage;
+
+let buttonStore: LocalForage | null = null;
+
+function getButtonStore(): LocalForage {
+	if (!buttonStore) {
+		buttonStore = localforage.createInstance({ name: 'gto-buttons' });
+	}
+	return buttonStore;
+}
 
 // ─── Parse a single file from ArrayBuffer ────────────────────────────
 
@@ -72,6 +81,7 @@ export function parseButtonFile(
 // ─── Upload helpers ──────────────────────────────────────────────────
 
 export async function uploadButtonFiles(fileList: FileList): Promise<FileNumberStatus[]> {
+	const store = getButtonStore();
 	const filenameRegex = /^(.+)([лп])\.xlsx?$/i;
 
 	for (const file of fileList) {
@@ -88,13 +98,13 @@ export async function uploadButtonFiles(fileList: FileList): Promise<FileNumberS
 		const parsed = parseButtonFile(buffer, fileNumber, hand);
 
 		const key = `gto-button-${fileNumber}`;
-		const existing: StoredButtonPair | null = await buttonStore.getItem(key);
+		const existing: StoredButtonPair | null = await store.getItem(key);
 		const pair: StoredButtonPair = existing ?? {
 			left: { fileNumber, hand: 'left', participants: [], uploadedAt: 0 },
 			right: { fileNumber, hand: 'right', participants: [], uploadedAt: 0 }
 		};
 		pair[hand] = parsed;
-		await buttonStore.setItem(key, pair);
+		await store.setItem(key, pair);
 	}
 
 	return getFileNumbersWithStatus();
@@ -103,14 +113,15 @@ export async function uploadButtonFiles(fileList: FileList): Promise<FileNumberS
 // ─── Query functions ──────────────────────────────────────────────────
 
 export async function getAvailableFileNumbers(): Promise<string[]> {
+	const store = getButtonStore();
 	const keys: string[] = [];
-	await buttonStore.iterate((_, key) => {
+	await store.iterate((_, key) => {
 		if (key.startsWith('gto-button-')) keys.push(key);
 	});
 
 	const complete: string[] = [];
 	for (const key of keys) {
-		const pair: StoredButtonPair | null = await buttonStore.getItem(key);
+		const pair: StoredButtonPair | null = await store.getItem(key);
 		if (pair && pair.left?.participants?.length > 0 && pair.right?.participants?.length > 0) {
 			const fileNumber = key.replace('gto-button-', '');
 			complete.push(fileNumber);
@@ -121,14 +132,15 @@ export async function getAvailableFileNumbers(): Promise<string[]> {
 }
 
 export async function getFileNumbersWithStatus(): Promise<FileNumberStatus[]> {
+	const store = getButtonStore();
 	const keys: string[] = [];
-	await buttonStore.iterate((_, key) => {
+	await store.iterate((_, key) => {
 		if (key.startsWith('gto-button-')) keys.push(key);
 	});
 
 	const results: FileNumberStatus[] = [];
 	for (const key of keys) {
-		const pair: StoredButtonPair | null = await buttonStore.getItem(key);
+		const pair: StoredButtonPair | null = await store.getItem(key);
 		if (!pair) continue;
 		const fileNumber = key.replace('gto-button-', '');
 		results.push({
@@ -142,8 +154,9 @@ export async function getFileNumbersWithStatus(): Promise<FileNumberStatus[]> {
 }
 
 export async function getParticipantIdsForFile(fileNumber: string): Promise<number[]> {
+	const store = getButtonStore();
 	const key = `gto-button-${fileNumber}`;
-	const pair: StoredButtonPair | null = await buttonStore.getItem(key);
+	const pair: StoredButtonPair | null = await store.getItem(key);
 	if (!pair || !pair.left || !pair.right) return [];
 
 	const idSet = new Set<number>();
@@ -157,8 +170,9 @@ export async function getResultForParticipant(
 	fileNumber: string,
 	buttonId: number
 ): Promise<{ left: ButtonParticipantResult | null; right: ButtonParticipantResult | null }> {
+	const store = getButtonStore();
 	const key = `gto-button-${fileNumber}`;
-	const pair: StoredButtonPair | null = await buttonStore.getItem(key);
+	const pair: StoredButtonPair | null = await store.getItem(key);
 	if (!pair) return { left: null, right: null };
 
 	const rawLeft = pair.left?.participants.find((p) => p.buttonId === buttonId) ?? null;
@@ -170,19 +184,21 @@ export async function getResultForParticipant(
 }
 
 export async function clearAllButtonData(): Promise<void> {
+	const store = getButtonStore();
 	const keys: string[] = [];
-	await buttonStore.iterate((_, key) => {
+	await store.iterate((_, key) => {
 		if (key.startsWith('gto-button-')) keys.push(key);
 	});
 
 	for (const key of keys) {
-		await buttonStore.removeItem(key);
+		await store.removeItem(key);
 	}
 }
 
 export async function loadAllButtonData(): Promise<Map<string, StoredButtonPair>> {
+	const store = getButtonStore();
 	const map = new Map<string, StoredButtonPair>();
-	await buttonStore.iterate((value, key) => {
+	await store.iterate((value, key) => {
 		if (key.startsWith('gto-button-')) {
 			const fileNumber = key.replace('gto-button-', '');
 			map.set(fileNumber, value as StoredButtonPair);
@@ -204,12 +220,13 @@ export function isOldFormatEntry(pair: StoredButtonPair): boolean {
 }
 
 export async function hasOldFormatData(): Promise<boolean> {
+	const store = getButtonStore();
 	const keys: string[] = [];
-	await buttonStore.iterate((_, key) => {
+	await store.iterate((_, key) => {
 		if (key.startsWith('gto-button-')) keys.push(key);
 	});
 	for (const key of keys) {
-		const pair: StoredButtonPair | null = await buttonStore.getItem(key);
+		const pair: StoredButtonPair | null = await store.getItem(key);
 		if (pair && isOldFormatEntry(pair)) return true;
 	}
 	return false;
