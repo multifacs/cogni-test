@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-svelte';
 import ExercisesPlayground from './Playground.svelte';
 import TestsPlayground from '$lib/tests/campimetry/Playground.svelte';
+import '../../../app.css';
 import type { CampimetryResult } from '$lib/tests/campimetry/types';
 import { colors } from '$lib/tests/campimetry/logic/lab-color.svelte';
 
@@ -22,7 +23,9 @@ const silhouettes: Record<string, string> = {
 /** Both routes pass the same shape of props: data, gameEnd, sendResults. */
 function makeProps() {
 	const gameEnd = vi.fn();
-	const sendResults = vi.fn((_results: CampimetryResult[]) => {});
+	const sendResults = vi.fn((_results: CampimetryResult[]) => {
+		void _results;
+	});
 	return {
 		data: { silhouettes },
 		gameEnd,
@@ -75,20 +78,41 @@ function readDots(): { total: number; current: number } {
  *   "Больше не видно".
  */
 async function playThrough(maxTasks = 40): Promise<void> {
+	const HISTORY_CAP = 10;
+	const history: string[] = [];
+	function record(entry: string) {
+		history.push(entry);
+		if (history.length > HISTORY_CAP) history.shift();
+	}
+
 	for (let task = 0; task < maxTasks; task++) {
 		const board = readBoard();
+		const dots = readDots();
 
 		// The whole game block unmounts on game over
 		if (board.buttons.length === 0) {
+			record(
+				`[task=${task}] stage=gameover dots=${dots.current}/${dots.total} btns=none centre=${board.centreUrl ? 1 : 0} → return`
+			);
 			expect(page.getByText('Тест окончен').query()).toBeTruthy();
 			return;
 		}
 
+		const isStage2 = await page.getByRole('button', { name: 'Скрыть фигуру' }).query();
+
+		const btnPart = board.buttons
+			.map((b) => (b.disabled ? `${b.label}(dis)` : b.label))
+			.join(',');
+
+		let entry = `[task=${task}] stage=${isStage2 ? 2 : 1} dots=${dots.current}/${dots.total} btns=${btnPart} centre=${board.centreUrl ? 1 : 0}`;
+
 		// Stage 2: hide the figure, then report it is no longer visible
-		if (await page.getByRole('button', { name: 'Скрыть фигуру' }).query()) {
+		if (isStage2) {
 			await userEvent.click(page.getByRole('button', { name: 'Скрыть фигуру' }));
 			await userEvent.click(page.getByRole('button', { name: 'Скрыть фигуру' }));
 			await userEvent.click(page.getByRole('button', { name: 'Больше не видно' }));
+			entry += ' → hide,hide,answer';
+			record(entry);
 			await settle();
 			continue;
 		}
@@ -106,13 +130,20 @@ async function playThrough(maxTasks = 40): Promise<void> {
 		);
 		if (!correct) {
 			throw new Error(
-				`No enabled choice button matching the centre silhouette (task ${task}): ${JSON.stringify(fresh)}`
+				`No enabled choice button matching the centre silhouette (task ${task}): ${JSON.stringify(fresh)}\nLast ${history.length} iterations:\n${history.join('\n')}\nFinal dots: ${dots.current}/${dots.total}`
 			);
 		}
+
 		await userEvent.click(page.getByRole('button', { name: correct.label }));
+		entry += ` → reveal,reveal,pick:${correct.label}`;
+		record(entry);
 		await settle();
 	}
-	throw new Error('Game did not finish within the click budget');
+
+	const finalDots = readDots();
+	throw new Error(
+		`Game did not finish within the click budget\nLast ${history.length} iterations:\n${history.join('\n')}\nFinal dots: ${finalDots.current}/${finalDots.total}`
+	);
 }
 
 describe('Campimetry playground — click-through', () => {
