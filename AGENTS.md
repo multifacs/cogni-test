@@ -67,6 +67,18 @@ Vitest 5 в browser-режиме затирает `ssr.external`: хук `config
 
 Симптом: после апгрейда vitest 5 оба campimetry-теста падали «Game did not finish within the click budget». Причина: спек не импортировал `app.css` → Tailwind-классы инертны → choice-кнопки рендерились ~16×6px вместо 100×100px (`h-25 w-25`); trusted-клик vitest 5 по такой мишени попадает нестабильно — событие уходит в пустоту без ошибок (тихий no-op, бюджет кликов исчерпывается). Доказано диагностикой: `elementFromPoint` в центре кнопки возвращал её саму, untrusted `el.click()` работал всегда — обработчики и логика игры исправны. Гипотеза про exact-локаторы не подтвердилась. Фикс: `import '../../../app.css';` в спеке (паттерн app-layout / munsterberg / Button). Правило: browser-спеки, кликающие по элементам с Tailwind-размерами, обязаны импортировать `app.css` — иначе мишени деградируют до UA-дефолтов и trusted-клик становится ненадёжным.
 
+### SvelteKit: + префикс в src/routes зарезервирован (решено, 2026-09)
+
+Симптом: `npm run dev` падает на старте с `Files prefixed with + are reserved (saw src/routes/(app)/tests/+page.svelte.spec.ts)` — это НЕ warning, dev-сервер не стартует.
+
+Причина: SvelteKit резервирует все имена файлов с префиксом `+` в каталогах роутов под routing-файлы; нераспознанный `+`-файл фатален.
+
+Правило: спеки/тесты в `src/routes` называть БЕЗ плюса — `page.svelte.spec.ts`, `page.server.test.ts` (как уже принято в проекте: `app-layout.svelte.test.ts`, `gto/page.server.test.ts`). Vitest подхватывает их по глобу `src/**/*.{test,spec}.{js,ts}` (vite.config.ts) независимо от имени.
+
+Инцидент: Task 1.4/3.1 создали `+page.svelte.spec.ts` в `(app)/tests` и `(app)/home`; dev сломался после коммита; поймал пользователь при `npm run dev`; исправлено переименованием в `page.svelte.spec.ts` (содержимое не менялось).
+
+Урок: любой writer, создающий файл в `src/routes`, обязан проверять, что имя не начинается с `+`, если это не routing-файл; и не верить фразе «benign warning» без запуска dev.
+
 ### Быстрая верификация после изменений vite.config.ts
 
 ```bash
