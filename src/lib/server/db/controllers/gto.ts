@@ -1361,3 +1361,24 @@ export async function setGtoIdAndAutoAdd(
 	await autoAddToLatestActiveSession(userId);
 	return 'saved';
 }
+
+// ─── Words cooldown ───────────────────────────────────────────────────
+
+/**
+ * Raw `createdAt` of the participant's most recent test result within a GTO
+ * session (CURRENT_TIMESTAMP format, "YYYY-MM-DD HH:MM:SS" UTC), or null when
+ * they have no results there. Used to compute the words-input cooldown.
+ */
+export async function getParticipantLastResultAt(
+	gtoSessionId: string,
+	userId: string
+): Promise<string | null> {
+	const rows = await db
+		.select({ createdAt: session.createdAt })
+		.from(session)
+		.where(and(eq(session.userId, userId), eq(session.gtoSessionId, gtoSessionId)))
+		.orderBy(desc(session.createdAt))
+		.limit(1);
+
+	return rows.length > 0 ? rows[0].createdAt : null;
+}
