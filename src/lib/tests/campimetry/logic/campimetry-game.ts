@@ -26,7 +26,9 @@ export class CampimetryGame {
 	 * Generates tasks for all stages.
 	 */
 	private generateTasks(): void {
-		const colors: Array<string> = this.fullPalette ? this.pickAllColors() : this.pickColorSubset();
+		const colors: Array<string> = this.fullPalette
+			? this.pickAllColors()
+			: this.pickColorSubset();
 		console.log(colors);
 
 		colors.forEach((color) => {
@@ -154,5 +156,30 @@ export class CampimetryGame {
 
 	public getCurrentTaskNumber(): number {
 		return this.currentTaskIndex + 1;
+	}
+
+	/**
+	 * Gets the unique color names in task order (for the progress dots).
+	 * Each color is played as a stage-1 + stage-2 pair, so this returns
+	 * one entry per color, e.g. ['dark-blue', 'light-magenta', ...].
+	 */
+	public getTaskColors(): string[] {
+		const seen = new Set<string>();
+		const unique: string[] = [];
+		for (const task of this.tasks) {
+			const name = task.color.getColorName();
+			if (!seen.has(name)) {
+				seen.add(name);
+				unique.push(name);
+			}
+		}
+		return unique;
+	}
+
+	/**
+	 * Gets the index of the current task's color within getTaskColors().
+	 */
+	public getCurrentColorIndex(): number {
+		return this.getTaskColors().indexOf(this.getCurrentTask().color.getColorName());
 	}
 }
