@@ -21,7 +21,17 @@ export default defineConfig({
 	},
 	ssr: {
 		noExternal: true,
-		external: ['@libsql/client', '@libsql/core', '@libsql/hrana-client', 'onnxruntime-node', 'short-uuid', 'web-push']
+		// vite 8 SSR runner: UMD CJS interop broken → undefined default import (top-level createInstance in gto-button-data.ts)
+		// NOTE: entries here become runtime require()s in the adapter-node build — they MUST be in 'dependencies' (Dockerfile runs npm prune --omit=dev)
+		external: [
+			'@libsql/client',
+			'@libsql/core',
+			'@libsql/hrana-client',
+			'localforage',
+			'onnxruntime-node',
+			'short-uuid',
+			'web-push'
+		]
 	},
 	plugins: [
 		tailwindcss(),
@@ -65,7 +75,7 @@ export default defineConfig({
 				test: {
 					name: 'server',
 					environment: 'node',
-					include: ['src/**/*.{test,spec}.{js,ts}','scripts/**/*.{test,spec}.{js,ts}'],
+					include: ['src/**/*.{test,spec}.{js,ts}', 'scripts/**/*.{test,spec}.{js,ts}'],
 					exclude: ['src/**/*.svelte.{test,spec}.{js,ts}']
 				}
 			}
