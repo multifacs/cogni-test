@@ -21,6 +21,8 @@
 		type FileNumberStatus
 	} from '$lib/client/gto-button-data';
 	import { initMetricsDraft, collectMetricsFromDraft, rebuildDraftMap } from './table-helpers';
+	import { buildCertificateData } from '$lib/certificate/certificate-data';
+	import { downloadCertificatePdf } from '$lib/certificate/generate';
 	import { onMount, untrack } from 'svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { getContext } from 'svelte';
@@ -58,6 +60,7 @@
 	let uploadingFiles = $state(false);
 	let participantButtonIds = new SvelteMap<string, number[]>();
 	let selectedButtonFile = new SvelteMap<string, string>();
+	let generatingCertificateId = $state<string | null>(null);
 
 	function closeMenuOutside(e: MouseEvent) {
 		if (menuOpen && !(e.target as HTMLElement).closest('.session-menu')) {
@@ -413,6 +416,24 @@
 		const payload = collectMetricsFromDraft(draft);
 		savedParticipantId = participantId;
 		await handleSaveMetrics(participantId, payload);
+	}
+
+	async function handleDownloadCertificate(m: ParticipantMetrics) {
+		generatingCertificateId = m.participantId;
+		try {
+			const certificateData = buildCertificateData({
+				participant: { firstname: m.firstname, lastname: m.lastname },
+				session: { name: data.session.name, createdAt: data.session.createdAt },
+				wordScore: m.wordScore,
+				submittedWords: m.submittedWords,
+				metrics: m
+			});
+			await downloadCertificatePdf(certificateData);
+		} catch {
+			showToast('Ошибка генерации сертификата');
+		} finally {
+			generatingCertificateId = null;
+		}
 	}
 </script>
 
@@ -1080,6 +1101,18 @@
 												>
 													{#if isSaving}Сохр…{:else}Сохр.{/if}
 												</Button>
+												{#if data.session.status === 'completed'}
+													{@const isGeneratingCertificate =
+														generatingCertificateId === m.participantId}
+													<button
+														class="rounded px-2 py-0.5 text-xs text-amber-700 transition-colors hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-50"
+														disabled={isGeneratingCertificate}
+														title="Скачать PDF-сертификат участника"
+														onclick={() => handleDownloadCertificate(m)}
+													>
+														{#if isGeneratingCertificate}Ген…{:else}Сертификат{/if}
+													</button>
+												{/if}
 												<button
 													class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
 													onclick={() =>

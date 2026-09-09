@@ -73,6 +73,7 @@
 	"dependencies": {
 		"onnxruntime-node": "^1.29.0",
 		"@libsql/client": "^0.18.0",
+		"jspdf": "^4.2.1",
 		"localforage": "^1.10.0",
 		"short-uuid": "^6.0.3",
 		"web-push": "^3.6.7"
