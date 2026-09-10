@@ -2,6 +2,7 @@ import type { TestType } from '$lib/tests/types';
 import type { SkillMetric } from '$lib/types';
 import type { Component } from 'svelte';
 import type { ExerciseType } from './types';
+import type { QueueElement } from '$lib/client/offline-queue';
 
 export type ExerciseData = {
 	name: string;
@@ -14,6 +15,39 @@ export type ExerciseData = {
 };
 
 export type { ExerciseType, ExerciseResult, ExerciseResults } from './types';
+
+/** Session row used on the results page (server + pending). */
+export type ResultsPageSession = {
+	sessionId: string;
+	createdAt: string;
+	attempts: unknown[];
+	meta?: Record<string, string> | unknown;
+	pending?: boolean;
+};
+
+/** Merge server results with pending offline attempts.
+ *  Server sessions win over pending ones with the same sessionId.
+ *  Returned list is sorted by createdAt descending.
+ */
+export function mergeSessions(
+	serverSessions: ResultsPageSession[],
+	pending: QueueElement[]
+): ResultsPageSession[] {
+	const serverIds = new Set(serverSessions.map((s) => s.sessionId));
+	const pendingSessions: ResultsPageSession[] = pending
+		.filter((p) => !serverIds.has(p.payload.sessionId))
+		.map((p) => ({
+			sessionId: p.payload.sessionId,
+			createdAt: new Date(p.enqueuedAt).toISOString(),
+			attempts: p.payload.results.results,
+			meta: p.payload.results.meta,
+			pending: true
+		}));
+	const combined = [...serverSessions, ...pendingSessions];
+	return combined.sort(
+		(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+	);
+}
 
 export const exercises: ExerciseData[] = [
 	{
@@ -114,6 +148,7 @@ type ExerciseLoader = {
 	about: () => Promise<{ default: AnyComponent }>;
 	playground?: () => Promise<{ default: AnyComponent }>;
 	result?: () => Promise<{ default: AnyComponent }>;
+	summary?: () => Promise<{ default: AnyComponent }>;
 };
 
 const exerciseLoaders: Record<string, ExerciseLoader> = {
@@ -175,7 +210,8 @@ const exerciseLoaders: Record<string, ExerciseLoader> = {
 	rhythm: {
 		about: () => import('./rhythm/About.svelte'),
 		playground: () => import('./rhythm/Playground.svelte'),
-		result: () => import('./rhythm/Result.svelte')
+		result: () => import('./rhythm/Result.svelte'),
+		summary: () => import('./rhythm/Summary.svelte')
 	}
 };
 

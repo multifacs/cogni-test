@@ -100,7 +100,7 @@
 
 			if (shouldEnqueue) {
 				const info = exerciseRegistry[slug];
-				if (info?.offline) {
+				if (info?.offline && results && typeof results === 'object' && 'meta' in results) {
 					enqueueAttempt(slug, { sessionId, results });
 				}
 			}
