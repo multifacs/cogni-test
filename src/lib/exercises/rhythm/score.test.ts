@@ -1,6 +1,30 @@
 import { describe, it, expect } from 'vitest';
-import { computeRhythmScore, meanDeviation, RHYTHM_OVERPRESS_PENALTY_MS } from './score';
+import { buildRhythmMeta, computeRhythmScore, meanDeviation, RHYTHM_OVERPRESS_PENALTY_MS } from './score';
 import type { RhythmResult } from './types';
+
+describe('buildRhythmMeta', () => {
+	it.each([
+		['easy', 0] as const,
+		['easy', 3] as const,
+		['medium', -1] as const,
+		['medium', 0] as const,
+		['hard', 5] as const,
+		['hard', -2] as const
+	])('returns difficulty and overpress as strings for %s with overpress=%d', (difficulty, overpress) => {
+		expect(buildRhythmMeta(difficulty, overpress)).toEqual({
+			difficulty: difficulty,
+			overpress: String(overpress)
+		});
+	});
+
+	it('stringifies zero overpress correctly', () => {
+		expect(buildRhythmMeta('easy', 0).overpress).toBe('0');
+	});
+
+	it('stringifies negative overpress correctly', () => {
+		expect(buildRhythmMeta('medium', -3).overpress).toBe('-3');
+	});
+});
 
 describe('computeRhythmScore', () => {
 	it('adds zero penalty when overpress is 0', () => {

@@ -100,4 +100,28 @@ describe('playground POST route', () => {
 		expect(body).toEqual({ error: 'unknown exercise' });
 		expect(postResult).not.toHaveBeenCalled();
 	});
+
+	it('POST with MetaResult body → 201, meta preserved through to postResult', async () => {
+		vi.mocked(postResult).mockResolvedValue('meta-session-id-789');
+
+		const metaResult = {
+			results: [],
+			meta: { difficulty: 'easy', overpress: '0' }
+		};
+
+		const { POST } = await import('./+server');
+		const res = await POST(
+			makeEvent({
+				slug: 'rhythm',
+				body: { results: metaResult },
+				userId: 'user-1'
+			})
+		);
+
+		expect(res.status).toBe(201);
+		const body = await res.json();
+		expect(body).toEqual({ sessionId: 'meta-session-id-789' });
+
+		expect(postResult).toHaveBeenCalledWith(metaResult, 'rhythm', 'user-1');
+	});
 });

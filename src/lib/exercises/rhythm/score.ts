@@ -3,6 +3,16 @@ import type { RhythmResult } from './types';
 export const RHYTHM_OVERPRESS_PENALTY_MS = 200;
 
 /**
+ * Build meta object for rhythm results.
+ */
+export function buildRhythmMeta(
+	difficulty: 'easy' | 'medium' | 'hard',
+	overpress: number
+): Record<string, string> {
+	return { difficulty, overpress: String(overpress) };
+}
+
+/**
  * Compute a rhythm score: lower is better.
  * meanDeviationMs + absolute_overpress * penalty
  */

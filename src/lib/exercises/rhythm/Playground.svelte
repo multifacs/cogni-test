@@ -2,18 +2,25 @@
 	import { onMount, onDestroy } from 'svelte';
 	import type { MetaResult } from '$lib/exercises/types';
 	import type { RhythmResult } from './types';
-	import localforage from 'localforage';
+	import { buildRhythmMeta } from './score';
+	import Button from '$lib/components/ui/Button.svelte';
 
 	// props
 	let {
 		gameEnd,
-		sendResults
+		sendResults,
+		data
 	}: {
 		gameEnd: () => void;
 		sendResults: (payload: MetaResult) => void;
+		data: Record<string, unknown>;
 	} = $props();
 
-	let difficulty: 'easy' | 'medium' | 'hard' = $state('easy');
+	let difficulty: 'easy' | 'medium' | 'hard' | null = $state(null);
+
+	const difficultyCounts = $derived(
+		(data.difficultyCounts as Record<string, number> | undefined) ?? { easy: 0, medium: 0, hard: 0 }
+	);
 
 	// ===== Типы =====
 	type NoteType = 'ton' | 'pulton' | 'ctvrton';
@@ -24,7 +31,7 @@
 	};
 
 	// ===== Canvas =====
-	let canvas: HTMLCanvasElement | null = null;
+	let canvas: HTMLCanvasElement | null = $state(null);
 	let ctx: CanvasRenderingContext2D | null = null;
 	let canvasWidth = 100;
 	let canvasHeight = 100;
@@ -62,26 +69,6 @@
 	// ===== Генерация мелодии =====
 	function generateMelody() {
 		melody = [];
-
-		// function makeEasy() {
-		// 	// три основных тона в центре
-		// 	melody.push({ step: 4, type: 'ton' });
-		// 	melody.push({ step: 8, type: 'ton' });
-		// 	melody.push({ step: 12, type: 'ton' });
-		// }
-
-		// function makeMedium() {
-		// 	// три основных тона в центре
-		// 	melody.push({ step: 8, type: 'ton' });
-		// 	melody.push({ step: 12, type: 'ton' });
-		// }
-
-		// function makeHard() {
-		// 	// три основных тона в центре
-		// 	melody.push({ step: 4, type: 'ton' });
-		// 	melody.push({ step: 6, type: 'ton' });
-		// 	melody.push({ step: 12, type: 'ton' });
-		// }
 
 		function makeEasy() {
 			melody.push({ step: 4, type: 'ton' });
@@ -229,14 +216,6 @@
 
 		ctx.fillStyle = gradient;
 		ctx.fillRect(0, 0, width, height);
-
-		// ctx.fillStyle = '#e5e7eb';
-		// ctx.font = '600 24px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
-		// ctx.textAlign = 'center';
-		// ctx.fillText('Ритмический тест', width / 2, height / 2 - 10);
-		// ctx.font = '400 14px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
-		// ctx.fillStyle = '#9ca3af';
-		// ctx.fillText('Нажмите, чтобы начать', width / 2, height / 2 + 18);
 	}
 
 	// ===== Инициализация игры =====
@@ -407,11 +386,18 @@
 
 		console.log('Rhythm results (per tap):', results);
 
-		await localforage.setItem(`results-${difficulty}-uploaded`, false);
-		// console.log("set", difficulty, "false")
-
 		gameEnd();
-		sendResults({ meta: { overpress: String(overpress) }, results });
+		if (difficulty) {
+			sendResults({
+				meta: buildRhythmMeta(difficulty, overpress),
+				results
+			});
+		} else {
+			sendResults({
+				meta: { overpress: String(overpress) },
+				results
+			});
+		}
 	}
 
 	// ===== Отрисовка =====
@@ -647,17 +633,18 @@
 		ctx.restore();
 	}
 
-	// ===== Жизненный цикл =====
-	onMount(async () => {
-		difficulty = (await localforage.getItem('rhythm-difficulty')) ?? 'easy';
-
+	function chooseDifficulty(selected: 'easy' | 'medium' | 'hard') {
+		difficulty = selected;
 		generateMelody();
 		initCanvas();
 		drawIdle();
+	}
 
+	// ===== Жизненный цикл =====
+	onMount(() => {
 		try {
 			if (window) {
-				window.removeEventListener('resize', handleResize);
+				window.addEventListener('resize', handleResize);
 			}
 		} catch (e) {
 			console.log(e);
@@ -678,43 +665,77 @@
 </script>
 
 <div class="rhythm-game">
-	<div class="rhythm-header">
-		<h2 class="title">Ритмический тест</h2>
-		<p class="subtitle">
-			Сложность ритма: {difficulty === 'easy'
-				? 'Лёгкий'
-				: difficulty === 'medium'
-					? 'Средний'
-					: 'Сложный'}
-		</p>
-	</div>
-
-	<div class="canvas-shell">
-		<canvas bind:this={canvas} on:click={handleCanvasClick}></canvas>
-		{#if !gameInitialized}
-			<div class="start-overlay flex flex-col">
-				<div class="overlay-text flex flex-col text-lg font-bold whitespace-pre-line">
-					1. Запоминайте ритм 2. Повторяйте ритм с подсказками 3. Повторяйте ритм без
-					подсказок Для старта нажмите кнопку "Начать"
+	{#if difficulty === null}
+		<div class="difficulty-overlay">
+			<div class="difficulty-card">
+				<h3 class="difficulty-title">Выберите сложность</h3>
+				<div class="difficulty-buttons">
+					<Button
+						color="green"
+						onclick={() => chooseDifficulty('easy')}
+						class="difficulty-btn"
+					>
+						Легкий
+						<span class="difficulty-count">{difficultyCounts.easy} попыток</span>
+					</Button>
+					<Button
+						color="yellow"
+						onclick={() => chooseDifficulty('medium')}
+						class="difficulty-btn"
+					>
+						Средний
+						<span class="difficulty-count">{difficultyCounts.medium} попыток</span>
+					</Button>
+					<Button
+						color="red"
+						onclick={() => chooseDifficulty('hard')}
+						class="difficulty-btn"
+					>
+						Сложный
+						<span class="difficulty-count">{difficultyCounts.hard} попыток</span>
+					</Button>
 				</div>
 			</div>
-		{/if}
-	</div>
-
-	<button class="tap-button hover:brightness-110" on:click={handleTapButton}
-		>{!gameInitialized ? 'Начать' : 'Нажимайте в ритм'}</button
-	>
-
-	<div class="legend">
-		<div class="legend-item">
-			<span class="legend-dot ghost"></span>
-			<span>Подсказки</span>
 		</div>
-		<div class="legend-item">
-			<span class="legend-dot user"></span>
-			<span>Ваши нажатия</span>
+	{:else}
+		<div class="rhythm-header">
+			<h2 class="title">Ритмический тест</h2>
+			<p class="subtitle">
+				Сложность ритма: {difficulty === 'easy'
+					? 'Лёгкий'
+					: difficulty === 'medium'
+						? 'Средний'
+						: 'Сложный'}
+			</p>
 		</div>
-	</div>
+
+		<div class="canvas-shell">
+			<canvas bind:this={canvas} onclick={handleCanvasClick}></canvas>
+			{#if !gameInitialized}
+				<div class="start-overlay flex flex-col">
+					<div class="overlay-text flex flex-col text-lg font-bold whitespace-pre-line">
+						1. Запоминайте ритм 2. Повторяйте ритм с подсказками 3. Повторяйте ритм без
+						подсказок Для старта нажмите кнопку "Начать"
+					</div>
+				</div>
+			{/if}
+		</div>
+
+		<button class="tap-button hover:brightness-110" onclick={handleTapButton}
+			>{!gameInitialized ? 'Начать' : 'Нажимайте в ритм'}</button
+		>
+
+		<div class="legend">
+			<div class="legend-item">
+				<span class="legend-dot ghost"></span>
+				<span>Подсказки</span>
+			</div>
+			<div class="legend-item">
+				<span class="legend-dot user"></span>
+				<span>Ваши нажатия</span>
+			</div>
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -726,12 +747,12 @@
 		justify-content: center;
 		padding: 1.5rem;
 		box-sizing: border-box;
-		/* background: radial-gradient(circle at top, #111827 0, #020617 60%); */
 		background: transparent;
 		border-radius: 1.25rem;
 		box-shadow: 0 20px 35px rgba(15, 23, 42, 0.6);
-
 		width: 100%;
+		position: relative;
+		min-height: 400px;
 	}
 
 	.rhythm-header {
@@ -786,21 +807,58 @@
 		);
 	}
 
-	.overlay-card {
-		max-width: 360px;
-		padding: 1rem 1.25rem;
-		border-radius: 0.75rem;
+	.difficulty-overlay {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 10;
+	}
+
+	.difficulty-card {
+		max-width: 420px;
+		width: 100%;
+		padding: 1.5rem;
+		border-radius: 1rem;
 		background: rgba(15, 23, 42, 0.95);
 		border: 1px solid rgba(148, 163, 184, 0.6);
 		box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		align-items: center;
 	}
 
-	.overlay-title {
-		font-size: 1rem;
+	.difficulty-title {
+		font-size: 1.1rem;
 		font-weight: 600;
 		color: #e5e7eb;
-		margin-bottom: 0.25rem;
+		margin: 0;
 		text-align: center;
+	}
+
+	.difficulty-buttons {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		width: 100%;
+	}
+
+	:global(.difficulty-btn) {
+		width: 100%;
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		padding-top: 0.75rem !important;
+		padding-bottom: 0.75rem !important;
+	}
+
+	.difficulty-count {
+		font-size: 0.75rem;
+		font-weight: 400;
+		opacity: 0.85;
 	}
 
 	.overlay-text {
