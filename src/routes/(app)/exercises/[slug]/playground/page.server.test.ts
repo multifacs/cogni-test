@@ -6,6 +6,10 @@ const makeCookies = (userId?: string) => ({
 	get: (name: string) => (name === 'user_id' ? userId : undefined)
 });
 
+// First test pays a heavy one-time transitive import of the DB
+// stack (~2.2s isolated, >5s under full-suite parallel contention).
+vi.setConfig({ testTimeout: 20_000 });
+
 type LoadEvent = Parameters<PageServerLoad>[0];
 
 const makeEvent = (slug: string, userId?: string): LoadEvent =>
