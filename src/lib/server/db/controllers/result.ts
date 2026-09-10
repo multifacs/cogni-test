@@ -19,6 +19,7 @@ import {
 	numbersAttempt,
 	picturesAttempt,
 	ravenAttempt,
+	rhythmAttempt,
 	wordMorphingExerciseAttempt
 } from '$lib/server/db/models/exercises';
 import type { MetaResult as TestMetaResult, RegularResults, TestType } from '$lib/tests/types';
@@ -60,7 +61,8 @@ const attemptTableMap: Record<string, AnyAttemptTable> = {
 	pictures: picturesAttempt,
 	campimetryExercise: campimetryExerciseAttempt,
 	ravenMatrices: ravenAttempt,
-	wordMorphingExercise: wordMorphingExerciseAttempt
+	wordMorphingExercise: wordMorphingExerciseAttempt,
+	rhythm: rhythmAttempt
 };
 
 function getQueryTableMap(): Record<string, AnyRelationalTable> {
@@ -81,7 +83,8 @@ function getQueryTableMap(): Record<string, AnyRelationalTable> {
 		pictures: db.query.picturesAttempt,
 		ravenMatrices: db.query.ravenAttempt,
 		campimetryExercise: db.query.campimetryExerciseAttempt,
-		wordMorphingExercise: db.query.wordMorphingExerciseAttempt
+		wordMorphingExercise: db.query.wordMorphingExerciseAttempt,
+		rhythm: db.query.rhythmAttempt
 	};
 }
 
@@ -102,7 +105,8 @@ const orderByMap: Record<string, (fields: Record<string, AnyColumn>) => SQL> = {
 	pictures: (f) => asc(f.questionIndex),
 	campimetryExercise: (f) => asc(f.attempt),
 	ravenMatrices: (f) => asc(f.taskIndex),
-	wordMorphingExercise: (f) => asc(f.comboIndex)
+	wordMorphingExercise: (f) => asc(f.comboIndex),
+	rhythm: (f) => asc(f.attempt)
 };
 
 export async function postResult(

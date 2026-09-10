@@ -95,6 +95,12 @@ export const exercises: ExerciseData[] = [
 		title: 'Цепочка букв',
 		path: '/exercises/letters/about',
 		img: '/exercises/letters1.svg'
+	},
+	{
+		name: 'rhythm',
+		title: 'Ритм',
+		path: '/exercises/rhythm/about',
+		img: '/exercises/rhythm.svg'
 	}
 ];
 
@@ -163,6 +169,11 @@ const exerciseLoaders: Record<string, ExerciseLoader> = {
 		about: () => import('./letters/About.svelte'),
 		playground: () => import('./letters/Playground.svelte'),
 		result: () => import('./letters/Result.svelte')
+	},
+	rhythm: {
+		about: () => import('./rhythm/About.svelte'),
+		playground: () => import('./rhythm/Playground.svelte'),
+		result: () => import('./rhythm/Result.svelte')
 	}
 };
 
@@ -182,5 +193,6 @@ export const EXERCISE_SLUG_TO_TEST_TYPE: Record<string, ExerciseType | TestType>
 	numbers: 'numbers',
 	pictures: 'pictures',
 	'raven-matrices': 'ravenMatrices',
-	'word-morphing': 'wordMorphingExercise'
+	'word-morphing': 'wordMorphingExercise',
+	rhythm: 'rhythm'
 };
