@@ -143,7 +143,7 @@
 		<div class="flex flex-col items-center gap-6">
 			<div class="main-content gap-6">
 				<AgeCard age={data.predictedAge} {realAge} />
-				<div class="flex flex-col justify-around justify-between gap-6">
+				<div class="flex flex-col justify-between gap-6">
 					<RecommendationCard
 						title="Совет дня"
 						text="Статья: как физическая активность влияет на память"
@@ -224,7 +224,6 @@
 			<p class="text-base">
 				После этого Вам откроется тренажёр и много других интересных возможностей.
 			</p>
-			<MetricsDonutCard metricScores={data.metricScores} hasData={data.hasData} />
 			<Button color="green" onclick={handleRunAll}>Пройти диагностику</Button>
 		</div>
 	{/if}
