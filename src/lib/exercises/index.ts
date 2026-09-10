@@ -10,6 +10,7 @@ export type ExerciseData = {
 	img: string;
 	admin_metrics?: SkillMetric[];
 	user_metrics?: SkillMetric[];
+	offline?: boolean;
 };
 
 export type { ExerciseType, ExerciseResult, ExerciseResults } from './types';
@@ -100,7 +101,8 @@ export const exercises: ExerciseData[] = [
 		name: 'rhythm',
 		title: 'Ритм',
 		path: '/exercises/rhythm/about',
-		img: '/exercises/rhythm.svg'
+		img: '/exercises/rhythm.svg',
+		offline: true
 	}
 ];
 

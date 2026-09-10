@@ -6,6 +6,8 @@
 	import type { MetaResult, ExerciseResults } from '$lib/exercises/types.js';
 	import { type Component as ComponentType } from 'svelte';
 	import { exerciseRegistry, EXERCISE_SLUG_TO_TEST_TYPE } from '$lib/exercises';
+	import { generate } from 'short-uuid';
+	import { enqueueAttempt, flushQueue } from '$lib/client/offline-queue';
 
 	const { data } = $props();
 	const slug = $derived(data.slug);
@@ -79,13 +81,32 @@
 			}
 		} else {
 			// Standalone mode: just save the result via the exercise endpoint
-			await fetch(`/exercises/${slug}/playground`, {
-				method: 'POST',
-				body: JSON.stringify({ results }),
-				headers: {
-					'Content-Type': 'application/json'
+			const sessionId = generate();
+			let shouldEnqueue = false;
+			try {
+				const response = await fetch(`/exercises/${slug}/playground`, {
+					method: 'POST',
+					body: JSON.stringify({ results, sessionId }),
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				});
+				if (!response.ok) {
+					shouldEnqueue = true;
 				}
-			});
+			} catch {
+				shouldEnqueue = true;
+			}
+
+			if (shouldEnqueue) {
+				const info = exerciseRegistry[slug];
+				if (info?.offline) {
+					enqueueAttempt(slug, { sessionId, results });
+				}
+			}
+
+			// Fire-and-forget flush
+			flushQueue().catch(() => {});
 		}
 	}
 </script>

@@ -3,6 +3,7 @@
 	import type { MetaResult } from '$lib/exercises/types';
 	import type { RhythmResult } from './types';
 	import { buildRhythmMeta } from './score';
+	import { getPendingAttempts } from '$lib/client/offline-queue';
 	import Button from '$lib/components/ui/Button.svelte';
 
 	// props
@@ -18,9 +19,21 @@
 
 	let difficulty: 'easy' | 'medium' | 'hard' | null = $state(null);
 
-	const difficultyCounts = $derived(
+	const serverDifficultyCounts = $derived(
 		(data.difficultyCounts as Record<string, number> | undefined) ?? { easy: 0, medium: 0, hard: 0 }
 	);
+
+	// Pending counts from offline queue. Deduplication note: server counts are
+	// aggregates without individual sessionIds, so a flushed-but-not-yet-refreshed
+	// session could double-count until the page reloads. We accept this for
+	// simplicity; the offline UX is best-effort.
+	let pendingDifficultyCounts = $state<Record<string, number>>({ easy: 0, medium: 0, hard: 0 });
+
+	const difficultyCounts = $derived({
+		easy: serverDifficultyCounts.easy + (pendingDifficultyCounts.easy ?? 0),
+		medium: serverDifficultyCounts.medium + (pendingDifficultyCounts.medium ?? 0),
+		hard: serverDifficultyCounts.hard + (pendingDifficultyCounts.hard ?? 0)
+	});
 
 	// ===== Типы =====
 	type NoteType = 'ton' | 'pulton' | 'ctvrton';
@@ -641,13 +654,28 @@
 	}
 
 	// ===== Жизненный цикл =====
-	onMount(() => {
+	onMount(async () => {
 		try {
 			if (window) {
 				window.addEventListener('resize', handleResize);
 			}
 		} catch (e) {
 			console.log(e);
+		}
+
+		// Load offline pending attempts to augment difficulty counts
+		try {
+			const pending = await getPendingAttempts('rhythm');
+			const counts: Record<string, number> = { easy: 0, medium: 0, hard: 0 };
+			for (const el of pending) {
+				const diff = el.payload.results.meta?.difficulty;
+				if (diff === 'easy' || diff === 'medium' || diff === 'hard') {
+					counts[diff] = (counts[diff] ?? 0) + 1;
+				}
+			}
+			pendingDifficultyCounts = counts;
+		} catch {
+			// Ignore queue read failures — best-effort offline UX
 		}
 	});
 

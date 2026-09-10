@@ -4,6 +4,7 @@
 	import { page } from '$app/state';
 	import { profileSurveyStore, userStore } from '$lib/stores/user';
 	import { pushService } from '$lib/pushService';
+	import { flushQueue } from '$lib/client/offline-queue';
 
 	import Button from '$lib/components/ui/Button.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
@@ -53,6 +54,18 @@
 		showModal = !subscribed;
 
 		fetch('/api/ping', { method: 'POST' }).catch(() => {});
+
+		// Fire-and-forget offline queue flush on mount
+		flushQueue().catch(() => {});
+
+		const handleOnline = () => {
+			flushQueue().catch(() => {});
+		};
+		window.addEventListener('online', handleOnline);
+
+		return () => {
+			window.removeEventListener('online', handleOnline);
+		};
 	});
 
 	async function subscribe() {
