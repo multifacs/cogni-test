@@ -13,8 +13,12 @@ export class CampimetryGame {
 
 	private allColors = Object.keys(colors);
 
-	constructor(silhouettes: string[]) {
+	/** Use the full color palette instead of a random ~60% subset (exercise mode). */
+	private fullPalette: boolean;
+
+	constructor(silhouettes: string[], options?: { fullPalette?: boolean }) {
 		this.silhouettes = silhouettes.slice();
+		this.fullPalette = options?.fullPalette ?? false;
 		this.generateTasks();
 	}
 
@@ -22,21 +26,9 @@ export class CampimetryGame {
 	 * Generates tasks for all stages.
 	 */
 	private generateTasks(): void {
-		let NUM_OF_COLORS = Math.round((this.allColors.length / 5) * 3);
-
-		const colors: Array<string> = [];
-
-		for (let i = 4; i < 9; i += 2) {
-			const randomChoice = Math.round(Math.random());
-			colors.push(this.allColors[i + randomChoice]);
-		}
-		NUM_OF_COLORS -= 3;
-
-		const restOfColors = this.allColors.slice(0, 4);
-		shuffle(restOfColors);
-
-		colors.push(...restOfColors.slice(0, NUM_OF_COLORS));
-		shuffle(colors);
+		const colors: Array<string> = this.fullPalette
+			? this.pickAllColors()
+			: this.pickColorSubset();
 		console.log(colors);
 
 		colors.forEach((color) => {
@@ -69,6 +61,7 @@ export class CampimetryGame {
 	 */
 	public handleAnswer(delta: number): void {
 		const task = this.getCurrentTask();
+		if (!task) return;
 		const endTime = performance.now();
 		const reactionTime = Math.round(endTime - this.startTime);
 
@@ -107,12 +100,39 @@ export class CampimetryGame {
 		};
 	}
 
+	/** Full palette — one task pair per color (exercise mode). */
+	private pickAllColors(): string[] {
+		const all = this.allColors.slice();
+		shuffle(all);
+		return all;
+	}
+
+	/** Random ~60% subset of the palette (test mode). */
+	private pickColorSubset(): string[] {
+		let NUM_OF_COLORS = Math.round((this.allColors.length / 5) * 3);
+
+		const colors: Array<string> = [];
+
+		for (let i = 4; i < 9; i += 2) {
+			const randomChoice = Math.round(Math.random());
+			colors.push(this.allColors[i + randomChoice]);
+		}
+		NUM_OF_COLORS -= 3;
+
+		const restOfColors = this.allColors.slice(0, 4);
+		shuffle(restOfColors);
+
+		colors.push(...restOfColors.slice(0, NUM_OF_COLORS));
+		shuffle(colors);
+		return colors;
+	}
+
 	/**
 	 * Gets the current word and its color.
 	 * @returns The current word and its color.
 	 */
-	public getCurrentTask(): CampimetryTask {
-		return this.tasks[this.currentTaskIndex];
+	public getCurrentTask(): CampimetryTask | null {
+		return this.tasks[this.currentTaskIndex] ?? null;
 	}
 
 	/**
@@ -137,5 +157,32 @@ export class CampimetryGame {
 
 	public getCurrentTaskNumber(): number {
 		return this.currentTaskIndex + 1;
+	}
+
+	/**
+	 * Gets the unique color names in task order (for the progress dots).
+	 * Each color is played as a stage-1 + stage-2 pair, so this returns
+	 * one entry per color, e.g. ['dark-blue', 'light-magenta', ...].
+	 */
+	public getTaskColors(): string[] {
+		const seen = new Set<string>();
+		const unique: string[] = [];
+		for (const task of this.tasks) {
+			const name = task.color.getColorName();
+			if (!seen.has(name)) {
+				seen.add(name);
+				unique.push(name);
+			}
+		}
+		return unique;
+	}
+
+	/**
+	 * Gets the index of the current task's color within getTaskColors().
+	 */
+	public getCurrentColorIndex(): number {
+		const task = this.tasks[this.currentTaskIndex];
+		if (!task) return -1;
+		return this.getTaskColors().indexOf(task.color.getColorName());
 	}
 }

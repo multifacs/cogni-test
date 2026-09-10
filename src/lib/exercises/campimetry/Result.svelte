@@ -1,6 +1,6 @@
 <script lang="ts">
 	import ResultsChart from '$lib/tests/campimetry/ResultsChart.svelte';
-	import type { CampimetryResult } from './types';
+	import type { CampimetryResult } from '$lib/tests/campimetry/types';
 	import type { ExerciseResults } from '$lib/exercises/types';
 
 	let { results }: { results: ExerciseResults } = $props();

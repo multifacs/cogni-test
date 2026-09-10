@@ -3,7 +3,7 @@
 </script>
 
 <section
-	class="mx-auto flex max-w-3xl flex-col items-center space-y-4 p-6 text-justify text-sm leading-relaxed text-white gap-2 overflow-scroll"
+	class="mx-auto flex max-w-3xl flex-col items-center gap-2 space-y-4 overflow-y-auto p-6 text-justify text-sm leading-relaxed"
 >
 	<h1 class="mb-6 text-center text-2xl font-semibold">
 		Согласие на участие в исследовании и обработку персональных данных

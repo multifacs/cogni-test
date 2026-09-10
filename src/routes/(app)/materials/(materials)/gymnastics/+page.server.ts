@@ -13,6 +13,6 @@ export const load = (async ({ cookies }) => {
 // it in dev so that we get hot module replacement
 export const csr = false;
 
-// since there's no dynamic data here, we can prerender
-// it so that it gets served as a static asset in production
+// страница зависит от cookies (пол пользователя для видео),
+// поэтому пререндерить её нельзя
 export const prerender = false;

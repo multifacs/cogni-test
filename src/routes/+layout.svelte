@@ -4,6 +4,7 @@
 	import localforage from 'localforage';
 	import { onMount } from 'svelte';
 	import { dev } from '$app/environment';
+	import ScrollCue from '$lib/components/ui/ScrollCue.svelte';
 	let { children } = $props();
 
 	function checkPushSupport() {
@@ -41,7 +42,10 @@
 		}
 	});
 </script>
+
 <!-- 
 <div class="fixed top-1 left-1 text-sm text-gray-500">{dev ? "dev" : "prod"}</div> -->
 
 {@render children()}
+<ScrollCue side="down" />
+<ScrollCue side="up" />
