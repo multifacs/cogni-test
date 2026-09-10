@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import type { MetaResult } from '$lib/exercises/types';
 	import type { RhythmResult } from './types';
 	import localforage from 'localforage';
 
@@ -9,7 +10,7 @@
 		sendResults
 	}: {
 		gameEnd: () => void;
-		sendResults: (results: RhythmResult[]) => void;
+		sendResults: (payload: MetaResult) => void;
 	} = $props();
 
 	let difficulty: 'easy' | 'medium' | 'hard' = $state('easy');
@@ -404,18 +405,13 @@
 			}
 		}
 
-		// запишем overpress в первый элемент (если есть)
-		if (results.length > 0) {
-			results[0].overpress = overpress;
-		}
-
 		console.log('Rhythm results (per tap):', results);
 
 		await localforage.setItem(`results-${difficulty}-uploaded`, false);
 		// console.log("set", difficulty, "false")
 
 		gameEnd();
-		sendResults(results);
+		sendResults({ meta: { overpress: String(overpress) }, results });
 	}
 
 	// ===== Отрисовка =====
