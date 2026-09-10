@@ -109,36 +109,92 @@ const orderByMap: Record<string, (fields: Record<string, AnyColumn>) => SQL> = {
 	rhythm: (f) => asc(f.attempt)
 };
 
-export async function postResult(
-	results: RegularResults | ExerciseResults | AnyMetaResult,
+function isUniqueConstraintError(err: unknown): boolean {
+	let current: unknown = err;
+	while (current) {
+		const candidate = current as { code?: unknown; cause?: unknown };
+		if (candidate && typeof candidate === 'object' && candidate.code === 'UNIQUE_CONSTRAINT') return true;
+		const msg = current instanceof Error ? current.message : String(current);
+		if (msg.includes('UNIQUE constraint failed')) return true;
+		current = candidate?.cause;
+	}
+	return false;
+}
+
+async function insertAttempts(
+	sessionId: string,
 	sessionType: AnySessionType,
-	userId: string
-): Promise<string> {
-	const hasMeta = 'meta' in results;
-	const meta = hasMeta ? JSON.stringify((results as AnyMetaResult).meta) : undefined;
-
-	const sessionId = generate();
-
-	await db.insert(session).values({
-		id: sessionId,
-		testType: sessionType,
-		userId,
-		meta
-	});
-
-	const attempts = hasMeta ? results.results : results;
-
+	attempts: any[]
+): Promise<void> {
 	const insertAttempt = attemptTableMap[sessionType];
 	if (!insertAttempt) throw new Error(`Unknown session type: ${sessionType}`);
-
 	await db.insert(insertAttempt).values(
 		attempts.map((attempt) => ({
 			...attempt,
 			sessionId
 		}))
 	);
+}
 
+export async function postResult(
+	results: RegularResults | ExerciseResults | AnyMetaResult,
+	sessionType: AnySessionType,
+	userId: string,
+	providedSessionId?: string
+): Promise<string> {
+	const hasMeta = 'meta' in results;
+	const meta = hasMeta ? JSON.stringify((results as AnyMetaResult).meta) : undefined;
+
+	const sessionId = providedSessionId ?? generate();
+
+	try {
+		await db.insert(session).values({
+			id: sessionId,
+			testType: sessionType,
+			userId,
+			meta
+		});
+	} catch (err) {
+		if (isUniqueConstraintError(err)) {
+			const existing = await db.query.session.findFirst({
+				where: (fields, { eq }) => eq(fields.id, sessionId)
+			});
+			if (existing && existing.userId !== userId) {
+				throw new Error(`Session ${sessionId} belongs to a different user`);
+			}
+			if (existing) {
+				const queryTableMap = getQueryTableMap();
+				const attemptTable = queryTableMap[sessionType];
+				if (!attemptTable) throw new Error(`Unknown session type: ${sessionType}`);
+				const existingAttempts = await attemptTable.findMany({
+					where: (fields: Record<string, AnyColumn>) => eq(fields.sessionId, sessionId)
+				});
+				if (existingAttempts.length > 0) {
+					return sessionId;
+				}
+				// half-crash: session row inserted, attempts weren't → backfill
+				const attempts = hasMeta ? results.results : results;
+				await insertAttempts(sessionId, sessionType, attempts);
+				return sessionId;
+			}
+		}
+		throw err;
+	}
+
+	const attempts = hasMeta ? results.results : results;
+	await insertAttempts(sessionId, sessionType, attempts);
 	return sessionId;
+}
+
+export async function getSessionList(
+	testType: AnySessionType,
+	userId: string
+): Promise<{ id: string; meta: string | null; createdAt: string }[]> {
+	return db.query.session.findMany({
+		columns: { id: true, meta: true, createdAt: true },
+		where: (fields, { eq, and }) => and(eq(fields.testType, testType), eq(fields.userId, userId)),
+		orderBy: (fields, { desc }) => desc(fields.createdAt)
+	});
 }
 
 export async function getResults(

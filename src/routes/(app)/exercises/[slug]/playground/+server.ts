@@ -24,9 +24,13 @@ export const POST: RequestHandler = async ({ params, request, cookies }) => {
 	if (!slug || !exerciseType) {
 		return json({ error: 'unknown exercise' }, { status: 400 });
 	}
-	const userId = cookies.get('user_id') as string;
+	const userId = cookies.get('user_id');
+	if (!userId) return json({ error: 'Unauthorized' }, { status: 401 });
 
-	const { results }: { results: ExerciseResults | MetaResult } = await request.json();
-	await postResult(results, exerciseType, userId);
-	return json('success', { status: 201 });
+	const { results, sessionId }: { results: ExerciseResults | MetaResult; sessionId?: string } =
+		await request.json();
+	const storedSessionId = sessionId
+		? await postResult(results, exerciseType, userId, sessionId)
+		: await postResult(results, exerciseType, userId);
+	return json({ sessionId: storedSessionId }, { status: 201 });
 };
