@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Card from '$lib/components/ui/Card.svelte';
 	import { formatUserLocalDate } from '$lib/utils/common.js';
 	import { computeRhythmScore, meanDeviation } from './score';
 	import type { RhythmResult } from './types';
@@ -21,6 +20,8 @@
 		{ key: 'hard', label: 'Сложный' }
 	] as const;
 
+	type Best = { date: string; meanDeviation: number; overpress: number } | null;
+
 	function parseMeta(meta: unknown): Record<string, string> | null {
 		if (meta && typeof meta === 'object' && !Array.isArray(meta)) {
 			return meta as Record<string, string>;
@@ -28,7 +29,7 @@
 		return null;
 	}
 
-	function getBest(difficulty: string) {
+	function getBest(difficulty: string): Best {
 		const candidates = results
 			.map((r) => ({ ...r, meta: parseMeta(r.meta) }))
 			.filter((r) => r.meta?.difficulty === difficulty);
@@ -65,30 +66,66 @@
 			overpress: bestOp
 		};
 	}
+
+	// считаем один раз на сложность, а не в каждой строке
+	const bestByDifficulty = $derived.by(() => {
+		const map: Record<string, Best> = {};
+		for (const { key } of DIFFICULTIES) {
+			map[key] = getBest(key);
+		}
+		return map;
+	});
+
+	function overpressLabel(op: number): string {
+		if (op > 0) return `Пережатия: ${op}`;
+		if (op < 0) return `Недожатия: ${Math.abs(op)}`;
+		return '0';
+	}
 </script>
 
-<div class="w-full grid grid-cols-1 gap-3 sm:grid-cols-3">
-	{#each DIFFICULTIES as { key, label }}
-		{@const best = getBest(key)}
-		<Card>
-			<div class="flex flex-col items-center gap-1 py-2">
-				<h3 class="text-sm font-semibold text-slate-700">{label}</h3>
-				{#if best}
-					<div class="flex flex-col items-center gap-0.5 text-sm text-slate-500">
-						<span>{best.date}</span>
-						<span>Среднее отклонение: {Math.round(best.meanDeviation)} мс</span>
-						{#if best.overpress !== 0}
-							<span>
-								{best.overpress > 0
-									? `Пережатия: ${best.overpress}`
-									: `Недожатия: ${Math.abs(best.overpress)}`}
-							</span>
-						{/if}
-					</div>
-				{:else}
-					<span class="text-sm text-slate-500">Попыток нет</span>
-				{/if}
-			</div>
-		</Card>
-	{/each}
+<div class="w-full overflow-x-auto rounded-2xl bg-white shadow">
+	<table class="w-full border-collapse text-left text-sm">
+		<thead>
+			<tr>
+				<th
+					colspan="4"
+					class="border-b border-gray-200 px-4 py-3 text-base font-semibold text-gray-800"
+					>Лучшие попытки</th
+				>
+			</tr>
+			<tr class="border-b border-gray-200 text-gray-600">
+				<th scope="col" class="px-4 py-2 font-medium">Уровень</th>
+				{#each DIFFICULTIES as { label } (label)}
+					<th scope="col" class="px-4 py-2 font-semibold text-gray-800">{label}</th>
+				{/each}
+			</tr>
+		</thead>
+		<tbody>
+			<tr class="border-b border-gray-100">
+				<th scope="row" class="px-4 py-2 font-medium text-gray-600">Дата и время</th>
+				{#each DIFFICULTIES as { key } (key)}
+					{@const best = bestByDifficulty[key]}
+					<td class="px-4 py-2 text-gray-800">{best ? best.date : '—'}</td>
+				{/each}
+			</tr>
+			<tr class="border-b border-gray-100">
+				<th scope="row" class="px-4 py-2 font-medium text-gray-600">Среднее отклонение</th>
+				{#each DIFFICULTIES as { key } (key)}
+					{@const best = bestByDifficulty[key]}
+					<td class="px-4 py-2 text-gray-800"
+						>{best ? `${Math.round(best.meanDeviation)} мс` : '—'}</td
+					>
+				{/each}
+			</tr>
+			<tr>
+				<th scope="row" class="px-4 py-2 font-medium text-gray-600">Пережатия</th>
+				{#each DIFFICULTIES as { key } (key)}
+					{@const best = bestByDifficulty[key]}
+					<td class="px-4 py-2 text-gray-800"
+						>{best ? overpressLabel(best.overpress) : '—'}</td
+					>
+				{/each}
+			</tr>
+		</tbody>
+	</table>
 </div>

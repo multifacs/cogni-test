@@ -21,7 +21,11 @@
 	let difficulty: 'easy' | 'medium' | 'hard' | null = $state(null);
 
 	const serverDifficultyCounts = $derived(
-		(data.difficultyCounts as Record<string, number> | undefined) ?? { easy: 0, medium: 0, hard: 0 }
+		(data.difficultyCounts as Record<string, number> | undefined) ?? {
+			easy: 0,
+			medium: 0,
+			hard: 0
+		}
 	);
 
 	// Pending counts from offline queue. Deduplication note: server counts are
@@ -694,99 +698,70 @@
 
 		if (animationFrame !== null) cancelAnimationFrame(animationFrame);
 	});
+
+	function difficultyText(difficulty: 'easy' | 'medium' | 'hard' | null) {
+		if (difficulty === null) return '---';
+		return difficulty === 'easy' ? 'Лёгкий' : difficulty === 'medium' ? 'Средний' : 'Сложный';
+	}
 </script>
 
-<div class="rhythm-game">
-	{#if difficulty === null}
-		<div class="difficulty-overlay">
-			<div class="difficulty-card">
-				<h3 class="difficulty-title">Выберите сложность</h3>
-				<div class="difficulty-buttons">
-					<Button
-						color="green"
-						onclick={() => chooseDifficulty('easy')}
-						class="difficulty-btn"
-					>
-						Легкий
-						<span class="difficulty-count">{difficultyCounts.easy} попыток</span>
-					</Button>
-					<Button
-						color="yellow"
-						onclick={() => chooseDifficulty('medium')}
-						class="difficulty-btn"
-					>
-						Средний
-						<span class="difficulty-count">{difficultyCounts.medium} попыток</span>
-					</Button>
-					<Button
-						color="red"
-						onclick={() => chooseDifficulty('hard')}
-						class="difficulty-btn"
-					>
-						Сложный
-						<span class="difficulty-count">{difficultyCounts.hard} попыток</span>
-					</Button>
+<div class="relative box-border flex w-full flex-col items-center justify-center gap-4 p-6">
+	<div class="rhythm-header">
+		<p class="m-0 text-sm text-indigo-950">
+			Сложность ритма: {difficultyText(difficulty)}
+		</p>
+	</div>
+
+	<div class="canvas-shell">
+		<canvas bind:this={canvas} onclick={handleCanvasClick}></canvas>
+		{#if !gameInitialized}
+			<div class="start-overlay flex flex-col">
+				<div class="overlay-text flex flex-col text-lg font-bold whitespace-pre-line">
+					1. Запоминайте ритм 2. Повторяйте ритм с подсказками 3. Повторяйте ритм без
+					подсказок Для старта нажмите кнопку "Начать"
 				</div>
 			</div>
+		{/if}
+	</div>
+
+	{#if difficulty === null}
+		<div class="flex gap-2">
+			<Button color="green" onclick={() => chooseDifficulty('easy')} class="difficulty-btn">
+				Легкий
+				<span class="difficulty-count">{difficultyCounts.easy} попыток</span>
+			</Button>
+			<Button
+				color="yellow"
+				onclick={() => chooseDifficulty('medium')}
+				class="difficulty-btn"
+			>
+				Средний
+				<span class="difficulty-count">{difficultyCounts.medium} попыток</span>
+			</Button>
+			<Button color="red" onclick={() => chooseDifficulty('hard')} class="difficulty-btn">
+				Сложный
+				<span class="difficulty-count">{difficultyCounts.hard} попыток</span>
+			</Button>
 		</div>
 	{:else}
-		<div class="rhythm-header">
-			<h2 class="title">Ритмический тест</h2>
-			<p class="subtitle">
-				Сложность ритма: {difficulty === 'easy'
-					? 'Лёгкий'
-					: difficulty === 'medium'
-						? 'Средний'
-						: 'Сложный'}
-			</p>
-		</div>
-
-		<div class="canvas-shell">
-			<canvas bind:this={canvas} onclick={handleCanvasClick}></canvas>
-			{#if !gameInitialized}
-				<div class="start-overlay flex flex-col">
-					<div class="overlay-text flex flex-col text-lg font-bold whitespace-pre-line">
-						1. Запоминайте ритм 2. Повторяйте ритм с подсказками 3. Повторяйте ритм без
-						подсказок Для старта нажмите кнопку "Начать"
-					</div>
-				</div>
-			{/if}
-		</div>
-
 		<button class="tap-button hover:brightness-110" onclick={handleTapButton}
 			>{!gameInitialized ? 'Начать' : 'Нажимайте в ритм'}</button
 		>
-
-		<div class="legend">
-			<div class="legend-item">
-				<span class="legend-dot ghost"></span>
-				<span>Подсказки</span>
-			</div>
-			<div class="legend-item">
-				<span class="legend-dot user"></span>
-				<span>Ваши нажатия</span>
-			</div>
-		</div>
 	{/if}
+
+	<div class="legend">
+		<div class="legend-item">
+			<span class="legend-dot ghost"></span>
+			<span>Подсказки</span>
+		</div>
+		<div class="legend-item">
+			<span class="legend-dot user"></span>
+			<span>Ваши нажатия</span>
+		</div>
+	</div>
 </div>
 
 <style>
-	.rhythm-game {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-		align-items: center;
-		justify-content: center;
-		padding: 1.5rem;
-		box-sizing: border-box;
-		background: transparent;
-		border-radius: 1.25rem;
-		box-shadow: 0 20px 35px rgba(15, 23, 42, 0.6);
-		width: 100%;
-		position: relative;
-		min-height: 400px;
-	}
-
 	.rhythm-header {
 		text-align: center;
 		max-width: 520px;
@@ -837,15 +812,6 @@
 			rgba(15, 23, 42, 0.7),
 			rgba(15, 23, 42, 0.95)
 		);
-	}
-
-	.difficulty-overlay {
-		position: absolute;
-		inset: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 10;
 	}
 
 	.difficulty-card {

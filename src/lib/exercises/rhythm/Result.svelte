@@ -17,7 +17,7 @@
 	let canvas: HTMLCanvasElement;
 	let chart: Chart | null = null;
 
-	Chart.defaults.color = 'white';
+	Chart.defaults.color = 'var(--main-text-color)';
 
 	const TRACKS = 6; // фиксированное число дорожек
 
@@ -113,7 +113,7 @@
 					legend: {
 						display: false,
 						labels: {
-							color: getCSSVar('--color-white') || '#ffffff'
+							color: getCSSVar('--camp-dark-blue') || '#ffffff'
 						}
 					},
 					tooltip: {
@@ -160,4 +160,6 @@
 {#if overpressText}
 	<p class="text-center text-sm font-medium text-amber-600">{overpressText}</p>
 {/if}
-<canvas bind:this={canvas}></canvas>
+<div class="relative h-80 w-full">
+	<canvas bind:this={canvas}></canvas>
+</div>
