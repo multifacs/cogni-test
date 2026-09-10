@@ -28,7 +28,8 @@ RUN rm -rf node_modules/onnxruntime-node/bin/napi-v6/darwin \
            node_modules/onnxruntime-node/bin/napi-v6/linux/arm64
 
 # Удаляем devDependencies после сборки
-RUN npm prune --omit=dev
+RUN npm prune --omit=dev --force
+# --force atm cuz better-auth is broken
 
 FROM node:current-slim AS runner
 
