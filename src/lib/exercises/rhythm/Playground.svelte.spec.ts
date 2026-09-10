@@ -72,4 +72,31 @@ describe('Rhythm Playground — difficulty overlay', () => {
 		await expect.element(mediumBtn).toMatchTextContent('0');
 		await expect.element(hardBtn).toMatchTextContent('2');
 	});
+
+	it('paints the canvas after choosing difficulty', async () => {
+		const props = makeProps();
+		await render(Playground, props);
+
+		const easyBtn = page.getByRole('button', { name: /Легкий/i });
+		await expect.element(easyBtn).toBeVisible();
+		await userEvent.click(easyBtn);
+		await settle();
+
+		// Wait for canvas to appear in the DOM
+		const canvas = document.querySelector('.canvas-shell canvas');
+		expect(canvas).not.toBeNull();
+		expect(canvas instanceof HTMLCanvasElement).toBe(true);
+
+		// Evaluate canvas pixels directly in the browser context
+		const c = canvas as HTMLCanvasElement;
+		const cx = c.getContext('2d');
+		expect(cx).not.toBeNull();
+		const imageData = cx!.getImageData(0, 0, c.width, c.height);
+		let paintedPixels = 0;
+		for (let i = 3; i < imageData.data.length; i += 4) {
+			if (imageData.data[i] > 0) paintedPixels++;
+		}
+
+		expect(paintedPixels).toBeGreaterThan(0);
+	});
 });

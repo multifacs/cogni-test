@@ -18,22 +18,14 @@
 			и нажимать в нужный момент, а после ориентироваться только на ритм и нажимать без
 			<b>подсказок</b>.
 		</div>
-
-		<div class="overlay-text mt-2 text-3xl font-bold underline">
-			Пройдите все уровни сложности:
-		</div>
-
-		<div class="mt-2 text-center text-[10px] text-gray-500">
-			Уровни можно проходить многократно.
-		</div>
 	</Card>
 
 	<div class="legend">
-		<div class="legend-item">
+		<div class="legend-item flex gap-2 items-center">
 			<span class="legend-dot ghost"></span>
 			<span>Подсказки (первые 4 прохода)</span>
 		</div>
-		<div class="legend-item">
+		<div class="legend-item flex gap-2 items-center">
 			<span class="legend-dot user"></span>
 			<span>Ваши нажатия</span>
 		</div>
@@ -46,14 +38,15 @@
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: center;
+		align-items: center;
 		gap: 0.75rem;
 		font-size: 0.8rem;
 		color: #9ca3af;
 	}
 
 	.legend-dot {
-		width: 10px;
-		height: 10px;
+		width: 20px;
+		height: 20px;
 		border-radius: 999px;
 		display: inline-block;
 	}

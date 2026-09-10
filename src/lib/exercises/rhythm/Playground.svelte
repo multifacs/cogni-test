@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, tick } from 'svelte';
 	import type { MetaResult } from '$lib/exercises/types';
 	import type { RhythmResult } from './types';
 	import { buildRhythmMeta } from './score';
 	import { getPendingAttempts } from '$lib/client/offline-queue';
 	import Button from '$lib/components/ui/Button.svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	// props
 	let {
@@ -77,7 +78,7 @@
 	let userAttempts: UserTap[] = $state([]);
 
 	let audioContext: AudioContext | null = $state(null);
-	const triggeredNotes = new Set<string>();
+	const triggeredNotes = new SvelteSet<string>();
 
 	// ===== Генерация мелодии =====
 	function generateMelody() {
@@ -249,6 +250,7 @@
 	}
 
 	function startGame() {
+		console.log('startGame');
 		isPlaying = true;
 		startTimeMs = null;
 		if (animationFrame !== null) cancelAnimationFrame(animationFrame);
@@ -257,6 +259,7 @@
 
 	// ===== Основной цикл =====
 	function gameLoop(timestamp: number) {
+		if (!ctx && canvas) initCanvas();
 		if (!ctx || !canvas || !isPlaying) return;
 
 		if (startTimeMs === null) startTimeMs = timestamp;
@@ -646,9 +649,10 @@
 		ctx.restore();
 	}
 
-	function chooseDifficulty(selected: 'easy' | 'medium' | 'hard') {
+	async function chooseDifficulty(selected: 'easy' | 'medium' | 'hard') {
 		difficulty = selected;
 		generateMelody();
+		await tick();
 		initCanvas();
 		drawIdle();
 	}
