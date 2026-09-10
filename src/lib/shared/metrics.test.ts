@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { computeSessionScore, getRecommendations } from './metrics';
 import type { SkillMetric } from '$lib/types';
+import { SKILL_METRICS } from './metricShares';
 
 // Helpers for getMetricScores tests (must restore real modules after dedup test mocks them)
 async function restoreRealModulesAndImportMetrics() {
@@ -237,6 +238,9 @@ describe('getRecommendations', () => {
 			exercises: [],
 			EXERCISE_SLUG_TO_TEST_TYPE: {}
 		}));
+		vi.doMock('$lib/articles', () => ({
+			articles: []
+		}));
 
 		vi.resetModules();
 
@@ -265,6 +269,14 @@ describe('getRecommendations', () => {
 });
 
 describe('getMetricScores', () => {
+	it('returns keys in SKILL_METRICS order', async () => {
+		const { getResults } = await import('$lib/server/db/controllers/result');
+		vi.mocked(getResults).mockResolvedValue([]);
+		const { getMetricScores } = await restoreRealModulesAndImportMetrics();
+		const scores = await getMetricScores('empty-user');
+		expect(Object.keys(scores)).toEqual(SKILL_METRICS);
+	});
+
 	it('returns all zeros for a user with no sessions', async () => {
 		const { getResults } = await import('$lib/server/db/controllers/result');
 		vi.mocked(getResults).mockResolvedValue([]);

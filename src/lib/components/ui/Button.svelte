@@ -76,25 +76,25 @@
 
 	const colorClasses: ColorClassesObject = {
 		red: {
-			bg: 'bg-red-400',
-			hover: 'hover:bg-red-500',
-			ring: 'focus:ring-red-600',
-			offset: 'focus:ring-offset-red-300',
-			text: 'text-white'
+			bg: 'bg-(--button-red)',
+			hover: 'hover:bg-(--button-red-hover)',
+			ring: 'focus:ring-(--button-red-text)',
+			offset: 'focus:ring-offset-(--button-red)',
+			text: 'text-(--button-red-text)'
 		},
 		blue: {
-			bg: 'bg-blue-400',
-			hover: 'hover:bg-blue-500',
-			ring: 'focus:ring-blue-600',
-			offset: 'focus:ring-offset-blue-300',
-			text: 'text-white'
+			bg: 'bg-(--button-blue)',
+			hover: 'hover:bg-(--button-blue-hover)',
+			ring: 'focus:ring-(--button-blue-text)',
+			offset: 'focus:ring-offset-(--button-blue)',
+			text: 'text-(--button-blue-text)'
 		},
 		green: {
-			bg: 'bg-[#6FCF97]',
-			hover: 'hover:bg-green-500',
-			ring: 'focus:ring-green-600',
-			offset: 'focus:ring-offset-green-300',
-			text: 'text-white'
+			bg: 'bg-(--button-green)',
+			hover: 'hover:bg-(--button-green-hover)',
+			ring: 'focus:ring-(--button-green-text)',
+			offset: 'focus:ring-offset-(--button-green)',
+			text: 'text-(--button-green-text)'
 		},
 		gray: {
 			bg: 'bg-gray-700',
@@ -219,16 +219,18 @@
 </script>
 
 <button
-	id={`${id}`}
+	{id}
 	style={`${styleName}`}
 	class={`
+	flex
+	justify-center
 	cursor-pointer
 	active:scale-95
 	active:ring-2
 	active:ring-white/50
 	${colorClasses[disabled ? 'gray' : color].bg}
 	touch-none
-	${colorClasses[color].text}
+	${colorClasses[disabled ? 'gray' : color].text}
 	transition
 	duration-200
 	ease-in

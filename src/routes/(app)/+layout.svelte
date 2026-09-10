@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, setContext, type Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
+	import { page } from '$app/state';
 	import { profileSurveyStore, userStore } from '$lib/stores/user';
 	import { pushService } from '$lib/pushService';
 
@@ -24,6 +25,14 @@
 	} = $props();
 
 	let headerText = $state('');
+
+	// Hide the bottom nav on very small phones (<sm, 640px) inside content
+	// sections — test/exercise/article screens need every pixel of height.
+	// Section roots (/tests, /exercises, /materials) keep the nav: they have
+	// no "back" button, so the nav is the only way out of the section there.
+	const hideNavOnSmallScreens = $derived(
+		/^\/(tests|exercises|materials)\/.+/.test(page.url.pathname)
+	);
 
 	setContext('headerText', {
 		get value() {
@@ -69,7 +78,7 @@
 	{#if showModal}
 		<Modal bind:showModal>
 			{#snippet header()}
-				<h2 class="text-2xl text-white text-center">Подпишитесь на push-уведомления</h2>
+				<h2 class="text-center text-2xl">Подпишитесь на push-уведомления</h2>
 			{/snippet}
 			<div class="flex flex-col gap-4">
 				{#if showSpinner}
@@ -77,17 +86,15 @@
 						class="flex w-full flex-col items-center justify-center gap-2 align-middle"
 					>
 						<Spinner></Spinner>
-						<p class="text-center text-white">
-							Перезагрузите страницу, если загрузка идет долго
-						</p>
+						<p class="text-center">Перезагрузите страницу, если загрузка идет долго</p>
 					</div>
 				{:else}
-					<p class="text-white">
+					<p>
 						Для корректной работы некоторых функций требуется подписка на уведомления.
 						Например, мы сможем отправлять вам напоминания о прохождении тестов.
 					</p>
-					<p class="text-white">Для подписки достаточно нажать зелёную кнопочку.</p>
-					<p class="text-white">
+					<p>Для подписки достаточно нажать зелёную кнопочку.</p>
+					<p>
 						Вы сможете подписаться или отписаться от push-уведомлений в любое время на
 						странице профиля.
 					</p>
@@ -104,7 +111,13 @@
 		<Header text={headerText} />
 	</header>
 	{@render children()}
-	<NavBar undiagnosed={data.undiagnosed} allowedPaths={data.allowedPaths} />
+	<!-- On very small phones (<sm) inside content sections the nav is hidden
+	     via CSS — those pages have their own "Назад" button and need the height.
+	     Section roots (/tests, /exercises, /materials) keep the nav: they have
+	     no "back" button, so the nav is the only way out of the section there. -->
+	<div class="nav-slot" class:nav-hidden={hideNavOnSmallScreens}>
+		<NavBar undiagnosed={data.undiagnosed} allowedPaths={data.allowedPaths} />
+	</div>
 </div>
 
 <style>
@@ -122,7 +135,6 @@
 		}
 
 		.container {
-			background-color: var(--main-bg-color);
 			display: grid;
 			grid-template-rows: auto 1fr auto;
 			grid-template-columns: 1fr;
@@ -146,7 +158,7 @@
 			overflow-x: hidden;
 			overflow-y: auto;
 			min-width: 0;
-			color: var(--main-text-color);
+			/*color: var(--main-text-color);*/
 		}
 
 		.banner {
@@ -163,6 +175,21 @@
 			grid-area: low-content;
 			padding: 2% 15%;
 			border-radius: var(--radius-lg);
+		}
+
+		/* display: contents keeps <nav> the actual grid item (as before the
+		   wrapper existed), so it still stretches over the full 'nav' area.
+		   The wrapper only exists to hide the nav on <sm via display:none. */
+		.nav-slot {
+			display: contents;
+		}
+
+		/* Very small phones: hide the bottom nav inside content sections
+		   (tests/exercises/materials subpages). Only <sm (<640px). */
+		@media (max-width: 639px) {
+			.nav-slot.nav-hidden {
+				display: none;
+			}
 		}
 	}
 	@media (min-width: 1024px) {

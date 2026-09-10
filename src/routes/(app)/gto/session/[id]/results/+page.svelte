@@ -1,8 +1,13 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
+	import { buildCertificateData, type CertificateInput } from '$lib/certificate/certificate-data';
+	import { downloadCertificatePdf } from '$lib/certificate/generate';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	let isGenerating = $state(false);
+	let certificateError = $state<string | null>(null);
 
 	function fmt(val: number | null, decimals = 2): string {
 		if (val === null) return '—';
@@ -14,10 +19,40 @@
 	}
 
 	const m = $derived(data.metrics);
+
+	async function downloadCertificate(): Promise<void> {
+		isGenerating = true;
+		certificateError = null;
+		try {
+			const input: CertificateInput = {
+				participant: { firstname: m.firstname, lastname: m.lastname },
+				session: { name: data.session.name, createdAt: data.session.createdAt },
+				wordScore: m.wordScore,
+				submittedWords: m.submittedWords,
+				metrics: m
+			};
+			await downloadCertificatePdf(buildCertificateData(input));
+		} catch {
+			certificateError = 'Не удалось сформировать сертификат. Попробуйте ещё раз.';
+		} finally {
+			isGenerating = false;
+		}
+	}
 </script>
 
 <section class="banner">
-	<h1 class="text-2xl font-bold text-center">{data.session.name}</h1>
+	<h1 class="text-center text-2xl font-bold">{data.session.name}</h1>
+
+	{#if data.session.status === 'completed'}
+		<div class="mt-3 flex flex-col items-center gap-2">
+			<Button color="purple" onclick={downloadCertificate} disabled={isGenerating}>
+				{isGenerating ? 'Готовим PDF…' : 'Скачать сертификат'}
+			</Button>
+			{#if certificateError}
+				<p class="text-sm text-red-400" role="alert">{certificateError}</p>
+			{/if}
+		</div>
+	{/if}
 </section>
 
 <main class="main overflow-auto p-4">
@@ -25,7 +60,7 @@
 		<!-- Word score -->
 		{#if m.wordScore !== null}
 			<div class="rounded-xl border border-purple-700/40 bg-purple-900/20 p-4">
-				<h3 class="mb-2 text-sm font-semibold text-purple-300 text-center">
+				<h3 class="mb-2 text-center text-sm font-semibold text-purple-300">
 					Последовательность слов
 				</h3>
 				<div class="flex items-center gap-3">
@@ -50,7 +85,7 @@
 			<!-- Stroop -->
 			<div class="rounded-lg bg-gray-900/50 p-3">
 				<h4
-					class="mb-2 text-xs font-semibold uppercase tracking-wider text-blue-400 text-center"
+					class="mb-2 text-center text-xs font-semibold tracking-wider text-blue-400 uppercase"
 				>
 					Струп
 				</h4>
@@ -77,7 +112,7 @@
 			<!-- Math -->
 			<div class="rounded-lg bg-gray-900/50 p-3">
 				<h4
-					class="mb-2 text-xs font-semibold uppercase tracking-wider text-emerald-400 text-center"
+					class="mb-2 text-center text-xs font-semibold tracking-wider text-emerald-400 uppercase"
 				>
 					Арифметика
 				</h4>
@@ -108,7 +143,7 @@
 			<!-- Munsterberg -->
 			<div class="rounded-lg bg-gray-900/50 p-3">
 				<h4
-					class="mb-2 text-xs font-semibold uppercase tracking-wider text-amber-400 text-center"
+					class="mb-2 text-center text-xs font-semibold tracking-wider text-amber-400 uppercase"
 				>
 					Мюнстерберг
 				</h4>
@@ -135,7 +170,7 @@
 			<!-- Campimetry -->
 			<div class="rounded-lg bg-gray-900/50 p-3">
 				<h4
-					class="mb-2 text-xs font-semibold uppercase tracking-wider text-rose-400 text-center"
+					class="mb-2 text-center text-xs font-semibold tracking-wider text-rose-400 uppercase"
 				>
 					Кампиметрия
 				</h4>
@@ -174,7 +209,7 @@
 			<!-- Memory -->
 			<div class="rounded-lg bg-gray-900/50 p-3">
 				<h4
-					class="mb-2 text-xs font-semibold uppercase tracking-wider text-cyan-400 text-center"
+					class="mb-2 text-center text-xs font-semibold tracking-wider text-cyan-400 uppercase"
 				>
 					Память
 				</h4>
@@ -205,7 +240,7 @@
 			<!-- Swallow -->
 			<div class="rounded-lg bg-gray-900/50 p-3">
 				<h4
-					class="mb-2 text-xs font-semibold uppercase tracking-wider text-teal-400 text-center"
+					class="mb-2 text-center text-xs font-semibold tracking-wider text-teal-400 uppercase"
 				>
 					Ласточка
 				</h4>
@@ -236,7 +271,7 @@
 			<!-- Raven -->
 			<div class="rounded-lg bg-gray-900/50 p-3">
 				<h4
-					class="mb-2 text-xs font-semibold uppercase tracking-wider text-violet-400 text-center"
+					class="mb-2 text-center text-xs font-semibold tracking-wider text-violet-400 uppercase"
 				>
 					Матрицы Равена
 				</h4>
@@ -313,7 +348,7 @@
 		<!-- Editable metrics (read-only) -->
 		<div class="rounded-lg border border-gray-700 bg-gray-900/30 p-4">
 			<h4
-				class="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400 text-center"
+				class="mb-3 text-center text-xs font-semibold tracking-wider text-gray-400 uppercase"
 			>
 				Дополнительные данные
 			</h4>
@@ -350,7 +385,7 @@
 				</div>
 				<div class="flex flex-col gap-1">
 					<span class="text-xs text-gray-400">Лабиринт VR файл</span>
-					<span class="text-sm truncate">{m.editableMetrics.mazeVRFileName ?? '—'}</span>
+					<span class="truncate text-sm">{m.editableMetrics.mazeVRFileName ?? '—'}</span>
 				</div>
 				<div class="flex flex-col gap-1">
 					<span class="text-xs text-gray-400">Кнопочки №</span>
@@ -362,7 +397,7 @@
 				</div>
 				<div class="flex flex-col gap-1">
 					<span class="text-xs text-gray-400">Кнопочки файл</span>
-					<span class="text-sm truncate"
+					<span class="truncate text-sm"
 						>{m.editableMetrics.buttonTestFileName ?? '—'}</span
 					>
 				</div>

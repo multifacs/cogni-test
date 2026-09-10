@@ -17,7 +17,7 @@
 		},
 		{
 			href: '/tests',
-			icon: '/brain.svg',
+			icon: '/nav_icons/brain.svg',
 			text: 'Возраст'
 		},
 		{
@@ -27,7 +27,7 @@
 		},
 		{
 			href: '/gto',
-			icon: '/nav_icons/materials.svg',
+			icon: '/nav_icons/gto.svg',
 			text: 'ГТО-М'
 		},
 		{
@@ -62,7 +62,7 @@
 			class:active={isActive(path.href)}
 			class:pointer-events-none={!isAllowed(path.href)}
 			class:cursor-not-allowed={!isAllowed(path.href)}
-			class:grayscale={!isAllowed(path.href)}
+			class:disabled={!isAllowed(path.href)}
 		>
 			<img src={path.icon} alt={path.text} />
 			<h4 class="nav-text text-center">{path.text}</h4>
@@ -107,6 +107,11 @@
 		opacity: 1;
 		filter: brightness(0) saturate(100%) invert(67%) sepia(18%) saturate(1048%)
 			hue-rotate(325deg) brightness(95%) contrast(92%);
+	}
+
+	.nav-link.disabled img,
+	.nav-link.disabled .nav-text {
+		opacity: 0.4;
 	}
 
 	@media (min-width: 1024px) {

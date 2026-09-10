@@ -52,9 +52,22 @@ async function getBaggingSession(): Promise<InferenceSession> {
 	return baggingSession;
 }
 
+export function getMissingModelInputs(
+	features: Record<string, number>,
+	inputNames: readonly string[]
+): string[] {
+	return inputNames.filter((name) => !(name in features));
+}
+
 export async function runAgeModel(features: Record<string, number>): Promise<number | null> {
 	try {
 		const session = await getBaggingSession();
+
+		const missing = getMissingModelInputs(features, session.inputNames);
+		if (missing.length > 0) {
+			console.warn(`⚠️ Missing ONNX model inputs: ${missing.join(', ')}`);
+			return null;
+		}
 
 		const feeds: Record<string, Tensor> = {};
 		for (const [name, value] of Object.entries(features)) {

@@ -3,14 +3,14 @@
 	import { GameState } from './logic/controller.svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import '@fontsource/fira-code';
+	import type { MathResult } from './types';
 
-	let { gameEnd, sendResults } = $props();
-	let gameState = $state(
-		new GameState(
-			() => gameEnd,
-			() => sendResults
-		)
-	);
+	let {
+		gameEnd,
+		sendResults
+	}: { gameEnd: () => void; sendResults: (results: MathResult[]) => void } = $props();
+	// svelte-ignore state_referenced_locally (parent route callbacks are stable function refs; capturing the initial value is intentional)
+	let gameState = $state(new GameState(gameEnd, sendResults));
 
 	onMount(() => {
 		gameState.resetGame();

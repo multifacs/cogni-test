@@ -97,20 +97,10 @@ export const exercises: ExerciseData[] = [
 		img: '/exercises/letters1.svg'
 	},
 	{
-		name: 'road-trip',
-		title: 'По дороге на работу',
-		path: '/exercises/road-trip/about',
-		img: '/exercises/road-trip.svg',
-		admin_metrics: ['perception', 'verbal_function', 'thinking'],
-		user_metrics: ['perception']
-	},
-	{
-		name: 'not-lost',
-		title: 'По дороге на работу',
-		path: '/exercises/not-lost/about',
-		img: '/exercises/not-lost.svg',
-		admin_metrics: ['spacial_perception', 'spacial_orientation', 'short_memory'],
-		user_metrics: ['spacial_perception']
+		name: 'rhythm',
+		title: 'Ритм',
+		path: '/exercises/rhythm/about',
+		img: '/exercises/rhythm.svg'
 	}
 ];
 
@@ -180,11 +170,10 @@ const exerciseLoaders: Record<string, ExerciseLoader> = {
 		playground: () => import('./letters/Playground.svelte'),
 		result: () => import('./letters/Result.svelte')
 	},
-	'road-trip': {
-		about: () => import('./road-trip/About.svelte')
-	},
-	'not-lost': {
-		about: () => import('./not-lost/About.svelte')
+	rhythm: {
+		about: () => import('./rhythm/About.svelte'),
+		playground: () => import('./rhythm/Playground.svelte'),
+		result: () => import('./rhythm/Result.svelte')
 	}
 };
 
@@ -204,5 +193,6 @@ export const EXERCISE_SLUG_TO_TEST_TYPE: Record<string, ExerciseType | TestType>
 	numbers: 'numbers',
 	pictures: 'pictures',
 	'raven-matrices': 'ravenMatrices',
-	'word-morphing': 'wordMorphingExercise'
+	'word-morphing': 'wordMorphingExercise',
+	rhythm: 'rhythm'
 };

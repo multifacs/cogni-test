@@ -30,7 +30,9 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		const cleanFeatures = Object.fromEntries(
 			Object.entries(features).filter(([, v]) => v !== null)
 		) as Record<string, number>;
-		predictedAge = await runAgeModel(cleanFeatures);
+		if (Object.keys(cleanFeatures).length > 0) {
+			predictedAge = await runAgeModel(cleanFeatures);
+		}
 	}
 
 	// Data returned here is available as `data` in +page.svelte

@@ -1,5 +1,5 @@
 import type { AttentionTrialRow } from './attention/types';
-import type { CampimetryResult } from './campimetry/types';
+import type { CampimetryResult } from '$lib/tests/campimetry/types';
 import type { EmojiTrialRow } from './emoji/types';
 import type { FlankerTrialRow } from './flanker/types';
 import type { LettersTrialRow } from './letters/types';
@@ -9,6 +9,7 @@ import type { NumbersTrialRow } from './numbers/types';
 import type { PicturesTrialRow } from './pictures/types';
 import type { RavenAttemptRow } from './raven-matrices/types';
 import type { WordMorphingSummaryRow } from './word-morphing/types';
+import type { RhythmResult } from './rhythm/types';
 
 export type ExerciseType =
 	| 'attention'
@@ -21,7 +22,8 @@ export type ExerciseType =
 	| 'numbers'
 	| 'pictures'
 	| 'ravenMatrices'
-	| 'wordMorphingExercise';
+	| 'wordMorphingExercise'
+	| 'rhythm';
 
 export type ExerciseResultMap = {
 	attention: AttentionTrialRow;
@@ -35,6 +37,7 @@ export type ExerciseResultMap = {
 	pictures: PicturesTrialRow;
 	ravenMatrices: RavenAttemptRow;
 	wordMorphingExercise: WordMorphingSummaryRow;
+	rhythm: RhythmResult;
 };
 
 export type ExerciseResult =
@@ -48,7 +51,8 @@ export type ExerciseResult =
 	| NumbersTrialRow
 	| PicturesTrialRow
 	| RavenAttemptRow
-	| WordMorphingSummaryRow;
+	| WordMorphingSummaryRow
+	| RhythmResult;
 
 export type ExerciseResults =
 	| AttentionTrialRow[]
@@ -61,7 +65,8 @@ export type ExerciseResults =
 	| NumbersTrialRow[]
 	| PicturesTrialRow[]
 	| RavenAttemptRow[]
-	| WordMorphingSummaryRow[];
+	| WordMorphingSummaryRow[]
+	| RhythmResult[];
 
 export type ResultInfo = {
 	sessionId: string;

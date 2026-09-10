@@ -27,4 +27,34 @@
 		max-height: 70px;
 		flex-shrink: 0;
 	}
+
+	.banner .icon {
+		width: 50px;
+		height: 50px;
+		flex-shrink: 0;
+	}
+
+	/* Small phones: shrink the banner so screens like 320x433 keep
+	   as much room as possible for the content below. */
+	@media (max-width: 640px) {
+		.banner {
+			padding: 0.5rem;
+		}
+
+		.banner .icon {
+			width: 36px;
+			height: 36px;
+		}
+	}
+
+	@media (max-width: 360px) {
+		.banner {
+			padding: 0.375rem;
+		}
+
+		.banner .icon {
+			width: 30px;
+			height: 30px;
+		}
+	}
 </style>

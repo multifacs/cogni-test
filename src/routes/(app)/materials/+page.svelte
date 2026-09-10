@@ -1,7 +1,7 @@
 <script lang="ts">
 	import RecommendationCard from '$lib/components/ui/RecommendationCard.svelte';
 	import { getContext, onMount } from 'svelte';
-	let { data } = $props();
+	import { articles } from '$lib/articles';
 
 	const headerContext = getContext<{ value: string }>('headerText');
 
@@ -12,9 +12,9 @@
 	});
 </script>
 
-<main class="main flex flex-col gap-6">
-	<div class="flex flex-wrap justify-between gap-5 p-2">
-		{#each data.articles as article (article.slug)}
+<main class="main flex w-full flex-col items-center justify-center-safe">
+	<div class="flex w-full max-w-5xl flex-col items-center justify-center-safe gap-6">
+		{#each articles as article (article.slug)}
 			<RecommendationCard
 				title={article.title}
 				text={`Время чтения: ${article.time} минут`}

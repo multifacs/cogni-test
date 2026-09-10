@@ -1,5 +1,8 @@
 <script lang="ts">
+	import { INPUT_CLASS } from './inputStyles';
+
 	let {
+		id = undefined,
 		name,
 		value = $bindable(),
 		required = false,
@@ -8,6 +11,15 @@
 		plain = false,
 		...restProps
 	} = $props();
+
+	const inputId = $derived(id ?? name);
+
+	// Держим последний текст ошибки, пока слот сворачивается,
+	// иначе контент исчезает раньше анимации и закрытие становится мгновенным
+	let lastError = $state('');
+	$effect(() => {
+		if (errorMessage) lastError = errorMessage;
+	});
 
 	function handleInput(e: Event) {
 		if (plain) return;
@@ -22,11 +34,16 @@
 		input.value = val;
 		value = val;
 		errorMessage = '';
-		validate(value);
 	}
-	function validate(valueStr: string) {
+
+	function handleBlur() {
 		if (plain) return;
-		if (valueStr.length < 2) {
+		validate();
+	}
+
+	function validate() {
+		if (plain) return true;
+		if (value.length < 2) {
 			errorMessage = 'Нужно ввести всё';
 			return false;
 		}
@@ -37,30 +54,47 @@
 </script>
 
 <input
+	id={inputId}
 	{required}
 	{name}
 	type={restProps.type ?? 'text'}
 	bind:value
 	placeholder={placeholder ? placeholder : name == 'firstname' ? 'ИМЯ' : 'ФА'}
 	oninput={handleInput}
+	onblur={handleBlur}
 	maxlength={plain ? 99 : 10}
+	aria-invalid={errorMessage ? 'true' : undefined}
+	aria-describedby={errorMessage ? `${inputId}-error` : undefined}
 	{...restProps}
-	class={`
-	max-xs:text-base
-	max-xs:p-1
-	xs:p-2.5
-	block
-	w-full
-	rounded-lg
-    border
-	bg-[#E5E7EB]
-    p-2
-    text-(--main-text-color)
-    placeholder-gray-400
-    outline-0
-    transition
-   focus:border-[var(--main-accent-color)]
-    focus:ring-[var(--main-accent-color)]
-	${errorMessage ? 'border-red-500' : 'border-gray-600'}
-  `}
+	class={`${INPUT_CLASS} ${errorMessage ? 'border-[var(--error-color)]' : 'border-gray-600'}`}
 />
+<div class="err-collapse" class:open={!!errorMessage}>
+	<div>
+		<p
+			id={errorMessage ? `${inputId}-error` : undefined}
+			class="pt-1 text-sm text-[var(--error-color)]"
+			aria-live="polite"
+		>
+			{errorMessage || lastError}
+		</p>
+	</div>
+</div>
+
+<style>
+	.err-collapse {
+		display: grid;
+		grid-template-rows: 0fr;
+		transition: grid-template-rows 0.25s ease;
+	}
+	.err-collapse.open {
+		grid-template-rows: 1fr;
+	}
+	.err-collapse > div {
+		overflow: hidden;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.err-collapse {
+			transition: none;
+		}
+	}
+</style>
