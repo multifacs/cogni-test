@@ -14,7 +14,8 @@ WORKDIR /app
 COPY package*.json ./
 
 # Устанавливаем зависимости
-RUN npm install
+RUN npm install --force
+# --force atm cuz better-auth is broken
 
 # Копируем остальные файлы проекта
 COPY . .
