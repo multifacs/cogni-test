@@ -5,18 +5,17 @@
 	import { derived } from 'svelte/store';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { enhance } from '$app/forms';
-	import Card from '$lib/components/ui/Card.svelte';
-	import InfoCard from '$lib/components/ui/InfoCard.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import { pushService } from '$lib/pushService';
 	import { isSubscribed } from '$lib/utils/push';
+	import MetricTile from './components/MetricTile.svelte';
 
-	// let { data } = $props();
+	let { data }: { data: { predictedAge: number | null } } = $props();
 	const user = derived(userStore, ($userStore) => $userStore);
 	const headerContext = getContext<{ value: string }>('headerText');
 	let subscribed = $state(false);
 	let showSpinner = $state(false);
-	let predictedAge = $state<number | null>(null);
+	let subscribeError = $state('');
 	onMount(async () => {
 		if (headerContext) {
 			headerContext.value = 'Профиль';
@@ -41,26 +40,44 @@
 		return age;
 	}
 
-	export function formatDate(date: Date): string {
-		const day = String(date.getDate()).padStart(2, '0');
-		const month = String(date.getMonth() + 1).padStart(2, '0');
-		const year = date.getFullYear();
-		return `${day}.${month}.${year}`;
+	function pluralAge(n: number): string {
+		const n10 = n % 10;
+		const n100 = n % 100;
+		if (n10 === 1 && n100 !== 11) return 'год';
+		if (n10 >= 2 && n10 <= 4 && (n100 < 10 || n100 >= 20)) return 'года';
+		return 'лет';
 	}
 
-	function capitalize(str: string): string {
-		return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+	// Names are stored uppercase in the DB — display as-is, no re-casing
+	function displayName(str: string): string {
+		return str || 'Пользователь';
+	}
+
+	function getInitials(firstname?: string, lastname?: string): string {
+		const f = firstname?.[0] ?? '';
+		const l = lastname?.[0] ?? '';
+		const initials = (f + l).trim();
+		return initials ? initials.toUpperCase() : '?';
+	}
+
+	// Deterministic pastel hue from user id — same user always gets same color
+	function avatarStyle(id: string | number): string {
+		let h = 0;
+		for (const ch of String(id)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+		const hue = h % 360;
+		return `--avatar-bg-color: hsl(${hue} 45% 78%); --avatar-text-color: hsl(${hue} 45% 22%);`;
 	}
 
 	async function subscribe() {
 		try {
 			showSpinner = true;
+			subscribeError = '';
 			await pushService.subscribe();
-			showSpinner = false;
 			subscribed = true;
-			console.log('Subscribed successfully');
 		} catch (error) {
 			console.error('Failed to subscribe:', error);
+			subscribeError = 'Не удалось подписаться. Попробуйте ещё раз.';
+		} finally {
 			showSpinner = false;
 		}
 	}
@@ -69,87 +86,114 @@
 		try {
 			await pushService.unsubscribe();
 			subscribed = false;
-			console.log('Unsubscribed successfully');
 		} catch (error) {
 			console.error('Failed to unsubscribe:', error);
 		}
 	}
 </script>
 
-<main class="main" style="display: flex; flex-direction: column; align-items: center;">
-	<div class="content flex flex-col items-center justify-center gap-8 pt-6 pb-12">
-		{#await $user}
-			<div class="flex justify-center p-8">
-				<p>Загрузка...</p>
-			</div>
-		{:then u}
-			{#if u && u.id}
-				<Card>
-					<div class="mx-auto flex max-w-md flex-col items-center gap-2 p-6">
-						<p><b>Имя:</b> {capitalize(u.firstname)} {capitalize(u.lastname)}</p>
-						<p><b>Возраст:</b> {formatAge(u.birthday)} лет</p>
-					</div>
-				</Card>
-				<div class="flex flex-col gap-7">
-					<h2 class="text-center">
-						Заполните анкету, чтобы сделать результаты диагностики точнее
-					</h2>
-					<Button color="green" goto="/questionary">Перейти к анкете</Button>
-				</div>
-				<div class="grid w-full grid-cols-2 gap-4 md:grid-cols-4">
-					<InfoCard title="Когнитивный возраст" info={predictedAge ?? '—'} />
-					<InfoCard title="Дата последней проверки" info="" />
-					<InfoCard title="Пройдено тренировок" info="" />
-					<InfoCard title="Серия" info="" />
-				</div>
-				<!--
-				ПЕРСОНАЛИЗАЦИЯ
-				<Card>График изменения конгитивного возраста</Card>
-				<Card>
-					<h2>Конитивные навыки</h2>
-					<div>Восприятие</div>
-					<div>Скорость реакции</div>
-					<div>Исполнительные функции</div>
-					<div>Оперативная память</div>
-					<div>Пространственное восприятие</div>
-					<div>Память</div>
-				</Card> -->
-
-				<Card>
-					<div class="flex flex-row items-center gap-8">
-						<h3 class="text-left text-lg font-semibold">Уведомления</h3>
-						{#if subscribed}
-							<Button
-								color="secondary"
-								class="border border-gray-300"
-								onclick={unsubscribe}
+<main class="main flex flex-col items-center justify-center-safe">
+	{#await $user}
+		<div class="flex justify-center p-8">
+			<p>Загрузка...</p>
+		</div>
+	{:then u}
+		{#if u && u.id}
+			<div class="flex w-full flex-col items-center justify-center">
+				<div class="flex w-full max-w-5xl flex-col gap-6">
+					<!-- Identity -->
+					<div class="glass-card flex flex-col gap-4 p-6">
+						<div class="flex items-center gap-4">
+							<div
+								style={avatarStyle(u.id)}
+								class="flex
+									h-16
+									w-16
+									shrink-0
+									items-center
+									justify-center
+									rounded-[50%]
+									bg-(--avatar-bg-color)
+									text-2xl
+									font-bold
+									text-(--avatar-text-color)
+									uppercase
+									max-sm:h-14
+									max-sm:w-14
+									max-sm:text-xl
+									"
 							>
-								Отписаться
-							</Button>
-						{:else}
-							{#if showSpinner}
-								<div class="flex items-center justify-center gap-2">
-									<Spinner />
-									<p class="text-sm">
-										Перезагрузите страницу, если загрузка идет долго
-									</p>
-								</div>
-							{:else}
-								<Button color="green" onclick={subscribe}>Подписаться</Button>
-							{/if}
-						{/if}
+								{getInitials(u.firstname, u.lastname)}
+							</div>
+							<div class="identity-text">
+								<h2 class="text-3xl font-extrabold max-sm:text-2xl">
+									{displayName(u.firstname)}
+									{displayName(u.lastname)}
+								</h2>
+								<p class="text-base opacity-80">
+									{formatAge(u.birthday)}
+									{pluralAge(formatAge(u.birthday))}
+								</p>
+							</div>
+						</div>
+						<p class="text-sm text-gray-500">
+							Заполните анкету, чтобы сделать результаты диагностики точнее
+						</p>
+						<Button color="green" goto="/questionary">Перейти к анкете</Button>
 					</div>
-				</Card>
-				<form class="mx-auto w-fit" method="POST" action="/?/logout" use:enhance>
-					<Button type="submit" color="red">Выйти</Button>
-				</form>
-			{:else}
-				<div class="flex justify-center p-8">
-					<p class="text-red-500">
-						Пользователь не найден. Возможно, вы не вошли в систему.
-					</p>
+
+					<!-- Metrics -->
+					<div
+						class="grid grid-cols-[repeat(4,1fr)] gap-4 max-sm:grid-cols-[repeat(2,1fr)]"
+					>
+						<MetricTile
+							title="Когн. возраст"
+							value={data.predictedAge !== null && data.predictedAge !== undefined
+								? `${Math.round(data.predictedAge)} ${pluralAge(Math.round(data.predictedAge))}`
+								: undefined}
+						/>
+						<MetricTile title="Дата проверки" />
+						<MetricTile title="Тренировок" />
+						<MetricTile title="Серия" />
+					</div>
+
+					<!-- Settings -->
+					<div class="glass-card flex w-full justify-between gap-4 p-6 max-sm:flex-col">
+						<div class="flex items-center gap-3 max-sm:w-full">
+							{#if subscribed}
+								<Button color="blue" onclick={unsubscribe} class="max-sm:w-full">
+									Отписаться от уведомлений
+								</Button>
+							{:else}
+								{#if showSpinner}
+									<div class="flex items-center justify-center gap-2">
+										<Spinner />
+										<p class="text-sm">Подписываемся…</p>
+									</div>
+								{:else}
+									<Button color="green" onclick={subscribe} class="max-sm:w-full"
+										>Подписаться на уведомления</Button
+									>
+								{/if}
+							{/if}
+							{#if subscribeError}
+								<p class="text-sm text-red-600">{subscribeError}</p>
+							{/if}
+						</div>
+						<form method="POST" action="/?/logout" use:enhance>
+							<Button color="red" class="max-sm:w-full" type="submit">Выйти</Button>
+						</form>
+					</div>
 				</div>
-			{/if}
-		{/await}
-	</div>
+			</div>
+		{:else}
+			<div class="flex justify-center p-8">
+				<p class="text-red-500">Пользователь не найден. Возможно, вы не вошли в систему.</p>
+			</div>
+		{/if}
+	{:catch}
+		<div class="flex justify-center p-8">
+			<p class="text-red-500">Не удалось загрузить профиль. Попробуйте обновить страницу.</p>
+		</div>
+	{/await}
 </main>

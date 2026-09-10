@@ -1,5 +1,6 @@
 import type { PageServerLoad } from './$types';
-import { getGtoSessionById } from '$lib/server/db/controllers/gto';
+import { getGtoSessionById, getParticipantLastResultAt } from '$lib/server/db/controllers/gto';
+import { parseLegacyTimestampToIso } from '$lib/gto/words-cooldown';
 import { error, redirect } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ params, cookies }) => {
@@ -22,10 +23,15 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 
 	// Always allow word input — if no word set assigned, they type freely
 	const wordCount = participant.wordSetId ? 5 : 5; // still show 5 inputs regardless
+	// Fail-soft: invalid stored timestamps parse to null → no cooldown shown
+	const lastResultAt = parseLegacyTimestampToIso(
+		await getParticipantLastResultAt(params.id, userId)
+	);
 	return {
 		sessionId: params.id,
 		sessionName: sessionDetail.name,
 		wordCount,
-		hasWordSet: !!participant.wordSetId
+		hasWordSet: !!participant.wordSetId,
+		lastResultAt
 	};
 };

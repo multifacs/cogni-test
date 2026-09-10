@@ -1,4 +1,5 @@
 import { describe, test, expect, beforeEach, vi } from 'vitest';
+import localforage from 'localforage';
 import {
 	getResultForParticipant,
 	getParticipantIdsForFile,
@@ -14,7 +15,7 @@ const mockStore = new Map<string, unknown>();
 
 vi.mock('localforage', () => ({
 	default: {
-		createInstance: () => ({
+		createInstance: vi.fn(() => ({
 			iterate: (callback: (value: unknown, key: string) => void | Promise<void>) => {
 				for (const [key, value] of mockStore.entries()) {
 					const result = callback(value, key);
@@ -30,9 +31,20 @@ vi.mock('localforage', () => ({
 				mockStore.delete(key);
 				return Promise.resolve();
 			}
-		})
+		}))
 	}
 }));
+
+// Captured at module scope, right after the (hoisted) mock and the module
+// graph have been evaluated — i.e. exactly the import-time call count.
+const importTimeCreateInstanceCalls = vi.mocked(localforage.createInstance).mock.calls.length;
+
+describe('lazy store initialization (SSR defense-in-depth)', () => {
+	test('does not call localforage.createInstance at module import time', async () => {
+		expect.assertions(1);
+		expect(importTimeCreateInstanceCalls).toBe(0);
+	});
+});
 
 beforeEach(async () => {
 	mockStore.clear();
@@ -176,8 +188,14 @@ describe('hasOldFormatData', () => {
 // ─── Helpers for seeding mock store ───────────────────────────────────
 
 function makePair(partial: {
-	leftParticipants?: { buttonId: number; stimulusCells: (string | number | undefined | null)[] }[];
-	rightParticipants?: { buttonId: number; stimulusCells: (string | number | undefined | null)[] }[];
+	leftParticipants?: {
+		buttonId: number;
+		stimulusCells: (string | number | undefined | null)[];
+	}[];
+	rightParticipants?: {
+		buttonId: number;
+		stimulusCells: (string | number | undefined | null)[];
+	}[];
 }): StoredButtonPair {
 	return {
 		left: {

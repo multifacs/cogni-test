@@ -1,13 +1,26 @@
 @import 'tailwindcss';
+@plugin '@tailwindcss/typography';
 
 :root {
 	--main-bg-color: #e8f0fe;
 	--main-text-color: #2c3e50;
-	--main-accent-color: #d48c7a;
+	--main-accent-color: #1f3d7a;
+	--input-bg-color: #e5e7eb;
+	/* Приглушённый красный для текстов/рамок ошибок (тёплый, в тон пастельной палитре; контраст на белом ≥ 4.5:1) */
+	--error-color: #b5544b;
+	--avatar-bg-color: #d48c7a;
+	--avatar-text-color: #4a241a;
 
-	--button-green: rgb(15, 132, 15);
-	--button-red: #bf3023;
-	--button-blue: #007acc;
+	/* Пастельные кнопки: светлая заливка + тёмный текст в тон (WCAG ≥ 4.5:1) */
+	--button-green: #a8d5b9;
+	--button-green-hover: #93c9a8;
+	--button-green-text: #123f23;
+	--button-red: #f5b8ae;
+	--button-red-hover: #efa79a;
+	--button-red-text: #6f2a1f;
+	--button-blue: #b3d0f5;
+	--button-blue-hover: #9dbff1;
+	--button-blue-text: #1f3d7a;
 
 	/* campimetry */
 	--camp-black: #141414;
@@ -22,6 +35,11 @@
 	--camp-light-red: #f09286;
 	--camp-dark-yellow: #7f6f00;
 	--camp-light-yellow: #feee7f;
+
+	--app-bg:
+		radial-gradient(ellipse 120% 80% at 20% 10%, rgba(100, 149, 237, 0.25), transparent 60%),
+		radial-gradient(ellipse 100% 100% at 80% 90%, rgba(212, 140, 122, 0.2), transparent 55%),
+		linear-gradient(180deg, #e8f0fe 0%, #dce8fb 100%);
 }
 
 * {
@@ -37,7 +55,6 @@ h4,
 label {
 	margin: 0;
 	padding: 0;
-	color: var(--main-text-color);
 }
 
 h1 {
@@ -80,7 +97,7 @@ body {
 
 body {
 	font-family: 'Roboto', sans-serif;
-	background-color: var(--main-bg-color);
+	background: var(--app-bg);
 	color: var(--main-text-color);
 
 	display: flex;
@@ -95,3 +112,68 @@ textarea,
 select {
 	font: inherit;
 } */
+
+.glass-bg {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	pointer-events: none;
+	z-index: 0;
+}
+
+.glass-blob {
+	position: absolute;
+	border-radius: 50%;
+	filter: blur(80px);
+	pointer-events: none;
+	z-index: 0;
+}
+
+.glass-blob--top {
+	width: 28rem;
+	height: 28rem;
+	top: -6rem;
+	left: -8rem;
+	background: rgba(144, 202, 249, 0.35);
+}
+
+.glass-blob--bottom {
+	width: 24rem;
+	height: 24rem;
+	bottom: -6rem;
+	right: -8rem;
+	background: rgba(212, 140, 122, 0.25);
+}
+
+.glass-card {
+	position: relative;
+	z-index: 1;
+	background: rgba(255, 255, 255, 0.72);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	border-radius: 1.5rem;
+	box-shadow:
+		0 1px 2px rgba(0, 0, 0, 0.04),
+		0 8px 24px rgba(0, 0, 0, 0.08),
+		0 24px 64px rgba(30, 60, 114, 0.12);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+	.glass-card {
+		background: #ffffff;
+	}
+}
+
+.glass-ghost-btn {
+	background: transparent;
+	color: #6b7280;
+	border: none;
+	cursor: pointer;
+	border-radius: 0.5rem;
+	padding: 0.5rem 1rem;
+	font: inherit;
+}
+
+.glass-ghost-btn:hover {
+	background: rgba(107, 114, 128, 0.1);
+}

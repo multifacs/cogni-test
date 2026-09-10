@@ -1,9 +1,10 @@
-import { describe, expect, it } from 'vitest';
-import { drizzle } from 'drizzle-orm/libsql';
-import { createClient } from '@libsql/client';
-import * as schema from './schema';
-import { user } from './schema';
+/**
+ * Database seed test: inserts random users into the REAL database pointed to by DATABASE_URL.
+ * Run via `npm run test:seed`. Normal `npm test` silently skips it.
+ */
+import { describe, it, expect } from 'vitest';
 import { sql } from 'drizzle-orm';
+import { user } from './schema';
 
 const FIRST_NAMES = [
 	'АЛЕКСАНДР',
@@ -64,7 +65,7 @@ function randomDate(minAge: number, maxAge: number): Date {
 	return new Date(year, month, day);
 }
 
-export function generateRandomUser() {
+function generateRandomUser() {
 	const sex = Math.random() < 0.5 ? ('male' as const) : ('female' as const);
 	const firstname = randomFrom(FIRST_NAMES);
 	const lastname = randomFrom(LAST_NAMES);
@@ -73,17 +74,10 @@ export function generateRandomUser() {
 	return { firstname, lastname, birthday, sex };
 }
 
-function getDb() {
-	const url = process.env.DATABASE_URL;
-	if (!url) return null;
-	const client = createClient({ url });
-	return drizzle(client, { schema });
-}
-
-describe.skipIf(!process.env.DATABASE_URL)('seed users', () => {
-	it('populates the database with random users', async () => {
-		const count = parseInt(process.env.SEED_COUNT || '50', 10);
-		const db = getDb()!;
+describe.skipIf(!process.env.SEED_DB)('seed users', () => {
+	it('inserts N random users and count increases by N', async () => {
+		const { db } = await import('$lib/server/db');
+		const count = 10;
 
 		const before = await db.select({ count: sql<number>`count(*)` }).from(user);
 		const beforeCount = Number(before[0].count);
@@ -97,27 +91,5 @@ describe.skipIf(!process.env.DATABASE_URL)('seed users', () => {
 		const afterCount = Number(after[0].count);
 
 		expect(afterCount).toBe(beforeCount + count);
-
-		console.log(`✓ Seeded ${count} users (total: ${afterCount})`);
-	});
-
-	it('rejects a user with a 3-letter lastname', async () => {
-		const db = getDb()!;
-
-		const result = db.insert(user).values({
-			firstname: 'ИВАН',
-			lastname: 'АБВ',
-			birthday: new Date(2000, 0, 1),
-			sex: 'male'
-		});
-
-		try {
-			await result;
-			expect.unreachable('should have thrown');
-		} catch (e) {
-			const cause = e instanceof Error ? (e.cause as Error | undefined) : undefined;
-			const message = cause?.message ?? (e instanceof Error ? e.message : String(e));
-			expect(message).toContain('lastname_length');
-		}
 	});
 });

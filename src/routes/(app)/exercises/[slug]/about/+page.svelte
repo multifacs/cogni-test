@@ -24,6 +24,7 @@
 	});
 
 	import type { PathnameWithSearchOrHash } from '$app/types';
+	import Card from '$lib/components/ui/Card.svelte';
 
 	const playgroundUrl = $derived(
 		(gtoSessionId
@@ -33,10 +34,10 @@
 </script>
 
 {#if Component}
-	<main class="main box-border text-justify">
-		<div class="flex min-h-full flex-col justify-center">
+	<main class="main flex w-full flex-col items-center justify-center-safe text-justify">
+		<Card className="w-full max-w-5xl">
 			<Component></Component>
-		</div>
+		</Card>
 	</main>
 
 	{#if !exercise?.playground}
