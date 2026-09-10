@@ -22,6 +22,13 @@ function makeSession(
 	};
 }
 
+// tbody rows: 1 = «Дата и время», 2 = «Среднее отклонение», 3 = «Пережатия».
+// td child indexes: easy = 2, medium = 3, hard = 4 (child 1 is the row th).
+function cell(row: number, column: number): HTMLElement {
+	const table = page.getByRole('table').element();
+	return table.querySelector(`tbody tr:nth-child(${row}) td:nth-child(${column})`)!;
+}
+
 describe('Rhythm Summary', () => {
 	it('picks best session by score and renders its date/values', async () => {
 		// Session A: meanDeviation = 20ms, overpress = 0 => score = 20
@@ -45,13 +52,13 @@ describe('Rhythm Summary', () => {
 
 		await render(Summary, { props: { results: [sessionA, sessionB] } });
 
-		// best for easy should be sessionB (lower meanDeviation → lower score)
-		const easyCard = page.getByRole('heading', { name: /Легкий/i }).element().closest('div')!;
-		expect(easyCard.textContent).toContain('02.09.2026');
-		expect(easyCard.textContent).toContain('10');
+		// easy column (td 2) in the «Дата и время» row (tr 1) shows sessionB's date
+		expect(cell(1, 2).textContent).toContain('02.09.2026');
+		// easy column in the «Среднее отклонение» row (tr 2) shows the better deviation
+		expect(cell(2, 2).textContent).toBe('10 мс');
 	});
 
-	it('renders «Попыток нет» when no sessions for a difficulty', async () => {
+	it('renders «—» for difficulties without sessions', async () => {
 		const session = makeSession({
 			attempts: [{ attempt: 1000, note: 1000 }],
 			meta: { difficulty: 'easy', overpress: '0' }
@@ -59,11 +66,11 @@ describe('Rhythm Summary', () => {
 
 		await render(Summary, { props: { results: [session] } });
 
-		// medium and hard should have no attempts
-		const mediumCard = page.getByRole('heading', { name: /Средний/i }).element().closest('div')!;
-		const hardCard = page.getByRole('heading', { name: /Сложный/i }).element().closest('div')!;
-		expect(mediumCard.textContent).toContain('Попыток нет');
-		expect(hardCard.textContent).toContain('Попыток нет');
+		// medium (td 3) and hard (td 4) show «—» in every data row
+		for (const row of [1, 2, 3]) {
+			expect(cell(row, 3).textContent).toBe('—');
+			expect(cell(row, 4).textContent).toBe('—');
+		}
 	});
 
 	it('ignores sessions without meta.difficulty', async () => {
@@ -79,11 +86,22 @@ describe('Rhythm Summary', () => {
 
 		await render(Summary, { props: { results: [bad, good] } });
 
-		// Hard card should show the good session
-		const hardCard = page.getByRole('heading', { name: /Сложный/i }).element().closest('div')!;
-		expect(hardCard.textContent).toContain('03.09.2026');
-		// Bad session should not appear in any card; easy/medium remain empty
-		const easyCard = page.getByRole('heading', { name: /Легкий/i }).element().closest('div')!;
-		expect(easyCard.textContent).toContain('Попыток нет');
+		// hard column shows the good session's date
+		expect(cell(1, 4).textContent).toContain('03.09.2026');
+		// the meta-less session is ignored everywhere: easy column stays empty
+		expect(cell(1, 2).textContent).toBe('—');
+	});
+
+	it('labels overpress counts in the «Пережатия» row', async () => {
+		const session = makeSession({
+			createdAt: '2026-09-04T09:00:00.000Z',
+			attempts: [{ attempt: 1000, note: 1000 }],
+			meta: { difficulty: 'medium', overpress: '2' }
+		});
+
+		await render(Summary, { props: { results: [session] } });
+
+		// medium column (td 3) in the «Пережатия» row (tr 3)
+		expect(cell(3, 3).textContent).toBe('Пережатия: 2');
 	});
 });

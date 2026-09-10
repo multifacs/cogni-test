@@ -24,24 +24,26 @@ async function settle() {
 	await new Promise((resolve) => setTimeout(resolve, 0));
 }
 
-describe('Rhythm Playground — difficulty overlay', () => {
-	it('mounts with overlay visible and hides canvas before difficulty choice', async () => {
+describe('Rhythm Playground — difficulty selection', () => {
+	it('renders difficulty buttons and canvas from mount, header shows placeholder', async () => {
 		const props = makeProps({ easy: 1, medium: 0, hard: 2 });
 		await render(Playground, props);
 
-		// Overlay title is visible
-		await expect.element(page.getByRole('heading', { name: /Выберите сложность/i })).toBeVisible();
-
-		// Difficulty buttons are present
+		// Difficulty buttons are visible in page flow
 		await expect.element(page.getByRole('button', { name: /Легкий/i })).toBeVisible();
 		await expect.element(page.getByRole('button', { name: /Средний/i })).toBeVisible();
 		await expect.element(page.getByRole('button', { name: /Сложный/i })).toBeVisible();
 
-		// Canvas is NOT rendered before difficulty is chosen
-		expect(document.querySelector('canvas')).toBeNull();
+		// Canvas is rendered from mount, before any difficulty choice
+		expect(document.querySelector('.canvas-shell canvas')).not.toBeNull();
+
+		// Subtitle shows the placeholder for null difficulty
+		const subtitle = page.getByText(/Сложность ритма/);
+		await expect.element(subtitle).toBeVisible();
+		expect(subtitle.element().textContent).toContain('---');
 	});
 
-	it('clicking a difficulty hides overlay and reveals canvas', async () => {
+	it('clicking a difficulty hides the buttons and updates the header label', async () => {
 		const props = makeProps({ easy: 0, medium: 3, hard: 0 });
 		await render(Playground, props);
 
@@ -51,13 +53,15 @@ describe('Rhythm Playground — difficulty overlay', () => {
 		await userEvent.click(mediumBtn);
 		await settle();
 
-		// Overlay disappears
-		await expect.element(page.getByRole('heading', { name: /Выберите сложность/i })).not.toBeInTheDocument();
+		// Difficulty buttons disappear
+		await expect.element(page.getByRole('button', { name: /Легкий/i })).not.toBeInTheDocument();
 
-		// Canvas is now present
-		const canvas = document.querySelector('canvas');
-		expect(canvas).not.toBeNull();
-		expect(canvas instanceof HTMLCanvasElement).toBe(true);
+		// Subtitle shows the chosen difficulty
+		const subtitle = page.getByText(/Сложность ритма/);
+		expect(subtitle.element().textContent).toContain('Средний');
+
+		// Canvas is still present
+		expect(document.querySelector('.canvas-shell canvas')).not.toBeNull();
 	});
 
 	it('displays per-difficulty attempt counts', async () => {
