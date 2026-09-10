@@ -1,4 +1,3 @@
-<!-- src/routes/questionary/components/Autocomplete.svelte -->
 <script lang="ts">
 	import cities from './russia-cities.json';
 
@@ -11,10 +10,8 @@
 		type: string;
 	};
 
-	// filter only cities with type === "Город"
 	const cityOptions = cities.filter((c) => c.type === 'Город');
 
-	// reactive filtered list - правильное использование $derived
 	let filtered = $derived(
 		query
 			? cityOptions
@@ -39,7 +36,6 @@
 </script>
 
 <div class="relative w-full">
-	<!-- Input -->
 	<input
 		value={query}
 		oninput={handleInput}
@@ -53,7 +49,6 @@
 		class:shadow-[0px_0px_5px_2px_rgba(249,_115,_22,_0.5)]={query == null}
 	/>
 
-	<!-- Dropdown -->
 	{#if isOpen && filtered.length > 0}
 		<ul
 			class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded border border-blue-300 bg-white shadow"
