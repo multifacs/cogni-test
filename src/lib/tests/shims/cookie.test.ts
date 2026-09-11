@@ -10,7 +10,16 @@ describe('cookie shim', () => {
 	});
 
 	it('round-trips a cookie value', () => {
-		const serialized = serialize('name', 'value', { path: '/' });
-		expect(parse(serialized)).toEqual({ name: 'value' });
+		expect(parse(serialize('name', 'value'))).toEqual({ name: 'value' });
+	});
+
+	it('parse() parses a Cookie header, not a Set-Cookie string', () => {
+		// cookie@0.6.x parse() expects a Cookie header (name=value pairs).
+		// serialize(..., { path: '/' }) produces a Set-Cookie string
+		// ("name=value; Path=/"), so the attribute leaks in as a pseudo-pair.
+		// This pins the 0.x semantics the shim must deliver.
+		const parsed = parse(serialize('name', 'value', { path: '/' }));
+		expect(parsed.name).toBe('value');
+		expect(parsed.Path).toBe('/');
 	});
 });
