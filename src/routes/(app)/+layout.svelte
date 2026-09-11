@@ -12,6 +12,7 @@
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import { isSubscribed } from '$lib/utils/push';
 	import Header from '$lib/components/ui/Header.svelte';
+	import type { DevAction } from '$lib/types/header-action';
 
 	let subscribed = $state(false);
 	let showModal = $state(false);
@@ -27,6 +28,11 @@
 
 	let headerText = $state('');
 
+	// DEV-only action slot for the top banner (see task 2.2: playground
+	// pages register an "Автопрохождение" button here). Structurally
+	// compatible with consumers typing the context as { value: string }.
+	let devAction = $state<DevAction>(null);
+
 	// Hide the bottom nav on very small phones (<sm, 640px) inside content
 	// sections — test/exercise/article screens need every pixel of height.
 	// Section roots (/tests, /exercises, /materials) keep the nav: they have
@@ -41,6 +47,12 @@
 		},
 		set value(v: string) {
 			headerText = v;
+		},
+		get devAction() {
+			return devAction;
+		},
+		set devAction(v: DevAction) {
+			devAction = v;
 		}
 	});
 
@@ -121,7 +133,7 @@
 
 <div class="container">
 	<header>
-		<Header text={headerText} />
+		<Header text={headerText} action={devAction} />
 	</header>
 	{@render children()}
 	<!-- On very small phones (<sm) inside content sections the nav is hidden

@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { getUserById } from '$lib/server/db';
 import { getProfileSurvey } from '$lib/server/db/controllers/survey';
 import { getTestSessionCounts } from '$lib/server/db/controllers/test';
+import { env } from '$env/dynamic/private';
 import type { LayoutServerData, LayoutServerLoad } from './$types';
 
 const makeCookies = (opts: { userId?: string; loggedInAdmin?: string } = {}) => ({
@@ -41,6 +42,10 @@ vi.mock('$lib/server/db/controllers/survey', () => ({
 
 vi.mock('$lib/server/db/controllers/test', () => ({
 	getTestSessionCounts: vi.fn()
+}));
+
+vi.mock('$env/dynamic/private', () => ({
+	env: { MODE: 'PROD' }
 }));
 
 vi.mock('@sveltejs/kit', async () => {
@@ -125,5 +130,65 @@ describe('(app) layout server load', () => {
 		)) as LayoutServerData;
 		expect(result).toBeDefined();
 		expect(result.undiagnosed).toBe(false);
+	});
+
+	describe('isDevMode', () => {
+		const allSessionsDone = () =>
+			vi.mocked(getTestSessionCounts).mockResolvedValue({
+				stroop: 1,
+				math: 1,
+				munsterberg: 1,
+				campimetry: 1,
+				memory: 1,
+				swallow: 1
+			});
+
+		it('is true when MODE is DEV', async () => {
+			const { load } = await import('./+layout.server');
+			allSessionsDone();
+
+			const prev = env.MODE;
+			env.MODE = 'DEV';
+			try {
+				const result = (await load(
+					makeEvent('/metrics', { userId: 'user-1' })
+				)) as LayoutServerData;
+				expect(result.isDevMode).toBe(true);
+			} finally {
+				env.MODE = prev;
+			}
+		});
+
+		it('is false when MODE is PROD', async () => {
+			const { load } = await import('./+layout.server');
+			allSessionsDone();
+
+			const prev = env.MODE;
+			env.MODE = 'PROD';
+			try {
+				const result = (await load(
+					makeEvent('/metrics', { userId: 'user-1' })
+				)) as LayoutServerData;
+				expect(result.isDevMode).toBe(false);
+			} finally {
+				env.MODE = prev;
+			}
+		});
+
+		it('is false when MODE is undefined (stale/absent env)', async () => {
+			const { load } = await import('./+layout.server');
+			allSessionsDone();
+
+			const prev = env.MODE;
+			(env as { MODE?: string }).MODE = undefined;
+			try {
+				const result = (await load(
+					makeEvent('/metrics', { userId: 'user-1' })
+				)) as LayoutServerData;
+				expect(result.isDevMode).toBe(false);
+			} finally {
+				env.MODE = prev;
+			}
+		});
 	});
 });

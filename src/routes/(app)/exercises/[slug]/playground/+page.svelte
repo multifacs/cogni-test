@@ -4,8 +4,9 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import type { MetaResult, ExerciseResults } from '$lib/exercises/types.js';
-	import { type Component as ComponentType } from 'svelte';
+	import { getContext, type Component as ComponentType } from 'svelte';
 	import { exerciseRegistry, EXERCISE_SLUG_TO_TEST_TYPE } from '$lib/exercises';
+	import type { DevAction } from '$lib/types/header-action';
 	import { generate } from 'short-uuid';
 	import { enqueueAttempt, flushQueue } from '$lib/client/offline-queue';
 
@@ -38,6 +39,51 @@
 				Component = mod.default;
 			});
 		}
+	});
+
+	// Shared header context (owned by (app) layout): DEV-only banner slot
+	const headerContext = getContext<{ value: string; devAction: DevAction }>('headerText');
+
+	// DEV autoplay: ask the server for random results, then push them through
+	// the same save path as a real game run. In GTO mode onSendResults owns
+	// the navigation, so onGameEnd (which only navigates standalone) is skipped.
+	async function runAutoplay() {
+		const response = await fetch(`/exercises/${slug}/playground`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ action: 'generate-random' })
+		});
+
+		if (!response.ok) {
+			console.error('Autoplay generation failed:', response.status);
+			return;
+		}
+
+		const { results } = await response.json();
+
+		await onSendResults(results);
+		if (!gtoSessionId) {
+			onGameEnd();
+		}
+	}
+
+	$effect(() => {
+		// Register the "Автопрохождение" banner button only for raven-matrices
+		// (the 7th GTO test) in DEV mode. The cleanup resets it on unmount/slug
+		// change so the button never leaks to other pages. Offline tolerance:
+		// isDevMode undefined → no registration, no errors.
+		if (data.isDevMode && slug === 'raven-matrices') {
+			if (headerContext) {
+				headerContext.devAction = { label: 'Автопрохождение', onclick: runAutoplay };
+			}
+		}
+		return () => {
+			if (headerContext) {
+				headerContext.devAction = null;
+			}
+		};
 	});
 
 	function onGameEnd() {

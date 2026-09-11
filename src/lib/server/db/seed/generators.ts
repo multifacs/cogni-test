@@ -1,13 +1,20 @@
 /**
- * Shared random result generators used by both the manual `npm run test:seed` script
- * and the default dev-user seed.
+ * Shared random result generators used by both the manual `npm run test:seed` script,
+ * the default dev-user seed and the DEV-only "Автопрохождение" playground button.
  */
+import { env } from '$env/dynamic/private';
 import type { StroopResult, Color } from '$lib/tests/stroop/types';
 import type { MathResult, Sign } from '$lib/tests/math/types';
 import type { MemoryResult } from '$lib/tests/memory/types';
 import type { CampimetryResult } from '$lib/tests/campimetry/types';
 import type { SwallowResult, Direction, Background } from '$lib/tests/swallow/types';
 import type { MunsterbergResult } from '$lib/tests/munsterberg/types';
+import type {
+	RavenAttemptRow,
+	TaskClass,
+	RuleFamily,
+	DistractorFamily
+} from '$lib/exercises/raven-matrices/types';
 
 function rnd(min: number, max: number) {
 	return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -63,12 +70,16 @@ export function genMath(n: number): MathResult[] {
 	}));
 }
 
+const MEMORY_WORDS = ['дом', 'сад', 'лес', 'река', 'гора', 'дом', 'окно', 'дверь', 'стол', 'стул'];
+// The real game (MemoryGame) shows exactly 6 unique words in the memorization phase
+// (memorizationCount = 6) and sends them as meta — take the first 6 unique pool words.
+const MEMORY_META_WORDS = [...new Set(MEMORY_WORDS)].slice(0, 6);
+
 export function genMemory(n: number): MemoryResult[] {
-	const words = ['дом', 'сад', 'лес', 'река', 'гора', 'дом', 'окно', 'дверь', 'стол', 'стул'];
 	return Array.from({ length: n }, (_, i) => ({
 		attempt: i,
 		time: rnd(300, 1500),
-		word: words[i % words.length],
+		word: MEMORY_WORDS[i % MEMORY_WORDS.length],
 		correctAnswer: rndBool(0.5),
 		userAnswer: rndBool(0.8) ? rndBool(0.5) : null,
 		isCorrect: rndBool()
@@ -122,4 +133,158 @@ export function genMunsterberg(n: number): { results: MunsterbergResult[]; words
 		time: rnd(1000, 55000)
 	}));
 	return { results, words: chosen };
+}
+
+const TASK_CLASSES: TaskClass[] = [
+	'attribute_reasoning',
+	'row_column_factorization',
+	'quantity_reasoning',
+	'spatial_movement',
+	'grid_bitmask',
+	'logical_set_reasoning',
+	'structural_composition',
+	'regional_texture_reasoning',
+	'vector_primitive_reasoning'
+];
+
+const RULE_FAMILIES: RuleFamily[] = [
+	'constant',
+	'progression',
+	'distribution',
+	'permutation',
+	'addition',
+	'subtraction',
+	'and',
+	'or',
+	'xor',
+	'set_difference',
+	'movement',
+	'rotation',
+	'reflection',
+	'nesting',
+	'overlay',
+	'region_overlay',
+	'primitive_union'
+];
+
+const DISTRACTOR_FAMILIES: DistractorFamily[] = [
+	'correct',
+	'repetition',
+	'wrong_attribute',
+	'wrong_step',
+	'wrong_operation',
+	'missing_component',
+	'extra_component',
+	'wrong_position',
+	'mirror_error',
+	'rotation_error',
+	'wrong_layer',
+	'wrong_axis',
+	'wrong_region',
+	'wrong_texture'
+];
+
+const RAVEN_SKILL_TAGS = [
+	'induction',
+	'analogy',
+	'pattern',
+	'symmetry',
+	'arithmetic',
+	'spatial',
+	'set-logic',
+	'abstraction'
+];
+
+function rndSubset<T>(values: readonly T[]): T[] {
+	return values.filter(() => Math.random() < 0.5);
+}
+
+function rndNonEmptySubset<T>(values: readonly T[]): T[] {
+	const subset = rndSubset(values);
+	return subset.length > 0 ? subset : [values[rnd(0, values.length - 1)]];
+}
+
+function rndSeed() {
+	return Math.random().toString(36).slice(2, 10);
+}
+
+/**
+ * Dev-autoplay always selects an answer: `selectedIndex` is always a number,
+ * never null (unlike the real game, which can send null for unanswered tasks).
+ */
+export function genRaven(n: number): RavenAttemptRow[] {
+	return Array.from({ length: n }, (_, i) => ({
+		taskId: rndSeed(),
+		taskIndex: i,
+		taskClass: TASK_CLASSES[rnd(0, TASK_CLASSES.length - 1)],
+		difficultyLevel: rnd(1, 3),
+		difficultyScore: rnd(0, 100),
+		rules: JSON.stringify(rndNonEmptySubset(RULE_FAMILIES)),
+		skillTags: JSON.stringify(rndSubset(RAVEN_SKILL_TAGS)),
+		selectedIndex: rnd(0, 5),
+		correctIndex: rnd(0, 5),
+		selectedFamily: rndBool(0.9)
+			? DISTRACTOR_FAMILIES[rnd(0, DISTRACTOR_FAMILIES.length - 1)]
+			: null,
+		isCorrect: rndBool(),
+		responseTimeMs: rnd(1000, 30000),
+		seed: rndSeed()
+	}));
+}
+
+/**
+ * Thrown when the requested slug is valid at the route level (present in
+ * testRegistry) but has no DEV random-results generator mapped. Lets the
+ * endpoint distinguish a missing slug (404) from the MODE gate (403).
+ */
+export class UnknownDevSlugError extends Error {
+	constructor(slug: string) {
+		super(`[dev-random] Unknown test slug: ${slug}`);
+		this.name = 'UnknownDevSlugError';
+	}
+}
+
+export type DevRandomPayload =
+	| StroopResult[]
+	| MathResult[]
+	| CampimetryResult[]
+	| SwallowResult[]
+	| RavenAttemptRow[]
+	| { results: MemoryResult[]; meta: string[] }
+	| { results: MunsterbergResult[]; meta: string[] };
+
+/**
+ * DEV-only: generates a random result payload for the given test slug,
+ * identical in shape to what the corresponding game's sendResults callback sends.
+ * Fails closed unless MODE === 'DEV'.
+ */
+export function generateDevRandomResults(slug: string): DevRandomPayload {
+	if (env.MODE !== 'DEV') {
+		throw new Error(
+			`[dev-random] Refusing to generate random results: MODE is not "DEV" (got ${JSON.stringify(env.MODE)})`
+		);
+	}
+
+	switch (slug) {
+		case 'stroop':
+			return genStroop(25);
+		case 'math':
+			return genMath(10);
+		case 'campimetry':
+			return genCampimetry(20);
+		case 'swallow':
+			return genSwallow(100);
+		case 'memory': {
+			const results = genMemory(10);
+			return { results, meta: MEMORY_META_WORDS };
+		}
+		case 'munsterberg': {
+			const { results, words } = genMunsterberg(8);
+			return { results, meta: words };
+		}
+		case 'raven-matrices':
+			return genRaven(10);
+		default:
+			throw new UnknownDevSlugError(slug);
+	}
 }

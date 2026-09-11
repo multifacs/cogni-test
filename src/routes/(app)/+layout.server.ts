@@ -6,6 +6,7 @@ import type { InsertProfileSurvey, SelectProfileSurvey } from '$lib/server/db/sc
 import { getProfileSurvey } from '$lib/server/db/controllers/survey';
 import { tests } from '$lib/tests';
 import { getTestSessionCounts } from '$lib/server/db/controllers/test';
+import { env } from '$env/dynamic/private';
 
 export const load: LayoutServerLoad = async ({ cookies, url }) => {
 	const userId = cookies.get('user_id');
@@ -108,6 +109,7 @@ export const load: LayoutServerLoad = async ({ cookies, url }) => {
 		user,
 		profileSurvey,
 		undiagnosed,
-		allowedPaths
+		allowedPaths,
+		isDevMode: env.MODE === 'DEV'
 	};
 };

@@ -4,8 +4,9 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import type { MetaResult, RegularResults } from '$lib/tests/types.js';
-	import { type Component as ComponentType } from 'svelte';
+	import { getContext, type Component as ComponentType } from 'svelte';
 	import { testRegistry } from '$lib/tests';
+	import type { DevAction } from '$lib/types/header-action';
 
 	const { data } = $props();
 	const slug = $derived(data.slug);
@@ -35,6 +36,51 @@
 				Component = mod.default;
 			});
 		}
+	});
+
+	// Shared header context (owned by (app) layout): DEV-only banner slot
+	const headerContext = getContext<{ value: string; devAction: DevAction }>('headerText');
+
+	// DEV autoplay: ask the server for random results, then push them through
+	// the same save path as a real game run. In GTO mode onSendResults owns
+	// the navigation, so onGameEnd (which only navigates standalone) is skipped.
+	async function runAutoplay() {
+		const response = await fetch(`/tests/${slug}/playground`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ action: 'generate-random' })
+		});
+
+		if (!response.ok) {
+			console.error('Autoplay generation failed:', response.status);
+			return;
+		}
+
+		const { results } = await response.json();
+
+		await onSendResults(results);
+		if (!gtoSessionId) {
+			onGameEnd();
+		}
+	}
+
+	$effect(() => {
+		// Register the "Автопрохождение" banner button only for known tests in
+		// DEV mode. The cleanup resets it on unmount/slug change so the button
+		// never leaks to about/results pages. Offline tolerance: isDevMode
+		// undefined → no registration, no errors.
+		if (data.isDevMode && test) {
+			if (headerContext) {
+				headerContext.devAction = { label: 'Автопрохождение', onclick: runAutoplay };
+			}
+		}
+		return () => {
+			if (headerContext) {
+				headerContext.devAction = null;
+			}
+		};
 	});
 
 	function onGameEnd() {
