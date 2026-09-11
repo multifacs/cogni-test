@@ -202,7 +202,6 @@ describe('rebuildDraftMap', () => {
 			userId: `u-${id}`,
 			firstname: 'User',
 			lastname: 'Test',
-			email: null,
 			sex: 'male',
 			age: 30,
 			missingSurveyFields: [],

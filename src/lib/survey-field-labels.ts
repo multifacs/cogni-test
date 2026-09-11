@@ -31,8 +31,7 @@ export const SURVEY_FIELD_LABELS: Record<string, string> = {
 	alcohol: 'Алкоголь',
 	sports: 'Спорт',
 	isGamer: 'Геймер',
-	gtoId: 'ГТО-М ID',
-	email: 'E-mail'
+	gtoId: 'ГТО-М ID'
 };
 
 export function missingFieldLabels(fields: string[]): string {

@@ -36,9 +36,8 @@ const basicFlow: Flow = {
 	id: 'basic',
 	title: 'Основное',
 	emoji: '/icons/basic.svg',
-	description: 'e-mail, место проживания',
+	description: 'место проживания',
 	questions: [
-		{ key: 'email', label: 'E-mail', type: { kind: 'input' } },
 		{
 			key: 'birthCity',
 			label: 'Населенный пункт, в котором вы прожили большую часть жизни',

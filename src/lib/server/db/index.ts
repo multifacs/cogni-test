@@ -5,6 +5,7 @@ import { createClient, type Client } from '@libsql/client';
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
 import * as schema from './schema';
 import { classifyDatabaseUrl } from './db-url';
+import { assertDatabaseMatchesSchema } from './schema-check';
 import { migrate } from 'drizzle-orm/libsql/migrator';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -58,6 +59,7 @@ switch (classified.mode) {
 		}
 		const client = createClient({ url: env.DATABASE_URL });
 		await enableWAL(client);
+		await assertDatabaseMatchesSchema(client, schema, resolved);
 		db = drizzle(client, { schema });
 		break;
 	}

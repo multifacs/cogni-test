@@ -54,7 +54,6 @@ export const load: LayoutServerLoad = async ({ cookies, url }) => {
 		birthCity: null,
 		currentCityType: null,
 		gtoId: null,
-		email: null,
 
 		// Tab 2
 		education: null,
