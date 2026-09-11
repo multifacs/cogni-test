@@ -7,28 +7,36 @@
 	let entries = $derived(Object.entries(data.metricScores) as [SkillMetric, number][]);
 </script>
 
-<section class="banner">
-	<h1 class="text-3xl font-bold text-center">Метрики</h1>
-</section>
-<main class="main flex flex-col gap-3">
-	<div class="flex w-full flex-col gap-3">
-		{#each entries as [metric, score] (metric)}
-			<div class="flex items-center justify-between rounded-2xl bg-gray-600 p-4 shadow">
-				<span class="text-lg">{translate(metric)}</span>
-				<span
-					class="text-xl font-bold"
-					class:text-red-400={score < 30}
-					class:text-yellow-300={score >= 30 && score < 70}
-					class:text-green-400={score >= 70}
-				>
-					{score}
-				</span>
-			</div>
-		{/each}
-	</div>
-</main>
-<section class="low-content flex items-center justify-center text-center">
-	<p class="max-w-md text-center text-lg max-md:text-sm">
+<main class="main mx-auto flex w-full max-w-5xl flex-col items-center justify-center-safe gap-2">
+	<p class="w-full text-center text-lg max-md:text-sm">
 		Результаты по метрикам обновляются по мере прохождения тестов и упражнений.
 	</p>
-</section>
+	<table class="w-full border-collapse rounded-2xl bg-white text-left text-sm">
+		<thead>
+			<tr class="border-b border-gray-200 text-gray-600">
+				<th scope="col" class="px-4 py-2 font-medium">Метрика</th>
+				<th scope="col" class="px-4 py-2 text-right font-semibold text-gray-800">Уровень</th
+				>
+			</tr>
+		</thead>
+		<tbody>
+			{#each entries as [metric, score] (metric)}
+				<tr class="border-b border-gray-100 last:border-b-0">
+					<th scope="row" class="px-4 py-2 font-medium text-gray-600"
+						>{translate(metric)}</th
+					>
+					<td class="px-4 py-2 text-right text-gray-800">
+						<span
+							class="text-xl font-bold"
+							class:text-red-400={score < 30}
+							class:text-yellow-300={score >= 30 && score < 70}
+							class:text-green-400={score >= 70}
+						>
+							{score}
+						</span>
+					</td>
+				</tr>
+			{/each}
+		</tbody>
+	</table>
+</main>
