@@ -1,12 +1,14 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
 	import { buildCertificateData, type CertificateInput } from '$lib/certificate/certificate-data';
-	import { downloadCertificatePdf } from '$lib/certificate/generate';
+	import {
+		downloadCertificateHtml,
+		type CertificateOrientation
+	} from '$lib/certificate/generate-html';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
-	let isGenerating = $state(false);
 	let certificateError = $state<string | null>(null);
 
 	function fmt(val: number | null, decimals = 2): string {
@@ -20,22 +22,19 @@
 
 	const m = $derived(data.metrics);
 
-	async function downloadCertificate(): Promise<void> {
-		isGenerating = true;
+	function downloadCertificate(orientation: CertificateOrientation): void {
 		certificateError = null;
 		try {
+			const idx = data.session.participants.findIndex((p) => p.id === m.participantId);
+			const certNumber = String(idx >= 0 ? idx + 1 : 1).padStart(4, '0');
 			const input: CertificateInput = {
 				participant: { firstname: m.firstname, lastname: m.lastname },
 				session: { name: data.session.name, createdAt: data.session.createdAt },
-				wordScore: m.wordScore,
-				submittedWords: m.submittedWords,
-				metrics: m
+				certNumber
 			};
-			await downloadCertificatePdf(buildCertificateData(input));
+			downloadCertificateHtml(buildCertificateData(input), orientation);
 		} catch {
 			certificateError = 'Не удалось сформировать сертификат. Попробуйте ещё раз.';
-		} finally {
-			isGenerating = false;
 		}
 	}
 </script>
@@ -45,9 +44,17 @@
 
 	{#if data.session.status === 'completed'}
 		<div class="mt-3 flex flex-col items-center gap-2">
-			<Button color="purple" onclick={downloadCertificate} disabled={isGenerating}>
-				{isGenerating ? 'Готовим PDF…' : 'Скачать сертификат'}
-			</Button>
+			<div class="flex flex-wrap justify-center gap-2">
+				<Button color="purple" onclick={() => downloadCertificate('portrait')}>
+					📱 Сертификат для телефона
+				</Button>
+				<Button color="indigo" onclick={() => downloadCertificate('landscape')}>
+					🖥 Сертификат для компьютера
+				</Button>
+			</div>
+			<p class="text-xs text-gray-400">
+				Файл откроется в браузере — можно сохранить в PDF через печать
+			</p>
 			{#if certificateError}
 				<p class="text-sm text-red-400" role="alert">{certificateError}</p>
 			{/if}

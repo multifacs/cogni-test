@@ -22,7 +22,7 @@
 	} from '$lib/client/gto-button-data';
 	import { initMetricsDraft, collectMetricsFromDraft, rebuildDraftMap } from './table-helpers';
 	import { buildCertificateData } from '$lib/certificate/certificate-data';
-	import { downloadCertificatePdf } from '$lib/certificate/generate';
+	import { downloadCertificateHtml } from '$lib/certificate/generate-html';
 	import { onMount, untrack } from 'svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { getContext } from 'svelte';
@@ -428,8 +428,8 @@
 				submittedWords: m.submittedWords,
 				metrics: m
 			});
-			await downloadCertificatePdf(certificateData);
-		} catch {
+			downloadCertificateHtml(certificateData, 'landscape');
+	} catch {
 			showToast('Ошибка генерации сертификата');
 		} finally {
 			generatingCertificateId = null;
@@ -1107,7 +1107,7 @@
 													<button
 														class="rounded px-2 py-0.5 text-xs text-amber-700 transition-colors hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-50"
 														disabled={isGeneratingCertificate}
-														title="Скачать PDF-сертификат участника"
+														title="Скачать HTML-сертификат участника"
 														onclick={() => handleDownloadCertificate(m)}
 													>
 														{#if isGeneratingCertificate}Ген…{:else}Сертификат{/if}
