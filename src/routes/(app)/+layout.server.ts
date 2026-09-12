@@ -34,7 +34,7 @@ export const load: LayoutServerLoad = async ({ cookies, url }) => {
 
 	// As user will be eventually redirected to /tests page to start diagnostic it's required to allow /tests.
 	// As well it's probably a good idea to allow /profile so user can logout for example.
-	const allowedPaths = ['/home', '/tests', '/profile', '/admin', '/gto'];
+	const allowedPaths = ['/home', '/tests', '/profile', '/admin', '/gto', '/questionary'];
 	if (undiagnosed) {
 		let allowed = false;
 		for (const allowedPath of allowedPaths) {

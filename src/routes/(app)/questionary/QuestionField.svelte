@@ -16,6 +16,18 @@
 	const isDebounced = $derived(debouncedKinds.has(question.type.kind));
 
 	const rangeType = $derived(question.type.kind === 'range' ? question.type : null);
+
+	// Прогресс-семантика range-дефолтов: значение присваивается синхронно при монтировании
+	// вопроса, до первого запуска $effect, поэтому initialized-флаг гасит автосейв — дефолт
+	// НЕ отправляет fetch при монтировании. Сохранение — только по «Далее»/«Назад»
+	// (saveFieldNow в FlowRunner.next()/prev()) либо при правке значения. Посещённый
+	// range-вопрос считается отвеченным в store; несохранённые дефолты откатываются
+	// после перезагрузки. Трейдофф принят пользователем.
+	const rangeDefault = question.type.kind === 'range' ? question.type.default : undefined;
+	if (rangeDefault !== undefined && (value === null || value === undefined)) {
+		value = rangeDefault;
+	}
+
 	const choiceType = $derived(question.type.kind === 'choice' ? question.type : null);
 	const customChoiceType = $derived(
 		question.type.kind === 'custom-choice' ? question.type : null
@@ -23,9 +35,12 @@
 
 	const numericValue = $derived(typeof value === 'number' ? value : Number(value ?? 0) || 0);
 
-	let initialized = $state(false);
+	// Обычная (не $state) переменная: запись внутри $effect не должна перезапускать эффект,
+	// иначе флаг «пропустить первый прогон» сам триггерит автосейв при монтировании.
+	let initialized = false;
 
 	$effect(() => {
+		void value; // зависимость эффекта: автосейв срабатывает на изменения value ПОСЛЕ монтирования
 		if (!initialized) {
 			initialized = true;
 			return;

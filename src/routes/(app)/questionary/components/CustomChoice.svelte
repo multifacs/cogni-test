@@ -67,7 +67,7 @@
 		}
 	});
 
-	
+
 	$effect(() => {
 		const stringValue = rowsToString(rows);
 		if (value !== stringValue) {
@@ -115,7 +115,7 @@
 
 <div class="flex w-full flex-col gap-2">
 	{#each rows as row, i (i)}
-		<div class="flex items-center gap-2">
+		<div class="flex items-center flex-wrap gap-2">
 			<input
 				type="text"
 				value={row.text}

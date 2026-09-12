@@ -9,7 +9,9 @@ import {
 	assignWordSet,
 	addParticipant,
 	removeParticipant,
-	rescoreSubmittedWords
+	rescoreSubmittedWords,
+	deleteGtoSession,
+	GtoSessionDeleteError
 } from '$lib/server/db/controllers/gto';
 
 export const PATCH: RequestHandler = async ({ request, params, cookies }) => {
@@ -103,4 +105,26 @@ export const PATCH: RequestHandler = async ({ request, params, cookies }) => {
 	} catch {
 		return json({ error: 'Internal server error' }, { status: 500 });
 	}
+};
+
+export const DELETE: RequestHandler = async ({ params, cookies }) => {
+	const loggedInAdmin = cookies.get('logged_in_admin') === 'true';
+	if (!loggedInAdmin) {
+		return json({ error: 'Unauthorized' }, { status: 403 });
+	}
+
+	try {
+		await deleteGtoSession(params.id);
+	} catch (e) {
+		// Map by error code (instanceof), never by message text.
+		if (e instanceof GtoSessionDeleteError) {
+			if (e.code === 'not_found') {
+				return json({ error: 'Сессия не найдена' }, { status: 404 });
+			}
+			return json({ error: 'Можно удалять только завершённые сессии' }, { status: 409 });
+		}
+		return json({ error: 'Internal server error' }, { status: 500 });
+	}
+
+	return json({ success: true });
 };

@@ -30,7 +30,5 @@ export const actions = {
 		}
 
 		await setGtoIdAndAutoAdd(userId, gtoId);
-
-		redirect(303, '/questionary');
 	}
 } satisfies Actions;

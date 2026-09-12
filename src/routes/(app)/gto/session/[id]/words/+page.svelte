@@ -4,7 +4,11 @@
 	import Toast from '$lib/components/ui/Toast.svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import type { PathnameWithSearchOrHash } from '$app/types';
 	import { computeRemainingMs } from '$lib/gto/words-cooldown';
+	import { getContext, onMount } from 'svelte';
+	import About from '$lib/tests/math/About.svelte';
+	import TextInput from '$lib/components/ui/login-form/TextInput.svelte';
 
 	let { data } = $props();
 
@@ -15,7 +19,6 @@
 		wordInputs = Array(wordCount).fill('');
 	});
 	let isSubmitting = $state(false);
-	let showDisclaimer = $state(true);
 	let toastMessage = $state<string | null>(null);
 	let toastType = $state<'error' | 'success' | 'info'>('info');
 
@@ -49,6 +52,10 @@
 		`${String(Math.floor(secondsRemaining / 60)).padStart(2, '0')}:${String(secondsRemaining % 60).padStart(2, '0')}`
 	);
 
+	// resolve() возвращает ResolvedPathname (plain string) — сужаем до типа
+	// goto-пропа Button (PathnameWithSearchOrHash), как это сделано в самом Button.svelte
+	const questionaryUrl = (resolve('/questionary') + '?gto=false') as PathnameWithSearchOrHash;
+
 	async function submitWords() {
 		isSubmitting = true;
 
@@ -69,9 +76,17 @@
 		}
 		isSubmitting = false;
 	}
+
+	const headerContext = getContext<{ value: string }>('headerText');
+
+	onMount(() => {
+		if (headerContext) {
+			headerContext.value = 'Последовательность слов';
+		}
+	});
 </script>
 
-<section class="banner">
+<!-- <section class="banner">
 	<h1 class="text-center text-2xl font-bold">Последовательность слов</h1>
 	<p class="text-gray-400">{data.sessionName}</p>
 	{#if !data.hasWordSet}
@@ -79,31 +94,37 @@
 			Сет слов ещё не назначен — введите слова, и результат будет посчитан после назначения
 		</p>
 	{/if}
-</section>
+</section> -->
 
 <main class="main flex flex-col items-center justify-center gap-4">
 	{#if secondsRemaining > 0}
 		<!-- Ожидание перед вводом слов — проверка долгосрочной памяти -->
 		<div
-			class="flex w-full max-w-xs flex-col items-center gap-4 rounded-xl bg-gray-800 px-6 py-8 ring-1 ring-gray-600"
+			class="flex w-full max-w-xs flex-col items-center gap-4 rounded-xl bg-white px-6 py-8 ring-1 ring-gray-600"
 		>
-			<p class="text-6xl font-bold text-white tabular-nums sm:text-7xl">{countdownLabel}</p>
-			<p class="text-center text-sm text-gray-400">
+			<p class="text-6xl font-bold tabular-nums sm:text-7xl">{countdownLabel}</p>
+			<p class="text-center text-sm text-gray-600">
 				Отдохните от тестов и займитесь другими делами — слова можно будет ввести через
 				{cooldownMinutes}
 				{cooldownMinutesLabel}, чтобы проверить долгосрочную память
 			</p>
+			<Button color="green" goto={questionaryUrl}>Пока отдыхаете — заполните анкету</Button>
 		</div>
 	{:else}
 		<div class="flex w-full max-w-xs flex-col gap-3">
 			{#each Array.from({ length: wordInputs.length }, (_, i) => i) as i (i)}
 				<div class="flex flex-col gap-1">
-					<label for="word-{i}" class="text-sm text-gray-400">{i + 1}-е слово</label>
-					<input
+					<label for="word-{i}" class="text-sm text-gray-600">{i + 1}-е слово</label>
+					<!-- <input
 						id="word-{i}"
 						type="text"
 						bind:value={wordInputs[i]}
-						class="rounded-lg bg-gray-800 px-3 py-2 text-white ring-1 ring-gray-600 outline-none focus:ring-blue-500"
+						class="rounded-lg bg-gray-800 px-3 py-2 ring-1 ring-gray-600 outline-none focus:ring-blue-500"
+
+					/> -->
+					<TextInput
+						id="word-{i}"
+						bind:value={wordInputs[i]}
 						placeholder="Введите слово"
 					/>
 				</div>
@@ -123,21 +144,6 @@
 <section class="low-content flex items-center justify-center">
 	<Button color="red" goto="/gto" invalidateAll>Выйти</Button>
 </section>
-
-{#if showDisclaimer}
-	<Modal bind:showModal={showDisclaimer}>
-		{#snippet header()}
-			<h2 class="text-center text-2xl text-white">Внимание!</h2>
-		{/snippet}
-		<div class="flex flex-col gap-4">
-			<p class="text-white">
-				Пройдите тест на долгосрочную память в самом конце исследования. Отправить слова
-				можно только один раз. Второй попытки не будет. Убедитесь, что вы готовы.
-			</p>
-			<Button color="green" onclick={() => (showDisclaimer = false)}>Понятно</Button>
-		</div>
-	</Modal>
-{/if}
 
 {#if toastMessage}
 	<Toast message={toastMessage} type={toastType} onDismiss={() => (toastMessage = null)} />

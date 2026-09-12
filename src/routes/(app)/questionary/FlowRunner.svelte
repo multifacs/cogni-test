@@ -16,12 +16,12 @@
 		onExit: () => void;
 	} = $props();
 
-	const startIndex = firstUnansweredIndex(flow);
+	const startIndex = firstUnansweredIndex(flow, $profileSurveyStore);
 	let index = $state(startIndex === -1 ? 0 : startIndex);
 
 	const total = flow.questions.length;
 	const question = $derived(flow.questions[index]);
-	const stats = $derived(flowProgress(flow));
+	const stats = $derived(flowProgress(flow, $profileSurveyStore));
 
 	async function next() {
 		await saveFieldNow(question.key);

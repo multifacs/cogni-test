@@ -49,11 +49,11 @@
 </script>
 
 <main class="main flex w-full flex-col items-center justify-center-safe">
-	<div class="flex w-full max-w-5xl flex-col items-center justify-center-safe gap-4 sm:gap-12">
+	<div class="flex w-full max-w-5xl flex-col items-center justify-center-safe gap-4 sm:gap-6">
 		{#if runAllMode}
 			<Spinner></Spinner>
 		{:else}
-			<div class="w-fill">
+			<div class="w-full">
 				<RecommendationCard
 					title="Запуск потокового прохождения"
 					text="Регулярные тренировки помогают поддерживать когнитивные навыки"
@@ -65,7 +65,9 @@
 				/>
 			</div>
 
-			<div class="flex flex-wrap justify-around gap-6 sm:justify-center">
+			<div
+				class="grid w-full grid-cols-2 gap-4 sm:grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] sm:gap-6"
+			>
 				{#each data.tests as { name, title, path, img } (title)}
 					<ExerciseCard {name} {title} {path} {img} {testSessionCounts} />
 				{/each}

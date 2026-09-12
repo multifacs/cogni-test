@@ -52,6 +52,10 @@
 		goto(resolve(targetUrl));
 	}
 
+	// resolve() возвращает ResolvedPathname (plain string) — сужаем до типа
+	// goto-пропа Button (PathnameWithSearchOrHash), как это сделано в самом Button.svelte
+	const questionaryUrl = (resolve('/questionary') + '?gto=false') as PathnameWithSearchOrHash;
+
 	const statusConfig = {
 		active: {
 			label: 'Активна',
@@ -119,6 +123,7 @@
 				</form>
 			</div>
 		{:else}
+			<Button color="green" class="w-full" goto={questionaryUrl}>Заполнить анкету</Button>
 			{#if data.activeSessions.length === 0 && data.completedSessions.length === 0}
 				<div class="flex flex-col items-center gap-3 py-10 text-gray-400">
 					<svg
@@ -141,9 +146,50 @@
 					</p>
 				</div>
 			{:else}
+				<!-- Completed sessions -->
+				{#if data.completedSessions.length > 0}
+					<div class="grid w-full grid-cols-1 gap-4">
+						{#each data.completedSessions as session (session.gtoSessionId)}
+							{@const ss = getStatusStyle(session.status)}
+							<div
+								class="flex flex-col gap-3 rounded-xl border border-gray-700 bg-gray-800 p-4 transition-colors"
+							>
+								<div class="flex items-center justify-between">
+									<h2
+										class="truncate text-center text-lg font-semibold text-white"
+									>
+										{session.name}
+									</h2>
+									<span
+										class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs text-white {ss.bg} {ss.text}"
+									>
+										<span class="h-1.5 w-1.5 rounded-full {ss.dot}"></span>
+										{ss.label}
+									</span>
+								</div>
+								<p class="text-xs text-white">{formatDate(session.createdAt)}</p>
+								{#if session.wordScore !== null}
+									<div class="flex items-center gap-2 text-sm">
+										<span class="text-gray-100">Слова:</span>
+										<span class="font-medium text-purple-300"
+											>{session.wordScore}/5</span
+										>
+									</div>
+								{/if}
+								<Button
+									color="indigo"
+									class="w-full"
+									goto="/gto/session/{session.gtoSessionId}/results"
+								>
+									Просмотр результатов
+								</Button>
+							</div>
+						{/each}
+					</div>
+				{/if}
 				<!-- Active sessions -->
 				{#if data.activeSessions.length > 0}
-					<div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+					<div class="grid grid-cols-1 gap-4">
 						{#each data.activeSessions as session (session.gtoSessionId)}
 							{@const ss = getStatusStyle(session.status)}
 							{@const progress = session.currentTestIndex}
@@ -192,8 +238,7 @@
 										{#if progress > 0}
 											<div class="flex items-center justify-between text-sm">
 												<span class="text-gray-400"
-													>Пройдено тестов: <span
-														class="font-medium text-white"
+													>Пройдено тестов: <span class="font-medium"
 														>{progress} из {total}</span
 													></span
 												>
@@ -250,7 +295,7 @@
 														{/if}
 														<span
 															class={current
-																? 'font-medium text-white'
+																? 'font-medium'
 																: done
 																	? 'text-gray-400'
 																	: 'text-gray-500'}
@@ -268,13 +313,13 @@
 									</div>
 								{:else if !session.hasSubmittedWords}
 									<div
-										class="rounded-lg border border-green-800/40 bg-green-900/20 px-3 py-2 text-sm text-green-300"
+										class="rounded-lg border border-green-800/40 bg-lime-200 px-3 py-2 text-sm"
 									>
 										✓ Все тесты пройдены
 									</div>
 								{:else}
 									<div
-										class="rounded-lg border border-gray-700 bg-gray-900/30 px-3 py-2 text-sm text-gray-400"
+										class="rounded-lg border border-gray-700 bg-orange-100 px-3 py-2 text-sm text-gray-600"
 									>
 										Вы завершили электронную часть. Ожидайте результатов.
 									</div>
@@ -322,57 +367,13 @@
 						{/each}
 					</div>
 				{/if}
-
-				<!-- Completed sessions -->
-				{#if data.completedSessions.length > 0}
-					<div class="flex items-center gap-3">
-						<h2 class="text-center text-lg font-semibold">Завершённые сессии</h2>
-						<span class="text-sm text-gray-400">({data.completedSessions.length})</span>
-					</div>
-					<div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
-						{#each data.completedSessions as session (session.gtoSessionId)}
-							{@const ss = getStatusStyle(session.status)}
-							<div
-								class="flex flex-col gap-3 rounded-xl border border-gray-700 bg-gray-800/30 p-4 transition-colors"
-							>
-								<div class="flex items-center justify-between">
-									<h2 class="truncate text-center text-lg font-semibold">
-										{session.name}
-									</h2>
-									<span
-										class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs {ss.bg} {ss.text}"
-									>
-										<span class="h-1.5 w-1.5 rounded-full {ss.dot}"></span>
-										{ss.label}
-									</span>
-								</div>
-								<p class="text-xs text-gray-500">{formatDate(session.createdAt)}</p>
-								{#if session.wordScore !== null}
-									<div class="flex items-center gap-2 text-sm">
-										<span class="text-gray-400">Слова:</span>
-										<span class="font-medium text-purple-300"
-											>{session.wordScore}/5</span
-										>
-									</div>
-								{/if}
-								<Button
-									color="gray"
-									class="w-full"
-									goto="/gto/session/{session.gtoSessionId}/results"
-								>
-									Просмотр результатов
-								</Button>
-							</div>
-						{/each}
-					</div>
-				{/if}
 			{/if}
 		{/if}
 	</div>
 </main>
 
 <section class="low-content flex items-center justify-center">
-	<p class="max-w-md text-center text-sm text-gray-500 max-md:text-xs">
+	<p class="w-full text-center text-sm text-gray-600 max-md:text-xs">
 		Пройдите все тесты и заполните последовательность слов для завершения сессии.
 	</p>
 </section>
@@ -380,7 +381,7 @@
 {#if showDisclaimer}
 	<Modal bind:showModal={showDisclaimer}>
 		{#snippet header()}
-			<h2 class="text-center text-2xl text-white">
+			<h2 class="text-center text-2xl">
 				{#if disclaimerType === 'tests'}
 					{selectedSession.currentTestIndex > 0
 						? 'Продолжить тестирование?'
@@ -391,7 +392,7 @@
 			</h2>
 		{/snippet}
 		<div class="flex flex-col items-center gap-4 text-center">
-			<p class="text-white">
+			<p class="">
 				{#if disclaimerType === 'tests'}
 					{#if selectedSession.currentTestIndex > 0}
 						Вы прошли {selectedSession.currentTestIndex} из {GTO_TEST_ORDER.length}

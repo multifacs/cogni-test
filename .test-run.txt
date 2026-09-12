@@ -1,0 +1,427 @@
+npm warn Unknown env config "store-dir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> cogni-test@0.9.0 test
+> npm run test:unit -- --run
+
+npm warn Unknown env config "store-dir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> cogni-test@0.9.0 test:unit
+> vitest --run
+
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ drop: [] }`
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ drop: [] }`
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ drop: [] }`
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.0 [39m[90m/home/nick/cogni-test[39m
+
+[90mstdout[2m | src/routes/(app)/layout.server.test.ts[2m > [22m[2m(app) layout server load[2m > [22m[2mdoes NOT redirect undiagnosed user to / when accessing /gto
+[22m[39m{
+  birthCity: [1mnull[22m,
+  currentCityType: [1mnull[22m,
+  gtoId: [1mnull[22m,
+  education: [1mnull[22m,
+  yearsNotQualified: [1mnull[22m,
+  yearsQualifiedApplied: [1mnull[22m,
+  yearsQualifiedNonApplied: [1mnull[22m,
+  yearsProfessional: [1mnull[22m,
+  yearsHighResponsibility: [1mnull[22m,
+  currentOccupation: [1mnull[22m,
+  jobPosition: [1mnull[22m,
+  weeklyReading: [1mnull[22m,
+  weeklyHousework: [1mnull[22m,
+  weeklyHobby: [1mnull[22m,
+  weeklyTech: [1mnull[22m,
+  monthlySocial: [1mnull[22m,
+  monthlyCulture: [1mnull[22m,
+  monthlyGardening: [1mnull[22m,
+  monthlyCaring: [1mnull[22m,
+  monthlyVolunteer: [1mnull[22m,
+  monthlyArtistic: [1mnull[22m,
+  yearlyEvents: [1mnull[22m,
+  yearlyTravel: [1mnull[22m,
+  yearlyBookReading: [1mnull[22m,
+  height: [1mnull[22m,
+  weight: [1mnull[22m,
+  dominantHand: [1mnull[22m,
+  isAmbidextrous: [1mnull[22m,
+  chronicDiseases: [1mnull[22m,
+  smoking: [1mnull[22m,
+  alcohol: [1mnull[22m,
+  sports: [1mnull[22m,
+  isGamer: [1mnull[22m,
+  userId: [32m'user-1'[39m
+}
+
+ [32m✓[39m [30m[42m server [49m[39m src/routes/(app)/gto/session/[id]/play/page.server.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 451[2mms[22m[39m
+   [32m✓[39m GTO play page server [2m(4)[22m
+     [33m[2m✓[22m[39m redirects to the first test about page with gtoSessionId[33m 439[2mms[22m[39m
+[90mstdout[2m | src/routes/(app)/layout.server.test.ts[2m > [22m[2m(app) layout server load[2m > [22m[2mdoes NOT redirect undiagnosed user to / when accessing /questionary
+[22m[39m{
+  birthCity: [1mnull[22m,
+  currentCityType: [1mnull[22m,
+  gtoId: [1mnull[22m,
+  education: [1mnull[22m,
+  yearsNotQualified: [1mnull[22m,
+  yearsQualifiedApplied: [1mnull[22m,
+  yearsQualifiedNonApplied: [1mnull[22m,
+  yearsProfessional: [1mnull[22m,
+  yearsHighResponsibility: [1mnull[22m,
+  currentOccupation: [1mnull[22m,
+  jobPosition: [1mnull[22m,
+  weeklyReading: [1mnull[22m,
+  weeklyHousework: [1mnull[22m,
+  weeklyHobby: [1mnull[22m,
+  weeklyTech: [1mnull[22m,
+  monthlySocial: [1mnull[22m,
+  monthlyCulture: [1mnull[22m,
+  monthlyGardening: [1mnull[22m,
+  monthlyCaring: [1mnull[22m,
+  monthlyVolunteer: [1mnull[22m,
+  monthlyArtistic: [1mnull[22m,
+  yearlyEvents: [1mnull[22m,
+  yearlyTravel: [1mnull[22m,
+  yearlyBookReading: [1mnull[22m,
+  height: [1mnull[22m,
+  weight: [1mnull[22m,
+  dominantHand: [1mnull[22m,
+  isAmbidextrous: [1mnull[22m,
+  chronicDiseases: [1mnull[22m,
+  smoking: [1mnull[22m,
+  alcohol: [1mnull[22m,
+  sports: [1mnull[22m,
+  isGamer: [1mnull[22m,
+  userId: [32m'user-1'[39m
+}
+
+[90mstdout[2m | src/routes/(app)/layout.server.test.ts[2m > [22m[2m(app) layout server load[2m > [22m[2mdoes NOT redirect when logged_in_admin cookie is present even with unfinished tests
+[22m[39m{
+  birthCity: [1mnull[22m,
+  currentCityType: [1mnull[22m,
+  gtoId: [1mnull[22m,
+  education: [1mnull[22m,
+  yearsNotQualified: [1mnull[22m,
+  yearsQualifiedApplied: [1mnull[22m,
+  yearsQualifiedNonApplied: [1mnull[22m,
+  yearsProfessional: [1mnull[22m,
+  yearsHighResponsibility: [1mnull[22m,
+  currentOccupation: [1mnull[22m,
+  jobPosition: [1mnull[22m,
+  weeklyReading: [1mnull[22m,
+  weeklyHousework: [1mnull[22m,
+  weeklyHobby: [1mnull[22m,
+  weeklyTech: [1mnull[22m,
+  monthlySocial: [1mnull[22m,
+  monthlyCulture: [1mnull[22m,
+  monthlyGardening: [1mnull[22m,
+  monthlyCaring: [1mnull[22m,
+  monthlyVolunteer: [1mnull[22m,
+  monthlyArtistic: [1mnull[22m,
+  yearlyEvents: [1mnull[22m,
+  yearlyTravel: [1mnull[22m,
+  yearlyBookReading: [1mnull[22m,
+  height: [1mnull[22m,
+  weight: [1mnull[22m,
+  dominantHand: [1mnull[22m,
+  isAmbidextrous: [1mnull[22m,
+  chronicDiseases: [1mnull[22m,
+  smoking: [1mnull[22m,
+  alcohol: [1mnull[22m,
+  sports: [1mnull[22m,
+  isGamer: [1mnull[22m,
+  userId: [32m'user-1'[39m
+}
+
+[90mstdout[2m | src/routes/(app)/layout.server.test.ts[2m > [22m[2m(app) layout server load[2m > [22m[2mdoes NOT redirect diagnosed user even on a non-allowed path
+[22m[39m{
+  birthCity: [1mnull[22m,
+  currentCityType: [1mnull[22m,
+  gtoId: [1mnull[22m,
+  education: [1mnull[22m,
+  yearsNotQualified: [1mnull[22m,
+  yearsQualifiedApplied: [1mnull[22m,
+  yearsQualifiedNonApplied: [1mnull[22m,
+  yearsProfessional: [1mnull[22m,
+  yearsHighResponsibility: [1mnull[22m,
+  currentOccupation: [1mnull[22m,
+  jobPosition: [1mnull[22m,
+  weeklyReading: [1mnull[22m,
+  weeklyHousework: [1mnull[22m,
+  weeklyHobby: [1mnull[22m,
+  weeklyTech: [1mnull[22m,
+  monthlySocial: [1mnull[22m,
+  monthlyCulture: [1mnull[22m,
+  monthlyGardening: [1mnull[22m,
+  monthlyCaring: [1mnull[22m,
+  monthlyVolunteer: [1mnull[22m,
+  monthlyArtistic: [1mnull[22m,
+  yearlyEvents: [1mnull[22m,
+  yearlyTravel: [1mnull[22m,
+  yearlyBookReading: [1mnull[22m,
+  height: [1mnull[22m,
+  weight: [1mnull[22m,
+  dominantHand: [1mnull[22m,
+  isAmbidextrous: [1mnull[22m,
+  chronicDiseases: [1mnull[22m,
+  smoking: [1mnull[22m,
+  alcohol: [1mnull[22m,
+  sports: [1mnull[22m,
+  isGamer: [1mnull[22m,
+  userId: [32m'user-1'[39m
+}
+
+[90mstdout[2m | src/routes/(app)/layout.server.test.ts[2m > [22m[2m(app) layout server load[2m > [22m[2misDevMode[2m > [22m[2mis true when MODE is DEV
+[22m[39m{
+  birthCity: [1mnull[22m,
+  currentCityType: [1mnull[22m,
+  gtoId: [1mnull[22m,
+  education: [1mnull[22m,
+  yearsNotQualified: [1mnull[22m,
+  yearsQualifiedApplied: [1mnull[22m,
+  yearsQualifiedNonApplied: [1mnull[22m,
+  yearsProfessional: [1mnull[22m,
+  yearsHighResponsibility: [1mnull[22m,
+  currentOccupation: [1mnull[22m,
+  jobPosition: [1mnull[22m,
+  weeklyReading: [1mnull[22m,
+  weeklyHousework: [1mnull[22m,
+  weeklyHobby: [1mnull[22m,
+  weeklyTech: [1mnull[22m,
+  monthlySocial: [1mnull[22m,
+  monthlyCulture: [1mnull[22m,
+  monthlyGardening: [1mnull[22m,
+  monthlyCaring: [1mnull[22m,
+  monthlyVolunteer: [1mnull[22m,
+  monthlyArtistic: [1mnull[22m,
+  yearlyEvents: [1mnull[22m,
+  yearlyTravel: [1mnull[22m,
+  yearlyBookReading: [1mnull[22m,
+  height: [1mnull[22m,
+  weight: [1mnull[22m,
+  dominantHand: [1mnull[22m,
+  isAmbidextrous: [1mnull[22m,
+  chronicDiseases: [1mnull[22m,
+  smoking: [1mnull[22m,
+  alcohol: [1mnull[22m,
+  sports: [1mnull[22m,
+  isGamer: [1mnull[22m,
+  userId: [32m'user-1'[39m
+}
+
+[90mstdout[2m | src/routes/(app)/layout.server.test.ts[2m > [22m[2m(app) layout server load[2m > [22m[2misDevMode[2m > [22m[2mis false when MODE is PROD
+[22m[39m{
+  birthCity: [1mnull[22m,
+  currentCityType: [1mnull[22m,
+  gtoId: [1mnull[22m,
+  education: [1mnull[22m,
+  yearsNotQualified: [1mnull[22m,
+  yearsQualifiedApplied: [1mnull[22m,
+  yearsQualifiedNonApplied: [1mnull[22m,
+  yearsProfessional: [1mnull[22m,
+  yearsHighResponsibility: [1mnull[22m,
+  currentOccupation: [1mnull[22m,
+  jobPosition: [1mnull[22m,
+  weeklyReading: [1mnull[22m,
+  weeklyHousework: [1mnull[22m,
+  weeklyHobby: [1mnull[22m,
+  weeklyTech: [1mnull[22m,
+  monthlySocial: [1mnull[22m,
+  monthlyCulture: [1mnull[22m,
+  monthlyGardening: [1mnull[22m,
+  monthlyCaring: [1mnull[22m,
+  monthlyVolunteer: [1mnull[22m,
+  monthlyArtistic: [1mnull[22m,
+  yearlyEvents: [1mnull[22m,
+  yearlyTravel: [1mnull[22m,
+  yearlyBookReading: [1mnull[22m,
+  height: [1mnull[22m,
+  weight: [1mnull[22m,
+  dominantHand: [1mnull[22m,
+  isAmbidextrous: [1mnull[22m,
+  chronicDiseases: [1mnull[22m,
+  smoking: [1mnull[22m,
+  alcohol: [1mnull[22m,
+  sports: [1mnull[22m,
+  isGamer: [1mnull[22m,
+  userId: [32m'user-1'[39m
+}
+
+[90mstdout[2m | src/routes/(app)/layout.server.test.ts[2m > [22m[2m(app) layout server load[2m > [22m[2misDevMode[2m > [22m[2mis false when MODE is undefined (stale/absent env)
+[22m[39m{
+  birthCity: [1mnull[22m,
+  currentCityType: [1mnull[22m,
+  gtoId: [1mnull[22m,
+  education: [1mnull[22m,
+  yearsNotQualified: [1mnull[22m,
+  yearsQualifiedApplied: [1mnull[22m,
+  yearsQualifiedNonApplied: [1mnull[22m,
+  yearsProfessional: [1mnull[22m,
+  yearsHighResponsibility: [1mnull[22m,
+  currentOccupation: [1mnull[22m,
+  jobPosition: [1mnull[22m,
+  weeklyReading: [1mnull[22m,
+  weeklyHousework: [1mnull[22m,
+  weeklyHobby: [1mnull[22m,
+  weeklyTech: [1mnull[22m,
+  monthlySocial: [1mnull[22m,
+  monthlyCulture: [1mnull[22m,
+  monthlyGardening: [1mnull[22m,
+  monthlyCaring: [1mnull[22m,
+  monthlyVolunteer: [1mnull[22m,
+  monthlyArtistic: [1mnull[22m,
+  yearlyEvents: [1mnull[22m,
+  yearlyTravel: [1mnull[22m,
+  yearlyBookReading: [1mnull[22m,
+  height: [1mnull[22m,
+  weight: [1mnull[22m,
+  dominantHand: [1mnull[22m,
+  isAmbidextrous: [1mnull[22m,
+  chronicDiseases: [1mnull[22m,
+  smoking: [1mnull[22m,
+  alcohol: [1mnull[22m,
+  sports: [1mnull[22m,
+  isGamer: [1mnull[22m,
+  userId: [32m'user-1'[39m
+}
+
+ [32m✓[39m [30m[42m server [49m[39m src/routes/(app)/layout.server.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 714[2mms[22m[39m
+   [32m✓[39m (app) layout server load [2m(8)[22m
+     [33m[2m✓[22m[39m does NOT redirect undiagnosed user to / when accessing /gto[33m 679[2mms[22m[39m
+ [32m✓[39m [30m[42m server [49m[39m src/routes/(app)/exercises/[slug]/playground/server.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 795[2mms[22m[39m
+   [32m✓[39m playground POST route [2m(9)[22m
+     [33m[2m✓[22m[39m POST without sessionId → 201 with generated sessionId in body[33m 768[2mms[22m[39m
+[90mstdout[2m | src/routes/(app)/tests/[slug]/playground/server.test.ts[2m > [22m[2mtests playground POST route[2m > [22m[2mnormal POST (no action)[2m > [22m[2mstill submits results via postResult → 201
+[22m[39muser-1 posted [ { attempt: [33m0[39m } ]
+
+ [32m✓[39m [30m[42m server [49m[39m src/routes/(app)/gto/page.server.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 731[2mms[22m[39m
+   [32m✓[39m (app) gto +page.server saveGtoId action [2m(4)[22m
+     [33m[2m✓[22m[39m saves gtoId successfully without redirecting[33m 724[2mms[22m[39m
+ [32m✓[39m [30m[42m server [49m[39m src/routes/(app)/tests/[slug]/playground/server.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 746[2mms[22m[39m
+   [32m✓[39m tests playground POST route [2m(7)[22m
+     [32m✓[39m action: generate-random [2m(6)[22m
+       [33m[2m✓[22m[39m without user_id cookie → 401[33m 720[2mms[22m[39m
+6:05:45 PM [vite-plugin-svelte] src/lib/exercises/rhythm/Playground.svelte:773:1 Unused CSS selector ".title"
+https://svelte.dev/e/css_unused_selector
+6:05:45 PM [vite-plugin-svelte] src/lib/exercises/rhythm/Playground.svelte:780:1 Unused CSS selector ".subtitle"
+https://svelte.dev/e/css_unused_selector
+6:05:45 PM [vite-plugin-svelte] src/lib/exercises/rhythm/Playground.svelte:817:1 Unused CSS selector ".difficulty-card"
+https://svelte.dev/e/css_unused_selector
+6:05:45 PM [vite-plugin-svelte] src/lib/exercises/rhythm/Playground.svelte:831:1 Unused CSS selector ".difficulty-title"
+https://svelte.dev/e/css_unused_selector
+6:05:45 PM [vite-plugin-svelte] src/lib/exercises/rhythm/Playground.svelte:839:1 Unused CSS selector ".difficulty-buttons"
+https://svelte.dev/e/css_unused_selector
+ [32m✓[39m [30m[42m server [49m[39m scripts/generate-dev-env.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 1477[2mms[22m[39m
+   [32m✓[39m generate-dev-env CLI [2m(7)[22m
+     [33m[2m✓[22m[39m Case E: VAPID keys differ between runs[33m 466[2mms[22m[39m
+ [32m✓[39m [30m[42m server [49m[39m src/lib/server/db/seed/generators.test.ts [2m([22m[2m26 tests[22m[2m)[22m[33m 1549[2mms[22m[39m
+   [32m✓[39m genRaven [2m(4)[22m
+     [33m[2m✓[22m[39m field types and value ranges[33m 520[2mms[22m[39m
+     [33m[2m✓[22m[39m rules and skillTags are valid JSON strings; rules non-empty RuleFamily[][33m 455[2mms[22m[39m
+6:05:46 PM [vite-plugin-svelte] src/lib/exercises/rhythm/Playground.svelte:773:1 Unused CSS selector ".title"
+https://svelte.dev/e/css_unused_selector
+6:05:46 PM [vite-plugin-svelte] src/lib/exercises/rhythm/Playground.svelte:780:1 Unused CSS selector ".subtitle"
+https://svelte.dev/e/css_unused_selector
+6:05:46 PM [vite-plugin-svelte] src/lib/exercises/rhythm/Playground.svelte:817:1 Unused CSS selector ".difficulty-card"
+https://svelte.dev/e/css_unused_selector
+6:05:46 PM [vite-plugin-svelte] src/lib/exercises/rhythm/Playground.svelte:831:1 Unused CSS selector ".difficulty-title"
+https://svelte.dev/e/css_unused_selector
+6:05:46 PM [vite-plugin-svelte] src/lib/exercises/rhythm/Playground.svelte:839:1 Unused CSS selector ".difficulty-buttons"
+https://svelte.dev/e/css_unused_selector
+[90mstdout[2m | src/routes/page.server.test.ts[2m > [22m[2mroot +page.server save action[2m > [22m[2mcalls autoAddToLatestActiveSession when survey had no gtoId and form provides one
+[22m[39mData received in save action: { gtoId: [32m'ABC123'[39m }
+
+[90mstdout[2m | src/routes/page.server.test.ts[2m > [22m[2mroot +page.server save action[2m > [22m[2mdoes NOT call autoAddToLatestActiveSession when gtoId was already set
+[22m[39mData received in save action: { gtoId: [32m'NEW123'[39m }
+
+[90mstdout[2m | src/routes/page.server.test.ts[2m > [22m[2mroot +page.server save action[2m > [22m[2mdoes NOT call autoAddToLatestActiveSession when form gtoId is empty
+[22m[39mData received in save action: { gtoId: [32m''[39m }
+
+ [32m✓[39m [30m[42m server [49m[39m src/routes/page.server.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 4078[2mms[22m[39m
+   [32m✓[39m root +page.server save action [2m(3)[22m
+     [33m[2m✓[22m[39m calls autoAddToLatestActiveSession when survey had no gtoId and form provides one[33m 4071[2mms[22m[39m
+ [32m✓[39m [30m[42m server [49m[39m src/lib/shared/metrics.test.ts [2m([22m[2m32 tests[22m[2m)[22m[33m 3843[2mms[22m[39m
+   [32m✓[39m getMetricScores [2m(6)[22m
+     [33m[2m✓[22m[39m computes score from a single test session[33m 863[2mms[22m[39m
+     [33m[2m✓[22m[39m averages scores across multiple sessions of the same test[33m 641[2mms[22m[39m
+     [33m[2m✓[22m[39m averages scores when multiple tests contribute to the same metric[33m 1778[2mms[22m[39m
+     [33m[2m✓[22m[39m returns 100 for campimetry stage 2[33m 310[2mms[22m[39m
+ [32m✓[39m [30m[42m server [49m[39m src/lib/certificate/certificate-data.test.ts [2m([22m[2m28 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m [30m[42m server [49m[39m src/lib/client/offline-queue.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m [30m[42m server [49m[39m src/lib/server/age/inlineOnnxPlugin.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+[90mstdout[2m | src/lib/exercises/campimetry/Playground.svelte.spec.ts[2m:150[22m[2m[2m > [22m[2mCampimetry playground — click-through[2m > [22m[2mexercise mode (fullPalette): plays the full game by clicking and receives every color in the results
+[22m[39m[
+  'bird',
+  'butterfly',
+  'cat',
+  'dog',
+  'shark',
+]
+[90mstdout[2m | src/lib/exercises/campimetry/Playground.svelte.spec.ts[2m:150[22m[2m[2m > [22m[2mCampimetry playground — click-through[2m > [22m[2mexercise mode (fullPalette): plays the full game by clicking and receives every color in the results
+[22m[39m[
+  'light-red',
+  'dark-green',
+  'dark-red',
+  'light-green',
+  'black',
+  'light-blue',
+  'dark-blue',
+  'dark-magenta',
+  'white',
+  'light-magenta',
+]
+[90mstdout[2m | src/lib/exercises/campimetry/Playground.svelte.spec.ts[2m:150[22m[2m[2m > [22m[2mCampimetry playground — click-through[2m > [22m[2mexercise mode (fullPalette): plays the full game by clicking and receives every color in the results
+[22m[39m{
+  attempt: 0,
+  stage: 1,
+  silhouette: 'bird',
+  channel: 'a',
+  op: '+',
+  color: LabColor {},
+}
+ [32m✓[39m [30m[42m server [49m[39m src/lib/client/gto-button-data.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+ [32m✓[39m [30m[42m server [49m[39m src/lib/tests/shims/cookie.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+[90mstdout[2m | src/lib/exercises/campimetry/Playground.svelte.spec.ts[2m:150[22m[2m[2m > [22m[2mCampimetry playground — click-through[2m > [22m[2mexercise mode (fullPalette): plays the full game by clicking and receives every color in the results
+[22m[39m1
+[90mstdout[2m | src/lib/exercises/rhythm/Playground.svelte.spec.ts[2m:46[22m[2m[2m > [22m[2mRhythm Playground — difficulty selection[2m > [22m[2mclicking a difficulty hides the buttons and updates the header label
+[22m[39mСгенерированная мелодия: [
+  {
+    step: 2,
+    type: 'pulton',
+  },
+  {
+    step: 4,
+    type: 'ton',
+  },
+  {
+    step: 8,
+    type: 'ton',
+  },
+  {
+    step: 10,
+    type: 'pulton',
+  },
+  {
+    step: 14,
+    type: 'pulton',
+  },
+]
+ [32m✓[39m [30m[42m server [49m[39m src/routes/(app)/admin/gto/[id]/table-helpers.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m [30m[42m server [49m[39m src/lib/shared/metricShares.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+[90mstdout[2m | src/lib/exercises/campimetry/Playground.svelte.spec.ts[2m:150[22m[2m[2m > [22m[2mCampimetry playground — click-through[2m > [22m[2mexercise mode (fullPalette): plays the full game by clicking and receives every color in the results
+[22m[39m2
+6:05:50 PM [vite-plugin-svelte] src/routes/(app)/tests/+page.svelte:16:56 This reference only captures the initial value of `data`. Did you mean to reference it inside a derived instead?
+https://svelte.dev/e/state_referenced_locally
+[90mstdout[2m | src/lib/exercises/rhythm/Playground.svelte.spec.ts[2m:80[22m[2m[2m > [22m[2mRhythm Playground — difficulty selection[2m > [22m[2mpaints the canvas after choosing difficulty
+[22m[39mСгенерированная мелодия: [
+  {
+    step: 4,
+    type: 'ton',
+  },
+  {
+    step: 8,
+    type: 'ton',
+  },
+  {
+    step: 12,
+    type: 'ton',
+  },
+]

@@ -36,12 +36,6 @@ vi.mock('@sveltejs/kit', async () => {
 	};
 });
 
-type RedirectLike = { status: number; location: string };
-
-function asRedirect(e: unknown): RedirectLike {
-	return e as RedirectLike;
-}
-
 // ─── Tests ─────────────────────────────────────────────────────────────
 
 describe('(app) gto +page.server saveGtoId action', () => {
@@ -49,34 +43,24 @@ describe('(app) gto +page.server saveGtoId action', () => {
 		vi.clearAllMocks();
 	});
 
-	it('redirects to /questionary when gtoId is saved successfully', async () => {
+	it('saves gtoId successfully without redirecting', async () => {
 		vi.mocked(setGtoIdAndAutoAdd).mockResolvedValue('saved');
 
 		const { actions } = await import('./+page.server');
-		try {
-			await (actions as Actions).saveGtoId(makeActionEvent({ gtoId: 'ABC123' }));
-			expect.fail('Expected redirect');
-		} catch (e) {
-			const redirect = asRedirect(e);
-			expect(redirect.status).toBe(303);
-			expect(redirect.location).toBe('/questionary');
-		}
+		await expect(
+			(actions as Actions).saveGtoId(makeActionEvent({ gtoId: 'ABC123' }))
+		).resolves.toBeUndefined();
 
 		expect(setGtoIdAndAutoAdd).toHaveBeenCalledWith('user-1', 'ABC123');
 	});
 
-	it('redirects to /questionary when gtoId is already set (idempotency)', async () => {
+	it('does not redirect when gtoId is already set (idempotency)', async () => {
 		vi.mocked(setGtoIdAndAutoAdd).mockResolvedValue('already-set');
 
 		const { actions } = await import('./+page.server');
-		try {
-			await (actions as Actions).saveGtoId(makeActionEvent({ gtoId: 'ABC123' }));
-			expect.fail('Expected redirect');
-		} catch (e) {
-			const redirect = asRedirect(e);
-			expect(redirect.status).toBe(303);
-			expect(redirect.location).toBe('/questionary');
-		}
+		await expect(
+			(actions as Actions).saveGtoId(makeActionEvent({ gtoId: 'ABC123' }))
+		).resolves.toBeUndefined();
 
 		expect(setGtoIdAndAutoAdd).toHaveBeenCalledWith('user-1', 'ABC123');
 	});

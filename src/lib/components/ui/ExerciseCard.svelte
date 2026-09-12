@@ -33,8 +33,8 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		width: clamp(5rem, 40.5vw, 15rem);
-		height: clamp(5rem, 40.5vw, 15rem);
+		width: 100%;
+		aspect-ratio: 1;
 		justify-content: space-between;
 		padding-bottom: 2vw;
 		box-shadow:

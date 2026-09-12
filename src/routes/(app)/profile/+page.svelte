@@ -100,10 +100,10 @@
 	{:then u}
 		{#if u && u.id}
 			<div class="flex w-full flex-col items-center justify-center">
-				<div class="flex w-full max-w-5xl flex-col gap-6">
+				<div class="flex w-full max-w-5xl flex-col gap-4 sm:gap-6">
 					<!-- Identity -->
-					<div class="glass-card flex flex-col gap-4 p-6">
-						<div class="flex items-center gap-4">
+					<div class="glass-card flex flex-col gap-4 p-6 sm:gap-6">
+						<div class="flex items-center gap-4 sm:gap-6">
 							<div
 								style={avatarStyle(u.id)}
 								class="flex
@@ -144,7 +144,7 @@
 
 					<!-- Metrics -->
 					<div
-						class="grid grid-cols-[repeat(4,1fr)] gap-4 max-sm:grid-cols-[repeat(2,1fr)]"
+						class="grid grid-cols-[repeat(4,1fr)] gap-4 max-sm:grid-cols-[repeat(2,1fr)] sm:gap-6"
 					>
 						<MetricTile
 							title="Когн. возраст"

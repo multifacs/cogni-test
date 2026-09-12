@@ -10,6 +10,14 @@
 		placeholder = '',
 		plain = false,
 		...restProps
+	}: {
+		id?: string;
+		name?: string;
+		value?: string;
+		required?: boolean;
+		errorMessage?: string;
+		placeholder?: string;
+		plain?: boolean;
 	} = $props();
 
 	const inputId = $derived(id ?? name);

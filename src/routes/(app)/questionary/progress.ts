@@ -9,24 +9,29 @@ function hasValue(v: unknown): boolean {
 	return true;
 }
 
-export function isQuestionAnswered(q: Question): boolean {
-	const snapshot = get(profileSurveyStore) as Partial<InsertProfileSurvey> | null;
+export function isQuestionAnswered(
+	q: Question,
+	snapshot: Partial<InsertProfileSurvey> | null
+): boolean {
 	if (!snapshot) return false;
 	return hasValue(snapshot[q.key as keyof InsertProfileSurvey]);
 }
 
-export function flowProgress(flow: Flow): { answered: number; total: number; done: boolean } {
+export function flowProgress(flow: Flow, snapshot: Partial<InsertProfileSurvey> | null) {
 	const total = flow.questions.length;
 	let answered = 0;
 	for (const q of flow.questions) {
-		if (isQuestionAnswered(q)) answered++;
+		if (isQuestionAnswered(q, snapshot)) answered++;
 	}
 	return { answered, total, done: answered === total };
 }
 
-export function firstUnansweredIndex(flow: Flow): number {
+export function firstUnansweredIndex(
+	flow: Flow,
+	snapshot: Partial<InsertProfileSurvey> | null
+): number {
 	for (let i = 0; i < flow.questions.length; i++) {
-		if (!isQuestionAnswered(flow.questions[i])) return i;
+		if (!isQuestionAnswered(flow.questions[i], snapshot)) return i;
 	}
 	return -1;
 }

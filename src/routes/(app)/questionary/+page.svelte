@@ -1,7 +1,15 @@
 <script lang="ts">
 	import { getContext, onMount } from 'svelte';
 	import { derived } from 'svelte/store';
+	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
+	import type { PathnameWithSearchOrHash, ResolvedPathname } from '$app/types';
 	import { profileSurveyStore, userStore } from '$lib/stores/user';
+	import { goto } from '$app/navigation';
+
+	// resolve() has a variadic conditional signature (ResolveArgs<T>) that
+	// cannot accept the full route union — narrow it to the pathname overload.
+	const resolvePathname = resolve as (path: PathnameWithSearchOrHash) => ResolvedPathname;
 
 	import { flows, fullFlow, type Flow } from './flows.ts';
 
@@ -12,8 +20,10 @@
 	const user = derived(userStore, ($userStore) => $userStore);
 	const headerContext = getContext<{ value: string }>('headerText');
 
-	const flowStats = $derived(flows.map((f) => ({ flow: f, stats: flowProgress(f) })));
-	const fullStats = $derived(flowProgress(fullFlow));
+	const flowStats = $derived(
+		flows.map((f) => ({ flow: f, stats: flowProgress(f, $profileSurveyStore) }))
+	);
+	const fullStats = $derived(flowProgress(fullFlow, $profileSurveyStore));
 
 	onMount(() => {
 		if (headerContext) headerContext.value = 'Анкета';
@@ -21,11 +31,25 @@
 
 	let activeFlow: Flow | null = $state(null);
 
+	// GTO-режим хаба: включается только явным ?gto=true в URL
+	const gtoMode = $derived(page.url.searchParams.get('gto') === 'true');
+
 	function start(flow: Flow) {
 		activeFlow = flow;
 	}
 
 	function finishFlow() {
+		const flow = activeFlow;
+		if (flow?.id === 'full' && page.url.searchParams.get('gto') === 'false') {
+			const url = new URL(page.url);
+			url.searchParams.set('gto', 'true');
+			goto(`${url.pathname}${url.search}`, {
+				replaceState: true, // не создаёт новую запись истории — F5-семантика та же
+				invalidateAll: false, // load не перезапускается, данные не рефетчатся
+				keepFocus: true,
+				noScroll: true
+			});
+		}
 		activeFlow = null;
 	}
 </script>
@@ -51,7 +75,7 @@
 								Пройдите всю анкету подряд или выберите нужный раздел
 							</h2>
 
-							<div class="glass-card flex w-[65vw] flex-col gap-4 p-6">
+							<div class="glass-card flex w-full flex-col gap-4 p-6">
 								<div class="flex items-center gap-4">
 									<img src={fullFlow.emoji} alt="" class="h-9 w-9 shrink-0" />
 									<div class="flex flex-col">
@@ -77,6 +101,12 @@
 									{fullStats.done ? 'Пройти заново' : 'Начать прохождение'}
 								</Button>
 							</div>
+
+							{#if gtoMode}
+								<div class="glass-card flex w-full flex-col p-6">
+									<Button color="green" goto="/gto">Продолжить с ГТО</Button>
+								</div>
+							{/if}
 
 							<div
 								class="grid grid-cols-[repeat(2,1fr)] gap-4 max-sm:grid-cols-[repeat(1,1fr)]"

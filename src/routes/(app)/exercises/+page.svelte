@@ -35,7 +35,9 @@
 		/>
 	</div> -->
 	<div class="flex w-full max-w-5xl flex-col items-center justify-center-safe gap-4 sm:gap-12">
-		<div class="flex flex-wrap justify-around gap-6 sm:justify-center">
+		<div
+			class="grid w-full grid-cols-2 gap-4 sm:grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] sm:gap-6"
+		>
 			{#each data.exercises as { name, title, path, img } (name)}
 				<ExerciseCard
 					{name}

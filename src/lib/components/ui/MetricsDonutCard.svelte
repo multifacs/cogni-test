@@ -4,6 +4,7 @@
 	import type { PathnameWithSearchOrHash, ResolvedPathname } from '$app/types';
 	import type { SkillMetric } from '$lib/types';
 	import { getMetricShares, metricColor } from '$lib/shared/metricShares';
+	import { translate } from '$lib/utils';
 
 	const resolvePathname = resolve as (path: PathnameWithSearchOrHash) => ResolvedPathname;
 
@@ -21,13 +22,16 @@
 			.filter((s) => s.share > 0)
 			.map((s, i, arr) => {
 				const circumference = 2 * Math.PI * 36;
-				const offset = arr
-					.slice(0, i)
-					.reduce((sum, prev) => sum + prev.share * circumference, 0);
+				const startShare = arr.slice(0, i).reduce((sum, prev) => sum + prev.share, 0);
+				const midAngle = (startShare + s.share / 2) * 2 * Math.PI; // от верха, по часовой
 				return {
 					metric: s.metric,
+					share: s.share,
 					dashArray: `${s.share * circumference} ${circumference}`,
-					offset: -offset
+					offset: -startShare * circumference,
+					// координаты середины дуги (без rotate-хака кругов)
+					x: 50 + 36 * Math.sin(midAngle),
+					y: 50 - 36 * Math.cos(midAngle)
 				};
 			})
 	);
@@ -59,8 +63,8 @@
 		</div>
 	{:else}
 		<div class="donut-wrapper">
-			<svg viewBox="0 0 100 100" class="donut" aria-hidden="true">
-				{#each donutData as { metric, dashArray, offset }}
+			<svg viewBox="0 0 100 100" class="donut shrink-0" aria-hidden="true">
+				{#each donutData as { metric, share, dashArray, offset, x, y } (metric)}
 					<circle
 						cx="50"
 						cy="50"
@@ -71,9 +75,28 @@
 						stroke-dasharray={dashArray}
 						stroke-dashoffset={offset}
 						transform="rotate(-90 50 50)"
-					/>
+					>
+						<title>{translate(metric)} — {Math.round(share * 100)}%</title>
+					</circle>
+					{#if share >= 0.1}
+						<text {x} y={y + 2} text-anchor="middle" font-size="6" fill="#333">
+							{translate(metric)}
+						</text>
+					{/if}
 				{/each}
 			</svg>
+			<ul class="legend min-w-0 flex-1">
+				{#each donutData as d (d.metric)}
+					<li class="flex items-center gap-1 text-xs">
+						<div
+							class="h-2 w-2 rounded-full shrink-0"
+							style="background: {metricColor(d.metric)}"
+						></div>
+						<span class="min-w-0 flex-1 truncate">{translate(d.metric)}:</span>
+						<span class="shrink-0">{Math.round(d.share * 100)}%</span>
+					</li>
+				{/each}
+			</ul>
 		</div>
 	{/if}
 </a>
@@ -141,6 +164,7 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		gap: 10px;
 	}
 
 	.donut {

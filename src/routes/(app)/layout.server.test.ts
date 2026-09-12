@@ -85,6 +85,20 @@ describe('(app) layout server load', () => {
 		expect(result.allowedPaths).toContain('/gto');
 	});
 
+	it('does NOT redirect undiagnosed user to / when accessing /questionary', async () => {
+		const { load } = await import('./+layout.server');
+
+		// no test sessions = unfinished tests
+		vi.mocked(getTestSessionCounts).mockResolvedValue({});
+
+		const result = (await load(
+			makeEvent('/questionary', { userId: 'user-1' })
+		)) as LayoutServerData;
+		expect(result).toBeDefined();
+		expect(result.undiagnosed).toBe(true);
+		expect(result.allowedPaths).toContain('/questionary');
+	});
+
 	it('redirects undiagnosed user to / when accessing a non-allowed path like /metrics', async () => {
 		const { load } = await import('./+layout.server');
 

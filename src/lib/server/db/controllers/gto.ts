@@ -1296,6 +1296,55 @@ export async function removeParticipant(participantId: string): Promise<void> {
 	});
 }
 
+// ─── 13. deleteGtoSession ─────────────────────────────────────────
+
+/** Machine-readable error thrown by deleteGtoSession; map by `code`, never by message text. */
+export class GtoSessionDeleteError extends Error {
+	code: 'not_found' | 'not_completed';
+
+	constructor(code: 'not_found' | 'not_completed', message: string) {
+		super(message);
+		this.name = 'GtoSessionDeleteError';
+		this.code = code;
+	}
+}
+
+export async function deleteGtoSession(id: string): Promise<void> {
+	const [gtoSessionRow] = await db.select().from(gtoSession).where(eq(gtoSession.id, id));
+
+	if (!gtoSessionRow) {
+		throw new GtoSessionDeleteError('not_found', `GTO session not found: ${id}`);
+	}
+	if (gtoSessionRow.status !== 'completed') {
+		throw new GtoSessionDeleteError('not_completed', `GTO session is not completed: ${id}`);
+	}
+
+	// SQLite FKs are NOT enforced (no PRAGMA foreign_keys=ON), so this manual
+	// ordered cleanup inside a single transaction is the only correctness guarantee.
+	await db.transaction(async (tx) => {
+		// 1. Unlink test sessions — they must survive the GTO session deletion.
+		await tx.update(session).set({ gtoSessionId: null }).where(eq(session.gtoSessionId, id));
+
+		// 2. Collect participant ids and delete their editable metrics.
+		const participants = await tx
+			.select({ id: gtoSessionParticipant.id })
+			.from(gtoSessionParticipant)
+			.where(eq(gtoSessionParticipant.gtoSessionId, id));
+		const participantIds = participants.map((p) => p.id);
+		if (participantIds.length > 0) {
+			await tx
+				.delete(gtoEditableMetric)
+				.where(inArray(gtoEditableMetric.participantId, participantIds));
+		}
+
+		// 3. Delete participants.
+		await tx.delete(gtoSessionParticipant).where(eq(gtoSessionParticipant.gtoSessionId, id));
+
+		// 4. Delete the GTO session itself.
+		await tx.delete(gtoSession).where(eq(gtoSession.id, id));
+	});
+}
+
 // ─── getLatestActiveGtoSession ──────────────────────────────────────
 
 export async function getLatestActiveGtoSession(): Promise<{ id: string; name: string } | null> {

@@ -13,7 +13,7 @@
 </script>
 
 <main class="main flex w-full flex-col items-center justify-center-safe">
-	<div class="flex w-full max-w-5xl flex-col items-center justify-center-safe gap-6">
+	<div class="flex w-full max-w-5xl flex-col items-center justify-center-safe gap-4 sm:gap-6">
 		{#each articles as article (article.slug)}
 			<RecommendationCard
 				title={article.title}

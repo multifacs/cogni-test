@@ -1,11 +1,12 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
-	import { missingFieldLabels } from '$lib/survey-field-labels';
 	import { invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import { getContext, onMount } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { resolve } from '$app/paths';
+	import ActiveSessions from './ActiveSessions.svelte';
+	import UserList from './UserList.svelte';
 
 	const headerContext = getContext<{ value: string }>('headerText');
 
@@ -25,21 +26,7 @@
 	const yy = String(now.getFullYear()).slice(2);
 	const hh = String(now.getHours()).padStart(2, '0');
 	const min = String(now.getMinutes()).padStart(2, '0');
-	let sessionName = $state(`Сессия ГТО-М ${dd}/${mm}/${yy} ${hh}-${min}`);
-
-	function toggleUser(id: string) {
-		if (selectedUsers.has(id)) {
-			selectedUsers.delete(id);
-		} else {
-			selectedUsers.add(id);
-		}
-		selectedUsers = new SvelteSet(selectedUsers); // trigger reactivity
-	}
-
-	function formatDate(dateStr: string | null) {
-		if (!dateStr) return '—';
-		return new Date(dateStr).toLocaleString('ru-RU');
-	}
+	let sessionName = $state(`Сессия ${dd}.${mm}.${yy} ${hh}:${min}`);
 
 	// Search and filter
 	let searchQuery = $state('');
@@ -82,74 +69,22 @@
 			isCreating = false;
 		}
 	}
+	function toggleUser(id: string) {
+		if (selectedUsers.has(id)) {
+			selectedUsers.delete(id);
+		} else {
+			selectedUsers.add(id);
+		}
+		selectedUsers = new SvelteSet(selectedUsers);
+	}
 </script>
 
-<main class="main overflow-auto p-4">
-	<div class="flex flex-col gap-6">
-		<!-- Existing sessions -->
-		<div class="flex flex-col gap-3">
-			<h2 class="text-xl font-semibold text-center">Существующие сессии</h2>
-			{#if data.sessions.length === 0}
-				<div class="flex flex-col items-center gap-2 py-6">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						class="h-10 w-10 opacity-40"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="1.5"
-							d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
-						/>
-					</svg>
-					<p>Нет созданных сессий</p>
-				</div>
-			{:else}
-				<div class="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
-					{#each data.sessions as s (s.id)}
-						<a
-							href={resolve(`/admin/gto/${s.id}`)}
-							class="group flex items-center justify-between rounded-xl border border-gray-700 bg-white p-3 transition-colors hover:border-gray-600 hover:bg-gray-700/50"
-						>
-							<div class="flex min-w-0 flex-col">
-								<span class="truncate font-medium">{s.name}</span>
-								<span class="text-xs opacity-50">{formatDate(s.createdAt)}</span>
-							</div>
-							<div class="flex shrink-0 items-center gap-2">
-								<span
-									class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs {s.status ===
-									'active'
-										? 'bg-green-800/60 text-green-200'
-										: s.status === 'paused'
-											? 'bg-yellow-800/60 text-yellow-200'
-											: 'bg-gray-600/60 text-gray-300'}"
-								>
-									<span
-										class="h-1.5 w-1.5 rounded-full {s.status === 'active'
-											? 'bg-green-400'
-											: s.status === 'paused'
-												? 'bg-yellow-400'
-												: 'bg-gray-400'}"
-									></span>
-									{s.status === 'active'
-										? 'Активна'
-										: s.status === 'paused'
-											? 'На паузе'
-											: 'Завершена'}
-								</span>
-								<span class="text-xs opacity-50">{s.participantCount} чел.</span>
-							</div>
-						</a>
-					{/each}
-				</div>
-			{/if}
-		</div>
-
+<main class="main overflow-auto">
+	<div
+		class="grid h-full grid-cols-1 grid-rows-[2fr_1fr] gap-6 sm:grid-cols-2 sm:grid-rows-[minmax(0,1fr)]"
+	>
 		<!-- Link to word sets -->
-		<a
+		<!-- <a
 			href={resolve('/admin/gto/word-sets')}
 			class="flex items-center justify-between rounded-xl border border-gray-700 bg-white p-4 transition-colors hover:border-gray-600 hover:bg-gray-700/30"
 		>
@@ -185,17 +120,17 @@
 					clip-rule="evenodd"
 				/>
 			</svg>
-		</a>
+		</a> -->
 
 		<!-- Create session form -->
 		<form
-			class="flex flex-col gap-4 rounded-xl border border-gray-700 bg-white p-4"
+			class="flex h-full min-h-0 flex-col gap-4 rounded-xl border border-gray-700 bg-white p-4"
 			onsubmit={(e) => {
 				e.preventDefault();
 				handleCreateSession(e.currentTarget);
 			}}
 		>
-			<h2 class="text-xl font-semibold text-center">Создать сессию</h2>
+			<h2 class="text-center text-xl font-semibold">Создать сессию</h2>
 
 			{#if createError}
 				<p class="rounded-lg bg-red-900/30 px-3 py-2 text-sm text-red-300">{createError}</p>
@@ -217,9 +152,9 @@
 			{/each}
 
 			<!-- Participant selection -->
-			<div class="flex flex-col gap-2">
+			<div class="flex min-h-0 flex-1 flex-col gap-2">
 				<div class="flex flex-wrap items-center gap-3">
-					<h3 class="text-lg font-medium text-center">Участники</h3>
+					<h3 class="text-center text-lg font-medium">Участники</h3>
 					<span class="text-sm">({selectedUsers.size} выбрано)</span>
 					<div class="flex-1"></div>
 					<Button
@@ -233,7 +168,7 @@
 					<div class="relative">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
-							class="absolute left-2.5 top-2.5 h-4 w-4"
+							class="absolute top-2.5 left-2.5 h-4 w-4"
 							viewBox="0 0 20 20"
 							fill="currentColor"
 						>
@@ -247,7 +182,7 @@
 							type="text"
 							placeholder="Поиск..."
 							bind:value={searchQuery}
-							class="rounded-lg bg-[#E5E7EB] py-2 pl-8 pr-3 text-sm"
+							class="rounded-lg bg-[#E5E7EB] py-2 pr-3 pl-8 text-sm"
 						/>
 					</div>
 					<label class="flex items-center gap-1.5 text-sm">
@@ -263,68 +198,7 @@
 							: 'Нет авторизованных пользователей'}
 					</p>
 				{:else}
-					<div class="grid grid-cols-1 gap-1.5 md:grid-cols-2 xl:grid-cols-3">
-						{#each filteredUsers as u (u.id)}
-							<button
-								type="button"
-								class="flex items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors {selectedUsers.has(
-									u.id
-								)
-									? 'bg-white ring-1 ring-indigo-500/50'
-									: 'bg-gray-900/30 hover:bg-gray-700/50'}"
-								onclick={() => toggleUser(u.id)}
-							>
-								<div
-									class="flex h-5 w-5 shrink-0 items-center justify-center rounded border {selectedUsers.has(
-										u.id
-									)
-										? 'border-indigo-400 bg-indigo-500'
-										: 'border-gray-500'}"
-								>
-									{#if selectedUsers.has(u.id)}
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											class="h-3.5 w-3.5 text-white"
-											viewBox="0 0 20 20"
-											fill="currentColor"
-										>
-											<path
-												fill-rule="evenodd"
-												d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-												clip-rule="evenodd"
-											/>
-										</svg>
-									{/if}
-								</div>
-								<div class="flex min-w-0 flex-1 flex-col">
-									<span class="truncate text-sm font-medium"
-										>{u.firstname} {u.lastname}</span
-									>
-									<span class="text-xs">
-										{u.sex === 'male' ? 'М' : 'Ж'}
-										{#if u.gtoId}
-											· ГТО-М: {u.gtoId}
-										{/if}
-									</span>
-								</div>
-								<div class="flex shrink-0 items-center gap-1.5">
-									{#if u.missingSurveyFields.length > 0}
-										<span
-											class="rounded-full bg-red-500/40 px-2 py-0.5 text-xs"
-											title={missingFieldLabels(u.missingSurveyFields)}
-										>
-											{u.missingSurveyFields.length}
-										</span>
-									{:else}
-										<span
-											class="rounded-full bg-green-900/40 px-2 py-0.5 text-xs text-green-300"
-											>✓</span
-										>
-									{/if}
-								</div>
-							</button>
-						{/each}
-					</div>
+					<UserList users={filteredUsers} {selectedUsers} ontoggle={toggleUser} />
 				{/if}
 			</div>
 
@@ -332,10 +206,38 @@
 				{isCreating ? 'Создание...' : `Создать сессию (${selectedUsers.size} участников)`}
 			</Button>
 		</form>
+
+		<!-- Existing sessions -->
+		<div
+			class="flex h-full min-h-0 w-full flex-col gap-3 rounded-xl border border-gray-700 bg-white p-4"
+		>
+			<h2 class="text-center text-xl font-semibold">Существующие сессии</h2>
+			{#if data.sessions.length === 0}
+				<div class="flex flex-col items-center gap-2 py-6">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						class="h-10 w-10 opacity-40"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="1.5"
+							d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+						/>
+					</svg>
+					<p>Нет созданных сессий</p>
+				</div>
+			{:else}
+				<ActiveSessions {data} />
+			{/if}
+		</div>
 	</div>
 </main>
 
 <section class="low-content flex items-center justify-center gap-3">
-	<Button color="blue" goto="/admin/gto/word-sets">Сеты слов</Button>
 	<Button color="red" goto="/admin">Админка</Button>
+	<Button color="blue" goto="/admin/gto/word-sets">Сеты слов</Button>
 </section>

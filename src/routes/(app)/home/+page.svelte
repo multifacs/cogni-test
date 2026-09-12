@@ -140,10 +140,10 @@
 
 <main class="main flex flex-col items-center justify-center-safe">
 	{#if !undiagnosed}
-		<div class="flex flex-col items-center gap-6">
-			<div class="main-content gap-6">
+		<div class="flex flex-col items-center gap-4 sm:gap-6">
+			<div class="main-content gap-4 sm:gap-6">
 				<AgeCard age={data.predictedAge} {realAge} />
-				<div class="flex flex-col justify-between gap-6">
+				<div class="flex flex-col justify-between gap-4 sm:gap-6">
 					<RecommendationCard
 						title="Совет дня"
 						text="Статья: как физическая активность влияет на память"
@@ -232,12 +232,12 @@
 <style>
 	.main-content {
 		display: grid;
-		grid-template-columns: 1fr;
+		grid-template-columns: minmax(0, 1fr);
 	}
 	@media (min-width: 1024px) {
 		.main-content {
-			grid-template-columns: 1fr 1fr;
-			gap: 5rem;
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+			gap: 2rem;
 		}
 	}
 </style>

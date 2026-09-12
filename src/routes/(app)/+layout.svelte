@@ -132,7 +132,7 @@
 </div>
 
 <div class="container">
-	<header>
+	<header class="header-slot">
 		<Header text={headerText} action={devAction} />
 	</header>
 	{@render children()}
@@ -206,6 +206,10 @@
 		   wrapper existed), so it still stretches over the full 'nav' area.
 		   The wrapper only exists to hide the nav on <sm via display:none. */
 		.nav-slot {
+			display: contents;
+		}
+
+		.header-slot {
 			display: contents;
 		}
 

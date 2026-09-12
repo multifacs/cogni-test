@@ -1,0 +1,405 @@
+Loading svelte-check in workspace: /home/nick/cogni-test
+Getting Svelte diagnostics...
+
+/home/nick/cogni-test/src/lib/components/ui/login-form/TextInput.svelte:54:7
+Error: 'value' is possibly 'undefined'. (ts)
+		if (plain) return true;
+		if (value.length < 2) {
+			errorMessage = 'Нужно ввести всё';
+
+/home/nick/cogni-test/src/lib/components/ui/login-form/TextInput.svelte:68:18
+Error: Property 'type' does not exist on type '{}'. (ts)
+	{name}
+	type={restProps.type ?? 'text'}
+	bind:value
+
+/home/nick/cogni-test/src/lib/exercises/word-morphing/components/TimeSelect.svelte:38:5
+Error: Object literal may only specify known properties, and '"type"' does not exist in type '$$ComponentProps'. (ts)
+				bind:value={customTimeInput}
+				type="number"
+				min="0.5"
+
+/home/nick/cogni-test/src/lib/exercises/raven-matrices/components/RavenAnswerOptions.svelte:34:5
+Error: Property 'missing' is missing in type '{ cell: CellSpec; cellId: string; compact: true; }' but required in type '$$ComponentProps'. (ts)
+			>
+			<RavenCell cell={option.cell} cellId={`${task.id}-answer-${index}`} compact />
+		</button>
+
+/home/nick/cogni-test/src/lib/exercises/raven-matrices/components/RavenMatrixBoard.svelte:12:6
+Error: Property 'compact' is missing in type '{ cell: CellSpec | null; missing: boolean; cellId: string; }' but required in type '$$ComponentProps'. (ts)
+			<div class="board-cell" class:missing={index === task.missingIndex}>
+				<RavenCell
+					cell={index === task.missingIndex ? null : cell}
+
+/home/nick/cogni-test/src/lib/exercises/rhythm/Playground.svelte:773:2
+Warn: Unused CSS selector ".title"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+	.title {
+		margin: 0;
+
+/home/nick/cogni-test/src/lib/exercises/rhythm/Playground.svelte:780:2
+Warn: Unused CSS selector ".subtitle"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+	.subtitle {
+		margin: 0;
+
+/home/nick/cogni-test/src/lib/exercises/rhythm/Playground.svelte:817:2
+Warn: Unused CSS selector ".difficulty-card"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+	.difficulty-card {
+		max-width: 420px;
+
+/home/nick/cogni-test/src/lib/exercises/rhythm/Playground.svelte:831:2
+Warn: Unused CSS selector ".difficulty-title"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+	.difficulty-title {
+		font-size: 1.1rem;
+
+/home/nick/cogni-test/src/lib/exercises/rhythm/Playground.svelte:839:2
+Warn: Unused CSS selector ".difficulty-buttons"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+	.difficulty-buttons {
+		display: flex;
+
+/home/nick/cogni-test/vite.config.ts:47:63
+Error: Property 'includes' does not exist on type '(true | string[] | undefined) & (true | string[])'.
+  Property 'includes' does not exist on type 'true'. 
+			const external = env.config.resolve.external;
+			const missing = SSR_EXTERNAL_DEPS.filter((id) => !external.includes(id));
+			env.config.resolve.external = [...external, ...missing];
+
+/home/nick/cogni-test/vite.config.ts:48:38
+Error: Type '(true | string[] | undefined) & (true | string[])' must have a '[Symbol.iterator]()' method that returns an iterator. 
+			const missing = SSR_EXTERNAL_DEPS.filter((id) => !external.includes(id));
+			env.config.resolve.external = [...external, ...missing];
+		}
+
+/home/nick/cogni-test/src/lib/components/ui/MetricsDonutCard.svelte.spec.ts:2:24
+Error: Cannot find module '@testing-library/dom' or its corresponding type declarations. 
+import { render, cleanup } from 'vitest-browser-svelte';
+import { screen } from '@testing-library/dom';
+import { userEvent } from 'vitest/browser';
+
+/home/nick/cogni-test/src/lib/server/db/user-model.test.ts:126:51
+Error: Property 'message' does not exist on type '{}'. 
+		} catch (e) {
+			const message = e instanceof Error ? (e.cause?.message ?? e.message) : String(e);
+			expect(message).toContain('lastname_length');
+
+/home/nick/cogni-test/src/routes/(app)/+layout.svelte:59:10
+Error: Argument of type '() => Promise<() => void>' is not assignable to parameter of type '() => Promise<never> | (() => any)'.
+  Type 'Promise<() => void>' is not assignable to type 'Promise<never> | (() => any)'.
+    Type 'Promise<() => void>' is not assignable to type 'Promise<never>'.
+      Type '() => void' is not assignable to type 'never'. (ts)
+
+	onMount(async () => {
+		userStore.set(data.user);
+
+/home/nick/cogni-test/src/routes/(app)/exercises/[slug]/playground/page.svelte.spec.ts:26:46
+Error: Expected 0 arguments, but got 1. 
+vi.mock('$app/navigation', () => ({
+	goto: (...args: unknown[]) => navMocks.goto(...(args as [string]))
+}));
+
+/home/nick/cogni-test/src/routes/(app)/gto/session/[id]/results/page.svelte.spec.ts:12:14
+Error: Expected 0-1 type arguments, but got 2. 
+const navMocks = vi.hoisted(() => ({
+	goto: vi.fn<[(string | URL)?], Promise<void>>(() => Promise.resolve()),
+	resolve: vi.fn<[string], string>((path: string) => path)
+
+/home/nick/cogni-test/src/routes/(app)/gto/session/[id]/results/page.svelte.spec.ts:13:17
+Error: Expected 0-1 type arguments, but got 2. 
+	goto: vi.fn<[(string | URL)?], Promise<void>>(() => Promise.resolve()),
+	resolve: vi.fn<[string], string>((path: string) => path)
+}));
+
+/home/nick/cogni-test/src/routes/(app)/gto/session/[id]/results/page.svelte.spec.ts:17:32
+Error: Expected 0-1 type arguments, but got 2. 
+const certMocks = vi.hoisted(() => ({
+	downloadCertificatePdf: vi.fn<[], Promise<void>>(() => Promise.resolve())
+}));
+
+/home/nick/cogni-test/src/routes/(app)/gto/session/[id]/results/page.svelte.spec.ts:23:46
+Error: Argument of type '[string | URL | undefined]' is not assignable to parameter of type 'never'. 
+vi.mock('$app/navigation', () => ({
+	goto: (...args: unknown[]) => navMocks.goto(...(args as [(string | URL)?]))
+}));
+
+/home/nick/cogni-test/src/routes/(app)/gto/session/[id]/results/page.svelte.spec.ts:27:46
+Error: Argument of type '[string]' is not assignable to parameter of type 'never'. 
+vi.mock('$app/paths', () => ({
+	resolve: (path: string) => navMocks.resolve(path)
+}));
+
+/home/nick/cogni-test/src/routes/(app)/gto/session/[id]/results/page.svelte.spec.ts:31:32
+Error: Argument of type '[]' is not assignable to parameter of type 'never'. 
+vi.mock('$lib/certificate/generate', () => ({
+	downloadCertificatePdf: () => certMocks.downloadCertificatePdf()
+}));
+
+/home/nick/cogni-test/src/routes/(app)/gto/session/[id]/results/page.svelte.spec.ts:127:51
+Error: Argument of type 'Promise<void>' is not assignable to parameter of type 'never'. 
+	certMocks.downloadCertificatePdf.mockReset();
+	certMocks.downloadCertificatePdf.mockReturnValue(Promise.resolve());
+});
+
+/home/nick/cogni-test/src/routes/(app)/gto/session/[id]/results/page.svelte.spec.ts:140:55
+Error: Type '{ session: { id: string; name: string; type: string; status: string; createdAt: string; participants: never[]; }; metrics: { participantId: string; userId: string; firstname: string; lastname: string; sex: string; ... 11 more ...; submittedWords: string[]; }; }' is missing the following properties from type '{ user: User; profileSurvey: { userId: string; id?: number | undefined; createdAt?: string | undefined; birthCity?: string | null | undefined; currentCityType?: "capital" | "municipality" | ... 4 more ... | undefined; ... 31 more ...; updatedAt?: string | undefined; } | { ...; }; ... 4 more ...; metrics: Participant...': user, profileSurvey, undiagnosed, allowedPaths, isDevMode 
+	it('renders certificate button when session status is completed', async () => {
+		const { container } = await render(Page, { props: { data: makeData('completed') } });
+
+/home/nick/cogni-test/src/routes/(app)/gto/session/[id]/results/page.svelte.spec.ts:148:55
+Error: Type '{ session: { id: string; name: string; type: string; status: string; createdAt: string; participants: never[]; }; metrics: { participantId: string; userId: string; firstname: string; lastname: string; sex: string; ... 11 more ...; submittedWords: string[]; }; }' is missing the following properties from type '{ user: User; profileSurvey: { userId: string; id?: number | undefined; createdAt?: string | undefined; birthCity?: string | null | undefined; currentCityType?: "capital" | "municipality" | ... 4 more ... | undefined; ... 31 more ...; updatedAt?: string | undefined; } | { ...; }; ... 4 more ...; metrics: Participant...': user, profileSurvey, undiagnosed, allowedPaths, isDevMode 
+	it('does not render certificate button when session is not completed', async () => {
+		const { container } = await render(Page, { props: { data: makeData('active') } });
+
+/home/nick/cogni-test/src/routes/(app)/gto/session/[id]/results/page.svelte.spec.ts:155:52
+Error: Argument of type 'Promise<void>' is not assignable to parameter of type 'never'. 
+	it('disables button and shows progress text while PDF generation hangs', async () => {
+		certMocks.downloadCertificatePdf.mockReturnValue(new Promise<void>(() => {}));
+		// Чек-лист ревью: повисший fetch не должен разблокировать кнопку
+
+/home/nick/cogni-test/src/routes/(app)/gto/session/[id]/results/page.svelte.spec.ts:159:55
+Error: Type '{ session: { id: string; name: string; type: string; status: string; createdAt: string; participants: never[]; }; metrics: { participantId: string; userId: string; firstname: string; lastname: string; sex: string; ... 11 more ...; submittedWords: string[]; }; }' is missing the following properties from type '{ user: User; profileSurvey: { userId: string; id?: number | undefined; createdAt?: string | undefined; birthCity?: string | null | undefined; currentCityType?: "capital" | "municipality" | ... 4 more ... | undefined; ... 31 more ...; updatedAt?: string | undefined; } | { ...; }; ... 4 more ...; metrics: Participant...': user, profileSurvey, undiagnosed, allowedPaths, isDevMode 
+
+		const { container } = await render(Page, { props: { data: makeData('completed') } });
+
+/home/nick/cogni-test/src/routes/(app)/gto/session/[id]/results/page.svelte.spec.ts:174:55
+Error: Type '{ session: { id: string; name: string; type: string; status: string; createdAt: string; participants: never[]; }; metrics: { participantId: string; userId: string; firstname: string; lastname: string; sex: string; ... 11 more ...; submittedWords: string[]; }; }' is missing the following properties from type '{ user: User; profileSurvey: { userId: string; id?: number | undefined; createdAt?: string | undefined; birthCity?: string | null | undefined; currentCityType?: "capital" | "municipality" | ... 4 more ... | undefined; ... 31 more ...; updatedAt?: string | undefined; } | { ...; }; ... 4 more ...; metrics: Participant...': user, profileSurvey, undiagnosed, allowedPaths, isDevMode 
+
+		const { container } = await render(Page, { props: { data: makeData('completed') } });
+
+/home/nick/cogni-test/src/routes/(app)/gto/session/[id]/words/page.svelte.spec.ts:73:42
+Error: Object literal may only specify known properties, and 'params' does not exist in type '$$ComponentProps'. 
+	const promise = render(Page, {
+		props: { data: makeData(lastResultAt), params: { id: 'gto-1' } },
+		context: new Map([['headerText', headerContext]])
+
+/home/nick/cogni-test/src/routes/(app)/home/page.svelte.spec.ts:16:14
+Error: Expected 0-1 type arguments, but got 2. 
+const navMocks = vi.hoisted(() => ({
+	goto: vi.fn<[(string | URL)?], Promise<void>>(() => Promise.resolve()),
+	resolve: vi.fn<[string], string>((path: string) => path)
+
+/home/nick/cogni-test/src/routes/(app)/home/page.svelte.spec.ts:17:17
+Error: Expected 0-1 type arguments, but got 2. 
+	goto: vi.fn<[(string | URL)?], Promise<void>>(() => Promise.resolve()),
+	resolve: vi.fn<[string], string>((path: string) => path)
+}));
+
+/home/nick/cogni-test/src/routes/(app)/home/page.svelte.spec.ts:23:46
+Error: Argument of type '[string]' is not assignable to parameter of type 'never'. 
+vi.mock('$app/navigation', () => ({
+	goto: (...args: unknown[]) => navMocks.goto(...(args as [string]))
+}));
+
+/home/nick/cogni-test/src/routes/(app)/home/page.svelte.spec.ts:27:46
+Error: Argument of type '[string]' is not assignable to parameter of type 'never'. 
+vi.mock('$app/paths', () => ({
+	resolve: (path: string) => navMocks.resolve(path)
+}));
+
+/home/nick/cogni-test/src/routes/(app)/home/page.svelte.spec.ts:67:47
+Error: Type '{ recommendations: never[]; metricScores: Record<SkillMetric, number>; hasData: boolean; hasUnfinishedTests: boolean; loggedInAdmin: string | undefined; predictedAge: number | null; }' is missing the following properties from type '{ user: User; profileSurvey: { userId: string; id?: number | undefined; createdAt?: string | undefined; birthCity?: string | null | undefined; currentCityType?: "capital" | "municipality" | ... 4 more ... | undefined; ... 31 more ...; updatedAt?: string | undefined; } | { ...; }; ... 8 more ...; predictedAge: number...': user, profileSurvey, undiagnosed, allowedPaths, isDevMode 
+async function mountPage(data: ReturnType<typeof makeData>) {
+	const result = await render(Page, { props: { data } });
+	// onMount с await localforage... выполняется асинхронно;
+
+/home/nick/cogni-test/src/routes/(app)/questionary/QuestionField.svelte:26:23
+Warn: This reference only captures the initial value of `question`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally (svelte)
+	// после перезагрузки. Трейдофф принят пользователем.
+	const rangeDefault = question.type.kind === 'range' ? question.type.default : undefined;
+	if (rangeDefault !== undefined && (value === null || value === undefined)) {
+
+/home/nick/cogni-test/src/routes/(app)/questionary/QuestionField.svelte:26:56
+Warn: This reference only captures the initial value of `question`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally (svelte)
+	// после перезагрузки. Трейдофф принят пользователем.
+	const rangeDefault = question.type.kind === 'range' ? question.type.default : undefined;
+	if (rangeDefault !== undefined && (value === null || value === undefined)) {
+
+/home/nick/cogni-test/src/routes/(app)/questionary/FlowRunner.svelte:19:42
+Warn: This reference only captures the initial value of `flow`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally (svelte)
+
+	const startIndex = firstUnansweredIndex(flow, $profileSurveyStore);
+	let index = $state(startIndex === -1 ? 0 : startIndex);
+
+/home/nick/cogni-test/src/routes/(app)/questionary/FlowRunner.svelte:22:16
+Warn: This reference only captures the initial value of `flow`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally (svelte)
+
+	const total = flow.questions.length;
+	const question = $derived(flow.questions[index]);
+
+/home/nick/cogni-test/src/routes/(app)/tests/+page.svelte:16:57
+Warn: This reference only captures the initial value of `data`. Did you mean to reference it inside a derived instead?
+https://svelte.dev/e/state_referenced_locally (svelte)
+
+	let testSessionCounts: Record<string, number> = $state(data.testSessionCounts ?? {});
+	let runAllMode = $state(true);
+
+/home/nick/cogni-test/src/routes/(app)/tests/page.svelte.spec.ts:14:14
+Error: Expected 0-1 type arguments, but got 2. 
+const navMocks = vi.hoisted(() => ({
+	goto: vi.fn<[(string | URL)?], Promise<void>>(() => Promise.resolve()),
+	resolve: vi.fn<[string], string>((path: string) => path)
+
+/home/nick/cogni-test/src/routes/(app)/tests/page.svelte.spec.ts:15:17
+Error: Expected 0-1 type arguments, but got 2. 
+	goto: vi.fn<[(string | URL)?], Promise<void>>(() => Promise.resolve()),
+	resolve: vi.fn<[string], string>((path: string) => path)
+}));
+
+/home/nick/cogni-test/src/routes/(app)/tests/page.svelte.spec.ts:21:46
+Error: Argument of type '[string]' is not assignable to parameter of type 'never'. 
+vi.mock('$app/navigation', () => ({
+	goto: (...args: unknown[]) => navMocks.goto(...(args as [string]))
+}));
+
+/home/nick/cogni-test/src/routes/(app)/tests/page.svelte.spec.ts:25:46
+Error: Argument of type '[string]' is not assignable to parameter of type 'never'. 
+vi.mock('$app/paths', () => ({
+	resolve: (path: string) => navMocks.resolve(path)
+}));
+
+/home/nick/cogni-test/src/routes/(app)/tests/page.svelte.spec.ts:56:47
+Error: Type '{ tests: { name: string; title: string; path: string; img: string; }[]; testSessionCounts: Record<string, number>; }' is not assignable to type 'PageData'.
+  Type '{ tests: { name: string; title: string; path: string; img: string; }[]; testSessionCounts: Record<string, number>; }' is missing the following properties from type '{ user: User; profileSurvey: { userId: string; id?: number | undefined; createdAt?: string | undefined; birthCity?: string | null | undefined; currentCityType?: "capital" | "municipality" | ... 4 more ... | undefined; ... 31 more ...; updatedAt?: string | undefined; } | { ...; }; ... 6 more ...; testSessionCounts: R...': user, profileSurvey, undiagnosed, allowedPaths, and 3 more. 
+async function mountPage(data: ReturnType<typeof makeData>) {
+	const result = await render(Page, { props: { data } });
+	// onMount с await localforage... выполняется асинхронно;
+
+/home/nick/cogni-test/src/routes/(app)/tests/[slug]/playground/+server.ts:40:8
+Error: Type '{ results?: RegularResults | MetaResult | undefined; action?: string | undefined; }' is not assignable to type '{ results: RegularResults | MetaResult; }'.
+  Types of property 'results' are incompatible.
+    Type 'RegularResults | MetaResult | undefined' is not assignable to type 'RegularResults | MetaResult'.
+      Type 'undefined' is not assignable to type 'RegularResults | MetaResult'. 
+
+	const { results }: { results: RegularResults | MetaResult } = body;
+	const userid = cookies.get('user_id') as string;
+
+/home/nick/cogni-test/src/routes/(app)/tests/[slug]/playground/page.svelte.spec.ts:26:46
+Error: Expected 0 arguments, but got 1. 
+vi.mock('$app/navigation', () => ({
+	goto: (...args: unknown[]) => navMocks.goto(...(args as [string]))
+}));
+
+/home/nick/cogni-test/src/routes/(app)/tests/[slug]/playground/server.test.ts:49:5
+Error: Argument of type 'RequestEvent<{ id?: string | undefined; slug?: string | undefined; }, "/" | "/api/push/subscribe" | "/api/push/unsubscribe" | "/api/push/send" | "/api/push/send-to-all" | "/api/push/schedule-for-all" | ... 46 more ... | null>' is not assignable to parameter of type 'RequestEvent<{ slug: keyof TestResultMap; }, "/" | "/api/push/subscribe" | "/api/push/unsubscribe" | "/api/push/send" | "/api/push/send-to-all" | "/api/push/schedule-for-all" | ... 46 more ... | null>'.
+  Type '{ id?: string | undefined; slug?: string | undefined; }' is not assignable to type '{ slug: keyof TestResultMap; }'.
+    Types of property 'slug' are incompatible.
+      Type 'string | undefined' is not assignable to type 'keyof TestResultMap'.
+        Type 'undefined' is not assignable to type 'keyof TestResultMap'. 
+			const res = await POST(
+				makeEvent({ slug: 'stroop', body: { action: 'generate-random' } })
+			);
+
+/home/nick/cogni-test/src/routes/(app)/tests/[slug]/playground/server.test.ts:61:5
+Error: Argument of type 'RequestEvent<{ id?: string | undefined; slug?: string | undefined; }, "/" | "/api/push/subscribe" | "/api/push/unsubscribe" | "/api/push/send" | "/api/push/send-to-all" | "/api/push/schedule-for-all" | ... 46 more ... | null>' is not assignable to parameter of type 'RequestEvent<{ slug: keyof TestResultMap; }, "/" | "/api/push/subscribe" | "/api/push/unsubscribe" | "/api/push/send" | "/api/push/send-to-all" | "/api/push/schedule-for-all" | ... 46 more ... | null>'.
+  Type '{ id?: string | undefined; slug?: string | undefined; }' is not assignable to type '{ slug: keyof TestResultMap; }'.
+    Types of property 'slug' are incompatible.
+      Type 'string | undefined' is not assignable to type 'keyof TestResultMap'.
+        Type 'undefined' is not assignable to type 'keyof TestResultMap'. 
+			const res = await POST(
+				makeEvent({ slug: 'bogus', body: { action: 'generate-random' }, userId: 'user-1' })
+			);
+
+/home/nick/cogni-test/src/routes/(app)/tests/[slug]/playground/server.test.ts:76:6
+Error: Argument of type 'RequestEvent<{ id?: string | undefined; slug?: string | undefined; }, "/" | "/api/push/subscribe" | "/api/push/unsubscribe" | "/api/push/send" | "/api/push/send-to-all" | "/api/push/schedule-for-all" | ... 46 more ... | null>' is not assignable to parameter of type 'RequestEvent<{ slug: keyof TestResultMap; }, "/" | "/api/push/subscribe" | "/api/push/unsubscribe" | "/api/push/send" | "/api/push/send-to-all" | "/api/push/schedule-for-all" | ... 46 more ... | null>'.
+  Type '{ id?: string | undefined; slug?: string | undefined; }' is not assignable to type '{ slug: keyof TestResultMap; }'.
+    Types of property 'slug' are incompatible.
+      Type 'string | undefined' is not assignable to type 'keyof TestResultMap'.
+        Type 'undefined' is not assignable to type 'keyof TestResultMap'. 
+				const res = await POST(
+					makeEvent({
+						slug: 'stroop',
+						body: { action: 'generate-random' },
+						userId: 'user-1'
+					})
+				);
+
+/home/nick/cogni-test/src/routes/(app)/tests/[slug]/playground/server.test.ts:101:6
+Error: Argument of type 'RequestEvent<{ id?: string | undefined; slug?: string | undefined; }, "/" | "/api/push/subscribe" | "/api/push/unsubscribe" | "/api/push/send" | "/api/push/send-to-all" | "/api/push/schedule-for-all" | ... 46 more ... | null>' is not assignable to parameter of type 'RequestEvent<{ slug: keyof TestResultMap; }, "/" | "/api/push/subscribe" | "/api/push/unsubscribe" | "/api/push/send" | "/api/push/send-to-all" | "/api/push/schedule-for-all" | ... 46 more ... | null>'.
+  Type '{ id?: string | undefined; slug?: string | undefined; }' is not assignable to type '{ slug: keyof TestResultMap; }'.
+    Types of property 'slug' are incompatible.
+      Type 'string | undefined' is not assignable to type 'keyof TestResultMap'.
+        Type 'undefined' is not assignable to type 'keyof TestResultMap'. 
+				const res = await POST(
+					makeEvent({
+						slug: 'stroop',
+						body: { action: 'generate-random' },
+						userId: 'user-1'
+					})
+				);
+
+/home/nick/cogni-test/src/routes/(app)/tests/[slug]/playground/server.test.ts:120:5
+Error: Argument of type 'RequestEvent<{ id?: string | undefined; slug?: string | undefined; }, "/" | "/api/push/subscribe" | "/api/push/unsubscribe" | "/api/push/send" | "/api/push/send-to-all" | "/api/push/schedule-for-all" | ... 46 more ... | null>' is not assignable to parameter of type 'RequestEvent<{ slug: keyof TestResultMap; }, "/" | "/api/push/subscribe" | "/api/push/unsubscribe" | "/api/push/send" | "/api/push/send-to-all" | "/api/push/schedule-for-all" | ... 46 more ... | null>'.
+  Type '{ id?: string | undefined; slug?: string | undefined; }' is not assignable to type '{ slug: keyof TestResultMap; }'.
+    Types of property 'slug' are incompatible.
+      Type 'string | undefined' is not assignable to type 'keyof TestResultMap'.
+        Type 'undefined' is not assignable to type 'keyof TestResultMap'. 
+			const res = await POST(
+				makeEvent({ slug: 'stroop', body: { action: 'generate-random' }, userId: 'user-1' })
+			);
+
+/home/nick/cogni-test/src/routes/(app)/tests/[slug]/playground/server.test.ts:133:5
+Error: Argument of type 'RequestEvent<{ id?: string | undefined; slug?: string | undefined; }, "/" | "/api/push/subscribe" | "/api/push/unsubscribe" | "/api/push/send" | "/api/push/send-to-all" | "/api/push/schedule-for-all" | ... 46 more ... | null>' is not assignable to parameter of type 'RequestEvent<{ slug: keyof TestResultMap; }, "/" | "/api/push/subscribe" | "/api/push/unsubscribe" | "/api/push/send" | "/api/push/send-to-all" | "/api/push/schedule-for-all" | ... 46 more ... | null>'.
+  Type '{ id?: string | undefined; slug?: string | undefined; }' is not assignable to type '{ slug: keyof TestResultMap; }'.
+    Types of property 'slug' are incompatible.
+      Type 'string | undefined' is not assignable to type 'keyof TestResultMap'.
+        Type 'undefined' is not assignable to type 'keyof TestResultMap'. 
+			const res = await POST(
+				makeEvent({ slug: 'memory', body: { action: 'generate-random' }, userId: 'user-1' })
+			);
+
+/home/nick/cogni-test/src/routes/(app)/tests/[slug]/playground/server.test.ts:152:5
+Error: Argument of type 'RequestEvent<{ id?: string | undefined; slug?: string | undefined; }, "/" | "/api/push/subscribe" | "/api/push/unsubscribe" | "/api/push/send" | "/api/push/send-to-all" | "/api/push/schedule-for-all" | ... 46 more ... | null>' is not assignable to parameter of type 'RequestEvent<{ slug: keyof TestResultMap; }, "/" | "/api/push/subscribe" | "/api/push/unsubscribe" | "/api/push/send" | "/api/push/send-to-all" | "/api/push/schedule-for-all" | ... 46 more ... | null>'.
+  Type '{ id?: string | undefined; slug?: string | undefined; }' is not assignable to type '{ slug: keyof TestResultMap; }'.
+    Types of property 'slug' are incompatible.
+      Type 'string | undefined' is not assignable to type 'keyof TestResultMap'.
+        Type 'undefined' is not assignable to type 'keyof TestResultMap'. 
+			const res = await POST(
+				makeEvent({ slug: 'stroop', body: { results }, userId: 'user-1' })
+			);
+
+/home/nick/cogni-test/src/lib/components/ui/NotificationToggle.svelte:6:6
+Warn: `enabled` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
+https://svelte.dev/e/non_reactive_update (svelte)
+	let permission: NotificationPermission = 'default';
+	let enabled = false;
+
+/home/nick/cogni-test/src/lib/exercises/memory-match/StageBoard.svelte:6:3
+Error: Cannot use `export let` in runes mode — use `$props()` instead
+https://svelte.dev/e/legacy_export_invalid (svelte)
+  // входные пропсы
+  export let rows: number;
+  export let cols: number;
+
+/home/nick/cogni-test/src/routes/(app)/admin/login/+page.svelte:26:4
+Error: Object literal may only specify known properties, and '"type"' does not exist in type '$$ComponentProps'. (ts)
+			plain
+			type="password"
+			name="password"
+
+/home/nick/cogni-test/src/routes/(app)/exercises/[slug]/results/+page.svelte:18:51
+Warn: This reference only captures the initial value of `data`. Did you mean to reference it inside a derived instead?
+https://svelte.dev/e/state_referenced_locally (svelte)
+
+	let mergedResults = $state<ResultsPageSession[]>(data.results as ResultsPageSession[]);
+
+/home/nick/cogni-test/src/routes/(app)/materials/(materials)/gymnastics/+page.svelte:3:14
+Warn: This reference only captures the initial value of `data`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally (svelte)
+	let { data } = $props();
+	const sex = data.user?.sex ?? 'male';
+	const src = (n: number) => `/materials/ex${n}-${sex === 'female' ? 'f' : 'm'}.mp4`;
+
+====================================
+svelte-check found 45 errors and 13 warnings in 25 files

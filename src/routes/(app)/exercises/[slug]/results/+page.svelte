@@ -75,7 +75,7 @@
 	}
 </script>
 
-<main class="main flex flex-col gap-2 w-full max-w-5xl mx-auto items-center justify-center-safe">
+<main class="main mx-auto flex w-full max-w-5xl flex-col items-center justify-center-safe gap-2">
 	{#if SummaryComp}
 		<div class="w-full">
 			<SummaryComp results={serverResults} />
@@ -111,7 +111,8 @@
 						</span>
 						{#if meta?.difficulty}
 							<span
-								class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {meta.difficulty === 'hard'
+								class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {meta.difficulty ===
+								'hard'
 									? 'bg-red-100 text-red-700'
 									: meta.difficulty === 'medium'
 										? 'bg-amber-100 text-amber-700'
@@ -152,7 +153,7 @@
 	{/if}
 </main>
 
-<section class="low-content grid grid-cols-2 gap-4">
+<section class="low-content grid w-full sm:max-w-5xl grid-cols-2 gap-4">
 	<Button color="red" goto="/exercises/{slug}">Назад</Button>
 	<Button color="blue" goto="/exercises/{slug}/playground">Пройти снова</Button>
 </section>

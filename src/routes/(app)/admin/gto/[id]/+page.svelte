@@ -1,14 +1,12 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
 	import Toast from '$lib/components/ui/Toast.svelte';
-	import { missingFieldLabels } from '$lib/survey-field-labels';
-	import { invalidateAll } from '$app/navigation';
+	import { invalidateAll, goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import type { PathnameWithSearchOrHash, ResolvedPathname } from '$app/types';
 	import * as XLSX from 'xlsx';
 	import type { PageProps } from './$types';
-	import type {
-		GtoEditableMetricDetail,
-		ParticipantMetrics
-	} from '$lib/server/db/controllers/gto';
+	import type { ParticipantMetrics } from '$lib/server/db/controllers/gto';
 	import {
 		uploadButtonFiles,
 		getParticipantIdsForFile,
@@ -21,6 +19,9 @@
 		type FileNumberStatus
 	} from '$lib/client/gto-button-data';
 	import { initMetricsDraft, collectMetricsFromDraft, rebuildDraftMap } from './table-helpers';
+	import AddParticipantCard from './components/AddParticipantCard.svelte';
+	import ButtonTestFilesCard from './components/ButtonTestFilesCard.svelte';
+	import ParticipantsTable from './components/ParticipantsTable.svelte';
 	import { buildCertificateData } from '$lib/certificate/certificate-data';
 	import { downloadCertificatePdf } from '$lib/certificate/generate';
 	import { onMount, untrack } from 'svelte';
@@ -29,13 +30,20 @@
 
 	const headerContext = getContext<{ value: string }>('headerText');
 
-	onMount(() => {
+	// resolve() has a variadic conditional signature (ResolveArgs<T>) that
+	// cannot accept the full route union — narrow it to the pathname overload.
+	const resolvePathname = resolve as (path: PathnameWithSearchOrHash) => ResolvedPathname;
+
+	let { data }: PageProps = $props();
+
+	// Реактивно держим заголовок страницы равным имени сессии,
+	// чтобы он обновлялся после rename + invalidateAll.
+	$effect(() => {
 		if (headerContext) {
-			headerContext.value = 'Управление сессиями ГТО-М';
+			headerContext.value = data.session.name;
 		}
 	});
 
-	let { data }: PageProps = $props();
 	let editingName = $state(false);
 
 	let sessionName = $derived(data.session.name);
@@ -45,10 +53,7 @@
 	let toastMessage = $state<string | null>(null);
 	let toastType = $state<'error' | 'success' | 'info'>('info');
 	let expandedParticipant = $state<string | null>(null);
-	let addingParticipant = $state(false);
-	let participantSearch = $state('');
-	let filterRecent = $state(false);
-	const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+	let topCardsOpen = $state(false);
 	let metricsSearch = $state('');
 	let menuOpen = $state(false);
 	let removingParticipant = $state<string | null>(null);
@@ -79,6 +84,30 @@
 		participantButtonIds.set(fileNumber, ids);
 	}
 
+	async function handleUploadFiles(files: FileList | File[]): Promise<void> {
+		uploadingFiles = true;
+		try {
+			fileNumbersWithStatus = await uploadButtonFiles(files as FileList);
+			buttonDataLoaded = new SvelteMap(await loadAllButtonData());
+			for (const fn of availableFileNumbers) {
+				await loadButtonIdsForFile(fn);
+			}
+			showToast(`Загружено файлов: ${files.length}`, 'success');
+		} catch {
+			showToast('Ошибка загрузки файлов');
+		} finally {
+			uploadingFiles = false;
+		}
+	}
+
+	async function handleClearFiles(): Promise<void> {
+		await clearAllButtonData();
+		fileNumbersWithStatus = [];
+		buttonDataLoaded.clear();
+		participantButtonIds.clear();
+		showToast('Файлы очищены', 'info');
+	}
+
 	onMount(async () => {
 		fileNumbersWithStatus = await getFileNumbersWithStatus();
 		buttonDataLoaded = new SvelteMap(await loadAllButtonData());
@@ -94,17 +123,6 @@
 			);
 		}
 	});
-
-	function fmt(val: number | null, decimals = 2): string {
-		if (val === null) return '—';
-		return val.toFixed(decimals);
-	}
-
-	function pct(val: number): string {
-		return (val * 100).toFixed(1) + '%';
-	}
-
-	const balanceTestOptions = ['0-15', '15-30', '30-45', '45-60', '60+'] as const;
 
 	async function refreshData() {
 		await invalidateAll();
@@ -172,6 +190,25 @@
 		await refreshData();
 	}
 
+	async function handleDelete() {
+		if (!window.confirm('Удалить завершённую сессию? Действие необратимо.')) return;
+		const response = await fetch('', { method: 'DELETE' });
+		if (!response.ok) {
+			let message = 'Ошибка удаления сессии';
+			try {
+				const data = await response.json();
+				if (data?.error) message = data.error;
+			} catch {
+				// keep the fallback message
+			}
+			showToast(message);
+			return;
+		}
+		menuOpen = false;
+		// The page no longer exists — navigate instead of invalidating.
+		await goto(resolvePathname('/admin/gto'));
+	}
+
 	async function assignWordSet(participantId: string, wordSetId: string) {
 		const fd = new FormData();
 		fd.set('action', 'assignWordSet');
@@ -195,7 +232,6 @@
 			showToast('Ошибка добавления участника');
 		} else {
 			showToast('Участник добавлен', 'success');
-			participantSearch = '';
 			await refreshData();
 		}
 	}
@@ -352,27 +388,6 @@
 		statusConfig[data.session.status as keyof typeof statusConfig] ?? statusConfig.completed
 	);
 
-	let currentParticipantIds = $derived(new Set(data.session.participants.map((p) => p.userId)));
-
-	let availableUsers = $derived(
-		data.authorizedUsers
-			.filter((u) => !currentParticipantIds.has(u.id))
-			.filter((u) => {
-				if (filterRecent) {
-					if (!u.lastActiveAt) return false;
-					const la = new Date(u.lastActiveAt);
-					if (la < sevenDaysAgo) return false;
-				}
-				if (!participantSearch) return true;
-				const q = participantSearch.toLowerCase();
-				return (
-					u.lastname.toLowerCase().includes(q) ||
-					u.firstname.toLowerCase().includes(q) ||
-					(u.gtoId ?? '').toLowerCase().includes(q)
-				);
-			})
-	);
-
 	let filteredMetrics = $derived(
 		data.metrics.filter((m) => {
 			if (!metricsSearch) return true;
@@ -397,6 +412,18 @@
 		savedParticipantId = null; // consume flag BEFORE assigning draftMap
 		draftMap = next;
 	});
+
+	function handleSelectButtonFile(participantId: string, fileNumber: string | null) {
+		if (fileNumber) {
+			selectedButtonFile.set(participantId, fileNumber);
+		} else {
+			selectedButtonFile.delete(participantId);
+		}
+	}
+
+	function handleToggleExpand(participantId: string) {
+		expandedParticipant = expandedParticipant === participantId ? null : participantId;
+	}
 
 	function setDraft(
 		participantId: string,
@@ -437,22 +464,28 @@
 
 <svelte:window onclick={closeMenuOutside} />
 
-<main class="main overflow-auto p-4">
-	<section>
-		<div class="flex items-center justify-center gap-3">
+<main class="main p-4!">
+	<div class="flex h-full min-h-0 flex-col gap-4">
+		<!-- Toolbar: статус, переименование, экспорт, меню сессии -->
+		<div class="flex flex-wrap items-center gap-3">
+			<span
+				class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm {statusStyle.bg} {statusStyle.text}"
+			>
+				<span class="h-2 w-2 rounded-full {statusStyle.dot}"></span>
+				{statusStyle.label}
+			</span>
 			{#if editingName}
 				<div class="flex items-center gap-2">
 					<input
 						type="text"
 						bind:value={sessionName}
-						class="rounded-lg bg-gray-700 px-3 py-1.5 text-2xl font-bold text-white"
+						class="rounded-lg bg-gray-700 px-3 py-1.5 text-sm text-white"
 						onkeydown={(e) => e.key === 'Enter' && handleRename()}
 					/>
 					<Button color="green" onclick={handleRename}>Сохранить</Button>
 					<Button color="gray" onclick={() => (editingName = false)}>Отмена</Button>
 				</div>
 			{:else}
-				<h1 class="text-center text-2xl font-bold">{data.session.name}</h1>
 				<button
 					class="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-700 hover:text-white"
 					onclick={() => (editingName = true)}
@@ -470,1228 +503,276 @@
 					</svg>
 				</button>
 			{/if}
-			<span
-				class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm {statusStyle.bg} {statusStyle.text}"
-			>
-				<span class="h-2 w-2 rounded-full {statusStyle.dot}"></span>
-				{statusStyle.label}
-			</span>
-		</div>
-	</section>
-	<div class="flex flex-col gap-4">
-		<!-- Session control menu -->
-		{#if data.session.status !== 'completed'}
-			<div class="session-menu relative self-start">
-				<button
-					class="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-700 hover:text-white"
-					onclick={() => (menuOpen = !menuOpen)}
-					aria-label="Действия с сессией"
-				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						class="h-5 w-5"
-						viewBox="0 0 20 20"
-						fill="currentColor"
+			<div class="flex-1"></div>
+			<Button color="green" onclick={() => exportMetrics(data.metrics, sessionName)}>
+				Экспорт результатов
+			</Button>
+			<!-- Session control menu -->
+			{#if data.session.status !== 'completed'}
+				<div class="session-menu relative">
+					<button
+						class="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-700 hover:text-white"
+						onclick={() => (menuOpen = !menuOpen)}
+						aria-label="Действия с сессией"
 					>
-						<path
-							d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"
-						/>
-					</svg>
-				</button>
-				{#if menuOpen}
-					<div
-						class="absolute top-full left-0 z-10 mt-1 min-w-50 rounded-lg border border-gray-700 bg-gray-800 py-1 shadow-xl"
-					>
-						{#if data.session.status === 'active'}
-							<button
-								class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-yellow-300 transition-colors hover:bg-gray-700"
-								onclick={handlePause}
-							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									class="h-4 w-4"
-									viewBox="0 0 20 20"
-									fill="currentColor"
-								>
-									<path
-										fill-rule="evenodd"
-										d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"
-										clip-rule="evenodd"
-									/>
-								</svg>
-								Приостановить
-							</button>
-							<button
-								class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-300 transition-colors hover:bg-gray-700"
-								onclick={handleComplete}
-							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									class="h-4 w-4"
-									viewBox="0 0 20 20"
-									fill="currentColor"
-								>
-									<path
-										fill-rule="evenodd"
-										d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-										clip-rule="evenodd"
-									/>
-								</svg>
-								Завершить сессию
-							</button>
-						{:else if data.session.status === 'paused'}
-							<button
-								class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-green-300 transition-colors hover:bg-gray-700"
-								onclick={handleResume}
-							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									class="h-4 w-4"
-									viewBox="0 0 20 20"
-									fill="currentColor"
-								>
-									<path
-										fill-rule="evenodd"
-										d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
-										clip-rule="evenodd"
-									/>
-								</svg>
-								Возобновить
-							</button>
-							<button
-								class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-300 transition-colors hover:bg-gray-700"
-								onclick={handleComplete}
-							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									class="h-4 w-4"
-									viewBox="0 0 20 20"
-									fill="currentColor"
-								>
-									<path
-										fill-rule="evenodd"
-										d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-										clip-rule="evenodd"
-									/>
-								</svg>
-								Завершить сессию
-							</button>
-						{/if}
-					</div>
-				{/if}
-			</div>
-		{:else}
-			<div class="session-menu relative self-start">
-				<button
-					class="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-700 hover:text-white"
-					onclick={() => (menuOpen = !menuOpen)}
-					aria-label="Действия с сессией"
-				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						class="h-5 w-5"
-						viewBox="0 0 20 20"
-						fill="currentColor"
-					>
-						<path
-							d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"
-						/>
-					</svg>
-				</button>
-				{#if menuOpen}
-					<div
-						class="absolute top-full left-0 z-10 mt-1 min-w-50 rounded-lg border border-gray-700 bg-gray-800 py-1 shadow-xl"
-					>
-						<button
-							class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-green-300 transition-colors hover:bg-gray-700"
-							onclick={handleRestore}
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="h-5 w-5"
+							viewBox="0 0 20 20"
+							fill="currentColor"
 						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="h-4 w-4"
-								viewBox="0 0 20 20"
-								fill="currentColor"
-							>
-								<path
-									fill-rule="evenodd"
-									d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
-									clip-rule="evenodd"
-								/>
-							</svg>
-							Восстановить сессию
-						</button>
-					</div>
-				{/if}
-			</div>
-		{/if}
-
-		<!-- Add participant -->
-		<div class="rounded-xl border border-gray-700 bg-white p-4">
-			<button
-				class="flex w-full items-center justify-between text-left"
-				onclick={() => (addingParticipant = !addingParticipant)}
-			>
-				<span class="font-semibold">Добавить участника</span>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					class="h-5 w-5 text-gray-400 transition-transform {addingParticipant
-						? 'rotate-180'
-						: ''}"
-					viewBox="0 0 20 20"
-					fill="currentColor"
-				>
-					<path
-						fill-rule="evenodd"
-						d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-						clip-rule="evenodd"
-					/>
-				</svg>
-			</button>
-			{#if addingParticipant}
-				<div class="mt-3 flex flex-col gap-3">
-					<div class="flex items-center gap-3">
-						<input
-							type="text"
-							bind:value={participantSearch}
-							placeholder="Поиск по имени или ГТО-М ID..."
-							class="rounded-lg bg-[#E5E7EB] px-3 py-2 text-sm"
-						/>
-						<label class="flex items-center gap-1.5 text-sm whitespace-nowrap">
-							<input type="checkbox" bind:checked={filterRecent} class="rounded" />
-							Недавно вошедшие
-						</label>
-					</div>
-					{#if availableUsers.length === 0}
-						<p class="py-2 text-center text-sm text-gray-500">
-							{participantSearch
-								? 'Ничего не найдено'
-								: 'Все авторизованные пользователи уже в сессии'}
-						</p>
-					{:else}
-						<div class="max-h-60 overflow-y-auto rounded-lg border border-gray-700">
-							{#each availableUsers as u (u.id)}
+							<path
+								d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"
+							/>
+						</svg>
+					</button>
+					{#if menuOpen}
+						<div
+							class="absolute top-full right-0 z-10 mt-1 min-w-50 rounded-lg border border-gray-700 bg-gray-800 py-1 shadow-xl"
+						>
+							{#if data.session.status === 'active'}
 								<button
-									class="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-700"
-									onclick={() => handleAddParticipant(u.id)}
+									class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-yellow-300 transition-colors hover:bg-gray-700"
+									onclick={handlePause}
 								>
-									<span
-										class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-xs font-bold text-gray-300"
-									>
-										{u.firstname[0]}
-									</span>
-									<div class="flex min-w-0 flex-1 flex-col">
-										<span class="truncate text-sm font-medium"
-											>{u.firstname} {u.lastname}</span
-										>
-										<span class="text-xs">
-											{u.sex === 'male' ? 'М' : 'Ж'} · {u.age} лет
-											{#if u.gtoId}
-												· ГТО-М: {u.gtoId}
-											{/if}
-										</span>
-									</div>
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
-										class="h-5 w-5 shrink-0 text-green-500"
+										class="h-4 w-4"
 										viewBox="0 0 20 20"
 										fill="currentColor"
 									>
 										<path
 											fill-rule="evenodd"
-											d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+											d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"
 											clip-rule="evenodd"
 										/>
 									</svg>
+									Приостановить
 								</button>
-							{/each}
+								<button
+									class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-300 transition-colors hover:bg-gray-700"
+									onclick={handleComplete}
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										class="h-4 w-4"
+										viewBox="0 0 20 20"
+										fill="currentColor"
+									>
+										<path
+											fill-rule="evenodd"
+											d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+											clip-rule="evenodd"
+										/>
+									</svg>
+									Завершить сессию
+								</button>
+							{:else if data.session.status === 'paused'}
+								<button
+									class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-green-300 transition-colors hover:bg-gray-700"
+									onclick={handleResume}
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										class="h-4 w-4"
+										viewBox="0 0 20 20"
+										fill="currentColor"
+									>
+										<path
+											fill-rule="evenodd"
+											d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+											clip-rule="evenodd"
+										/>
+									</svg>
+									Возобновить
+								</button>
+								<button
+									class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-300 transition-colors hover:bg-gray-700"
+									onclick={handleComplete}
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										class="h-4 w-4"
+										viewBox="0 0 20 20"
+										fill="currentColor"
+									>
+										<path
+											fill-rule="evenodd"
+											d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+											clip-rule="evenodd"
+										/>
+									</svg>
+									Завершить сессию
+								</button>
+							{/if}
+						</div>
+					{/if}
+				</div>
+			{:else}
+				<div class="session-menu relative">
+					<button
+						class="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-700 hover:text-white"
+						onclick={() => (menuOpen = !menuOpen)}
+						aria-label="Действия с сессией"
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="h-5 w-5"
+							viewBox="0 0 20 20"
+							fill="currentColor"
+						>
+							<path
+								d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"
+							/>
+						</svg>
+					</button>
+					{#if menuOpen}
+						<div
+							class="absolute top-full right-0 z-10 mt-1 min-w-50 rounded-lg border border-gray-700 bg-gray-800 py-1 shadow-xl"
+						>
+							<button
+								class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-green-300 transition-colors hover:bg-gray-700"
+								onclick={handleRestore}
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									class="h-4 w-4"
+									viewBox="0 0 20 20"
+									fill="currentColor"
+								>
+									<path
+										fill-rule="evenodd"
+										d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+										clip-rule="evenodd"
+									/>
+								</svg>
+								Восстановить сессию
+							</button>
+							<button
+								class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-300 transition-colors hover:bg-gray-700"
+								onclick={handleDelete}
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									class="h-4 w-4"
+									viewBox="0 0 20 20"
+									fill="currentColor"
+								>
+									<path
+										fill-rule="evenodd"
+										d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z"
+										clip-rule="evenodd"
+									/>
+								</svg>
+								Удалить сессию
+							</button>
 						</div>
 					{/if}
 				</div>
 			{/if}
 		</div>
 
+		<!-- Общий тоггл: участники + файлы кнопочных тестов -->
+		<button
+			class="flex w-full items-center justify-between rounded-xl border border-gray-700 bg-white p-4 font-semibold"
+			onclick={() => (topCardsOpen = !topCardsOpen)}
+			aria-label="Карточки управления сессией"
+			aria-expanded={topCardsOpen}
+		>
+			<span>Управление: участники и файлы кнопочных тестов</span>
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				class="h-5 w-5 shrink-0 transition-transform {topCardsOpen ? 'rotate-180' : ''}"
+				viewBox="0 0 20 20"
+				fill="currentColor"
+			>
+				<path
+					fill-rule="evenodd"
+					d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+					clip-rule="evenodd"
+				/>
+			</svg>
+		</button>
+
+		{#if topCardsOpen}
+			<!-- Добавить участника + файлы кнопочных тестов -->
+			<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+				<AddParticipantCard
+					authorizedUsers={data.authorizedUsers}
+					participantIds={new Set(data.session.participants.map((p) => p.userId))}
+					onAdd={handleAddParticipant}
+				/>
+				<ButtonTestFilesCard
+					{fileNumbersWithStatus}
+					{uploadingFiles}
+					onupload={handleUploadFiles}
+					onclear={handleClearFiles}
+				/>
+			</div>
+		{/if}
+
 		<!-- Participants -->
-		{#if data.metrics.length === 0}
-			<div class="flex flex-col items-center gap-2 py-8 text-gray-400">
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					class="h-12 w-12 opacity-40"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="1.5"
-						d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
-					/>
-				</svg>
-				<p>Нет участников в этой сессии</p>
-			</div>
-		{:else}
-			<div class="flex items-center gap-3">
-				<h2 class="text-center text-lg font-semibold">Участники</h2>
-				<span class="text-sm text-gray-400"
-					>({filteredMetrics.length}/{data.metrics.length})</span
-				>
-				<div class="flex-1"></div>
-				<div class="relative">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						class="absolute top-2.5 left-2.5 h-4 w-4 text-gray-400"
-						viewBox="0 0 20 20"
-						fill="currentColor"
+		<section class="flex min-h-0 flex-1 flex-col gap-2">
+			{#if data.metrics.length > 0}
+				<div class="flex items-center gap-3">
+					<h2 class="text-center text-lg font-semibold">Участники</h2>
+					<span class="text-sm text-gray-400"
+						>({filteredMetrics.length}/{data.metrics.length})</span
 					>
-						<path
-							fill-rule="evenodd"
-							d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-							clip-rule="evenodd"
+					<div class="flex-1"></div>
+					<div class="relative">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="absolute top-2.5 left-2.5 h-4 w-4 text-gray-400"
+							viewBox="0 0 20 20"
+							fill="currentColor"
+						>
+							<path
+								fill-rule="evenodd"
+								d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+								clip-rule="evenodd"
+							/>
+						</svg>
+						<input
+							type="text"
+							placeholder="Поиск участников..."
+							bind:value={metricsSearch}
+							class="rounded-lg bg-[#E5E7EB] py-2 pr-3 pl-8 text-sm"
 						/>
-					</svg>
-					<input
-						type="text"
-						placeholder="Поиск участников..."
-						bind:value={metricsSearch}
-						class="rounded-lg bg-[#E5E7EB] py-2 pr-3 pl-8 text-sm"
-					/>
-				</div>
-			</div>
-			{#if filteredMetrics.length === 0}
-				<p class="py-4 text-center text-sm text-gray-400">Участники не найдены</p>
-			{:else}
-				<div class="flex flex-col gap-3">
-					<div class="overflow-x-auto">
-						<table
-							class="w-full min-w-[1200px] border-separate border-spacing-0 rounded-xl border border-gray-700 bg-white text-sm"
-						>
-							<thead class="sticky top-0 bg-gray-50">
-								<tr>
-									<th
-										class="px-3 py-2 text-left text-xs font-semibold whitespace-nowrap text-gray-600"
-										>#</th
-									>
-									<th
-										class="px-3 py-2 text-left text-xs font-semibold whitespace-nowrap text-gray-600"
-										>ГТО-ID</th
-									>
-									<th
-										class="px-3 py-2 text-left text-xs font-semibold whitespace-nowrap text-gray-600"
-										>ФИО / возраст</th
-									>
-									<th
-										class="px-3 py-2 text-center text-xs font-semibold whitespace-nowrap text-gray-600"
-										>Тесты</th
-									>
-									<th
-										class="px-3 py-2 text-center text-xs font-semibold whitespace-nowrap text-gray-600"
-										>Слова</th
-									>
-									<th
-										class="px-3 py-2 text-center text-xs font-semibold whitespace-nowrap text-gray-600"
-										>Счёт</th
-									>
-									<th
-										class="px-3 py-2 text-left text-xs font-semibold whitespace-nowrap text-gray-600"
-										>Баланс</th
-									>
-									<th
-										class="w-20 px-2 py-2 text-left text-xs font-semibold whitespace-nowrap text-gray-600"
-										>Лаб Q1</th
-									>
-									<th
-										class="w-20 px-2 py-2 text-left text-xs font-semibold whitespace-nowrap text-gray-600"
-										>Лаб Q2</th
-									>
-									<th
-										class="w-20 px-2 py-2 text-left text-xs font-semibold whitespace-nowrap text-gray-600"
-										>Лаб Q3</th
-									>
-									<th
-										class="w-28 px-2 py-2 text-left text-xs font-semibold whitespace-nowrap text-gray-600"
-										>Лаб VR №</th
-									>
-									<th
-										class="w-28 px-2 py-2 text-left text-xs font-semibold whitespace-nowrap text-gray-600"
-										>Лаб VR файл</th
-									>
-									<th
-										class="w-32 px-2 py-2 text-left text-xs font-semibold whitespace-nowrap text-gray-600"
-										>Кноп. файл</th
-									>
-									<th
-										class="w-20 px-2 py-2 text-left text-xs font-semibold whitespace-nowrap text-gray-600"
-										>Кноп. №</th
-									>
-									<th
-										class="w-16 px-2 py-2 text-left text-xs font-semibold whitespace-nowrap text-gray-600"
-										>Логика</th
-									>
-									<th
-										class="w-28 px-2 py-2 text-left text-xs font-semibold whitespace-nowrap text-gray-600"
-										>Сет слов</th
-									>
-									<th
-										class="px-3 py-2 text-center text-xs font-semibold whitespace-nowrap text-gray-600"
-										>Действия</th
-									>
-								</tr>
-							</thead>
-							<tbody>
-								{#each filteredMetrics as m, i (m.participantId)}
-									{@const em = m.editableMetrics as GtoEditableMetricDetail}
-									{@const isExpanded = expandedParticipant === m.participantId}
-									{@const isSaving = savingMetrics.has(m.participantId)}
-									{@const draft = draftMap.get(m.participantId)}
-									{@const effectiveButtonFile =
-										selectedButtonFile.get(m.participantId) ??
-										em.buttonTestFileName}
-									<tr class="border-b border-gray-100">
-										<td class="px-3 py-2 text-xs text-gray-400">{i + 1}</td>
-										<td class="px-3 py-2 font-mono text-xs text-gray-600">
-											{data.gtoIdMap.get(m.userId) ?? '—'}
-										</td>
-										<td class="px-3 py-2">
-											<div class="flex flex-col">
-												<span class="truncate font-medium">
-													{m.firstname}
-													{m.lastname}
-												</span>
-												<span class="text-xs text-gray-400">
-													{m.sex === 'male' ? 'М' : 'Ж'} · {m.age} лет
-												</span>
-											</div>
-										</td>
-										<td class="px-3 py-2 text-center">
-											{#if m.missingSurveyFields.length > 0}
-												<span
-													class="rounded-full bg-red-300 px-2 py-0.5 text-xs text-white"
-													title={missingFieldLabels(
-														m.missingSurveyFields
-													)}>{m.missingSurveyFields.length} полей</span
-												>
-											{:else}
-												<span class="text-xs text-green-600">✓</span>
-											{/if}
-										</td>
-										<td class="px-3 py-2 text-center">
-											{#if m.wordScore !== null}
-												<span class="text-xs text-purple-600"
-													>{m.wordScore}/5</span
-												>
-											{:else if m.submittedWords}
-												<span
-													class="text-xs text-yellow-600"
-													title={m.submittedWords.join(', ')}
-													>ожидает сета</span
-												>
-											{:else}
-												<span class="text-xs text-gray-300">—</span>
-											{/if}
-										</td>
-										<td class="px-3 py-2 text-center text-xs tabular-nums">
-											{m.wordScore ?? '—'}
-										</td>
-										<td class="px-1 py-2">
-											<select
-												class="w-24 rounded bg-white px-1 py-1 text-xs"
-												value={draft?.balanceTest ?? ''}
-												disabled={!draft}
-												onchange={(e) =>
-													setDraft(
-														m.participantId,
-														'balanceTest',
-														(e.currentTarget as HTMLSelectElement).value
-													)}
-											>
-												<option value="">—</option>
-												{#each balanceTestOptions as opt (opt)}
-													<option value={opt}>{opt}</option>
-												{/each}
-											</select>
-										</td>
-										<td class="px-1 py-2">
-											<input
-												type="number"
-												min="0"
-												max="1"
-												step="0.01"
-												class="w-14 rounded bg-white px-1 py-1 text-xs"
-												value={draft?.mazeQ1 ?? ''}
-												disabled={!draft}
-												oninput={(e) =>
-													setDraft(
-														m.participantId,
-														'mazeQ1',
-														(e.currentTarget as HTMLInputElement).value
-													)}
-											/>
-										</td>
-										<td class="px-1 py-2">
-											<input
-												type="number"
-												min="0"
-												max="1"
-												step="0.01"
-												class="w-14 rounded bg-white px-1 py-1 text-xs"
-												value={draft?.mazeQ2 ?? ''}
-												disabled={!draft}
-												oninput={(e) =>
-													setDraft(
-														m.participantId,
-														'mazeQ2',
-														(e.currentTarget as HTMLInputElement).value
-													)}
-											/>
-										</td>
-										<td class="px-1 py-2">
-											<input
-												type="number"
-												min="0"
-												max="1"
-												step="0.01"
-												class="w-14 rounded bg-white px-1 py-1 text-xs"
-												value={draft?.mazeQ3 ?? ''}
-												disabled={!draft}
-												oninput={(e) =>
-													setDraft(
-														m.participantId,
-														'mazeQ3',
-														(e.currentTarget as HTMLInputElement).value
-													)}
-											/>
-										</td>
-										<td class="px-1 py-2">
-											<input
-												type="number"
-												class="w-20 rounded bg-white px-1 py-1 text-xs"
-												value={draft?.mazeVRNumber ?? ''}
-												disabled={!draft}
-												oninput={(e) =>
-													setDraft(
-														m.participantId,
-														'mazeVRNumber',
-														(e.currentTarget as HTMLInputElement).value
-													)}
-											/>
-										</td>
-										<td class="px-1 py-2">
-											<input
-												type="text"
-												class="w-24 rounded bg-white px-1 py-1 text-xs"
-												value={draft?.mazeVRFileName ?? ''}
-												disabled={!draft}
-												oninput={(e) =>
-													setDraft(
-														m.participantId,
-														'mazeVRFileName',
-														(e.currentTarget as HTMLInputElement).value
-													)}
-											/>
-										</td>
-										<td class="px-1 py-2">
-											<input
-												type="text"
-												list="button-file-opts-{m.participantId}"
-												class="w-28 rounded bg-white px-1 py-1 text-xs"
-												value={draft?.buttonTestFileName ?? ''}
-												disabled={!draft}
-												oninput={(e) => {
-													const val = (
-														e.currentTarget as HTMLInputElement
-													).value.trim();
-													if (val) {
-														selectedButtonFile.set(
-															m.participantId,
-															val
-														);
-														if (
-															availableFileNumbers.includes(val) ||
-															fileNumbersWithStatus.some(
-																(f) => f.fileNumber === val
-															)
-														) {
-															loadButtonIdsForFile(val);
-														}
-													} else {
-														selectedButtonFile.delete(m.participantId);
-													}
-													setDraft(
-														m.participantId,
-														'buttonTestFileName',
-														val
-													);
-												}}
-											/>
-											<datalist id="button-file-opts-{m.participantId}">
-												{#each availableFileNumbers as fn (fn)}
-													<option value={fn}></option>
-												{/each}
-											</datalist>
-										</td>
-										<td class="px-1 py-2">
-											<input
-												type="number"
-												min="1"
-												max="20"
-												list="button-num-opts-{m.participantId}"
-												class="w-14 rounded bg-white px-1 py-1 text-xs"
-												value={draft?.buttonTestNumber ?? ''}
-												disabled={!draft}
-												oninput={(e) =>
-													setDraft(
-														m.participantId,
-														'buttonTestNumber',
-														(e.currentTarget as HTMLInputElement).value
-													)}
-											/>
-											<datalist id="button-num-opts-{m.participantId}">
-												{#if effectiveButtonFile && participantButtonIds.has(effectiveButtonFile)}
-													{#each participantButtonIds.get(effectiveButtonFile) ?? [] as btnId (btnId)}
-														<option value={btnId}></option>
-													{/each}
-												{/if}
-											</datalist>
-										</td>
-										<td class="px-1 py-2">
-											<input
-												type="number"
-												min="0"
-												max="1"
-												step="0.01"
-												class="w-14 rounded bg-white px-1 py-1 text-xs"
-												value={draft?.logic ?? ''}
-												disabled={!draft}
-												oninput={(e) =>
-													setDraft(
-														m.participantId,
-														'logic',
-														(e.currentTarget as HTMLInputElement).value
-													)}
-											/>
-										</td>
-										<td class="px-1 py-2">
-											<select
-												class="w-28 rounded bg-white px-1 py-1 text-xs"
-												value={draft?.wordSetId ?? ''}
-												disabled={!draft}
-												onchange={(e) => {
-													const val = (
-														e.currentTarget as HTMLSelectElement
-													).value;
-													setDraft(m.participantId, 'wordSetId', val);
-													if (val) assignWordSet(m.participantId, val);
-												}}
-											>
-												<option value="">—</option>
-												{#each data.wordSets as ws (ws.id)}
-													<option value={ws.id}>Сет {ws.setNumber}</option
-													>
-												{/each}
-											</select>
-										</td>
-										<td class="px-2 py-2">
-											<div class="flex items-center gap-2">
-												<Button
-													color="green"
-													disabled={isSaving || !draft}
-													onclick={() => handleRowSave(m.participantId)}
-												>
-													{#if isSaving}Сохр…{:else}Сохр.{/if}
-												</Button>
-												{#if data.session.status === 'completed'}
-													{@const isGeneratingCertificate =
-														generatingCertificateId === m.participantId}
-													<button
-														class="rounded px-2 py-0.5 text-xs text-amber-700 transition-colors hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-50"
-														disabled={isGeneratingCertificate}
-														title="Скачать PDF-сертификат участника"
-														onclick={() => handleDownloadCertificate(m)}
-													>
-														{#if isGeneratingCertificate}Ген…{:else}Сертификат{/if}
-													</button>
-												{/if}
-												<button
-													class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-													onclick={() =>
-														(expandedParticipant = isExpanded
-															? null
-															: m.participantId)}
-													aria-label="Подробнее"
-												>
-													<svg
-														xmlns="http://www.w3.org/2000/svg"
-														class="h-4 w-4 shrink-0 transition-transform {isExpanded
-															? 'rotate-180'
-															: ''}"
-														viewBox="0 0 20 20"
-														fill="currentColor"
-													>
-														<path
-															fill-rule="evenodd"
-															d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-															clip-rule="evenodd"
-														/>
-													</svg>
-												</button>
-												{#if removingParticipant === m.participantId}
-													<button
-														class="rounded px-2 py-0.5 text-xs text-red-600 transition-colors hover:bg-red-50"
-														onclick={() =>
-															handleRemoveParticipant(
-																m.participantId
-															)}
-													>
-														Удалить
-													</button>
-													<button
-														class="rounded px-2 py-0.5 text-xs text-gray-500 transition-colors hover:bg-gray-100"
-														onclick={() => (removingParticipant = null)}
-													>
-														Отмена
-													</button>
-												{:else}
-													<button
-														class="rounded p-1 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
-														onclick={() =>
-															(removingParticipant = m.participantId)}
-														aria-label="Удалить участника"
-													>
-														<svg
-															xmlns="http://www.w3.org/2000/svg"
-															class="h-4 w-4"
-															viewBox="0 0 20 20"
-															fill="currentColor"
-														>
-															<path
-																fill-rule="evenodd"
-																d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-																clip-rule="evenodd"
-															/>
-														</svg>
-													</button>
-												{/if}
-											</div>
-										</td>
-									</tr>
-									{#if isExpanded}
-										<tr>
-											<td
-												colspan="17"
-												class="border-b border-gray-100 px-4 py-4"
-											>
-												<div
-													class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
-												>
-													<!-- Stroop -->
-													<div class="rounded-lg bg-[#E5E7EB] p-3">
-														<h4
-															class="mb-2 text-center text-xs font-semibold tracking-wider text-blue-400 uppercase"
-														>
-															Струп
-														</h4>
-														<div class="flex flex-col gap-1.5 text-sm">
-															{#each [{ label: 'Этап 1', data: m.stroop.stage1 }, { label: 'Этап 2', data: m.stroop.stage2 }, { label: 'Этап 3', data: m.stroop.stage3 }] as stage (stage.label)}
-																<div
-																	class="flex items-center gap-2"
-																>
-																	<span
-																		class="w-16 shrink-0 text-xs"
-																		>{stage.label}</span
-																	>
-																	<span class="tabular-nums"
-																		>{fmt(
-																			stage.data.meanTime
-																		)}с</span
-																	>
-																	<span class="text-xs"
-																		>σ{fmt(
-																			stage.data.stdDevTime
-																		)}</span
-																	>
-																	<span
-																		class="ml-auto tabular-nums {stage
-																			.data.accuracy >= 0.8
-																			? 'text-green-400'
-																			: stage.data.accuracy >=
-																				  0.5
-																				? 'text-yellow-400'
-																				: 'text-red-400'}"
-																	>
-																		{pct(stage.data.accuracy)}
-																	</span>
-																</div>
-															{/each}
-														</div>
-													</div>
-
-													<!-- Math -->
-													<div class="rounded-lg bg-[#E5E7EB] p-3">
-														<h4
-															class="mb-2 text-center text-xs font-semibold tracking-wider text-emerald-400 uppercase"
-														>
-															Арифметика
-														</h4>
-														<div class="flex flex-col gap-1 text-sm">
-															<div class="flex items-center gap-2">
-																<span class="w-16 shrink-0 text-xs"
-																	>Среднее</span
-																><span class="tabular-nums"
-																	>{fmt(m.math.meanTime)}с</span
-																>
-															</div>
-															<div class="flex items-center gap-2">
-																<span class="w-16 shrink-0 text-xs"
-																	>σ</span
-																><span class="tabular-nums"
-																	>{fmt(m.math.stdDevTime)}</span
-																>
-															</div>
-															<div class="flex items-center gap-2">
-																<span class="w-16 shrink-0 text-xs"
-																	>Точность</span
-																><span
-																	class="tabular-nums {m.math
-																		.accuracy >= 0.8
-																		? 'text-green-400'
-																		: m.math.accuracy >= 0.5
-																			? 'text-yellow-400'
-																			: 'text-red-400'}"
-																	>{pct(m.math.accuracy)}</span
-																>
-															</div>
-														</div>
-													</div>
-
-													<!-- Munsterberg -->
-													<div class="rounded-lg bg-[#E5E7EB] p-3">
-														<h4
-															class="mb-2 text-center text-xs font-semibold tracking-wider text-amber-400 uppercase"
-														>
-															Мюнстерберг
-														</h4>
-														<div class="flex flex-col gap-1 text-sm">
-															<div class="flex items-center gap-2">
-																<span class="w-16 shrink-0 text-xs"
-																	>Среднее</span
-																><span class="tabular-nums"
-																	>{fmt(
-																		m.munsterberg.meanTime
-																	)}с</span
-																>
-															</div>
-															<div class="flex items-center gap-2">
-																<span class="w-16 shrink-0 text-xs"
-																	>σ</span
-																><span class="tabular-nums"
-																	>{fmt(
-																		m.munsterberg.stdDevTime
-																	)}</span
-																>
-															</div>
-															<div class="flex items-center gap-2">
-																<span class="w-16 shrink-0 text-xs"
-																	>Доля</span
-																><span class="tabular-nums"
-																	>{pct(
-																		m.munsterberg
-																			.fractionGuessed
-																	)}</span
-																>
-															</div>
-															<div class="flex items-center gap-2">
-																<span class="w-16 shrink-0 text-xs"
-																	>Кол-во</span
-																><span class="tabular-nums"
-																	>{m.munsterberg
-																		.totalWordsHidden}</span
-																>
-															</div>
-														</div>
-													</div>
-
-													<!-- Campimetry -->
-													<div class="rounded-lg bg-[#E5E7EB] p-3">
-														<h4
-															class="mb-2 text-center text-xs font-semibold tracking-wider text-rose-400 uppercase"
-														>
-															Кампиметрия
-														</h4>
-														<div class="flex flex-col gap-1.5 text-sm">
-															{#each [{ label: 'Этап 1', data: m.campimetry.stage1 }, { label: 'Этап 2', data: m.campimetry.stage2 }] as stage (stage.label)}
-																<div class="flex flex-col gap-1">
-																	<span class="text-xs"
-																		>{stage.label}</span
-																	>
-																	<div
-																		class="flex items-center gap-2 pl-2"
-																	>
-																		<span class="tabular-nums"
-																			>{fmt(
-																				stage.data.meanTime
-																			)}с</span
-																		>
-																		<span class="text-xs"
-																			>σ{fmt(
-																				stage.data
-																					.stdDevTime
-																			)}</span
-																		>
-																		<span class="text-xs"
-																			>δ{fmt(
-																				stage.data.meanDelta
-																			)}</span
-																		>
-																	</div>
-																</div>
-															{/each}
-															<div
-																class="mt-1 border-t bg-[#E5E7EB] pt-1"
-															>
-																<span class="text-xs"
-																	>Разброс (эт. 2)</span
-																>
-																<div
-																	class="flex gap-3 pl-2 text-xs"
-																>
-																	<span class="text-yellow-400"
-																		>Недож: {m.campimetry
-																			.stage2Breakdown
-																			.underPress}</span
-																	>
-																	<span class="text-green-400"
-																		>Точно: {m.campimetry
-																			.stage2Breakdown
-																			.exact}</span
-																	>
-																	<span class="text-red-400"
-																		>Переж: {m.campimetry
-																			.stage2Breakdown
-																			.overPress}</span
-																	>
-																</div>
-															</div>
-														</div>
-													</div>
-
-													<!-- Memory -->
-													<div class="rounded-lg bg-[#E5E7EB] p-3">
-														<h4
-															class="mb-2 text-center text-xs font-semibold tracking-wider text-cyan-400 uppercase"
-														>
-															Память
-														</h4>
-														<div class="flex flex-col gap-1 text-sm">
-															<div class="flex items-center gap-2">
-																<span class="w-16 shrink-0 text-xs"
-																	>Среднее</span
-																><span class="tabular-nums"
-																	>{fmt(m.memory.meanTime)}с</span
-																>
-															</div>
-															<div class="flex items-center gap-2">
-																<span class="w-16 shrink-0 text-xs"
-																	>σ</span
-																><span class="tabular-nums"
-																	>{fmt(
-																		m.memory.stdDevTime
-																	)}</span
-																>
-															</div>
-															<div class="flex items-center gap-2">
-																<span class="w-16 shrink-0 text-xs"
-																	>Точность</span
-																><span
-																	class="tabular-nums {m.memory
-																		.accuracy >= 0.8
-																		? 'text-green-400'
-																		: m.memory.accuracy >= 0.5
-																			? 'text-yellow-400'
-																			: 'text-red-400'}"
-																	>{pct(m.memory.accuracy)}</span
-																>
-															</div>
-														</div>
-													</div>
-
-													<!-- Swallow -->
-													<div class="rounded-lg bg-[#E5E7EB] p-3">
-														<h4
-															class="mb-2 text-center text-xs font-semibold tracking-wider text-teal-400 uppercase"
-														>
-															Ласточка
-														</h4>
-														<div class="flex flex-col gap-1 text-sm">
-															<div class="flex items-center gap-2">
-																<span class="w-16 shrink-0 text-xs"
-																	>Среднее</span
-																><span class="tabular-nums"
-																	>{fmt(
-																		m.swallow.meanTime
-																	)}с</span
-																>
-															</div>
-															<div class="flex items-center gap-2">
-																<span class="w-16 shrink-0 text-xs"
-																	>σ</span
-																><span class="tabular-nums"
-																	>{fmt(
-																		m.swallow.stdDevTime
-																	)}</span
-																>
-															</div>
-															<div class="flex items-center gap-2">
-																<span class="w-16 shrink-0 text-xs"
-																	>Точность</span
-																><span
-																	class="tabular-nums {m.swallow
-																		.accuracy >= 0.8
-																		? 'text-green-400'
-																		: m.swallow.accuracy >= 0.5
-																			? 'text-yellow-400'
-																			: 'text-red-400'}"
-																	>{pct(m.swallow.accuracy)}</span
-																>
-															</div>
-														</div>
-													</div>
-
-													<!-- Raven -->
-													<div class="rounded-lg bg-[#E5E7EB] p-3">
-														<h4
-															class="mb-2 text-center text-xs font-semibold tracking-wider text-violet-400 uppercase"
-														>
-															Матрицы Равена
-														</h4>
-														<div class="flex flex-col gap-1 text-sm">
-															<div class="flex items-center gap-2">
-																<span class="w-20 shrink-0 text-xs"
-																	>Всего</span
-																><span class="tabular-nums"
-																	>{m.raven.correctCount}/{m.raven
-																		.totalQuestions}</span
-																>
-															</div>
-															<div class="flex items-center gap-2">
-																<span class="w-20 shrink-0 text-xs"
-																	>Точность</span
-																><span
-																	class="tabular-nums {m.raven
-																		.accuracy >= 0.8
-																		? 'text-green-400'
-																		: m.raven.accuracy >= 0.5
-																			? 'text-yellow-400'
-																			: 'text-red-400'}"
-																	>{pct(m.raven.accuracy)}</span
-																>
-															</div>
-															<div class="flex items-center gap-2">
-																<span class="w-20 shrink-0 text-xs"
-																	>Среднее</span
-																><span class="tabular-nums"
-																	>{fmt(
-																		m.raven
-																			.averageResponseTimeMs /
-																			1000
-																	)}с</span
-																>
-															</div>
-														</div>
-														<div
-															class="mt-2 border-t border-gray-700 pt-2"
-														>
-															<span class="text-xs">По сложности</span
-															>
-															<div
-																class="mt-1 grid grid-cols-3 gap-2 text-xs"
-															>
-																<div>
-																	<span>Легкие</span>
-																	<div class="tabular-nums">
-																		{m.raven.byDifficulty.level1
-																			.correct}/{m.raven
-																			.byDifficulty.level1
-																			.total}
-																	</div>
-																</div>
-																<div>
-																	<span>Средние</span>
-																	<div class="tabular-nums">
-																		{m.raven.byDifficulty.level2
-																			.correct}/{m.raven
-																			.byDifficulty.level2
-																			.total}
-																	</div>
-																</div>
-																<div>
-																	<span>Сложные</span>
-																	<div class="tabular-nums">
-																		{m.raven.byDifficulty.level3
-																			.correct}/{m.raven
-																			.byDifficulty.level3
-																			.total}
-																	</div>
-																</div>
-															</div>
-														</div>
-														{#if Object.keys(m.raven.byTaskClass).length > 0}
-															<div
-																class="mt-2 border-t border-gray-700 pt-2"
-															>
-																<span class="text-xs"
-																	>По классу задач</span
-																>
-																<div
-																	class="mt-1 flex flex-col gap-0.5 text-xs"
-																>
-																	{#each Object.entries(m.raven.byTaskClass) as [tc, info] (tc)}
-																		<div
-																			class="flex items-center justify-between"
-																		>
-																			<span>{info.label}</span
-																			><span
-																				class="tabular-nums"
-																				>{info.correct}/{info.total}</span
-																			>
-																		</div>
-																	{/each}
-																</div>
-															</div>
-														{/if}
-													</div>
-												</div>
-
-												{#if m.submittedWords && m.submittedWords.length > 0}
-													<div
-														class="mt-2 rounded-lg border border-gray-700 bg-white p-3"
-													>
-														<h4
-															class="mb-1 text-center text-xs font-semibold tracking-wider uppercase"
-														>
-															Выбранные слова
-														</h4>
-														<p class="text-center text-sm">
-															{m.submittedWords.join(', ')}
-														</p>
-													</div>
-												{/if}
-											</td>
-										</tr>
-									{/if}
-								{/each}
-							</tbody>
-						</table>
-					</div>
-					<details class="rounded-lg border border-gray-700 bg-white p-4" open>
-						<summary class="cursor-pointer text-sm font-medium">
-							Файлы кнопочных тестов
-							{#if fileNumbersWithStatus.length > 0}
-								<span
-									class="ml-2 rounded-full bg-blue-900/60 px-2 py-0.5 text-xs text-blue-300"
-								>
-									{fileNumbersWithStatus.length} файлов
-								</span>
-							{/if}
-						</summary>
-						<div class="mt-3 space-y-3">
-							<div
-								class="rounded-lg border border-yellow-800/50 bg-yellow-200 p-2 text-xs"
-							>
-								Данные кнопочных тестов хранятся только в этом браузере. Другие
-								администраторы не увидят загруженные файлы.
-							</div>
-							<div class="flex flex-wrap items-end gap-3">
-								<label class="flex flex-col gap-1">
-									<span class="text-xs text-gray-400"
-										>Загрузить файлы (.xls, .xlsx)</span
-									>
-									<input
-										type="file"
-										accept=".xls,.xlsx"
-										multiple
-										class="file:text-grey-200 block text-sm text-gray-300 file:mr-2 file:rounded-lg file:border-0 file:bg-(--main-accent-color) file:px-3 file:py-1.5 file:text-sm hover:file:text-white"
-										disabled={uploadingFiles}
-										onchange={async (e) => {
-											const files = (e.target as HTMLInputElement).files;
-											if (files && files.length > 0) {
-												uploadingFiles = true;
-												try {
-													fileNumbersWithStatus =
-														await uploadButtonFiles(files);
-													buttonDataLoaded = new SvelteMap(
-														await loadAllButtonData()
-													);
-													for (const fn of availableFileNumbers) {
-														await loadButtonIdsForFile(fn);
-													}
-													showToast(
-														`Загружено файлов: ${files.length}`,
-														'success'
-													);
-												} catch {
-													showToast('Ошибка загрузки файлов');
-												} finally {
-													uploadingFiles = false;
-												}
-											}
-										}}
-									/>
-								</label>
-							</div>
-							{#if fileNumbersWithStatus.length > 0}
-								<div class="space-y-1">
-									<p class="text-xs text-gray-400">Загруженные файлы:</p>
-									{#each fileNumbersWithStatus as fs (fs.fileNumber)}
-										<div class="flex items-center gap-2 text-xs text-gray-300">
-											<span class="font-mono">{fs.fileNumber}</span>
-											{#if fs.hasLeft && fs.hasRight}
-												<span class="text-green-400">л+п</span>
-											{:else}
-												{#if !fs.hasLeft && !fs.hasRight}
-													<span class="text-red-400"
-														>файлы не загружены</span
-													>
-												{:else}
-													<span class="text-yellow-400">
-														{fs.hasLeft
-															? 'не хватает файла п'
-															: 'не хватает файла л'}
-													</span>
-												{/if}
-											{/if}
-										</div>
-									{/each}
-									<button
-										class="text-xs text-red-400 hover:text-red-300"
-										onclick={async () => {
-											await clearAllButtonData();
-											fileNumbersWithStatus = [];
-											buttonDataLoaded.clear();
-											participantButtonIds.clear();
-											showToast('Файлы очищены', 'info');
-										}}
-									>
-										Очистить все
-									</button>
-								</div>
-							{/if}
-						</div>
-					</details>
-					<!-- TODO: should style it better or even move it somewhere else in the UI? -->
-					<div class="flex flex-col gap-2">
-						<Button
-							color="green"
-							onclick={() => exportMetrics(data.metrics, sessionName)}
-							>Экспорт результатов</Button
-						>
 					</div>
 				</div>
 			{/if}
-		{/if}
+			<ParticipantsTable
+				metrics={filteredMetrics}
+				totalCount={data.metrics.length}
+				gtoIdMap={data.gtoIdMap}
+				wordSets={data.wordSets}
+				sessionStatus={data.session.status}
+				{generatingCertificateId}
+				{fileNumbersWithStatus}
+				{availableFileNumbers}
+				{participantButtonIds}
+				{draftMap}
+				{savingMetrics}
+				{expandedParticipant}
+				{removingParticipant}
+				{selectedButtonFile}
+				onSetDraft={setDraft}
+				onSelectButtonFile={handleSelectButtonFile}
+				onLoadButtonFile={loadButtonIdsForFile}
+				onSaveRow={handleRowSave}
+				onAssignWordSet={assignWordSet}
+				onDownloadCertificate={handleDownloadCertificate}
+				onToggleExpand={handleToggleExpand}
+				onStartRemoving={(participantId) => (removingParticipant = participantId)}
+				onRemoveParticipant={handleRemoveParticipant}
+				onCancelRemoving={() => (removingParticipant = null)}
+			/>
+		</section>
 	</div>
 </main>
 
-<section class="low-content flex items-center justify-center">
+<section class="low-content flex items-center justify-center p-4!">
 	<Button color="red" goto="/admin/gto">Сессии ГТО-М</Button>
 </section>
 

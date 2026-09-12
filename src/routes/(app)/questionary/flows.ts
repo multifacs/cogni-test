@@ -4,7 +4,7 @@ export type ChoiceOption = { label: string; value: string };
 
 export type QuestionType =
 	| { kind: 'input'; placeholder?: string }
-	| { kind: 'range'; min: number; max: number }
+	| { kind: 'range'; min: number; max: number; default?: number }
 	| { kind: 'choice'; options: ChoiceOption[] }
 	| { kind: 'boolean' }
 	| { kind: 'autocomplete' }
@@ -88,27 +88,27 @@ const educationFlow: Flow = {
 		{
 			key: 'yearsNotQualified',
 			label: 'Сколько лет вашей основной деятельностью была работа, не требующая особой квалификации (охранник, официант, садовник, уборщик и т.д.)?',
-			type: { kind: 'range', min: 0, max: 50 }
+			type: { kind: 'range', min: 0, max: 50, default: 0 }
 		},
 		{
 			key: 'yearsQualifiedApplied',
 			label: 'Сколько лет вашей основной деятельностью была работа, требующая квалифицированного прикладного труда (медсестра, повар, парикмахер, слесарь и т.д.)?',
-			type: { kind: 'range', min: 0, max: 50 }
+			type: { kind: 'range', min: 0, max: 50, default: 0 }
 		},
 		{
 			key: 'yearsQualifiedNonApplied',
 			label: 'Сколько лет вашей основной деятельностью была работа, требующая квалифицированного неприкладного труда (агент по недвижимости, менеджер по продажам, музыкант, руководитель небольшого коллектива)?',
-			type: { kind: 'range', min: 0, max: 50 }
+			type: { kind: 'range', min: 0, max: 50, default: 0 }
 		},
 		{
 			key: 'yearsProfessional',
 			label: 'Сколько лет вашей основной деятельностью была профессиональная работа (управляющий компанией, адвокат, врач, учитель и т.д.)?',
-			type: { kind: 'range', min: 0, max: 50 }
+			type: { kind: 'range', min: 0, max: 50, default: 0 }
 		},
 		{
 			key: 'yearsHighResponsibility',
 			label: 'Сколько лет вашей основной деятельностью была высокоответственная или интеллектуальная работа (директор крупной компании, ученый, профессор, судья, хирург)?',
-			type: { kind: 'range', min: 0, max: 50 }
+			type: { kind: 'range', min: 0, max: 50, default: 0 }
 		}
 	]
 };
@@ -253,16 +253,16 @@ const bodyFlow: Flow = {
 	emoji: '/icons/body.svg',
 	description: 'Физические параметры и привычки',
 	questions: [
-		{ key: 'height', label: 'Рост', type: { kind: 'range', min: 0, max: 250 } },
-		{ key: 'weight', label: 'Вес', type: { kind: 'range', min: 0, max: 250 } },
+		{ key: 'height', label: 'Рост', type: { kind: 'range', min: 0, max: 250, default: 150 } },
+		{ key: 'weight', label: 'Вес', type: { kind: 'range', min: 0, max: 250, default: 50 } },
 		{
 			key: 'dominantHand',
 			label: 'Ведущая рука (какой рукой в основном пишете)',
 			type: {
 				kind: 'choice',
 				options: [
-					{ label: 'Правая', value: 'left' },
-					{ label: 'Левая', value: 'right' }
+					{ label: 'Правая', value: 'right' },
+					{ label: 'Левая', value: 'left' }
 				]
 			}
 		},

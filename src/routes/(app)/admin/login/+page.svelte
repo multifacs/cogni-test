@@ -6,9 +6,9 @@
 	let { form } = $props();
 </script>
 
-<section class="banner">
+<!-- <section class="banner">
 	<h1 class="text-3xl font-bold text-center">Admin page</h1>
-</section>
+</section> -->
 
 <main class="main flex flex-col items-center justify-center gap-4">
 	<form
