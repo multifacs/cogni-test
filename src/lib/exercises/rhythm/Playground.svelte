@@ -673,10 +673,13 @@
 
 		// Load offline pending attempts to augment difficulty counts
 		try {
-			const pending = await getPendingAttempts('rhythm');
+			const pending = await getPendingAttempts('rhythm', 'exercise');
 			const counts: Record<string, number> = { easy: 0, medium: 0, hard: 0 };
 			for (const el of pending) {
-				const diff = el.payload.results.meta?.difficulty;
+				const results = el.payload.results;
+				const meta = 'meta' in results ? results.meta : undefined;
+				const rec = meta && !Array.isArray(meta) ? meta : null;
+				const diff = rec?.difficulty;
 				if (diff === 'easy' || diff === 'medium' || diff === 'hard') {
 					counts[diff] = (counts[diff] ?? 0) + 1;
 				}

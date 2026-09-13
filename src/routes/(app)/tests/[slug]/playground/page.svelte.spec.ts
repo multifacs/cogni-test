@@ -1,4 +1,5 @@
 import { render, cleanup } from 'vitest-browser-svelte';
+import { page, userEvent } from 'vitest/browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import Page from './+page.svelte';
 import type { DevAction } from '$lib/types/header-action';
@@ -30,15 +31,29 @@ vi.mock('$app/paths', () => ({
 	resolve: (path: string) => navMocks.resolve(path)
 }));
 
-// Реестр тестов заменён стабом: спек проверяет wiring devAction, а не
-// рендер конкретной игры. Spinner — реальный лёгкий компонент проекта.
+// Оффлайн-очередь заменена шпионом: спек проверяет контракт страницы
+// (enqueue с kind 'test' при сбое POST), а не саму очередь.
+const queueMocks = vi.hoisted(() => ({
+	enqueueAttempt: vi.fn(
+		(_slug: string, _payload: { sessionId: string; results: unknown }, _kind?: string) =>
+			Promise.resolve('queue-el-1')
+	)
+}));
+
+vi.mock('$lib/client/offline-queue', () => ({
+	enqueueAttempt: queueMocks.enqueueAttempt
+}));
+
+// Реестр тестов заменён стабом: спек проверяет контракт страницы
+// (gameEnd/sendResults wiring), а не рендер конкретной игры.
+// game-stub даёт DOM-кнопки для вызова пропсов из теста.
 vi.mock('$lib/tests', async () => {
-	const { default: Spinner } = await import('$lib/components/ui/Spinner.svelte');
+	const { default: GameStub } = await import('$lib/testing/game-stub.svelte');
 	return {
 		testRegistry: {
 			stroop: {
 				title: 'Струп',
-				playground: async () => ({ default: Spinner })
+				playground: async () => ({ default: GameStub })
 			}
 		}
 	};
@@ -50,13 +65,30 @@ type HeaderContext = { value: string; devAction: DevAction };
 
 const SAMPLE_RESULTS = { correct: 7, wrong: 3, time: 1200 };
 
+// game-stub отправляет MetaResult-форму ({ results, meta }) — см. $lib/testing/game-stub.svelte
+const STUB_RESULTS = { results: [{ answer: 3, correct: true }], meta: {} };
+
 function jsonResponse(payload: unknown) {
 	return { ok: true, json: async () => payload };
 }
 
-const fetchMock = vi.fn<(input: unknown, init?: RequestInit) => Promise<unknown>>(async () =>
-	jsonResponse({ results: SAMPLE_RESULTS })
-);
+function failedResponse() {
+	return { ok: false, status: 500, json: async () => ({}) };
+}
+
+const fetchMock = vi.fn<(input: unknown, init?: RequestInit) => Promise<unknown>>();
+
+/** Разворачивает тело POST-вызова fetch по индексу. */
+function postCall(index: number) {
+	const call = fetchMock.mock.calls[index];
+	if (!call) throw new Error(`fetch call #${index} not recorded`);
+	return { url: String(call[0]), body: JSON.parse(String(call[1]?.body)) };
+}
+
+/** Даёт $effect и динамическому import игровой компоненты отработать. */
+async function settle(ms = 50) {
+	await new Promise((r) => setTimeout(r, ms));
+}
 
 async function mountPage(data: Record<string, unknown>) {
 	const ctx: HeaderContext = { value: 'Струп', devAction: null };
@@ -66,22 +98,20 @@ async function mountPage(data: Record<string, unknown>) {
 		// mount-опция context даёт странице тот же getContext('headerText')
 		context: new Map([['headerText', ctx]])
 	});
-	// даём $effect (регистрация devAction) и динамическому import отработать
-	await new Promise((r) => setTimeout(r, 50));
+	await settle();
 	return { ...result, ctx };
-}
-
-function postCall(index: number) {
-	const call = fetchMock.mock.calls[index];
-	if (!call) throw new Error(`fetch call #${index} not recorded`);
-	return { url: String(call[0]), body: JSON.parse(String(call[1]?.body)) };
 }
 
 // ─── Хуки ─────────────────────────────────────────────────────────────
 
 beforeEach(() => {
+	// дефолт: любой POST успешен (generate-random и save)
+	fetchMock.mockReset();
+	fetchMock.mockImplementation(async () => jsonResponse({ results: SAMPLE_RESULTS }));
 	vi.stubGlobal('fetch', fetchMock);
 	navMocks.url.searchParams = new URLSearchParams();
+	queueMocks.enqueueAttempt.mockReset();
+	queueMocks.enqueueAttempt.mockImplementation(async () => 'queue-el-1');
 });
 
 afterEach(() => {
@@ -90,6 +120,7 @@ afterEach(() => {
 	fetchMock.mockClear();
 	navMocks.goto.mockClear();
 	navMocks.resolve.mockClear();
+	queueMocks.enqueueAttempt.mockClear();
 });
 
 // ─── Тесты ────────────────────────────────────────────────────────────
@@ -103,7 +134,7 @@ describe('tests playground — devAction «Автопрохождение»', ()
 		expect(typeof ctx.devAction!.onclick).toBe('function');
 	});
 
-	it('onclick: POST generate-random → сохранение результатов → переход на страницу результатов', async () => {
+	it('onclick: POST generate-random → сохранение → goto на страницу результатов ровно один раз', async () => {
 		const { ctx } = await mountPage({ slug: 'stroop', isDevMode: true });
 
 		await ctx.devAction!.onclick();
@@ -118,8 +149,10 @@ describe('tests playground — devAction «Автопрохождение»', ()
 		expect(save.url).toBe('/tests/stroop/playground');
 		expect(save.body.results).toEqual(SAMPLE_RESULTS);
 		expect(save.body.action).toBeUndefined();
+		expect(typeof save.body.sessionId).toBe('string');
 
-		// onGameEnd → goto на страницу результатов
+		// навигация теперь внутри onSendResults — ровно один goto
+		expect(navMocks.goto).toHaveBeenCalledTimes(1);
 		expect(navMocks.goto).toHaveBeenCalledWith('/tests/stroop/results');
 	});
 
@@ -167,7 +200,7 @@ describe('tests playground — devAction «Автопрохождение»', ()
 			props: { data: { slug: 'stroop', isDevMode: true } } as never,
 			context: new Map()
 		});
-		await new Promise((r) => setTimeout(r, 50));
+		await settle();
 
 		// сам факт успешного рендера без throw — и есть проверка guard
 		expect(result.container).toBeTruthy();
@@ -183,5 +216,114 @@ describe('tests playground — devAction «Автопрохождение»', ()
 
 		await unmount();
 		expect(ctx.devAction).toBeNull();
+	});
+});
+
+describe('tests playground — await-before-navigate контракт onSendResults', () => {
+	it('(a) goto вызывается только ПОСЛЕ разрешения save-fetch (deferred fetch)', async () => {
+		let resolveSave!: () => void;
+		const saveDeferred = new Promise<void>((r) => (resolveSave = r));
+		fetchMock.mockImplementation(async (_input: unknown, init?: RequestInit) => {
+			const body = JSON.parse(String(init?.body ?? '{}'));
+			if (body.action === 'generate-random') return jsonResponse({ results: SAMPLE_RESULTS });
+			await saveDeferred;
+			return jsonResponse({ sessionId: 'sess-1' });
+		});
+
+		const { ctx } = await mountPage({ slug: 'stroop', isDevMode: true });
+		const autoplay = ctx.devAction!.onclick();
+		await settle();
+
+		// сохранение ещё в полёте — навигации нет
+		expect(navMocks.goto).not.toHaveBeenCalled();
+
+		resolveSave();
+		await autoplay;
+
+		expect(navMocks.goto).toHaveBeenCalledTimes(1);
+		expect(navMocks.goto).toHaveBeenCalledWith('/tests/stroop/results');
+	});
+
+	it('(b) POST save !ok: enqueueAttempt(kind test) → goto на результаты, error-UI нет', async () => {
+		fetchMock.mockImplementation(async () => failedResponse());
+
+		await mountPage({ slug: 'stroop' });
+
+		// реальный контракт игры: gameEnd() до sendResults(), один тик
+		await userEvent.click(page.getByTestId('stub-full-run'));
+		await settle();
+
+		// оффлайн-fallback: попытка поставлена в очередь с kind 'test'
+		expect(queueMocks.enqueueAttempt).toHaveBeenCalledTimes(1);
+		const [slugArg, payload, kindArg] = queueMocks.enqueueAttempt.mock.calls[0];
+		expect(slugArg).toBe('stroop');
+		expect(kindArg).toBe('test');
+		expect(payload.sessionId).toBe(postCall(0).body.sessionId);
+		expect(payload.results).toEqual(STUB_RESULTS);
+
+		// навигация на страницу результатов (там красный бейдж «Ожидает загрузки»)
+		expect(navMocks.goto).toHaveBeenCalledTimes(1);
+		expect(navMocks.goto).toHaveBeenCalledWith('/tests/stroop/results');
+
+		// error-UI не показывается — страница не остаётся в состоянии ошибки
+		await expect
+			.element(page.getByText('Не удалось сохранить результаты'))
+			.not.toBeInTheDocument();
+	});
+
+	it('(b2) POST save !ok + enqueueAttempt отвергнут: goto нет, error-UI виден', async () => {
+		fetchMock.mockImplementation(async () => failedResponse());
+		queueMocks.enqueueAttempt.mockImplementation(async () => {
+			throw new Error('quota exceeded');
+		});
+
+		await mountPage({ slug: 'stroop' });
+
+		await userEvent.click(page.getByTestId('stub-full-run'));
+		await settle();
+
+		expect(queueMocks.enqueueAttempt).toHaveBeenCalledTimes(1);
+		// отказ очереди → общий catch → saveError без навигации
+		expect(navMocks.goto).not.toHaveBeenCalled();
+		await expect.element(page.getByText('Не удалось сохранить результаты')).toBeVisible();
+		await expect.element(page.getByRole('button', { name: 'Попробовать снова' })).toBeVisible();
+	});
+
+	it('(c) GTO-режим: /gto/ fetch !ok — goto нет, error-UI', async () => {
+		navMocks.url.searchParams = new URLSearchParams('gtoSessionId=42');
+		fetchMock.mockImplementation(async (input: unknown) => {
+			if (String(input).includes('/gto/')) return failedResponse();
+			return jsonResponse({ results: SAMPLE_RESULTS });
+		});
+
+		await mountPage({ slug: 'stroop' });
+
+		await userEvent.click(page.getByTestId('stub-full-run'));
+		await settle();
+
+		expect(navMocks.goto).not.toHaveBeenCalled();
+		await expect.element(page.getByText('Не удалось сохранить результаты')).toBeVisible();
+	});
+
+	it('(d) double-fire: второй вызов save-пути во время isSaving не дублирует POST', async () => {
+		let resolveSave!: () => void;
+		const saveDeferred = new Promise<void>((r) => (resolveSave = r));
+		fetchMock.mockImplementation(async () => {
+			await saveDeferred;
+			return jsonResponse({ sessionId: 'sess-1' });
+		});
+
+		await mountPage({ slug: 'stroop' });
+
+		const send = page.getByTestId('stub-send-only');
+		await userEvent.click(send);
+		// второй клик пока первый save в полёте — guard isSaving должен его съесть
+		await userEvent.click(send);
+		resolveSave();
+		await settle();
+
+		expect(fetchMock).toHaveBeenCalledTimes(1);
+		expect(navMocks.goto).toHaveBeenCalledTimes(1);
+		expect(navMocks.goto).toHaveBeenCalledWith('/tests/stroop/results');
 	});
 });

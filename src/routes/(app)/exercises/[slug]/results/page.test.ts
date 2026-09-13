@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { mergeSessions } from '$lib/exercises';
+import { mergeSessions } from '$lib/results';
 import type { QueueElement } from '$lib/client/offline-queue';
 
 describe('mergeSessions', () => {
@@ -13,9 +13,7 @@ describe('mergeSessions', () => {
 	});
 
 	it('appends pending sessions and sorts combined list', () => {
-		const server = [
-			{ sessionId: 's1', createdAt: '2024-01-01T10:00:00Z', attempts: [] }
-		];
+		const server = [{ sessionId: 's1', createdAt: '2024-01-01T10:00:00Z', attempts: [] }];
 		const pending: QueueElement[] = [
 			{
 				id: 'q1',
@@ -73,5 +71,42 @@ describe('mergeSessions', () => {
 		const result = mergeSessions([], pending);
 		expect(result[0].attempts).toEqual([{ attempt: 100, note: 90 }]);
 		expect(result[0].meta).toEqual({ difficulty: 'medium', overpress: '2' });
+	});
+
+	it('array-shaped payload: attempts = the array, meta undefined', () => {
+		const pending: QueueElement[] = [
+			{
+				id: 'q4',
+				slug: 'flanker',
+				payload: {
+					sessionId: 'p1',
+					results: [{ trial: 1, correct: true } as never]
+				},
+				enqueuedAt: 1_704_000_000_000
+			}
+		];
+		const result = mergeSessions([], pending);
+		expect(result).toHaveLength(1);
+		expect(result[0].attempts).toEqual([{ trial: 1, correct: true }]);
+		expect(result[0].meta).toBeUndefined();
+		expect(result[0].pending).toBe(true);
+	});
+
+	it('array-shaped payload: server session with same sessionId wins over pending', () => {
+		const server = [{ sessionId: 's1', createdAt: '2024-01-01T10:00:00Z', attempts: [] }];
+		const pending: QueueElement[] = [
+			{
+				id: 'q5',
+				slug: 'flanker',
+				payload: {
+					sessionId: 's1',
+					results: [{ trial: 1 } as never]
+				},
+				enqueuedAt: 1_704_834_000_000
+			}
+		];
+		const result = mergeSessions(server, pending);
+		expect(result).toHaveLength(1);
+		expect(result[0].pending).toBeUndefined();
 	});
 });

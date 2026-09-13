@@ -28,15 +28,26 @@ const makeEvent = (opts: { slug: string; body: unknown; userId?: string }): ReqE
 
 // ─── Mock setup ────────────────────────────────────────────────────────
 
-vi.mock('$lib/server/db/controllers/result', () => ({
-	postResult: vi.fn()
-}));
+vi.mock('$lib/server/db/controllers/result', () => {
+	// Тот же класс, что импортирует хендлер из (замоканного) модуля:
+	// instanceof в +server и в тесте обязан ссылаться на одно определение
+	class SessionOwnershipError extends Error {
+		constructor(public readonly sessionId: string) {
+			super(`Session ${sessionId} belongs to a different user`);
+			this.name = 'SessionOwnershipError';
+		}
+	}
+	return {
+		postResult: vi.fn(),
+		SessionOwnershipError
+	};
+});
 
 vi.mock('$env/dynamic/private', () => ({
 	env: { MODE: 'DEV' }
 }));
 
-import { postResult } from '$lib/server/db/controllers/result';
+import { postResult, SessionOwnershipError } from '$lib/server/db/controllers/result';
 import { env } from '$env/dynamic/private';
 
 describe('playground POST route', () => {
@@ -124,6 +135,40 @@ describe('playground POST route', () => {
 		expect(body).toEqual({ sessionId: 'meta-session-id-789' });
 
 		expect(postResult).toHaveBeenCalledWith(metaResult, 'rhythm', 'user-1');
+	});
+
+	// ─── session ownership conflict (409) ──────────────────────────────
+
+	it('postResult rejects with SessionOwnershipError → 409 with error body', async () => {
+		vi.mocked(postResult).mockRejectedValue(new SessionOwnershipError('client-id-409'));
+
+		const { POST } = await import('./+server');
+		const res = await POST(
+			makeEvent({
+				slug: 'rhythm',
+				body: { results: [], sessionId: 'client-id-409' },
+				userId: 'user-1'
+			})
+		);
+
+		expect(res.status).toBe(409);
+		const body = await res.json();
+		expect(body).toEqual({ error: 'session belongs to another user' });
+	});
+
+	it('postResult rejects with an unrelated error → the handler rethrows it', async () => {
+		vi.mocked(postResult).mockRejectedValue(new Error('db connection lost'));
+
+		const { POST } = await import('./+server');
+		await expect(
+			POST(
+				makeEvent({
+					slug: 'rhythm',
+					body: { results: [] },
+					userId: 'user-1'
+				})
+			)
+		).rejects.toThrow('db connection lost');
 	});
 
 	// ─── generate-random (DEV-only автопрохождение) ─────────────────────

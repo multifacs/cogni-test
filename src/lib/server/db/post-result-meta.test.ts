@@ -25,7 +25,12 @@ vi.mock('$lib/server/db', async () => {
 	return { db };
 });
 
-import { postResult, getResults, getSessionList } from './controllers/result';
+import {
+	postResult,
+	getResults,
+	getSessionList,
+	SessionOwnershipError
+} from './controllers/result';
 import { db } from '$lib/server/db';
 import { flankerAttempt } from './models/exercises';
 import type { FlankerTrialRow } from '$lib/exercises/flanker/types';
@@ -101,19 +106,19 @@ describe('postResult meta-persist', () => {
 	});
 });
 
-	describe('postResult idempotency (rhythm)', () => {
-		async function createUser(firstname: string) {
-			const [created] = await db
-				.insert(user)
-				.values({
-					firstname,
-					lastname: 'Ta',
-					birthday: new Date(),
-					sex: 'male'
-				})
-				.returning();
-			return created;
-		}
+describe('postResult idempotency (rhythm)', () => {
+	async function createUser(firstname: string) {
+		const [created] = await db
+			.insert(user)
+			.values({
+				firstname,
+				lastname: 'Ta',
+				birthday: new Date(),
+				sex: 'male'
+			})
+			.returning();
+		return created;
+	}
 
 	it('does NOT duplicate attempts when the same sessionId is posted twice (rhythm)', async () => {
 		const u = await createUser('A');
@@ -174,9 +179,9 @@ describe('postResult meta-persist', () => {
 
 		await postResult([sampleRhythmRow], 'rhythm', u1.id, customId);
 
-		await expect(postResult([sampleRhythmRow], 'rhythm', u2.id, customId)).rejects.toThrow(
-			'belongs to a different user'
-		);
+		const retry = postResult([sampleRhythmRow], 'rhythm', u2.id, customId);
+		await expect(retry).rejects.toThrow('belongs to a different user');
+		await expect(retry).rejects.toBeInstanceOf(SessionOwnershipError);
 	});
 });
 

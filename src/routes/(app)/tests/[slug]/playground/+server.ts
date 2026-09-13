@@ -1,4 +1,4 @@
-import { postResult } from '$lib/server/db/controllers/result.js';
+import { postResult, SessionOwnershipError } from '$lib/server/db/controllers/result.js';
 import { generateDevRandomResults, UnknownDevSlugError } from '$lib/server/db/seed/generators.js';
 import { json } from '@sveltejs/kit';
 import { testRegistry } from '$lib/tests';
@@ -11,6 +11,7 @@ export const POST: RequestHandler<{
 	const slug = params.slug as keyof TestResultMap;
 	const body: {
 		results?: RegularResults | MetaResult;
+		sessionId?: string;
 		action?: string;
 	} = await request.json();
 
@@ -37,10 +38,23 @@ export const POST: RequestHandler<{
 		}
 	}
 
-	const { results }: { results: RegularResults | MetaResult } = body;
+	if (!body.results) {
+		return json({ error: 'results are required' }, { status: 400 });
+	}
+	const { sessionId } = body;
 	const userid = cookies.get('user_id') as string;
 
-	console.log(userid, 'posted', results);
-	await postResult(results, slug, userid);
-	return json('success', { status: 201 });
+	console.log(userid, 'posted', body.results);
+	// postResult returns the sessionId for both a fresh insert and an
+	// already-existing session (unique-constraint path) — the client can
+	// safely retry with the same id.
+	try {
+		const storedSessionId = await postResult(body.results, slug, userid, sessionId);
+		return json({ sessionId: storedSessionId }, { status: 201 });
+	} catch (err) {
+		if (err instanceof SessionOwnershipError) {
+			return json({ error: 'session belongs to another user' }, { status: 409 });
+		}
+		throw err;
+	}
 };

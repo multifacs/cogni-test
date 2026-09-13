@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { invalidateAll } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
 	import type { ExerciseResultMap } from '$lib/exercises/types.js';
-	import { exerciseRegistry, mergeSessions, type ResultsPageSession } from '$lib/exercises';
+	import { exerciseRegistry } from '$lib/exercises';
+	import { mergeSessions, type ResultsPageSession } from '$lib/results';
 	import { formatUserLocalDate } from '$lib/utils/common.js';
-	import { getPendingAttempts } from '$lib/client/offline-queue';
+	import { getPendingAttempts, flushQueue, type QueueElement } from '$lib/client/offline-queue';
 	import { type Component } from 'svelte';
 
 	const { data } = $props();
@@ -15,12 +17,8 @@
 	let Comp: Component | null = $state(null);
 	let SummaryComp: Component | null = $state(null);
 
-	let mergedResults = $state<ResultsPageSession[]>(data.results as ResultsPageSession[]);
-
-	$effect(() => {
-		// SSR initial render uses server data only; client merge runs after mount
-		mergedResults = serverResults;
-	});
+	let pending = $state<QueueElement[]>([]);
+	const mergedResults = $derived(mergeSessions(serverResults, pending));
 
 	$effect(() => {
 		Comp = null;
@@ -42,9 +40,16 @@
 
 	onMount(() => {
 		async function mergePending() {
-			const pending = await getPendingAttempts(slug);
+			pending = await getPendingAttempts(slug, 'exercise');
 			if (pending.length === 0) return;
-			mergedResults = mergeSessions(serverResults, pending);
+			// Race with the layout-level flush is accepted: the server is
+			// idempotent by sessionId, and flushQueue's re-read + done-set
+			// prevents losing concurrently enqueued elements.
+			flushQueue()
+				.then((s) => {
+					if (s.flushed > 0) invalidateAll();
+				})
+				.catch(() => {});
 		}
 		mergePending();
 	});
@@ -78,6 +83,7 @@
 <main class="main mx-auto flex w-full max-w-5xl flex-col items-center justify-center-safe gap-2">
 	{#if SummaryComp}
 		<div class="w-full">
+			<!-- Intentionally server-only data (trust model: server = source of truth) -->
 			<SummaryComp results={serverResults} />
 		</div>
 	{/if}
@@ -153,7 +159,7 @@
 	{/if}
 </main>
 
-<section class="low-content grid w-full sm:max-w-5xl grid-cols-2 gap-4">
+<section class="low-content grid w-full grid-cols-2 gap-4 sm:max-w-5xl">
 	<Button color="red" goto="/exercises/{slug}">Назад</Button>
 	<Button color="blue" goto="/exercises/{slug}/playground">Пройти снова</Button>
 </section>

@@ -2,7 +2,10 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import type { TestResultMap } from '$lib/tests/types.js';
 	import { testRegistry } from '$lib/tests';
+	import { mergeSessions, type ResultsPageSession } from '$lib/results';
 	import { formatUserLocalDate } from '$lib/utils/index.js';
+	import { getPendingAttempts, flushQueue, type QueueElement } from '$lib/client/offline-queue';
+	import { invalidateAll } from '$app/navigation';
 	import { onMount, type Component } from 'svelte';
 	import localforage from 'localforage';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
@@ -10,13 +13,20 @@
 
 	const { data } = $props();
 	const slug = $derived(data.slug);
-	const results = $derived(data.results);
-
+	// Loading state (Spinner) смотрит на серверные данные — пока их нет,
+	// показываем загрузку, даже если очередь уже принесла pending-попытки
+	const results = $derived(data.results as ResultsPageSession[] | null | undefined);
+	const serverResults = $derived(results ?? []);
 	const test = $derived(testRegistry[slug]);
 	let Comp: Component | null = $state(null);
 
+	let pending = $state<QueueElement[]>([]);
+	const mergedResults = $derived(mergeSessions(serverResults, pending));
+
 	let runAllMode = $state(false);
 
+	// Зависит только от test/slug: НЕ должен реагировать на mergedResults,
+	// иначе каждое обновление pending-очереди перегружало бы график
 	$effect(() => {
 		Comp = null;
 		if (test?.resultsChart) {
@@ -37,17 +47,6 @@
 		}
 	});
 
-	// null — авто (первая попытка); иначе — явный выбор пользователя для этого slug
-	let choice = $state<{ slug: string; id: string | null } | null>(null);
-
-	const openedSessionId = $derived(
-		choice && choice.slug === slug ? choice.id : (results[0]?.sessionId ?? null)
-	);
-
-	const toggleSession = (sessionId: string) => {
-		choice = { slug, id: openedSessionId === sessionId ? null : sessionId };
-	};
-
 	onMount(async () => {
 		try {
 			const mode = await localforage.getItem('runAllMode');
@@ -57,21 +56,57 @@
 		} catch (err) {
 			console.log(err);
 		}
+
+		pending = await getPendingAttempts(slug, 'test');
+		if (pending.length > 0) {
+			// Гонка с layout-flush принята: сервер идемпотентен по sessionId,
+			// а done-set внутри flushQueue не теряет параллельно
+			// поставленные в очередь элементы.
+			flushQueue()
+				.then((s) => {
+					if (s.flushed > 0) invalidateAll();
+				})
+				.catch(() => {});
+		}
 	});
+
+	// null — авто (первая попытка); иначе — явный выбор пользователя для этого slug
+	let choice = $state<{ slug: string; id: string | null } | null>(null);
+
+	const openedSessionId = $derived(
+		choice && choice.slug === slug ? choice.id : (mergedResults[0]?.sessionId ?? null)
+	);
+
+	const toggleSession = (sessionId: string) => {
+		choice = { slug, id: openedSessionId === sessionId ? null : sessionId };
+	};
 </script>
 
-<main class="main flex flex-col gap-2 w-full max-w-5xl mx-auto items-center justify-center-safe">
+<main class="main mx-auto flex w-full max-w-5xl flex-col items-center justify-center-safe gap-2">
 	{#if !results}
 		<Spinner></Spinner>
 		<p>Загрузка теста {slug}...</p>
-	{:else if results.length != 0}
-		{#each results as result (result.sessionId)}
+	{:else if mergedResults.length != 0}
+		{#each mergedResults as result (result.sessionId)}
 			<Card className="w-full p-1!">
 				<button
 					class={`flex w-full cursor-pointer items-center justify-between rounded-t-2xl px-4 py-3 transition-colors hover:bg-gray-100 ${openedSessionId != result.sessionId ? 'hover:rounded-b-2xl' : ''}`}
 					onclick={() => toggleSession(result.sessionId)}
 				>
-					<span class="text-var(--main-text-color) font-medium">
+					<span class="text-var(--main-text-color) flex items-center gap-2 font-medium">
+						{#if result.pending}
+							<span
+								class="inline-block h-2.5 w-2.5 rounded-full bg-red-500"
+								title="Ожидает загрузки"
+								aria-label="Ожидает загрузки"
+							></span>
+						{:else}
+							<span
+								class="inline-block h-2.5 w-2.5 rounded-full bg-green-500"
+								title="Загружено"
+								aria-label="Загружено"
+							></span>
+						{/if}
 						{openedSessionId === result.sessionId
 							? 'Попытка от ' + formatUserLocalDate(result.createdAt)
 							: formatUserLocalDate(result.createdAt)}

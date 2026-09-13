@@ -113,7 +113,8 @@ function isUniqueConstraintError(err: unknown): boolean {
 	let current: unknown = err;
 	while (current) {
 		const candidate = current as { code?: unknown; cause?: unknown };
-		if (candidate && typeof candidate === 'object' && candidate.code === 'UNIQUE_CONSTRAINT') return true;
+		if (candidate && typeof candidate === 'object' && candidate.code === 'UNIQUE_CONSTRAINT')
+			return true;
 		const msg = current instanceof Error ? current.message : String(current);
 		if (msg.includes('UNIQUE constraint failed')) return true;
 		current = candidate?.cause;
@@ -134,6 +135,13 @@ async function insertAttempts(
 			sessionId
 		}))
 	);
+}
+
+export class SessionOwnershipError extends Error {
+	constructor(public readonly sessionId: string) {
+		super(`Session ${sessionId} belongs to a different user`);
+		this.name = 'SessionOwnershipError';
+	}
 }
 
 export async function postResult(
@@ -160,7 +168,7 @@ export async function postResult(
 				where: (fields, { eq }) => eq(fields.id, sessionId)
 			});
 			if (existing && existing.userId !== userId) {
-				throw new Error(`Session ${sessionId} belongs to a different user`);
+				throw new SessionOwnershipError(sessionId);
 			}
 			if (existing) {
 				const queryTableMap = getQueryTableMap();
@@ -192,7 +200,8 @@ export async function getSessionList(
 ): Promise<{ id: string; meta: string | null; createdAt: string }[]> {
 	return db.query.session.findMany({
 		columns: { id: true, meta: true, createdAt: true },
-		where: (fields, { eq, and }) => and(eq(fields.testType, testType), eq(fields.userId, userId)),
+		where: (fields, { eq, and }) =>
+			and(eq(fields.testType, testType), eq(fields.userId, userId)),
 		orderBy: (fields, { desc }) => desc(fields.createdAt)
 	});
 }

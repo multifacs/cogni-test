@@ -71,7 +71,7 @@ export const tests: TestData[] = [
 
 export const TEST_ORDER: TestType[] = tests.map((t) => t.name as TestType);
 
-// Компонент с произвольными пропсами: страницы передают gameEnd/sendResults/data
+// Компонент с произвольными пропсами: страницы передают gameEnd/sendResults/data. Контракт завершения: gameEnd() переключает страницу в локальный финальный UI без навигации; sendResults(results) — асинхронный оркестратор, страница сохраняет результат и навигирует ТОЛЬКО после подтверждения сервера (или offline-enqueue). Игровой компонент не должен полагаться на навигацию после gameEnd().
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyComponent = Component<any>;
 

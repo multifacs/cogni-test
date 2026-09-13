@@ -2,7 +2,6 @@ import type { TestType } from '$lib/tests/types';
 import type { SkillMetric } from '$lib/types';
 import type { Component } from 'svelte';
 import type { ExerciseType } from './types';
-import type { QueueElement } from '$lib/client/offline-queue';
 
 export type ExerciseData = {
 	name: string;
@@ -11,43 +10,9 @@ export type ExerciseData = {
 	img: string;
 	admin_metrics?: SkillMetric[];
 	user_metrics?: SkillMetric[];
-	offline?: boolean;
 };
 
 export type { ExerciseType, ExerciseResult, ExerciseResults } from './types';
-
-/** Session row used on the results page (server + pending). */
-export type ResultsPageSession = {
-	sessionId: string;
-	createdAt: string;
-	attempts: unknown[];
-	meta?: Record<string, string> | unknown;
-	pending?: boolean;
-};
-
-/** Merge server results with pending offline attempts.
- *  Server sessions win over pending ones with the same sessionId.
- *  Returned list is sorted by createdAt descending.
- */
-export function mergeSessions(
-	serverSessions: ResultsPageSession[],
-	pending: QueueElement[]
-): ResultsPageSession[] {
-	const serverIds = new Set(serverSessions.map((s) => s.sessionId));
-	const pendingSessions: ResultsPageSession[] = pending
-		.filter((p) => !serverIds.has(p.payload.sessionId))
-		.map((p) => ({
-			sessionId: p.payload.sessionId,
-			createdAt: new Date(p.enqueuedAt).toISOString(),
-			attempts: p.payload.results.results,
-			meta: p.payload.results.meta,
-			pending: true
-		}));
-	const combined = [...serverSessions, ...pendingSessions];
-	return combined.sort(
-		(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-	);
-}
 
 export const exercises: ExerciseData[] = [
 	{
@@ -135,12 +100,16 @@ export const exercises: ExerciseData[] = [
 		name: 'rhythm',
 		title: 'Ритм',
 		path: '/exercises/rhythm/about',
-		img: '/exercises/rhythm.svg',
-		offline: true
+		img: '/exercises/rhythm.svg'
 	}
 ];
 
-// Компонент с произвольными пропсами: страницы передают gameEnd/sendResults/data
+// Компонент с произвольными пропсами: страницы передают gameEnd/sendResults/data.
+// Контракт завершения: gameEnd() переключает страницу в локальный финальный UI
+// без навигации; sendResults(results) — асинхронный оркестратор, страница
+// сохраняет результат и навигирует ТОЛЬКО после подтверждения сервера или
+// offline-enqueue. Игровой компонент не должен полагаться на навигацию после
+// gameEnd().
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyComponent = Component<any>;
 

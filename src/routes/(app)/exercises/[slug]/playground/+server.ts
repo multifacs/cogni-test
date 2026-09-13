@@ -1,4 +1,4 @@
-import { postResult } from '$lib/server/db/controllers/result.js';
+import { postResult, SessionOwnershipError } from '$lib/server/db/controllers/result.js';
 import { generateDevRandomResults } from '$lib/server/db/seed/generators.js';
 import { json } from '@sveltejs/kit';
 import type { ExerciseResults, MetaResult, ExerciseType } from '$lib/exercises/types.js';
@@ -51,8 +51,15 @@ export const POST: RequestHandler = async ({ params, request, cookies }) => {
 		}
 	}
 
-	const storedSessionId = sessionId
-		? await postResult(results, exerciseType, userId, sessionId)
-		: await postResult(results, exerciseType, userId);
-	return json({ sessionId: storedSessionId }, { status: 201 });
+	try {
+		const storedSessionId = sessionId
+			? await postResult(results, exerciseType, userId, sessionId)
+			: await postResult(results, exerciseType, userId);
+		return json({ sessionId: storedSessionId }, { status: 201 });
+	} catch (err) {
+		if (err instanceof SessionOwnershipError) {
+			return json({ error: 'session belongs to another user' }, { status: 409 });
+		}
+		throw err;
+	}
 };

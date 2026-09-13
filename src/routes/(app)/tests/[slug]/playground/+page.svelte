@@ -6,7 +6,9 @@
 	import type { MetaResult, RegularResults } from '$lib/tests/types.js';
 	import { getContext, type Component as ComponentType } from 'svelte';
 	import { testRegistry } from '$lib/tests';
+	import { enqueueAttempt } from '$lib/client/offline-queue';
 	import type { DevAction } from '$lib/types/header-action';
+	import { generate } from 'short-uuid';
 
 	const { data } = $props();
 	const slug = $derived(data.slug);
@@ -14,6 +16,11 @@
 	let Component: ComponentType | null = $state(null);
 
 	let isGameEnd = $state(false);
+	let isSaving = $state(false);
+	let saveError = $state(false);
+	let pendingResults: RegularResults | MetaResult | null = $state(null);
+	// Not rendered — plain variable is enough; retry reuses it to stay idempotent
+	let pendingSessionId: string | undefined;
 
 	// GTO session integration: read gtoSessionId from URL params
 	const gtoSessionId = $derived(page.url.searchParams.get('gtoSessionId') ?? undefined);
@@ -42,8 +49,9 @@
 	const headerContext = getContext<{ value: string; devAction: DevAction }>('headerText');
 
 	// DEV autoplay: ask the server for random results, then push them through
-	// the same save path as a real game run. In GTO mode onSendResults owns
-	// the navigation, so onGameEnd (which only navigates standalone) is skipped.
+	// the same save path as a real game run. onSendResults owns the navigation:
+	// goto fires only after the server confirms the save; on saveError the
+	// page stays put (no onGameEnd call — the end-screen is not part of autoplay).
 	async function runAutoplay() {
 		const response = await fetch(`/tests/${slug}/playground`, {
 			method: 'POST',
@@ -61,9 +69,6 @@
 		const { results } = await response.json();
 
 		await onSendResults(results);
-		if (!gtoSessionId) {
-			onGameEnd();
-		}
 	}
 
 	$effect(() => {
@@ -84,49 +89,85 @@
 	});
 
 	function onGameEnd() {
+		// Local end-screen only: navigation is onSendResults' job
 		isGameEnd = true;
-		// In GTO mode, navigation is handled by onSendResults after saving
-		if (!gtoSessionId) {
-			goto(resolve(`/tests/${slug}/results`));
-		}
 	}
 
 	async function onSendResults(results: RegularResults | MetaResult) {
-		if (gtoSessionId) {
-			// GTO mode: save result and link to GTO session, advance checkpoint
-			const response = await fetch(`/gto/session/${gtoSessionId}/play`, {
-				method: 'POST',
-				body: JSON.stringify({ action: 'save-result', testType: slug, results }),
-				headers: {
-					'Content-Type': 'application/json'
+		if (isSaving) return;
+		// Sync before the first await: games call gameEnd() right before
+		// sendResults() in the same tick, so the saving state must be visible
+		// in the same render batch (no button flicker).
+		isSaving = true;
+		saveError = false;
+		pendingResults = results;
+		pendingSessionId ??= generate();
+		try {
+			if (gtoSessionId) {
+				// GTO mode: save result and link to GTO session, advance checkpoint
+				const response = await fetch(`/gto/session/${gtoSessionId}/play`, {
+					method: 'POST',
+					body: JSON.stringify({ action: 'save-result', testType: slug, results }),
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				});
+
+				if (!response.ok) {
+					console.error('Failed to save GTO results', response.status);
+					saveError = true;
+					return;
 				}
-			});
 
-			if (!response.ok) {
-				console.error('Failed to save GTO results');
-				return;
-			}
+				const result = await response.json();
 
-			const result = await response.json();
-
-			if (result.nextTestUrl) {
-				// Navigate to next test's about page in GTO sequence
-				goto(result.nextTestUrl);
+				if (result.nextTestUrl) {
+					// Navigate to next test's about page in GTO sequence
+					goto(result.nextTestUrl);
+				} else {
+					// All tests done — go to words page
+					goto(resolve(`/gto/session/${gtoSessionId}/words`));
+				}
 			} else {
-				// All tests done — go to words page
-				goto(resolve(`/gto/session/${gtoSessionId}/words`));
-			}
-		} else {
-			// Standalone mode: just save the result
-			const response = await fetch(`/tests/${slug}/playground`, {
-				method: 'POST',
-				body: JSON.stringify({ results }),
-				headers: {
-					'Content-Type': 'application/json'
+				// Standalone mode: save, then navigate — the results page load
+				// must see the fresh attempt, so goto only after response.ok
+				// (on !ok the offline queue takes over, see fallback below)
+				const response = await fetch(`/tests/${slug}/playground`, {
+					method: 'POST',
+					body: JSON.stringify({ results, sessionId: pendingSessionId }),
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				});
+
+				if (!response.ok) {
+					console.error('Failed to save test results', response.status);
+					// Offline fallback: очередь надёжнее повторных POST —
+					// результаты уйдут на сервер при следующем flush, а
+					// пользователь уже видит страницу результатов с бейджем
+					// «Ожидает загрузки». Rejection падает в общий catch
+					// (saveError-UI, без навигации).
+					await enqueueAttempt(
+						slug,
+						{ sessionId: pendingSessionId ?? generate(), results },
+						'test'
+					);
+					goto(resolve(`/tests/${slug}/results`));
+					return;
 				}
-			});
-			console.log(response);
+
+				goto(resolve(`/tests/${slug}/results`));
+			}
+		} catch {
+			saveError = true;
+		} finally {
+			isSaving = false;
 		}
+	}
+
+	function retrySave() {
+		if (pendingResults === null) return;
+		void onSendResults(pendingResults);
 	}
 </script>
 
@@ -136,14 +177,29 @@
 	</main>
 
 	{#if isGameEnd}
-		<section class="low-content grid grid-cols-2 gap-4">
-			<Button color="red" goto={backUrl}>Назад</Button>
-			{#if gtoSessionId}
-				<Button color="blue" goto="/gto">К сессиям ГТО</Button>
-			{:else}
-				<Button color="blue" goto={`/tests/${slug}/results`}>Результаты</Button>
-			{/if}
-		</section>
+		{#if isSaving}
+			<section class="low-content flex flex-col items-center justify-center gap-4">
+				<Spinner></Spinner>
+				<p>Сохранение результатов…</p>
+			</section>
+		{:else if saveError}
+			<section class="low-content flex flex-col items-center justify-center gap-4">
+				<p role="alert">Не удалось сохранить результаты</p>
+				<div class="grid grid-cols-2 gap-4">
+					<Button color="blue" onclick={retrySave}>Попробовать снова</Button>
+					<Button color="red" goto={backUrl}>Назад</Button>
+				</div>
+			</section>
+		{:else}
+			<section class="low-content grid grid-cols-2 gap-4">
+				<Button color="red" goto={backUrl}>Назад</Button>
+				{#if gtoSessionId}
+					<Button color="blue" goto="/gto">К сессиям ГТО</Button>
+				{:else}
+					<Button color="blue" goto={`/tests/${slug}/results`}>Результаты</Button>
+				{/if}
+			</section>
+		{/if}
 	{:else}
 		<section class="low-content grid grid-cols-3 gap-4">
 			<div></div>
