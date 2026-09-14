@@ -4,7 +4,8 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import type { MetaResult, RegularResults } from '$lib/tests/types.js';
-	import { getContext, type Component as ComponentType } from 'svelte';
+	import { getContext, onMount, type Component as ComponentType } from 'svelte';
+	import localforage from 'localforage';
 	import { testRegistry } from '$lib/tests';
 	import { enqueueAttempt } from '$lib/client/offline-queue';
 	import type { DevAction } from '$lib/types/header-action';
@@ -24,6 +25,18 @@
 
 	// GTO session integration: read gtoSessionId from URL params
 	const gtoSessionId = $derived(page.url.searchParams.get('gtoSessionId') ?? undefined);
+
+	// Streaming (runAll) mode: «Назад» ведёт на about → /tests bounce → возврат
+	// сюда же (визуальный no-op). В GTO-сессии «Назад» реально работает.
+	let runAllMode = $state(false);
+	const streamingBackDisabled = $derived(runAllMode && !gtoSessionId);
+
+	onMount(async () => {
+		const mode = await localforage.getItem('runAllMode');
+		if (typeof mode === 'boolean') {
+			runAllMode = mode;
+		}
+	});
 
 	import type { PathnameWithSearchOrHash } from '$app/types';
 	import { resolve } from '$app/paths';
@@ -187,12 +200,14 @@
 				<p role="alert">Не удалось сохранить результаты</p>
 				<div class="grid grid-cols-2 gap-4">
 					<Button color="blue" onclick={retrySave}>Попробовать снова</Button>
-					<Button color="red" goto={backUrl}>Назад</Button>
+					<Button color="red" goto={backUrl} disabled={streamingBackDisabled}
+						>Назад</Button
+					>
 				</div>
 			</section>
 		{:else}
 			<section class="low-content grid grid-cols-2 gap-4">
-				<Button color="red" goto={backUrl}>Назад</Button>
+				<Button color="red" goto={backUrl} disabled={streamingBackDisabled}>Назад</Button>
 				{#if gtoSessionId}
 					<Button color="blue" goto="/gto">К сессиям ГТО</Button>
 				{:else}
@@ -203,7 +218,7 @@
 	{:else}
 		<section class="low-content grid grid-cols-3 gap-4">
 			<div></div>
-			<Button color="red" goto={backUrl}>Назад</Button>
+			<Button color="red" goto={backUrl} disabled={streamingBackDisabled}>Назад</Button>
 			<div></div>
 		</section>
 	{/if}
@@ -215,7 +230,7 @@
 
 	<section class="low-content grid grid-cols-3 gap-4">
 		<div></div>
-		<Button color="red" goto={backUrl}>Назад</Button>
+		<Button color="red" goto={backUrl} disabled={streamingBackDisabled}>Назад</Button>
 		<div></div>
 	</section>
 {/if}

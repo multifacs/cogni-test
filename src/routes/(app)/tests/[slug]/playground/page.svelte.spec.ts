@@ -1,6 +1,7 @@
 import { render, cleanup } from 'vitest-browser-svelte';
 import { page, userEvent } from 'vitest/browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import localforage from 'localforage';
 import Page from './+page.svelte';
 import type { DevAction } from '$lib/types/header-action';
 
@@ -34,10 +35,12 @@ vi.mock('$app/paths', () => ({
 // Оффлайн-очередь заменена шпионом: спек проверяет контракт страницы
 // (enqueue с kind 'test' при сбое POST), а не саму очередь.
 const queueMocks = vi.hoisted(() => ({
-	enqueueAttempt: vi.fn(
-		(_slug: string, _payload: { sessionId: string; results: unknown }, _kind?: string) =>
-			Promise.resolve('queue-el-1')
-	)
+	// тип дженериком: параметры не объявляются в реализации (no-unused-vars),
+	// но mock.calls[0] остаётся типизированным кортежем для ассертов
+	enqueueAttempt: vi.fn<
+		[string, { sessionId: string; results: unknown }, string?],
+		Promise<string>
+	>(() => Promise.resolve('queue-el-1'))
 }));
 
 vi.mock('$lib/client/offline-queue', () => ({
@@ -325,5 +328,71 @@ describe('tests playground — await-before-navigate контракт onSendResu
 		expect(fetchMock).toHaveBeenCalledTimes(1);
 		expect(navMocks.goto).toHaveBeenCalledTimes(1);
 		expect(navMocks.goto).toHaveBeenCalledWith('/tests/stroop/results');
+	});
+});
+
+describe('tests playground — Назад disabled в потоковом режиме', () => {
+	// runAllMode читается страницей в onMount: между кейсами флаг обязан
+	// сбрасываться, иначе состояние утекает в следующий тест
+	beforeEach(async () => {
+		await localforage.removeItem('runAllMode');
+	});
+
+	afterEach(async () => {
+		await localforage.removeItem('runAllMode');
+	});
+
+	it('(i) runAllMode=true без GTO: during-game «Назад» disabled', async () => {
+		await localforage.setItem('runAllMode', true);
+
+		await mountPage({ slug: 'stroop' });
+
+		// isGameEnd=false после mount — единственная «Назад» в DOM (нижняя панель)
+		await expect.element(page.getByRole('button', { name: 'Назад' })).toBeDisabled();
+	});
+
+	it('(ii) без флага: during-game «Назад» активна', async () => {
+		await localforage.setItem('runAllMode', false);
+
+		await mountPage({ slug: 'stroop' });
+
+		await expect.element(page.getByRole('button', { name: 'Назад' })).toBeEnabled();
+	});
+
+	it('(iii) runAllMode=true + gtoSessionId: «Назад» активна (GTO не использует runAllMode)', async () => {
+		await localforage.setItem('runAllMode', true);
+		navMocks.url.searchParams = new URLSearchParams('gtoSessionId=42');
+
+		await mountPage({ slug: 'stroop' });
+
+		await expect.element(page.getByRole('button', { name: 'Назад' })).toBeEnabled();
+	});
+
+	it('(iv) runAllMode=true + error-screen: «Назад» disabled', async () => {
+		await localforage.setItem('runAllMode', true);
+		// паттерн кейса (b2): save POST !ok + отвергнутая очередь → error-UI
+		fetchMock.mockImplementation(async () => failedResponse());
+		queueMocks.enqueueAttempt.mockImplementation(async () => {
+			throw new Error('quota exceeded');
+		});
+
+		await mountPage({ slug: 'stroop' });
+		await userEvent.click(page.getByTestId('stub-full-run'));
+		await settle();
+
+		await expect.element(page.getByText('Не удалось сохранить результаты')).toBeVisible();
+		await expect.element(page.getByRole('button', { name: 'Назад' })).toBeDisabled();
+	});
+
+	it('(v) runAllMode=true + end-screen: «Назад» disabled', async () => {
+		await localforage.setItem('runAllMode', true);
+
+		await mountPage({ slug: 'stroop' });
+		// дефолтный fetch-мок: save успешен → end-screen без навигации (goto-мок)
+		await userEvent.click(page.getByTestId('stub-full-run'));
+		await settle();
+
+		await expect.element(page.getByRole('button', { name: 'Результаты' })).toBeVisible();
+		await expect.element(page.getByRole('button', { name: 'Назад' })).toBeDisabled();
 	});
 });

@@ -9,10 +9,25 @@
 	const test = $derived(testRegistry[slug]);
 
 	import type { Component as ComponentType } from 'svelte';
+	import { onMount } from 'svelte';
+	import localforage from 'localforage';
 	let Component = $state<ComponentType | null>(null);
 
 	// GTO session integration
 	const gtoSessionId = $derived(page.url.searchParams.get('gtoSessionId') ?? undefined);
+
+	// Streaming (runAll) mode: «Назад» ведёт на /tests, чей bounce-механизм
+	// мгновенно возвращает на этот же тест — кнопка выглядит «зависшей».
+	// В GTO-сессии «Назад» реально работает, поэтому там кнопка активна.
+	let runAllMode = $state(false);
+	const streamingBackDisabled = $derived(runAllMode && !gtoSessionId);
+
+	onMount(async () => {
+		const mode = await localforage.getItem('runAllMode');
+		if (typeof mode === 'boolean') {
+			runAllMode = mode;
+		}
+	});
 
 	$effect(() => {
 		Component = null;
@@ -41,7 +56,9 @@
 	</main>
 
 	<section class="low-content grid {gtoSessionId ? 'grid-cols-2' : 'grid-cols-3'} gap-4">
-		<Button color="red" goto={gtoSessionId ? '/gto' : '/tests'}>Назад</Button>
+		<Button color="red" goto={gtoSessionId ? '/gto' : '/tests'} disabled={streamingBackDisabled}
+			>Назад</Button
+		>
 		<Button color="green" goto={playgroundUrl}>Начать</Button>
 		{#if !gtoSessionId}
 			<Button color="blue" goto={`/tests/${slug}/results`}>История</Button>
@@ -54,6 +71,8 @@
 	</main>
 
 	<section class="low-content flex justify-center gap-2 align-middle">
-		<Button color="red" goto={gtoSessionId ? '/gto' : '/tests'}>Назад</Button>
+		<Button color="red" goto={gtoSessionId ? '/gto' : '/tests'} disabled={streamingBackDisabled}
+			>Назад</Button
+		>
 	</section>
 {/if}
