@@ -1,4 +1,5 @@
-	export function formatDate(dateStr: string | null) {
-		if (!dateStr) return '—';
-		return new Date(dateStr).toLocaleString('ru-RU');
-	}
+import { formatUserLocalDate } from '$lib/utils/common';
+
+export function formatDate(dateStr: string | null) {
+	return dateStr ? formatUserLocalDate(dateStr) : '—';
+}

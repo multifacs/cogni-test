@@ -75,8 +75,19 @@ export function getCSSVar(variable: string): string {
  * @param dateString - Дата в формате "2025-04-15 07:46:18.974 +00:00" или аналогичном.
  * @returns Строка в формате "15-04-2025 12:00" (в локальном часовом поясе).
  */
+/** SQLite CURRENT_TIMESTAMP format: UTC wall-clock without timezone marker. */
+const SQLITE_TIMESTAMP_RE = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
+
+function parseTimestamp(dateString: string): Date {
+	// Zone-less SQLite timestamps are UTC; everything else (ISO with Z or offset) parses natively.
+	if (SQLITE_TIMESTAMP_RE.test(dateString)) {
+		return new Date(dateString.replace(' ', 'T') + 'Z');
+	}
+	return new Date(dateString);
+}
+
 export function formatUserLocalDate(dateString: string): string {
-	const date = new Date(dateString);
+	const date = parseTimestamp(dateString);
 
 	if (isNaN(date.getTime())) {
 		throw new Error('Invalid date format');

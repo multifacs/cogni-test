@@ -2,6 +2,7 @@ import { render, cleanup } from 'vitest-browser-svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import Page from './+page.svelte';
 import type { PageProps } from './$types';
+import { formatUserLocalDate } from '$lib/utils/common';
 
 // app.css подключает Tailwind — без него утилиты не сгенерируются
 // в тестовом окружении, и trusted-клик может промахиваться по мишеням
@@ -132,6 +133,32 @@ describe('/gto — кнопка «Заполнить анкету»', () => {
 
 		expect(container.textContent).toContain('Завершённая сессия');
 		expect(findButtonByText(container, 'Заполнить анкету')).toBeTruthy();
+	});
+
+	it('рендерит createdAt завершённой сессии локально (zone-less как UTC)', async () => {
+		const { container } = await render(Page, {
+			props: {
+				data: makeData({
+					completedSessions: [
+						{
+							gtoSessionId: 'sess-date',
+							name: 'Сессия с датой',
+							status: 'completed',
+							createdAt: '2026-09-01 10:00:00',
+							hasCompletedTests: true,
+							hasSubmittedWords: true,
+							currentTestIndex: 7,
+							wordScore: null
+						}
+					]
+				}),
+				form: null
+			}
+		});
+
+		// Ожидание вычисляем тем же форматтером — TZ раннера не влияет на детерминизм
+		const expected = formatUserLocalDate('2026-09-01 10:00:00');
+		expect(container.textContent).toContain(expected);
 	});
 
 	it('рендерится при наличии активных сессий', async () => {

@@ -3,6 +3,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import { getContext, onMount } from 'svelte';
+	import { formatDate } from '../index';
 
 	const headerContext = getContext<{ value: string }>('headerText');
 
@@ -125,11 +126,6 @@
 		} finally {
 			deletingId = null;
 		}
-	}
-
-	function formatDate(dateStr: string | null) {
-		if (!dateStr) return '—';
-		return new Date(dateStr).toLocaleString('ru-RU');
 	}
 </script>
 

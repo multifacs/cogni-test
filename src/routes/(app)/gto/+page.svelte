@@ -8,6 +8,7 @@
 	import type { PathnameWithSearchOrHash } from '$app/types';
 	import { getContext, onMount } from 'svelte';
 	import { enhance } from '$app/forms';
+	import { formatUserLocalDate } from '$lib/utils/common';
 
 	let { data, form } = $props();
 
@@ -91,10 +92,6 @@
 		const exercise = exerciseRegistry[exerciseSlug];
 		return exercise?.title ?? entry.type;
 	}
-
-	function formatDate(dateStr: string) {
-		return new Date(dateStr).toLocaleString('ru-RU');
-	}
 </script>
 
 <main class="main flex flex-col items-center justify-center-safe overflow-auto p-4">
@@ -167,7 +164,9 @@
 										{ss.label}
 									</span>
 								</div>
-								<p class="text-xs text-white">{formatDate(session.createdAt)}</p>
+								<p class="text-xs text-white">
+									{formatUserLocalDate(session.createdAt)}
+								</p>
 								{#if session.wordScore !== null}
 									<div class="flex items-center gap-2 text-sm">
 										<span class="text-gray-100">Слова:</span>

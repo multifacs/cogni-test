@@ -3,20 +3,7 @@ import { getFeaturesFromDB } from '$lib/server/age/getFeaturesFromDB';
 import { runAgeModel } from '$lib/server/age/runAgeModel';
 import { getTestSessionCounts } from '$lib/server/db/controllers/test';
 import type { PageServerLoad } from './$types';
-
-const exerciseToSessionType: Record<string, string> = {
-	'word-morphing': 'wordMorphingExercise',
-	campimetry: 'campimetryExercise',
-	'memory-match': 'memoryMatchExercise',
-	'nback-stream': 'nbackExercise',
-	'raven-matrices': 'ravenMatrices',
-	emoji: 'emoji',
-	attention: 'attention',
-	pictures: 'pictures',
-	numbers: 'numbers',
-	flanker: 'flanker',
-	letters: 'letters'
-};
+import { exerciseToSessionType } from './session-types';
 
 export const load: PageServerLoad = async ({ cookies }) => {
 	const userId = cookies.get('user_id');
