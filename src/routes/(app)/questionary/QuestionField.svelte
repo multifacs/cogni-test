@@ -124,7 +124,7 @@
 		<div class="flex flex-col gap-3">
 			{#each choiceType.options as opt (opt.value)}
 				<label
-					class="group flex h-15 cursor-pointer items-center gap-3 rounded-xl p-4 transition-all"
+					class="group flex min-h-15 cursor-pointer items-center gap-3 rounded-xl p-4 transition-all"
 					style="
 							border: 2px solid {value === opt.value ? 'var(--button-green)' : 'var(--input-bg-color)'};
 							background-color: {value === opt.value
@@ -140,7 +140,7 @@
 						class="peer sr-only"
 					/>
 					<span
-						class="ml-2 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-all"
+						class="ml-4 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-all"
 						style="
 							border-color: {value === opt.value ? 'var(--button-green)' : 'var(--input-bg-color)'};
 							background-color: {value === opt.value ? 'var(--button-green)' : '#ffffff'};
@@ -151,7 +151,7 @@
 						{/if}
 					</span>
 					<span
-						class="text-sm"
+						class="min-w-0 flex-1 text-sm break-words"
 						style="
 							color: var(--main-text-color);
 							font-weight: {value === opt.value ? '600' : '400'};

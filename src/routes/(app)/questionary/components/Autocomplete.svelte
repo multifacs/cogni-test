@@ -39,22 +39,35 @@
 	<input
 		value={query}
 		oninput={handleInput}
-		onfocus={() => (isOpen = true)}
+		onfocus={(e) => {
+			isOpen = true;
+			e.currentTarget.style.borderColor = 'var(--main-accent-color)';
+			e.currentTarget.style.boxShadow = '0 0 0 4px var(--input-bg-color)';
+		}}
 		onfocusout={() => setTimeout(() => (isOpen = false), 200)}
+		onblur={(e) => {
+			e.currentTarget.style.borderColor = query == null ? '#fb923c' : 'var(--input-bg-color)';
+			e.currentTarget.style.boxShadow = 'none';
+		}}
 		placeholder="Начните печатать..."
-		class="w-full rounded-sm border px-3 py-2 text-black outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-400"
-		class:border-blue-300={query != null}
-		class:border-orange-400={query == null}
-		class:border-2={query == null}
-		class:shadow-[0px_0px_5px_2px_rgba(249,_115,_22,_0.5)]={query == null}
+		class="w-full rounded-xl px-4 py-3 transition-all outline-none"
+		style="
+			background-color: #ffffff;
+			border: 2px solid {query == null ? '#fb923c' : 'var(--input-bg-color)'};
+			color: var(--main-text-color);
+		"
 	/>
 
 	{#if isOpen && filtered.length > 0}
 		<ul
-			class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded border border-blue-300 bg-white shadow"
+			class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow"
+			style="
+				border-color: var(--input-bg-color);
+				color: var(--main-text-color);
+			"
 		>
 			{#each filtered as city (city.id)}
-				<li class="cursor-pointer px-3 py-2 hover:bg-blue-50">
+				<li class="cursor-pointer px-3 py-2 hover:bg-gray-100">
 					<button class="w-full text-left" onclick={() => selectCity(city)}>
 						{city.name} ({city.region.name})
 					</button>

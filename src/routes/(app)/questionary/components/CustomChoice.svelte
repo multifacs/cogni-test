@@ -67,7 +67,6 @@
 		}
 	});
 
-
 	$effect(() => {
 		const stringValue = rowsToString(rows);
 		if (value !== stringValue) {
@@ -115,22 +114,48 @@
 
 <div class="flex w-full flex-col gap-2">
 	{#each rows as row, i (i)}
-		<div class="flex items-center flex-wrap gap-2">
+		<div class="flex flex-wrap items-center gap-2">
 			<input
 				type="text"
 				value={row.text}
 				oninput={(e) => updateText(i, e.currentTarget.value)}
-				class="rounded-sm border border-blue-300 p-2 text-ellipsis text-black outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+				class="w-full rounded-xl px-4 py-3 transition-all outline-none"
 				class:flex-1={showSelect}
 				class:w-full={!showSelect}
+				style="
+				background-color: #ffffff;
+				border: 2px solid var(--input-bg-color);
+				color: var(--main-text-color);
+			"
 				placeholder="Введите текст..."
+				onfocus={(e) => {
+					e.currentTarget.style.borderColor = 'var(--main-accent-color)';
+					e.currentTarget.style.boxShadow = '0 0 0 4px var(--input-bg-color)';
+				}}
+				onblur={(e) => {
+					e.currentTarget.style.borderColor = 'var(--input-bg-color)';
+					e.currentTarget.style.boxShadow = 'none';
+				}}
 			/>
 
 			{#if showSelect}
 				<select
 					value={row.choice}
 					onchange={(e) => updateChoice(i, e.currentTarget.value)}
-					class="flex-1 rounded-sm border border-blue-300 p-2 text-ellipsis text-black outline-none open:text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-400"
+					class="w-full flex-1 rounded-xl px-4 py-3 transition-all outline-none"
+					style="
+					background-color: #ffffff;
+					border: 2px solid var(--input-bg-color);
+					color: var(--main-text-color);
+				"
+					onfocus={(e) => {
+						e.currentTarget.style.borderColor = 'var(--main-accent-color)';
+						e.currentTarget.style.boxShadow = '0 0 0 4px var(--input-bg-color)';
+					}}
+					onblur={(e) => {
+						e.currentTarget.style.borderColor = 'var(--input-bg-color)';
+						e.currentTarget.style.boxShadow = 'none';
+					}}
 				>
 					<option value="">(без выбора)</option>
 					{#each options as opt (opt.value)}
@@ -143,7 +168,7 @@
 				<button
 					type="button"
 					onclick={() => removeRow(i)}
-					class="cursor-pointer font-bold text-red-500 hover:text-red-600"
+					class="cursor-pointer font-bold text-red-500 transition-colors hover:text-red-600"
 				>
 					✕
 				</button>
