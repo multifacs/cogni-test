@@ -1,5 +1,5 @@
 import { render, cleanup } from 'vitest-browser-svelte';
-import { userEvent } from 'vitest/browser';
+import { page } from 'vitest/browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import localforage from 'localforage';
 import Page from './+page.svelte';
@@ -121,5 +121,26 @@ describe('/tests page — streaming mode wiring', () => {
 		expect(await localforage.getItem('runAllMode')).toBe(false);
 		expect(navMocks.goto).toHaveBeenCalledTimes(1);
 		expect(navMocks.goto).toHaveBeenCalledWith('/home');
+	});
+});
+
+describe('/tests page — StreamingBadge в транзитной ветке', () => {
+	it('runAllMode=true + непройденные тесты: бейдж видим над Spinner (goto замокан — страница остаётся в spinner-ветке)', async () => {
+		await localforage.setItem('runAllMode', true);
+		const data = makeData({ testSessionCounts: { stroop: 0 } }); // stroop непройден
+
+		await mountPage(data);
+
+		// onMount вызвал goto (мок) — реальной навигации нет, runAllMode
+		// остаётся true, spinner-ветка с бейджем стабильно в DOM
+		await expect.element(page.getByText('Потоковое прохождение')).toBeVisible();
+	});
+
+	it('без флага (сетка тестов): бейджа нет', async () => {
+		const data = makeData();
+
+		await mountPage(data);
+
+		await expect.element(page.getByText('Потоковое прохождение')).not.toBeInTheDocument();
 	});
 });

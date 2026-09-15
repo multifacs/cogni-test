@@ -6,6 +6,7 @@
 	const resolvePathname = resolve as (path: PathnameWithSearchOrHash) => ResolvedPathname;
 	import ExerciseCard from '$lib/components/ui/ExerciseCard.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
+	import StreamingBadge from '$lib/components/ui/StreamingBadge.svelte';
 	import localforage from 'localforage';
 	import { getContext, onMount } from 'svelte';
 	import RecommendationCard from '$lib/components/ui/RecommendationCard.svelte';
@@ -29,10 +30,10 @@
 				return count == null || count < 1;
 			});
 			if (uncompleted.length > 0) {
-				goto(resolvePathname(uncompleted[0].path as PathnameWithSearchOrHash) as string);
+				goto(resolvePathname(uncompleted[0].path as PathnameWithSearchOrHash));
 			} else {
 				localforage.setItem('runAllMode', false);
-				goto(resolvePathname('/home' as PathnameWithSearchOrHash) as string);
+				goto(resolvePathname('/home' as PathnameWithSearchOrHash));
 			}
 		} else {
 			runAllMode = false;
@@ -43,7 +44,7 @@
 		await localforage.setItem('runAllMode', true);
 		const queue = getStreamingQueue(data.tests, testSessionCounts);
 		if (queue.length > 0) {
-			goto(resolvePathname(queue[0].path as PathnameWithSearchOrHash) as string);
+			goto(resolvePathname(queue[0].path as PathnameWithSearchOrHash));
 		}
 	}
 </script>
@@ -51,6 +52,7 @@
 <main class="main flex w-full flex-col items-center justify-center-safe">
 	<div class="flex w-full max-w-5xl flex-col items-center justify-center-safe gap-4 sm:gap-6">
 		{#if runAllMode}
+			<StreamingBadge />
 			<Spinner></Spinner>
 		{:else}
 			<div class="w-full">

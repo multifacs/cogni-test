@@ -7,6 +7,7 @@
 	import { getContext, onMount, type Component as ComponentType } from 'svelte';
 	import localforage from 'localforage';
 	import { testRegistry } from '$lib/tests';
+	import StreamingBadge from '$lib/components/ui/StreamingBadge.svelte';
 	import { enqueueAttempt } from '$lib/client/offline-queue';
 	import type { DevAction } from '$lib/types/header-action';
 	import { generate } from 'short-uuid';
@@ -28,8 +29,10 @@
 
 	// Streaming (runAll) mode: «Назад» ведёт на about → /tests bounce → возврат
 	// сюда же (визуальный no-op). В GTO-сессии «Назад» реально работает.
+	// Флаг управляет и disabled «Назад», и индикатором StreamingBadge:
+	// GTO не использует runAllMode — там кнопка активна и бейджа нет.
 	let runAllMode = $state(false);
-	const streamingBackDisabled = $derived(runAllMode && !gtoSessionId);
+	const isStreaming = $derived(runAllMode && !gtoSessionId);
 
 	onMount(async () => {
 		const mode = await localforage.getItem('runAllMode');
@@ -184,8 +187,23 @@
 	}
 </script>
 
+<!-- Бейдж стриминга: сниппет, рендерится первым элементом main в обеих
+     ветках (resolved и Spinner). Якорь — main (position: relative), поэтому
+     бейдж в верхней части ИГРОВОЙ области под хедером, а не поверх
+     banner-ряда layout'а. Absolute внутри main: не flex-ребёнок, не
+     сжимает justify-evenly-контент игры; pointer-events-none + z-10 —
+     не перехватывает клики по canvas. -->
+{#snippet streamingIndicator()}
+	{#if isStreaming}
+		<div class="pointer-events-none absolute top-2 left-1/2 z-10 -translate-x-1/2">
+			<StreamingBadge />
+		</div>
+	{/if}
+{/snippet}
+
 {#if Component}
-	<main class="main flex flex-col items-center justify-evenly text-[--main-text-color]">
+	<main class="main relative flex flex-col items-center justify-evenly text-[--main-text-color]">
+		{@render streamingIndicator()}
 		<Component gameEnd={onGameEnd} sendResults={onSendResults} {data}></Component>
 	</main>
 
@@ -200,14 +218,12 @@
 				<p role="alert">Не удалось сохранить результаты</p>
 				<div class="grid grid-cols-2 gap-4">
 					<Button color="blue" onclick={retrySave}>Попробовать снова</Button>
-					<Button color="red" goto={backUrl} disabled={streamingBackDisabled}
-						>Назад</Button
-					>
+					<Button color="red" goto={backUrl} disabled={isStreaming}>Назад</Button>
 				</div>
 			</section>
 		{:else}
 			<section class="low-content grid grid-cols-2 gap-4">
-				<Button color="red" goto={backUrl} disabled={streamingBackDisabled}>Назад</Button>
+				<Button color="red" goto={backUrl} disabled={isStreaming}>Назад</Button>
 				{#if gtoSessionId}
 					<Button color="blue" goto="/gto">К сессиям ГТО</Button>
 				{:else}
@@ -218,19 +234,20 @@
 	{:else}
 		<section class="low-content grid grid-cols-3 gap-4">
 			<div></div>
-			<Button color="red" goto={backUrl} disabled={streamingBackDisabled}>Назад</Button>
+			<Button color="red" goto={backUrl} disabled={isStreaming}>Назад</Button>
 			<div></div>
 		</section>
 	{/if}
 {:else}
-	<main class="main flex flex-col items-center justify-center gap-4">
+	<main class="main relative flex flex-col items-center justify-center gap-4">
+		{@render streamingIndicator()}
 		<Spinner></Spinner>
 		<p>Загрузка теста {slug}...</p>
 	</main>
 
 	<section class="low-content grid grid-cols-3 gap-4">
 		<div></div>
-		<Button color="red" goto={backUrl} disabled={streamingBackDisabled}>Назад</Button>
+		<Button color="red" goto={backUrl} disabled={isStreaming}>Назад</Button>
 		<div></div>
 	</section>
 {/if}

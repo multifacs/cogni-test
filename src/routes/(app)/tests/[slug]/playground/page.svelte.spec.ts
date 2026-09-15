@@ -396,3 +396,48 @@ describe('tests playground — Назад disabled в потоковом реж�
 		await expect.element(page.getByRole('button', { name: 'Назад' })).toBeDisabled();
 	});
 });
+
+describe('tests playground — StreamingBadge (индикатор потокового прохождения)', () => {
+	// runAllMode читается страницей в onMount: между кейсами флаг обязан
+	// сбрасываться, иначе состояние утекает в следующий тест
+	beforeEach(async () => {
+		await localforage.removeItem('runAllMode');
+	});
+
+	afterEach(async () => {
+		await localforage.removeItem('runAllMode');
+	});
+
+	it('(i) runAllMode=true без GTO: бейдж видим (resolved-ветка), role=status, pointer-events none', async () => {
+		await localforage.setItem('runAllMode', true);
+
+		await mountPage({ slug: 'stroop' });
+
+		// resolved-ветка: Спиннера в DOM нет, поэтому role="status" единственный
+		// и принадлежит бейджу (у Spinner тоже role="status" — см. компонент)
+		const badge = page.getByRole('status');
+		await expect.element(badge).toBeVisible();
+		await expect.element(page.getByText('Потоковое прохождение')).toBeVisible();
+
+		// бейдж — absolute-оверлей над игровым main: обязан пропускать клики
+		// по canvas игры, иначе стриминг блокирует прохождение
+		await expect.element(badge).toHaveStyle({ pointerEvents: 'none' });
+	});
+
+	it('(ii) без флага: бейджа нет', async () => {
+		await localforage.setItem('runAllMode', false);
+
+		await mountPage({ slug: 'stroop' });
+
+		await expect.element(page.getByText('Потоковое прохождение')).not.toBeInTheDocument();
+	});
+
+	it('(iii) runAllMode=true + gtoSessionId: бейджа нет (GTO не использует runAllMode)', async () => {
+		await localforage.setItem('runAllMode', true);
+		navMocks.url.searchParams = new URLSearchParams('gtoSessionId=42');
+
+		await mountPage({ slug: 'stroop' });
+
+		await expect.element(page.getByText('Потоковое прохождение')).not.toBeInTheDocument();
+	});
+});

@@ -120,3 +120,41 @@ describe('tests about — Назад disabled в потоковом режиме
 		await expect.element(page.getByRole('button', { name: 'Назад' })).toBeEnabled();
 	});
 });
+
+describe('tests about — StreamingBadge (индикатор потокового прохождения)', () => {
+	it('(a) resolved-ветка + флаг: бейдж видим', async () => {
+		await localforage.setItem('runAllMode', true);
+		await mountPage({ slug: 'stroop' });
+
+		await expect.element(page.getByText('stub-full-run')).toBeVisible();
+		await expect.element(page.getByText('Потоковое прохождение')).toBeVisible();
+	});
+
+	it('(b) pending-ветка (Spinner) + флаг: бейдж видим', async () => {
+		await localforage.setItem('runAllMode', true);
+		// about() никогда не разрешается — страница остаётся в loading-ветке
+		registryMocks.about.mockImplementation(() => new Promise(() => {}));
+
+		await mountPage({ slug: 'stroop' });
+
+		await expect.element(page.getByText('Загрузка теста stroop...')).toBeVisible();
+		await expect.element(page.getByText('Потоковое прохождение')).toBeVisible();
+	});
+
+	it('(c) без флага: бейджа нет', async () => {
+		await mountPage({ slug: 'stroop' });
+
+		await expect.element(page.getByText('stub-full-run')).toBeVisible();
+		await expect.element(page.getByText('Потоковое прохождение')).not.toBeInTheDocument();
+	});
+
+	it('(d) GTO + флаг: бейджа нет (GTO не использует runAllMode)', async () => {
+		await localforage.setItem('runAllMode', true);
+		navMocks.url.searchParams = new URLSearchParams('gtoSessionId=42');
+
+		await mountPage({ slug: 'stroop' });
+
+		await expect.element(page.getByText('stub-full-run')).toBeVisible();
+		await expect.element(page.getByText('Потоковое прохождение')).not.toBeInTheDocument();
+	});
+});
