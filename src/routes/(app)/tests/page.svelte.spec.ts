@@ -1,18 +1,18 @@
 import { render, cleanup } from 'vitest-browser-svelte';
-import { userEvent } from 'vitest/browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import localforage from 'localforage';
 import Page from './+page.svelte';
 
 // app.css подключает Tailwind — без него утилиты не сгенерируются
 // в тестовом окружении, и trusted-клик может промахиваться по мишеням
 import '../../../app.css';
 
+import { streaming, startStreaming, requestStreamingStart } from '$lib/stores/streaming.svelte';
+
 // ─── Хоистированные моки navigation ───────────────────────────────────
 
 const navMocks = vi.hoisted(() => ({
-	goto: vi.fn<[(string | URL)?], Promise<void>>(() => Promise.resolve()),
-	resolve: vi.fn<[string], string>((path: string) => path)
+	goto: vi.fn<(path: string) => Promise<void>>(() => Promise.resolve()),
+	resolve: vi.fn<(path: string) => string>((path: string) => path)
 }));
 
 // ─── Моки ─────────────────────────────────────────────────────────────
@@ -23,6 +23,10 @@ vi.mock('$app/navigation', () => ({
 
 vi.mock('$app/paths', () => ({
 	resolve: (path: string) => navMocks.resolve(path)
+}));
+
+vi.mock('$app/environment', () => ({
+	browser: true
 }));
 
 // ─── Фикстуры ─────────────────────────────────────────────────────────
@@ -53,73 +57,92 @@ function makeData(options: { testSessionCounts?: Record<string, number> } = {}) 
 // ─── Хелперы ──────────────────────────────────────────────────────────
 
 async function mountPage(data: ReturnType<typeof makeData>) {
-	const result = await render(Page, { props: { data } });
-	// onMount с await localforage... выполняется асинхронно;
-	// даём достаточно времени на отработку микрозадач и рендер
+	const result = await render(Page, { props: { data: data as never } });
+	// onMount синхронен, но рендер после него асинхронен — даём кадр
 	await new Promise((r) => requestAnimationFrame(() => r(undefined)));
-	await new Promise((r) => setTimeout(r, 80));
+	await new Promise((r) => setTimeout(r, 20));
 	return result;
 }
 
 // ─── Хуки ─────────────────────────────────────────────────────────────
 
-beforeEach(async () => {
-	await localforage.clear();
+beforeEach(() => {
+	// Сброс in-memory store между тестами через публичный API
+	startStreaming([], {});
 	navMocks.goto.mockClear();
 	navMocks.resolve.mockClear();
 });
 
-afterEach(async () => {
+afterEach(() => {
 	cleanup();
 	vi.clearAllMocks();
-	await localforage.clear();
 });
 
 // ─── Тесты ────────────────────────────────────────────────────────────
 
-describe('/tests page — streaming mode wiring', () => {
-	it('клик по карточке запуска потокового прохождения устанавливает флаг и переходит к первому непройденному тесту', async () => {
-		const data = makeData({ testSessionCounts: { stroop: 1 } }); // stroop seeded as completed → expected redirect target is the second registry entry, math
+describe('/tests page — streaming store wiring', () => {
+	it('клик по карточке запуска строит очередь в store и переходит к первому непройденному тесту', async () => {
+		const data = makeData({ testSessionCounts: { stroop: 1 } }); // stroop пройден → очередь из math и munsterberg
 		const { container } = await mountPage(data);
 
-		// Ждём появления сетки (runAllMode === false после onMount)
+		// Trusted userEvent.click промахивался по adaptive-раскладке
+		// RecommendationCard в headless Chromium; trusted click + Enter
+		// покрыты RecommendationCard.svelte.test.ts. Здесь — page-level wiring.
 		const link = container.querySelector('a.card');
 		expect(link).toBeTruthy();
-
-		// Trusted userEvent.click missed the adaptive RecommendationCard layout under
-		// headless Chromium; trusted click + Enter are covered by
-		// RecommendationCard.svelte.test.ts. This spec covers page-level wiring.
 		const event = new MouseEvent('click', { cancelable: true, bubbles: true });
 		link!.dispatchEvent(event);
 
-		// startStreaming асинхронен (await localforage.setItem); ждём отработки
-		await vi.waitFor(() => expect(navMocks.goto).toHaveBeenCalledTimes(1));
+		// Очередь построена в store: непройденные по порядку реестра
+		expect(streaming.queue.map((item) => item.name)).toEqual(['math', 'munsterberg']);
 
-		// Флаг должен быть установлен
-		expect(await localforage.getItem('runAllMode')).toBe(true);
-
-		// Переход к первому непройденному по порядку реестра
-		expect(navMocks.goto).toHaveBeenLastCalledWith('/tests/math/about');
+		// Переход к первому непройденному
+		expect(navMocks.goto).toHaveBeenCalledTimes(1);
+		expect(navMocks.goto).toHaveBeenCalledWith('/tests/math/about');
 	});
 
-	it('при входе с активным флагом и наличии непройденных тестов сразу переходит к первому из них', async () => {
-		await localforage.setItem('runAllMode', true);
-		const data = makeData({ testSessionCounts: { stroop: 0 } }); // stroop непройден
+	it('заход на страницу с живой очередью в store сразу уходит к первому тесту очереди', async () => {
+		startStreaming(testsFixture, { stroop: 0 }); // живая очередь: stroop, math, munsterberg
+		const data = makeData({ testSessionCounts: { stroop: 0 } });
 		await mountPage(data);
 
 		expect(navMocks.goto).toHaveBeenCalledTimes(1);
 		expect(navMocks.goto).toHaveBeenCalledWith('/tests/stroop/about');
 	});
 
-	it('при входе с активным флагом и полностью пройденной серией сбрасывает флаг и уходит на /home', async () => {
-		await localforage.setItem('runAllMode', true);
+	it('регрессия: все counts ≥1 + живая очередь из всех тестов → goto первого, без ухода на /home', async () => {
+		// Раньше localforage-флаг сбрасывался и страница уходила на /home
+		startStreaming(testsFixture, {}); // очередь из всех тестов (режим повтора серии)
 		const data = makeData({
 			testSessionCounts: { stroop: 1, math: 2, munsterberg: 1 }
 		});
 		await mountPage(data);
 
-		expect(await localforage.getItem('runAllMode')).toBe(false);
 		expect(navMocks.goto).toHaveBeenCalledTimes(1);
-		expect(navMocks.goto).toHaveBeenCalledWith('/home');
+		expect(navMocks.goto).toHaveBeenCalledWith('/tests/stroop/about');
+		const gotoArgs = navMocks.goto.mock.calls.map((call) => call[0]);
+		expect(gotoArgs).not.toContain('/home');
+	});
+
+	it('pendingStart=true (после home-кнопки) материализует очередь из data и уходит к первому', async () => {
+		requestStreamingStart();
+		const data = makeData({ testSessionCounts: { stroop: 1 } }); // первый непройденный — math
+		await mountPage(data);
+
+		expect(streaming.pendingStart).toBe(false);
+		expect(streaming.queue.map((item) => item.name)).toEqual(['math', 'munsterberg']);
+		expect(navMocks.goto).toHaveBeenCalledTimes(1);
+		expect(navMocks.goto).toHaveBeenCalledWith('/tests/math/about');
+	});
+
+	it('пустая очередь без pendingStart — обычная сетка без goto', async () => {
+		const data = makeData();
+		const { container } = await mountPage(data);
+
+		expect(navMocks.goto).not.toHaveBeenCalled();
+		// Сетка тестов отрендерена
+		const cards = container.querySelectorAll('a.card');
+		expect(cards.length).toBeGreaterThan(0);
+		expect(container.textContent).toContain('Цвет и смысл');
 	});
 });

@@ -3,14 +3,13 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import { testRegistry } from '$lib/tests';
 	import { page } from '$app/state';
+	import { isStreamingActive } from '$lib/stores/streaming.svelte';
 
 	const { data } = $props();
 	const slug = $derived(data.slug);
 	const test = $derived(testRegistry[slug]);
 
 	import type { Component as ComponentType } from 'svelte';
-	import { onMount } from 'svelte';
-	import localforage from 'localforage';
 	let Component = $state<ComponentType | null>(null);
 
 	// GTO session integration
@@ -19,15 +18,8 @@
 	// Streaming (runAll) mode: «Назад» ведёт на /tests, чей bounce-механизм
 	// мгновенно возвращает на этот же тест — кнопка выглядит «зависшей».
 	// В GTO-сессии «Назад» реально работает, поэтому там кнопка активна.
-	let runAllMode = $state(false);
-	const streamingBackDisabled = $derived(runAllMode && !gtoSessionId);
-
-	onMount(async () => {
-		const mode = await localforage.getItem('runAllMode');
-		if (typeof mode === 'boolean') {
-			runAllMode = mode;
-		}
-	});
+	// Очередь живёт в streaming-store; GTO его не использует — там кнопка активна.
+	const isStreaming = $derived(isStreamingActive() && !gtoSessionId);
 
 	$effect(() => {
 		Component = null;
@@ -56,7 +48,7 @@
 	</main>
 
 	<section class="low-content grid {gtoSessionId ? 'grid-cols-2' : 'grid-cols-3'} gap-4">
-		<Button color="red" goto={gtoSessionId ? '/gto' : '/tests'} disabled={streamingBackDisabled}
+		<Button color="red" goto={gtoSessionId ? '/gto' : '/tests'} disabled={isStreaming}
 			>Назад</Button
 		>
 		<Button color="green" goto={playgroundUrl}>Начать</Button>
@@ -71,7 +63,7 @@
 	</main>
 
 	<section class="low-content flex justify-center gap-2 align-middle">
-		<Button color="red" goto={gtoSessionId ? '/gto' : '/tests'} disabled={streamingBackDisabled}
+		<Button color="red" goto={gtoSessionId ? '/gto' : '/tests'} disabled={isStreaming}
 			>Назад</Button
 		>
 	</section>

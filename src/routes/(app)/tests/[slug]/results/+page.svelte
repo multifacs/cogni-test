@@ -7,7 +7,7 @@
 	import { getPendingAttempts, flushQueue, type QueueElement } from '$lib/client/offline-queue';
 	import { invalidateAll } from '$app/navigation';
 	import { onMount, type Component } from 'svelte';
-	import localforage from 'localforage';
+	import { isStreamingActive } from '$lib/stores/streaming.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 
@@ -22,8 +22,6 @@
 
 	let pending = $state<QueueElement[]>([]);
 	const mergedResults = $derived(mergeSessions(serverResults, pending));
-
-	let runAllMode = $state(false);
 
 	// Зависит только от test/slug: НЕ должен реагировать на mergedResults,
 	// иначе каждое обновление pending-очереди перегружало бы график
@@ -48,15 +46,6 @@
 	});
 
 	onMount(async () => {
-		try {
-			const mode = await localforage.getItem('runAllMode');
-			if (typeof mode === 'boolean') {
-				runAllMode = mode;
-			}
-		} catch (err) {
-			console.log(err);
-		}
-
 		pending = await getPendingAttempts(slug, 'test');
 		if (pending.length > 0) {
 			// Гонка с layout-flush принята: сервер идемпотентен по sessionId,
@@ -145,7 +134,7 @@
 </main>
 
 <section class="low-content grid grid-cols-2 gap-4">
-	<Button color="red" goto="/tests">{runAllMode ? 'К следующему' : 'К тестам'}</Button>
+	<Button color="red" goto="/tests">{isStreamingActive() ? 'К следующему' : 'К тестам'}</Button>
 	<Button color="blue" goto={`/tests/${slug}`}>Заново</Button>
 </section>
 

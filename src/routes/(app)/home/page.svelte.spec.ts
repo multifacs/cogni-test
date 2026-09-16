@@ -1,4 +1,5 @@
 import { render, cleanup } from 'vitest-browser-svelte';
+import { page } from 'vitest/browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import localforage from 'localforage';
 import Page from './+page.svelte';
@@ -9,12 +10,13 @@ import '../../../app.css';
 
 import type { SkillMetric } from '$lib/types';
 import { SKILL_METRICS } from '$lib/shared/metricShares';
+import { streaming } from '$lib/stores/streaming.svelte';
 
 // ─── Хоистированные моки ──────────────────────────────────────────────
 
 const navMocks = vi.hoisted(() => ({
-	goto: vi.fn<[(string | URL)?], Promise<void>>(() => Promise.resolve()),
-	resolve: vi.fn<[string], string>((path: string) => path)
+	goto: vi.fn<(path: string) => Promise<void>>(() => Promise.resolve()),
+	resolve: vi.fn<(path: string) => string>((path: string) => path)
 }));
 
 // ─── Моки ─────────────────────────────────────────────────────────────
@@ -64,7 +66,7 @@ function makeData(
 // ─── Хелперы ──────────────────────────────────────────────────────────
 
 async function mountPage(data: ReturnType<typeof makeData>) {
-	const result = await render(Page, { props: { data } });
+	const result = await render(Page, { props: { data: data as never } });
 	// onMount с await localforage... выполняется асинхронно;
 	// даём достаточно времени на отработку микрозадач и рендер
 	await new Promise((r) => requestAnimationFrame(() => r(undefined)));
@@ -76,6 +78,7 @@ async function mountPage(data: ReturnType<typeof makeData>) {
 
 beforeEach(async () => {
 	await localforage.clear();
+	streaming.pendingStart = false; // сброс in-memory store между тестами
 	navMocks.goto.mockClear();
 	navMocks.resolve.mockClear();
 });
@@ -119,5 +122,18 @@ describe('/home page — MetricsDonutCard integration', () => {
 		const { container } = await mountPage(data);
 
 		expect(container.textContent).toContain('Пройдите начальную диагностику');
+	});
+
+	it('клик «Пройти диагностику» ставит streaming.pendingStart и уходит на /tests', async () => {
+		const data = makeData({ hasUnfinishedTests: true, loggedInAdmin: undefined });
+		await mountPage(data);
+
+		expect(streaming.pendingStart).toBe(false);
+
+		await page.getByRole('button', { name: 'Пройти диагностику' }).click();
+
+		expect(streaming.pendingStart).toBe(true);
+		expect(navMocks.goto).toHaveBeenCalledTimes(1);
+		expect(navMocks.goto).toHaveBeenCalledWith('/tests');
 	});
 });

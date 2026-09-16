@@ -4,9 +4,9 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import type { MetaResult, RegularResults } from '$lib/tests/types.js';
-	import { getContext, onMount, type Component as ComponentType } from 'svelte';
-	import localforage from 'localforage';
+	import { getContext, type Component as ComponentType } from 'svelte';
 	import { testRegistry } from '$lib/tests';
+	import { completeTest, isStreamingActive } from '$lib/stores/streaming.svelte';
 	import { enqueueAttempt } from '$lib/client/offline-queue';
 	import type { DevAction } from '$lib/types/header-action';
 	import { generate } from 'short-uuid';
@@ -28,15 +28,8 @@
 
 	// Streaming (runAll) mode: «Назад» ведёт на about → /tests bounce → возврат
 	// сюда же (визуальный no-op). В GTO-сессии «Назад» реально работает.
-	let runAllMode = $state(false);
-	const streamingBackDisabled = $derived(runAllMode && !gtoSessionId);
-
-	onMount(async () => {
-		const mode = await localforage.getItem('runAllMode');
-		if (typeof mode === 'boolean') {
-			runAllMode = mode;
-		}
-	});
+	// Очередь живёт в streaming-store; GTO его не использует — там кнопка активна.
+	const isStreaming = $derived(isStreamingActive() && !gtoSessionId);
 
 	import type { PathnameWithSearchOrHash } from '$app/types';
 	import { resolve } from '$app/paths';
@@ -165,10 +158,16 @@
 						{ sessionId: pendingSessionId ?? generate(), results },
 						'test'
 					);
+					// Save-порядок (offline): сначала снять тест с streaming-очереди,
+					// затем goto — results-страница должна увидеть очередь без этого теста.
+					completeTest(slug);
 					goto(resolve(`/tests/${slug}/results`));
 					return;
 				}
 
+				// Save-порядок (online): сначала снять тест с streaming-очереди,
+				// затем goto — results-страница должна увидеть очередь без этого теста.
+				completeTest(slug);
 				goto(resolve(`/tests/${slug}/results`));
 			}
 		} catch {
@@ -185,7 +184,7 @@
 </script>
 
 {#if Component}
-	<main class="main flex flex-col items-center justify-evenly text-[--main-text-color]">
+	<main class="main relative flex flex-col items-center justify-evenly text-[--main-text-color]">
 		<Component gameEnd={onGameEnd} sendResults={onSendResults} {data}></Component>
 	</main>
 
@@ -200,14 +199,12 @@
 				<p role="alert">Не удалось сохранить результаты</p>
 				<div class="grid grid-cols-2 gap-4">
 					<Button color="blue" onclick={retrySave}>Попробовать снова</Button>
-					<Button color="red" goto={backUrl} disabled={streamingBackDisabled}
-						>Назад</Button
-					>
+					<Button color="red" goto={backUrl} disabled={isStreaming}>Назад</Button>
 				</div>
 			</section>
 		{:else}
 			<section class="low-content grid grid-cols-2 gap-4">
-				<Button color="red" goto={backUrl} disabled={streamingBackDisabled}>Назад</Button>
+				<Button color="red" goto={backUrl} disabled={isStreaming}>Назад</Button>
 				{#if gtoSessionId}
 					<Button color="blue" goto="/gto">К сессиям ГТО</Button>
 				{:else}
@@ -218,19 +215,19 @@
 	{:else}
 		<section class="low-content grid grid-cols-3 gap-4">
 			<div></div>
-			<Button color="red" goto={backUrl} disabled={streamingBackDisabled}>Назад</Button>
+			<Button color="red" goto={backUrl} disabled={isStreaming}>Назад</Button>
 			<div></div>
 		</section>
 	{/if}
 {:else}
-	<main class="main flex flex-col items-center justify-center gap-4">
+	<main class="main relative flex flex-col items-center justify-center gap-4">
 		<Spinner></Spinner>
 		<p>Загрузка теста {slug}...</p>
 	</main>
 
 	<section class="low-content grid grid-cols-3 gap-4">
 		<div></div>
-		<Button color="red" goto={backUrl} disabled={streamingBackDisabled}>Назад</Button>
+		<Button color="red" goto={backUrl} disabled={isStreaming}>Назад</Button>
 		<div></div>
 	</section>
 {/if}
