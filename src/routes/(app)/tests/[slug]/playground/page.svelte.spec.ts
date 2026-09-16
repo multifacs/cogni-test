@@ -1,7 +1,8 @@
 import { render, cleanup } from 'vitest-browser-svelte';
 import { page, userEvent } from 'vitest/browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import localforage from 'localforage';
+import { startStreaming, streaming } from '$lib/stores/streaming.svelte';
+import type { TestData } from '$lib/tests';
 import Page from './+page.svelte';
 import type { DevAction } from '$lib/types/header-action';
 
@@ -12,7 +13,7 @@ import '../../../../../app.css';
 // ─── Хоистированные моки ──────────────────────────────────────────────
 
 const navMocks = vi.hoisted(() => ({
-	goto: vi.fn(() => Promise.resolve()),
+	goto: vi.fn<(path: string) => Promise<void>>(() => Promise.resolve()),
 	resolve: vi.fn((path: string) => path),
 	url: {
 		pathname: '/tests/stroop/playground',
@@ -38,8 +39,11 @@ const queueMocks = vi.hoisted(() => ({
 	// тип дженериком: параметры не объявляются в реализации (no-unused-vars),
 	// но mock.calls[0] остаётся типизированным кортежем для ассертов
 	enqueueAttempt: vi.fn<
-		[string, { sessionId: string; results: unknown }, string?],
-		Promise<string>
+		(
+			slug: string,
+			payload: { sessionId: string; results: unknown },
+			kind?: string
+		) => Promise<string>
 	>(() => Promise.resolve('queue-el-1'))
 }));
 
@@ -70,6 +74,18 @@ const SAMPLE_RESULTS = { correct: 7, wrong: 3, time: 1200 };
 
 // game-stub отправляет MetaResult-форму ({ results, meta }) — см. $lib/testing/game-stub.svelte
 const STUB_RESULTS = { results: [{ answer: 3, correct: true }], meta: {} };
+
+// Фикстура streaming-очереди: stroop (текущий) + math (другой) — ассерты
+// проверяют снятие именно stroop, а не очистку всей очереди.
+const STREAM_TESTS: TestData[] = [
+	{ name: 'stroop', title: 'Струп', path: '/tests/stroop/about', img: '' },
+	{ name: 'math', title: 'Быстрый счет', path: '/tests/math/about', img: '' }
+];
+
+/** Имена тестов в streaming-очереди (для ассертов снятия). */
+function queueNames(): string[] {
+	return streaming.queue.map((item) => item.name);
+}
 
 function jsonResponse(payload: unknown) {
 	return { ok: true, json: async () => payload };
@@ -113,6 +129,9 @@ beforeEach(() => {
 	fetchMock.mockImplementation(async () => jsonResponse({ results: SAMPLE_RESULTS }));
 	vi.stubGlobal('fetch', fetchMock);
 	navMocks.url.searchParams = new URLSearchParams();
+	// streaming-store — module-level $state: сброс между кейсами обязателен,
+	// иначе очередь утекает в следующий тест
+	startStreaming([], {});
 	queueMocks.enqueueAttempt.mockReset();
 	queueMocks.enqueueAttempt.mockImplementation(async () => 'queue-el-1');
 });
@@ -332,18 +351,8 @@ describe('tests playground — await-before-navigate контракт onSendResu
 });
 
 describe('tests playground — Назад disabled в потоковом режиме', () => {
-	// runAllMode читается страницей в onMount: между кейсами флаг обязан
-	// сбрасываться, иначе состояние утекает в следующий тест
-	beforeEach(async () => {
-		await localforage.removeItem('runAllMode');
-	});
-
-	afterEach(async () => {
-		await localforage.removeItem('runAllMode');
-	});
-
-	it('(i) runAllMode=true без GTO: during-game «Назад» disabled', async () => {
-		await localforage.setItem('runAllMode', true);
+	it('(i) очередь непуста без GTO: during-game «Назад» disabled', async () => {
+		startStreaming(STREAM_TESTS, {});
 
 		await mountPage({ slug: 'stroop' });
 
@@ -351,16 +360,16 @@ describe('tests playground — Назад disabled в потоковом реж�
 		await expect.element(page.getByRole('button', { name: 'Назад' })).toBeDisabled();
 	});
 
-	it('(ii) без флага: during-game «Назад» активна', async () => {
-		await localforage.setItem('runAllMode', false);
+	it('(ii) очередь пуста: during-game «Назад» активна', async () => {
+		startStreaming([], {});
 
 		await mountPage({ slug: 'stroop' });
 
 		await expect.element(page.getByRole('button', { name: 'Назад' })).toBeEnabled();
 	});
 
-	it('(iii) runAllMode=true + gtoSessionId: «Назад» активна (GTO не использует runAllMode)', async () => {
-		await localforage.setItem('runAllMode', true);
+	it('(iii) очередь непуста + gtoSessionId: «Назад» активна (GTO не использует стрим)', async () => {
+		startStreaming(STREAM_TESTS, {});
 		navMocks.url.searchParams = new URLSearchParams('gtoSessionId=42');
 
 		await mountPage({ slug: 'stroop' });
@@ -368,8 +377,8 @@ describe('tests playground — Назад disabled в потоковом реж�
 		await expect.element(page.getByRole('button', { name: 'Назад' })).toBeEnabled();
 	});
 
-	it('(iv) runAllMode=true + error-screen: «Назад» disabled', async () => {
-		await localforage.setItem('runAllMode', true);
+	it('(iv) очередь непуста + error-screen: «Назад» disabled', async () => {
+		startStreaming(STREAM_TESTS, {});
 		// паттерн кейса (b2): save POST !ok + отвергнутая очередь → error-UI
 		fetchMock.mockImplementation(async () => failedResponse());
 		queueMocks.enqueueAttempt.mockImplementation(async () => {
@@ -384,8 +393,8 @@ describe('tests playground — Назад disabled в потоковом реж�
 		await expect.element(page.getByRole('button', { name: 'Назад' })).toBeDisabled();
 	});
 
-	it('(v) runAllMode=true + end-screen: «Назад» disabled', async () => {
-		await localforage.setItem('runAllMode', true);
+	it('(v) очередь непуста + end-screen: «Назад» disabled', async () => {
+		startStreaming(STREAM_TESTS, {});
 
 		await mountPage({ slug: 'stroop' });
 		// дефолтный fetch-мок: save успешен → end-screen без навигации (goto-мок)
@@ -397,47 +406,81 @@ describe('tests playground — Назад disabled в потоковом реж�
 	});
 });
 
-describe('tests playground — StreamingBadge (индикатор потокового прохождения)', () => {
-	// runAllMode читается страницей в onMount: между кейсами флаг обязан
-	// сбрасываться, иначе состояние утекает в следующий тест
-	beforeEach(async () => {
-		await localforage.removeItem('runAllMode');
-	});
-
-	afterEach(async () => {
-		await localforage.removeItem('runAllMode');
-	});
-
-	it('(i) runAllMode=true без GTO: бейдж видим (resolved-ветка), role=status, pointer-events none', async () => {
-		await localforage.setItem('runAllMode', true);
-
-		await mountPage({ slug: 'stroop' });
-
-		// resolved-ветка: Спиннера в DOM нет, поэтому role="status" единственный
-		// и принадлежит бейджу (у Spinner тоже role="status" — см. компонент)
-		const badge = page.getByRole('status');
-		await expect.element(badge).toBeVisible();
-		await expect.element(page.getByText('Потоковое прохождение')).toBeVisible();
-
-		// бейдж — absolute-оверлей над игровым main: обязан пропускать клики
-		// по canvas игры, иначе стриминг блокирует прохождение
-		await expect.element(badge).toHaveStyle({ pointerEvents: 'none' });
-	});
-
-	it('(ii) без флага: бейджа нет', async () => {
-		await localforage.setItem('runAllMode', false);
+describe('tests playground — StreamingBadge удалён со страницы', () => {
+	it('(i) очередь непуста (resolved-ветка): бейджа нет', async () => {
+		startStreaming(STREAM_TESTS, {});
 
 		await mountPage({ slug: 'stroop' });
 
 		await expect.element(page.getByText('Потоковое прохождение')).not.toBeInTheDocument();
 	});
 
-	it('(iii) runAllMode=true + gtoSessionId: бейджа нет (GTO не использует runAllMode)', async () => {
-		await localforage.setItem('runAllMode', true);
+	it('(ii) очередь непуста + gtoSessionId: бейджа нет', async () => {
+		startStreaming(STREAM_TESTS, {});
 		navMocks.url.searchParams = new URLSearchParams('gtoSessionId=42');
 
 		await mountPage({ slug: 'stroop' });
 
 		await expect.element(page.getByText('Потоковое прохождение')).not.toBeInTheDocument();
+	});
+});
+
+describe('tests playground — completeTest в save-оркестраторе (streaming-store)', () => {
+	it('(i) standalone save 201: тест снят с очереди, goto на results', async () => {
+		startStreaming(STREAM_TESTS, {});
+
+		await mountPage({ slug: 'stroop' });
+		await userEvent.click(page.getByTestId('stub-full-run'));
+		await settle();
+
+		// stroop снят с очереди, math остался
+		expect(queueNames()).toEqual(['math']);
+		expect(navMocks.goto).toHaveBeenCalledWith('/tests/stroop/results');
+	});
+
+	it('(ii) offline-enqueue (POST не ок): тест снят с очереди, goto на results', async () => {
+		startStreaming(STREAM_TESTS, {});
+		fetchMock.mockImplementation(async () => failedResponse());
+
+		await mountPage({ slug: 'stroop' });
+		await userEvent.click(page.getByTestId('stub-full-run'));
+		await settle();
+
+		expect(queueMocks.enqueueAttempt).toHaveBeenCalledTimes(1);
+		expect(queueNames()).toEqual(['math']);
+		expect(navMocks.goto).toHaveBeenCalledWith('/tests/stroop/results');
+	});
+
+	it('(iii) GTO-save: тест НЕ снимается с очереди', async () => {
+		startStreaming(STREAM_TESTS, {});
+		navMocks.url.searchParams = new URLSearchParams('gtoSessionId=42');
+		fetchMock.mockImplementation(async (input: unknown) => {
+			if (String(input).includes('/gto/')) {
+				return jsonResponse({ nextTestUrl: '/tests/math/about?gtoSessionId=42' });
+			}
+			return jsonResponse({ results: SAMPLE_RESULTS });
+		});
+
+		await mountPage({ slug: 'stroop' });
+		await userEvent.click(page.getByTestId('stub-full-run'));
+		await settle();
+
+		// GTO-ветка не трогает streaming-очередь
+		expect(queueNames()).toEqual(['stroop', 'math']);
+	});
+
+	it('(iv) saveError (throw в catch): тест НЕ снят, goto нет', async () => {
+		startStreaming(STREAM_TESTS, {});
+		fetchMock.mockImplementation(async () => {
+			throw new Error('network down');
+		});
+
+		await mountPage({ slug: 'stroop' });
+		await userEvent.click(page.getByTestId('stub-full-run'));
+		await settle();
+
+		expect(queueNames()).toEqual(['stroop', 'math']);
+		expect(navMocks.goto).not.toHaveBeenCalled();
+		await expect.element(page.getByText('Не удалось сохранить результаты')).toBeVisible();
 	});
 });

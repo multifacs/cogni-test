@@ -10,6 +10,7 @@
 	import RecommendationCard from '$lib/components/ui/RecommendationCard.svelte';
 	import MetricsDonutCard from '$lib/components/ui/MetricsDonutCard.svelte';
 	import { resolve } from '$app/paths';
+	import { requestStreamingStart } from '$lib/stores/streaming.svelte';
 
 	interface BeforeInstallPromptEvent extends Event {
 		prompt(): Promise<void>;
@@ -125,7 +126,7 @@
 	}
 
 	function handleRunAll() {
-		localforage.setItem('runAllMode', true);
+		requestStreamingStart();
 		goto(resolve('/tests'));
 	}
 

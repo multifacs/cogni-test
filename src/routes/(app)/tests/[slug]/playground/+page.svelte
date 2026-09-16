@@ -4,10 +4,9 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import type { MetaResult, RegularResults } from '$lib/tests/types.js';
-	import { getContext, onMount, type Component as ComponentType } from 'svelte';
-	import localforage from 'localforage';
+	import { getContext, type Component as ComponentType } from 'svelte';
 	import { testRegistry } from '$lib/tests';
-	import StreamingBadge from '$lib/components/ui/StreamingBadge.svelte';
+	import { completeTest, isStreamingActive } from '$lib/stores/streaming.svelte';
 	import { enqueueAttempt } from '$lib/client/offline-queue';
 	import type { DevAction } from '$lib/types/header-action';
 	import { generate } from 'short-uuid';
@@ -29,17 +28,8 @@
 
 	// Streaming (runAll) mode: «Назад» ведёт на about → /tests bounce → возврат
 	// сюда же (визуальный no-op). В GTO-сессии «Назад» реально работает.
-	// Флаг управляет и disabled «Назад», и индикатором StreamingBadge:
-	// GTO не использует runAllMode — там кнопка активна и бейджа нет.
-	let runAllMode = $state(false);
-	const isStreaming = $derived(runAllMode && !gtoSessionId);
-
-	onMount(async () => {
-		const mode = await localforage.getItem('runAllMode');
-		if (typeof mode === 'boolean') {
-			runAllMode = mode;
-		}
-	});
+	// Очередь живёт в streaming-store; GTO его не использует — там кнопка активна.
+	const isStreaming = $derived(isStreamingActive() && !gtoSessionId);
 
 	import type { PathnameWithSearchOrHash } from '$app/types';
 	import { resolve } from '$app/paths';
@@ -168,10 +158,16 @@
 						{ sessionId: pendingSessionId ?? generate(), results },
 						'test'
 					);
+					// Save-порядок (offline): сначала снять тест с streaming-очереди,
+					// затем goto — results-страница должна увидеть очередь без этого теста.
+					completeTest(slug);
 					goto(resolve(`/tests/${slug}/results`));
 					return;
 				}
 
+				// Save-порядок (online): сначала снять тест с streaming-очереди,
+				// затем goto — results-страница должна увидеть очередь без этого теста.
+				completeTest(slug);
 				goto(resolve(`/tests/${slug}/results`));
 			}
 		} catch {
@@ -187,23 +183,8 @@
 	}
 </script>
 
-<!-- Бейдж стриминга: сниппет, рендерится первым элементом main в обеих
-     ветках (resolved и Spinner). Якорь — main (position: relative), поэтому
-     бейдж в верхней части ИГРОВОЙ области под хедером, а не поверх
-     banner-ряда layout'а. Absolute внутри main: не flex-ребёнок, не
-     сжимает justify-evenly-контент игры; pointer-events-none + z-10 —
-     не перехватывает клики по canvas. -->
-{#snippet streamingIndicator()}
-	{#if isStreaming}
-		<div class="pointer-events-none absolute top-2 left-1/2 z-10 -translate-x-1/2">
-			<StreamingBadge />
-		</div>
-	{/if}
-{/snippet}
-
 {#if Component}
 	<main class="main relative flex flex-col items-center justify-evenly text-[--main-text-color]">
-		{@render streamingIndicator()}
 		<Component gameEnd={onGameEnd} sendResults={onSendResults} {data}></Component>
 	</main>
 
@@ -240,7 +221,6 @@
 	{/if}
 {:else}
 	<main class="main relative flex flex-col items-center justify-center gap-4">
-		{@render streamingIndicator()}
 		<Spinner></Spinner>
 		<p>Загрузка теста {slug}...</p>
 	</main>

@@ -5,75 +5,59 @@
 
 	const resolvePathname = resolve as (path: PathnameWithSearchOrHash) => ResolvedPathname;
 	import ExerciseCard from '$lib/components/ui/ExerciseCard.svelte';
-	import Spinner from '$lib/components/ui/Spinner.svelte';
-	import StreamingBadge from '$lib/components/ui/StreamingBadge.svelte';
-	import localforage from 'localforage';
 	import { getContext, onMount } from 'svelte';
 	import RecommendationCard from '$lib/components/ui/RecommendationCard.svelte';
-	import { getStreamingQueue } from '$lib/shared/testQueue.js';
+	import { streaming, startStreaming } from '$lib/stores/streaming.svelte';
 
 	let { data } = $props();
 
 	let testSessionCounts: Record<string, number> = $state(data.testSessionCounts ?? {});
-	let runAllMode = $state(true);
 	const headerContext = getContext<{ value: string }>('headerText');
 
-	onMount(async () => {
+	onMount(() => {
 		if (headerContext) {
 			headerContext.value = 'Диагностика';
 		}
 
-		const flag = await localforage.getItem('runAllMode');
-		if (flag && data.tests.length > 0) {
-			const uncompleted = data.tests.filter((t) => {
-				const count = testSessionCounts[t.name];
-				return count == null || count < 1;
-			});
-			if (uncompleted.length > 0) {
-				goto(resolvePathname(uncompleted[0].path as PathnameWithSearchOrHash));
-			} else {
-				localforage.setItem('runAllMode', false);
-				goto(resolvePathname('/home' as PathnameWithSearchOrHash));
-			}
-		} else {
-			runAllMode = false;
+		// Заход с home (requestStreamingStart) — материализуем очередь из data
+		if (streaming.pendingStart) {
+			startStreaming(data.tests, data.testSessionCounts ?? {});
+		}
+
+		// Живая очередь — сразу уходим к первому тесту (пилюлю рендерит Header)
+		if (streaming.queue.length > 0) {
+			goto(resolvePathname(streaming.queue[0].path as PathnameWithSearchOrHash));
 		}
 	});
 
-	async function startStreaming() {
-		await localforage.setItem('runAllMode', true);
-		const queue = getStreamingQueue(data.tests, testSessionCounts);
-		if (queue.length > 0) {
-			goto(resolvePathname(queue[0].path as PathnameWithSearchOrHash));
+	function handleStartStreaming() {
+		startStreaming(data.tests, data.testSessionCounts ?? {});
+		if (streaming.queue.length > 0) {
+			goto(resolvePathname(streaming.queue[0].path as PathnameWithSearchOrHash));
 		}
 	}
 </script>
 
 <main class="main flex w-full flex-col items-center justify-center-safe">
 	<div class="flex w-full max-w-5xl flex-col items-center justify-center-safe gap-4 sm:gap-6">
-		{#if runAllMode}
-			<StreamingBadge />
-			<Spinner></Spinner>
-		{:else}
-			<div class="w-full">
-				<RecommendationCard
-					title="Запуск потокового прохождения"
-					text="Регулярные тренировки помогают поддерживать когнитивные навыки"
-					icon="/brain.svg"
-					goto="/tests"
-					variant="card"
-					button_text="Начать прохождение"
-					onclick={startStreaming}
-				/>
-			</div>
+		<div class="w-full">
+			<RecommendationCard
+				title="Запуск потокового прохождения"
+				text="Регулярные тренировки помогают поддерживать когнитивные навыки"
+				icon="/brain.svg"
+				goto="/tests"
+				variant="card"
+				button_text="Начать прохождение"
+				onclick={handleStartStreaming}
+			/>
+		</div>
 
-			<div
-				class="grid w-full grid-cols-2 gap-4 sm:grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] sm:gap-6"
-			>
-				{#each data.tests as { name, title, path, img } (title)}
-					<ExerciseCard {name} {title} {path} {img} {testSessionCounts} />
-				{/each}
-			</div>
-		{/if}
+		<div
+			class="grid w-full grid-cols-2 gap-4 sm:grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] sm:gap-6"
+		>
+			{#each data.tests as { name, title, path, img } (title)}
+				<ExerciseCard {name} {title} {path} {img} {testSessionCounts} />
+			{/each}
+		</div>
 	</div>
 </main>

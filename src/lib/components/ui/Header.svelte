@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { page } from '$app/state';
+	import { isStreamingActive } from '$lib/stores/streaming.svelte';
+	import StreamingBadge from './StreamingBadge.svelte';
 	import type { DevAction } from '$lib/types/header-action';
 
 	let {
@@ -10,6 +13,15 @@
 	} = $props();
 
 	let pending = $state(false);
+
+	// Пилюля потокового прохождения: живая очередь (store, реактивна —
+	// вспыхивает уже в момент клика «Начать прохождение», до навигации) +
+	// роут /tests/* + не GTO-сессия. Чистый индикатор, не кликабельна.
+	const showPill = $derived(
+		isStreamingActive() &&
+			/^\/tests(\/|$)/.test(page.url.pathname) &&
+			!page.url.searchParams.get('gtoSessionId')
+	);
 
 	// Await the caller's promise (no fire-and-forget wrapper): rejections
 	// propagate and the pending flag always resets in finally.
@@ -50,11 +62,17 @@
 			</button>
 		{/if}
 	</div>
+	{#if showPill}
+		<div class="streaming-pill">
+			<StreamingBadge />
+		</div>
+	{/if}
 </div>
 
 <style>
 	.banner {
 		grid-area: banner;
+		position: relative;
 		background-color: #fff;
 		padding: 1rem;
 		display: flex;
