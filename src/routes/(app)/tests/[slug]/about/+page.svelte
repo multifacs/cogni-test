@@ -48,7 +48,7 @@
 	</main>
 
 	<section class="low-content grid {gtoSessionId ? 'grid-cols-2' : 'grid-cols-3'} gap-4">
-		<Button color="red" goto={gtoSessionId ? '/gto' : '/tests'} disabled={isStreaming}
+		<Button color="red" goto={isStreaming ? '/home' : gtoSessionId ? '/gto' : '/tests'}
 			>Назад</Button
 		>
 		<Button color="green" goto={playgroundUrl}>Начать</Button>
@@ -63,7 +63,7 @@
 	</main>
 
 	<section class="low-content flex justify-center gap-2 align-middle">
-		<Button color="red" goto={gtoSessionId ? '/gto' : '/tests'} disabled={isStreaming}
+		<Button color="red" goto={isStreaming ? '/home' : gtoSessionId ? '/gto' : '/tests'}
 			>Назад</Button
 		>
 	</section>

@@ -199,12 +199,12 @@
 				<p role="alert">Не удалось сохранить результаты</p>
 				<div class="grid grid-cols-2 gap-4">
 					<Button color="blue" onclick={retrySave}>Попробовать снова</Button>
-					<Button color="red" goto={backUrl} disabled={isStreaming}>Назад</Button>
+					<Button color="red" goto={isStreaming ? '/home' : backUrl}>Назад</Button>
 				</div>
 			</section>
 		{:else}
 			<section class="low-content grid grid-cols-2 gap-4">
-				<Button color="red" goto={backUrl} disabled={isStreaming}>Назад</Button>
+				<Button color="red" goto={isStreaming ? '/home' : backUrl}>Назад</Button>
 				{#if gtoSessionId}
 					<Button color="blue" goto="/gto">К сессиям ГТО</Button>
 				{:else}
@@ -215,7 +215,7 @@
 	{:else}
 		<section class="low-content grid grid-cols-3 gap-4">
 			<div></div>
-			<Button color="red" goto={backUrl} disabled={isStreaming}>Назад</Button>
+			<Button color="red" goto={isStreaming ? '/home' : backUrl}>Назад</Button>
 			<div></div>
 		</section>
 	{/if}
@@ -227,7 +227,7 @@
 
 	<section class="low-content grid grid-cols-3 gap-4">
 		<div></div>
-		<Button color="red" goto={backUrl} disabled={isStreaming}>Назад</Button>
+		<Button color="red" goto={isStreaming ? '/home' : backUrl}>Назад</Button>
 		<div></div>
 	</section>
 {/if}
