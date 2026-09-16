@@ -13,7 +13,9 @@ import '../../../../../app.css';
 // ─── Хоистированные моки ──────────────────────────────────────────────
 
 const navMocks = vi.hoisted(() => ({
-	goto: vi.fn<(path: string) => Promise<void>>(() => Promise.resolve()),
+	goto: vi.fn<(path: string, opts?: { invalidateAll?: boolean }) => Promise<void>>(() =>
+		Promise.resolve()
+	),
 	resolve: vi.fn((path: string) => path),
 	url: {
 		pathname: '/tests/stroop/playground',
@@ -26,7 +28,7 @@ vi.mock('$app/state', () => ({
 }));
 
 vi.mock('$app/navigation', () => ({
-	goto: (...args: unknown[]) => navMocks.goto(...(args as [string]))
+	goto: (...args: unknown[]) => navMocks.goto(...(args as [string, { invalidateAll?: boolean }]))
 }));
 
 vi.mock('$app/paths', () => ({
@@ -350,34 +352,53 @@ describe('tests playground — await-before-navigate контракт onSendResu
 	});
 });
 
-describe('tests playground — Назад disabled в потоковом режиме', () => {
-	it('(i) очередь непуста без GTO: during-game «Назад» disabled', async () => {
+describe('tests playground — Назад ведёт на /home в потоковом режиме', () => {
+	it('(i) очередь непуста без GTO: during-game «Назад» активна, клик ведёт на /home', async () => {
 		startStreaming(STREAM_TESTS, {});
 
 		await mountPage({ slug: 'stroop' });
 
 		// isGameEnd=false после mount — единственная «Назад» в DOM (нижняя панель)
-		await expect.element(page.getByRole('button', { name: 'Назад' })).toBeDisabled();
+		const back = page.getByRole('button', { name: 'Назад' });
+		await expect.element(back).toBeEnabled();
+		await back.click();
+
+		// Button зовёт gotoSvelte(resolvePathname(goto), { invalidateAll })
+		expect(navMocks.goto).toHaveBeenCalledTimes(1);
+		expect(navMocks.goto).toHaveBeenCalledWith('/home', { invalidateAll: false });
 	});
 
-	it('(ii) очередь пуста: during-game «Назад» активна', async () => {
+	it('(ii) очередь пуста: «Назад» активна, клик ведёт по backUrl (/tests/<slug>)', async () => {
 		startStreaming([], {});
 
 		await mountPage({ slug: 'stroop' });
 
-		await expect.element(page.getByRole('button', { name: 'Назад' })).toBeEnabled();
+		const back = page.getByRole('button', { name: 'Назад' });
+		await expect.element(back).toBeEnabled();
+		await back.click();
+
+		expect(navMocks.goto).toHaveBeenCalledTimes(1);
+		expect(navMocks.goto).toHaveBeenCalledWith('/tests/stroop', { invalidateAll: false });
 	});
 
-	it('(iii) очередь непуста + gtoSessionId: «Назад» активна (GTO не использует стрим)', async () => {
+	it('(iii) очередь непуста + gtoSessionId: «Назад» активна, ведёт по GTO backUrl', async () => {
 		startStreaming(STREAM_TESTS, {});
 		navMocks.url.searchParams = new URLSearchParams('gtoSessionId=42');
 
 		await mountPage({ slug: 'stroop' });
 
-		await expect.element(page.getByRole('button', { name: 'Назад' })).toBeEnabled();
+		const back = page.getByRole('button', { name: 'Назад' });
+		await expect.element(back).toBeEnabled();
+		await back.click();
+
+		// GTO не использует стрим — обычный backUrl (about-страница теста)
+		expect(navMocks.goto).toHaveBeenCalledTimes(1);
+		expect(navMocks.goto).toHaveBeenCalledWith('/tests/stroop/about?gtoSessionId=42', {
+			invalidateAll: false
+		});
 	});
 
-	it('(iv) очередь непуста + error-screen: «Назад» disabled', async () => {
+	it('(iv) очередь непуста + error-screen: «Назад» активна, клик ведёт на /home', async () => {
 		startStreaming(STREAM_TESTS, {});
 		// паттерн кейса (b2): save POST !ok + отвергнутая очередь → error-UI
 		fetchMock.mockImplementation(async () => failedResponse());
@@ -390,10 +411,16 @@ describe('tests playground — Назад disabled в потоковом реж�
 		await settle();
 
 		await expect.element(page.getByText('Не удалось сохранить результаты')).toBeVisible();
-		await expect.element(page.getByRole('button', { name: 'Назад' })).toBeDisabled();
+		const back = page.getByRole('button', { name: 'Назад' });
+		await expect.element(back).toBeEnabled();
+		await back.click();
+
+		// save-ошибка не вызвала goto — клик «Назад» единственная навигация
+		expect(navMocks.goto).toHaveBeenCalledTimes(1);
+		expect(navMocks.goto).toHaveBeenCalledWith('/home', { invalidateAll: false });
 	});
 
-	it('(v) очередь непуста + end-screen: «Назад» disabled', async () => {
+	it('(v) очередь непуста + end-screen: «Назад» активна, клик ведёт на /home', async () => {
 		startStreaming(STREAM_TESTS, {});
 
 		await mountPage({ slug: 'stroop' });
@@ -402,7 +429,12 @@ describe('tests playground — Назад disabled в потоковом реж�
 		await settle();
 
 		await expect.element(page.getByRole('button', { name: 'Результаты' })).toBeVisible();
-		await expect.element(page.getByRole('button', { name: 'Назад' })).toBeDisabled();
+		const back = page.getByRole('button', { name: 'Назад' });
+		await expect.element(back).toBeEnabled();
+		await back.click();
+
+		// goto уже звался из onSendResults (results) — проверяем целевой вызов
+		expect(navMocks.goto).toHaveBeenCalledWith('/home', { invalidateAll: false });
 	});
 });
 

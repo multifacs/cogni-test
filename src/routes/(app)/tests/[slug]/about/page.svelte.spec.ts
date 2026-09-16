@@ -13,7 +13,9 @@ import '../../../../../app.css';
 // ─── Хоистированные моки ──────────────────────────────────────────────
 
 const navMocks = vi.hoisted(() => ({
-	goto: vi.fn<(path: string) => Promise<void>>(() => Promise.resolve()),
+	goto: vi.fn<(path: string, opts?: { invalidateAll?: boolean }) => Promise<void>>(() =>
+		Promise.resolve()
+	),
 	resolve: vi.fn((path: string) => path),
 	url: {
 		pathname: '/tests/stroop/about',
@@ -27,7 +29,7 @@ vi.mock('$app/state', () => ({
 
 // Button.svelte импортирует goto из $app/navigation — мок обязателен
 vi.mock('$app/navigation', () => ({
-	goto: (...args: unknown[]) => navMocks.goto(...(args as [string]))
+	goto: (...args: unknown[]) => navMocks.goto(...(args as [string, { invalidateAll?: boolean }]))
 }));
 
 vi.mock('$app/paths', () => ({
@@ -89,25 +91,34 @@ afterEach(() => {
 
 // ─── Тесты ────────────────────────────────────────────────────────────
 
-describe('tests about — Назад disabled в потоковом режиме', () => {
-	it('(a) resolved-ветка: очередь непуста → «Назад» disabled; пустая — активна', async () => {
+describe('tests about — Назад ведёт на /home в потоковом режиме', () => {
+	it('(a) resolved-ветка: очередь непуста → «Назад» активна и ведёт на /home; пустая — ведёт на /tests', async () => {
 		startStreaming(STREAM_TESTS, {});
 		await mountPage({ slug: 'stroop' });
 
 		// about() уже разрешился → resolved-ветка (Component загружен)
 		await expect.element(page.getByText('stub-full-run')).toBeVisible();
-		await expect.element(page.getByRole('button', { name: 'Назад' })).toBeDisabled();
+		const back = page.getByRole('button', { name: 'Назад' });
+		await expect.element(back).toBeEnabled();
+		await back.click();
 
-		// пере-маунт с пустой очередью
+		// Button зовёт gotoSvelte(resolvePathname(goto), { invalidateAll })
+		expect(navMocks.goto).toHaveBeenCalledWith('/home', { invalidateAll: false });
+
+		// пере-маунт с пустой очередью (не-GTO resolved-ветка → /tests)
 		cleanup();
 		startStreaming([], {});
 		await mountPage({ slug: 'stroop' });
 
 		await expect.element(page.getByText('stub-full-run')).toBeVisible();
-		await expect.element(page.getByRole('button', { name: 'Назад' })).toBeEnabled();
+		const backIdle = page.getByRole('button', { name: 'Назад' });
+		await expect.element(backIdle).toBeEnabled();
+		await backIdle.click();
+
+		expect(navMocks.goto).toHaveBeenCalledWith('/tests', { invalidateAll: false });
 	});
 
-	it('(b) pending-ветка (Spinner): очередь непуста → «Назад» disabled', async () => {
+	it('(b) pending-ветка (Spinner): очередь непуста → «Назад» активна, клик ведёт на /home', async () => {
 		startStreaming(STREAM_TESTS, {});
 		// about() никогда не разрешается — страница остаётся в loading-ветке
 		registryMocks.about.mockImplementation(() => new Promise(() => {}));
@@ -115,17 +126,28 @@ describe('tests about — Назад disabled в потоковом режиме
 		await mountPage({ slug: 'stroop' });
 
 		await expect.element(page.getByText('Загрузка теста stroop...')).toBeVisible();
-		await expect.element(page.getByRole('button', { name: 'Назад' })).toBeDisabled();
+		const back = page.getByRole('button', { name: 'Назад' });
+		await expect.element(back).toBeEnabled();
+		await back.click();
+
+		expect(navMocks.goto).toHaveBeenCalledTimes(1);
+		expect(navMocks.goto).toHaveBeenCalledWith('/home', { invalidateAll: false });
 	});
 
-	it('(c) GTO: очередь непуста + gtoSessionId → «Назад» активна (GTO не использует стрим)', async () => {
+	it('(c) GTO: очередь непуста + gtoSessionId → «Назад» активна, клик ведёт на /gto', async () => {
 		startStreaming(STREAM_TESTS, {});
 		navMocks.url.searchParams = new URLSearchParams('gtoSessionId=42');
 
 		await mountPage({ slug: 'stroop' });
 
 		await expect.element(page.getByText('stub-full-run')).toBeVisible();
-		await expect.element(page.getByRole('button', { name: 'Назад' })).toBeEnabled();
+		const back = page.getByRole('button', { name: 'Назад' });
+		await expect.element(back).toBeEnabled();
+		await back.click();
+
+		// GTO не использует стрим — обычная цель /gto
+		expect(navMocks.goto).toHaveBeenCalledTimes(1);
+		expect(navMocks.goto).toHaveBeenCalledWith('/gto', { invalidateAll: false });
 	});
 });
 

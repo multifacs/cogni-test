@@ -26,9 +26,9 @@
 	// GTO session integration: read gtoSessionId from URL params
 	const gtoSessionId = $derived(page.url.searchParams.get('gtoSessionId') ?? undefined);
 
-	// Streaming (runAll) mode: «Назад» ведёт на about → /tests bounce → возврат
-	// сюда же (визуальный no-op). В GTO-сессии «Назад» реально работает.
-	// Очередь живёт в streaming-store; GTO его не использует — там кнопка активна.
+	// Streaming (runAll) mode: «Назад» ведёт на /home — выход из серии
+	// без остановки стрима: очередь живёт в streaming-store, и возврат
+	// на /tests продолжит серию. В GTO-сессии «Назад» реально работает (backUrl).
 	const isStreaming = $derived(isStreamingActive() && !gtoSessionId);
 
 	import type { PathnameWithSearchOrHash } from '$app/types';
@@ -39,6 +39,10 @@
 			? `/tests/${slug}/about?gtoSessionId=${gtoSessionId}`
 			: `/tests/${slug}`) satisfies PathnameWithSearchOrHash
 	);
+
+	// Единая цель «Назад»: в потоковом режиме — /home (стрим не останавливается),
+	// иначе обычный backUrl (about в GTO-сессии / список тестов).
+	const backTarget = $derived(isStreaming ? '/home' : backUrl);
 
 	$effect(() => {
 		// Reset game state when the test changes (e.g. GTO navigating between tests)
@@ -199,12 +203,12 @@
 				<p role="alert">Не удалось сохранить результаты</p>
 				<div class="grid grid-cols-2 gap-4">
 					<Button color="blue" onclick={retrySave}>Попробовать снова</Button>
-					<Button color="red" goto={isStreaming ? '/home' : backUrl}>Назад</Button>
+					<Button color="red" goto={backTarget}>Назад</Button>
 				</div>
 			</section>
 		{:else}
 			<section class="low-content grid grid-cols-2 gap-4">
-				<Button color="red" goto={isStreaming ? '/home' : backUrl}>Назад</Button>
+				<Button color="red" goto={backTarget}>Назад</Button>
 				{#if gtoSessionId}
 					<Button color="blue" goto="/gto">К сессиям ГТО</Button>
 				{:else}
@@ -215,7 +219,7 @@
 	{:else}
 		<section class="low-content grid grid-cols-3 gap-4">
 			<div></div>
-			<Button color="red" goto={isStreaming ? '/home' : backUrl}>Назад</Button>
+			<Button color="red" goto={backTarget}>Назад</Button>
 			<div></div>
 		</section>
 	{/if}
@@ -227,7 +231,7 @@
 
 	<section class="low-content grid grid-cols-3 gap-4">
 		<div></div>
-		<Button color="red" goto={isStreaming ? '/home' : backUrl}>Назад</Button>
+		<Button color="red" goto={backTarget}>Назад</Button>
 		<div></div>
 	</section>
 {/if}
