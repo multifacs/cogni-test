@@ -17,6 +17,10 @@
 	} = $props();
 
 	const shares = $derived(getMetricShares(metricScores));
+	// Легенда и SVG-тултип показывают абсолютный скор метрики (0–100 = % от
+	// максимума своей метрики, как в таблице /metrics), а геометрия кольца —
+	// относительные доли (share) между метриками. Поэтому значения легенды
+	// НЕ обязаны суммироваться в 100% — это осознанно.
 	const donutData = $derived(
 		shares
 			.filter((s) => s.share > 0)
@@ -27,6 +31,7 @@
 				return {
 					metric: s.metric,
 					share: s.share,
+					score: s.score,
 					dashArray: `${s.share * circumference} ${circumference}`,
 					offset: -startShare * circumference,
 					// координаты середины дуги (без rotate-хака кругов)
@@ -64,7 +69,7 @@
 	{:else}
 		<div class="donut-wrapper">
 			<svg viewBox="0 0 100 100" class="donut shrink-0" aria-hidden="true">
-				{#each donutData as { metric, share, dashArray, offset, x, y } (metric)}
+				{#each donutData as { metric, share, score, dashArray, offset, x, y } (metric)}
 					<circle
 						cx="50"
 						cy="50"
@@ -76,7 +81,7 @@
 						stroke-dashoffset={offset}
 						transform="rotate(-90 50 50)"
 					>
-						<title>{translate(metric)} — {Math.round(share * 100)}%</title>
+						<title>{translate(metric)} — {Math.round(score)}%</title>
 					</circle>
 					{#if share >= 0.1}
 						<text {x} y={y + 2} text-anchor="middle" font-size="6" fill="#333">
@@ -89,11 +94,11 @@
 				{#each donutData as d (d.metric)}
 					<li class="flex items-center gap-1 text-xs">
 						<div
-							class="h-2 w-2 rounded-full shrink-0"
+							class="h-2 w-2 shrink-0 rounded-full"
 							style="background: {metricColor(d.metric)}"
 						></div>
 						<span class="min-w-0 flex-1 truncate">{translate(d.metric)}:</span>
-						<span class="shrink-0">{Math.round(d.share * 100)}%</span>
+						<span class="shrink-0">{Math.round(d.score)}/100</span>
 					</li>
 				{/each}
 			</ul>

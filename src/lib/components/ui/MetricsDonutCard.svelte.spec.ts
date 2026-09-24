@@ -116,4 +116,37 @@ describe('MetricsDonutCard', () => {
 		});
 		expect(totalSeen).toBeCloseTo(2 * Math.PI * 36, 4);
 	});
+
+	it('(g) legend shows score as NN/100, tooltip as — NN%; not share-based', async () => {
+		// values[4]=10, values[6]=20, values[10]=40 → scores 10/20/40,
+		// shares ~14/29/57. Share-based legend would render "14/100",
+		// "29/100", "57/100" — none of which may match below.
+		const values = new Array(11).fill(0);
+		values[4] = 10; // reaction_speed → score 10, share ~14
+		values[6] = 20; // spacial_perception → score 20, share ~29
+		values[10] = 40; // color_perception → score 40, share ~57
+		const scores = scoresFor(values);
+		const { container } = await render(MetricsDonutCard, {
+			props: { metricScores: scores, hasData: true }
+		});
+
+		// Legend: absolute score as NN/100 (textContent also contains <title>
+		// text "— NN%", so these substring asserts stay collision-free).
+		const text = container.textContent ?? '';
+		expect(text).toContain('10/100');
+		expect(text).toContain('20/100');
+		expect(text).toContain('40/100');
+		// A share-based legend regression would produce these instead.
+		expect(text).not.toContain('14/100');
+		expect(text).not.toContain('29/100');
+		expect(text).not.toContain('57/100');
+
+		// SVG tooltip: "— NN%".
+		const titles = [...container.querySelectorAll('circle > title')];
+		expect(titles).toHaveLength(3);
+		const titleTexts = titles.map((t) => t.textContent ?? '');
+		expect(titleTexts.some((t) => t.endsWith('— 10%'))).toBe(true);
+		expect(titleTexts.some((t) => t.endsWith('— 20%'))).toBe(true);
+		expect(titleTexts.some((t) => t.endsWith('— 40%'))).toBe(true);
+	});
 });
