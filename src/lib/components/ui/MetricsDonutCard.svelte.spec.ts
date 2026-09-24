@@ -1,5 +1,4 @@
 import { render, cleanup } from 'vitest-browser-svelte';
-import { screen } from '@testing-library/dom';
 import { userEvent } from 'vitest/browser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import MetricsDonutCard from './MetricsDonutCard.svelte';

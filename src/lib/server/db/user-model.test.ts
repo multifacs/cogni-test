@@ -123,7 +123,9 @@ describe('user model', () => {
 			});
 			expect.unreachable('should have thrown');
 		} catch (e) {
-			const message = e instanceof Error ? (e.cause?.message ?? e.message) : String(e);
+			const cause = e instanceof Error ? e.cause : undefined;
+			const message =
+				cause instanceof Error ? cause.message : e instanceof Error ? e.message : String(e);
 			expect(message).toContain('lastname_length');
 		}
 	});

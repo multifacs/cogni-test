@@ -9,12 +9,12 @@ import '../../../../../../app.css';
 // ─── Хоистированные моки ──────────────────────────────────────────────
 
 const navMocks = vi.hoisted(() => ({
-	goto: vi.fn<[(string | URL)?], Promise<void>>(() => Promise.resolve()),
-	resolve: vi.fn<[string], string>((path: string) => path)
+	goto: vi.fn<(url?: string | URL) => Promise<void>>(() => Promise.resolve()),
+	resolve: vi.fn<(path: string) => string>((path: string) => path)
 }));
 
 const certMocks = vi.hoisted(() => ({
-	downloadCertificatePdf: vi.fn<[], Promise<void>>(() => Promise.resolve())
+	downloadCertificatePdf: vi.fn<() => Promise<void>>(() => Promise.resolve())
 }));
 
 // ─── Моки ─────────────────────────────────────────────────────────────

@@ -12,7 +12,9 @@ import '../../../../../app.css';
 // ─── Хоистированные моки ──────────────────────────────────────────────
 
 const navMocks = vi.hoisted(() => ({
-	goto: vi.fn(() => Promise.resolve()),
+	goto: vi.fn<(url: string | URL, opts?: { invalidateAll?: boolean }) => Promise<void>>(() =>
+		Promise.resolve()
+	),
 	resolve: vi.fn((path: string) => path),
 	url: {
 		pathname: '/exercises/raven-matrices/playground',

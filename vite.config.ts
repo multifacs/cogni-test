@@ -44,6 +44,7 @@ function vitestSsrExternalRestore(): Plugin {
 			const env = server.environments.ssr;
 			if (!env) return;
 			const external = env.config.resolve.external;
+			if (!Array.isArray(external)) return;
 			const missing = SSR_EXTERNAL_DEPS.filter((id) => !external.includes(id));
 			env.config.resolve.external = [...external, ...missing];
 		}
