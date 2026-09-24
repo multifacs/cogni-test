@@ -63,7 +63,7 @@ export function computeSessionScore(sessionType: string, attempts: AttemptLike[]
 	}
 }
 
-type MetricScores = Record<SkillMetric, number>;
+export type MetricScores = Record<SkillMetric, number>;
 
 /**
  * Пользовательские метрики доната на /home.
@@ -81,6 +81,9 @@ export const USER_METRICS = [
 
 export type UserMetric = (typeof USER_METRICS)[number];
 export type UserMetricScores = Record<UserMetric, number>;
+
+// Прямые (несоставные) пользовательские метрики — всё, кроме композита memory.
+const DIRECT_USER_METRICS = USER_METRICS.filter((m) => m !== 'memory');
 
 type MetricSource = {
 	name: string;
@@ -147,17 +150,27 @@ export async function getMetricScores(userId: string): Promise<MetricScores> {
  * - 5 прямых метрик — среднее скоров сессий тестов/упражнений с этой user-метрикой;
  * - memory — композит от АДМИНСКИХ значений: round((working + short + long) / 3);
  * - без данных — 0; ключи — ровно 6 в порядке USER_METRICS.
+ *
+ * @param adminScores Предвычисленные админские скоры. Позволяет переиспользовать
+ * уже сделанный getMetricScores-проход вместо повторного обхода результатов
+ * (например, /home: один getMetricScores и для композита memory, и для рекомендаций).
+ * Если не передан — собираются внутренним вызовом getMetricScores.
  */
-export async function getUserMetricScores(userId: string): Promise<UserMetricScores> {
-	const directMetrics = USER_METRICS.filter((m) => m !== 'memory');
+export async function getUserMetricScores(
+	userId: string,
+	adminScores?: MetricScores
+): Promise<UserMetricScores> {
+	const directMetrics = DIRECT_USER_METRICS;
 	const scores = await gatherSessionScores(userId, (s) => s.user_metrics, directMetrics);
-	const adminScores = await getMetricScores(userId);
+	const resolvedAdminScores = adminScores ?? (await getMetricScores(userId));
 
 	const result = {} as UserMetricScores;
 	for (const metric of USER_METRICS) {
 		if (metric === 'memory') {
 			result.memory = Math.round(
-				(adminScores.working_memory + adminScores.short_memory + adminScores.long_memory) /
+				(resolvedAdminScores.working_memory +
+					resolvedAdminScores.short_memory +
+					resolvedAdminScores.long_memory) /
 					3
 			);
 			continue;

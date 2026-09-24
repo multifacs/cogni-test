@@ -89,6 +89,8 @@ describe('/home page server load', () => {
 		const result = (await load(makeEvent({ userId: 'user-1' }))) as PageServerData;
 
 		expect(Object.keys(result.metricScores)).toEqual([...USER_METRIC_KEYS]);
+		// Один admin-проход на load: и для композита memory, и для рекомендаций.
+		expect(getMetricScores).toHaveBeenCalledTimes(1);
 	});
 
 	it('hasData follows user scores, not admin ones', async () => {

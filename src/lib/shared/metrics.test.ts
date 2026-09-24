@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { computeSessionScore, getRecommendations } from './metrics';
+import type { MetricScores } from './metrics';
 import type { SkillMetric } from '$lib/types';
 import { SKILL_METRICS } from './metricShares';
 
@@ -17,6 +18,15 @@ async function restoreRealModulesAndImportMetrics() {
 vi.mock('$lib/server/db/controllers/result', () => ({
 	getResults: vi.fn()
 }));
+
+// Страховка от утечки doMock-реестров: любой тест, замокавший $lib/tests или
+// $lib/exercises, освобождает мок даже при падении до конца тела it().
+// doUnmock на незамоканном модуле — безопасный no-op. НЕ vi.unmockAll():
+// он снесёт и top-level vi.mock('$lib/server/db/controllers/result').
+afterEach(() => {
+	vi.doUnmock('$lib/tests');
+	vi.doUnmock('$lib/exercises');
+});
 
 describe('computeSessionScore', () => {
 	it('returns 0 for empty attempts', () => {
@@ -172,11 +182,15 @@ describe('getRecommendations', () => {
 		expect(recs.map((r) => r.name)).toEqual(['munsterberg', 'campimetry', 'stroop']);
 	});
 
-	it('returns fewer than 3 when there are insufficient matching tests/exercises', () => {
-		// Create a scores object with only extreme weak metrics that have no matching tests/exercises
-		// Since our tests/exercises cover common metrics, we simulate by overriding the arrays
-		// Instead, rely on the fact that for any real data there will be some matches.
-		// We verify the function doesn't crash and returns <=3.
+	it('returns an empty array when no tests feed any metric', async () => {
+		// Пустые реестры: ни одна из 11 метрик не имеет фидера → 0 рекомендаций.
+		vi.doMock('$lib/tests', () => ({ tests: [] }));
+		vi.doMock('$lib/exercises', () => ({ exercises: [], EXERCISE_SLUG_TO_TEST_TYPE: {} }));
+
+		vi.resetModules();
+
+		const { getRecommendations: getRecs } = await import('./metrics');
+
 		const scores: Record<SkillMetric, number> = {
 			executive_function: 100,
 			memory: 100,
@@ -190,8 +204,10 @@ describe('getRecommendations', () => {
 			long_memory: 100,
 			color_perception: 100
 		};
-		const recs = getRecommendations(scores);
-		expect(recs.length).toBeLessThanOrEqual(3);
+
+		const recs = getRecs(scores);
+		expect(recs).toHaveLength(0);
+		// Очистку doMock-реестров выполняет глобальный afterEach.
 	});
 
 	it('handles all-zero scores gracefully', () => {
@@ -441,6 +457,66 @@ describe('getUserMetricScores', () => {
 		const { getUserMetricScores } = await import('./metrics');
 		const scores = await getUserMetricScores('user1');
 		expect(scores.memory).toBe(61);
+	});
+
+	it('uses precomputed adminScores for the memory composite without admin collection', async () => {
+		const { getResults } = await import('$lib/server/db/controllers/result');
+		mockCompositeRegistries();
+		vi.mocked(getResults).mockImplementation(async () => []);
+		vi.resetModules();
+		const { getUserMetricScores } = await import('./metrics');
+
+		const adminScores: MetricScores = {
+			executive_function: 0,
+			attention: 0,
+			thinking: 0,
+			reaction_speed: 0,
+			verbal_function: 0,
+			spacial_perception: 0,
+			working_memory: 60,
+			short_memory: 70,
+			long_memory: 80,
+			color_perception: 0,
+			memory: 0
+		};
+		const scores = await getUserMetricScores('user1', adminScores);
+
+		// Композит из переданных adminScores: round((60 + 70 + 80) / 3) = 70.
+		expect(scores.memory).toBe(70);
+		// Админ-сбор не выполнялся: getResults звался только для user-фидеров
+		// (в mockCompositeRegistries единственный user-фидер — тест 'memory').
+		const calledTypes = vi.mocked(getResults).mock.calls.map(([type]) => type);
+		expect(calledTypes).toEqual(['memory']);
+	});
+
+	it('without adminScores collects admin scores internally', async () => {
+		const { getResults } = await import('$lib/server/db/controllers/result');
+		mockCompositeRegistries();
+		vi.mocked(getResults).mockImplementation(async (type) => {
+			// user-фидер: тест 'memory' → 100 (прямой вклад в memory игнорируется).
+			if (type === 'memory') return accuracySession(5, 5); // 100
+			// admin-фидеры композита: working=60, short=70, long=80.
+			if (type === 'swallow') return accuracySession(3, 5); // 60
+			if (type === 'flanker') return accuracySession(7, 10); // 70
+			if (type === 'wordMorphingExercise') return accuracySession(8, 10); // 80
+			return [];
+		});
+		vi.resetModules();
+		const { getUserMetricScores } = await import('./metrics');
+
+		// Второй аргумент не передан — adminScores собираются внутренним getMetricScores.
+		const scores = await getUserMetricScores('user1');
+
+		// Админ-сбор состоялся: getResults звался и для user-фидера,
+		// и для всех admin-фидеров из mockCompositeRegistries.
+		const calledTypes = vi.mocked(getResults).mock.calls.map(([type]) => type);
+		expect(calledTypes).toContain('memory');
+		expect(calledTypes).toContain('swallow');
+		expect(calledTypes).toContain('flanker');
+		expect(calledTypes).toContain('wordMorphingExercise');
+		// Композит memory посчитан из админ-фидеров: round((60 + 70 + 80) / 3) = 70,
+		// прямая memory-сессия (100) не участвует.
+		expect(scores.memory).toBe(70);
 	});
 });
 

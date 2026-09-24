@@ -22,11 +22,14 @@ export const load: PageServerLoad = async ({ cookies }) => {
 	// Донат на /home — по ПОЛЬЗОВАТЕЛЬСКИМ метрикам (6 ключей).
 	// MetricsDonutCard ожидает Record<SkillMetric, number>: недостающие админские
 	// ключи читаются через `?? 0` в getMetricShares, поэтому каст безопасен.
-	const userMetricScores = await getUserMetricScores(userId);
+	// Один админ-проход getMetricScores на load: и для композита memory
+	// внутри getUserMetricScores, и для рекомендаций ниже.
+	const adminScores = await getMetricScores(userId);
+	const userMetricScores = await getUserMetricScores(userId, adminScores);
 	const hasData = Object.values(userMetricScores).some((s) => s > 0);
 
 	// Рекомендации — по АДМИНСКИМ скорам (полный профиль), как и /metrics.
-	let recommendations = getRecommendations(await getMetricScores(userId));
+	let recommendations = getRecommendations(adminScores);
 	if (recommendations.length === 0) {
 		recommendations = tests
 			.filter((t) => !t.hidden)
