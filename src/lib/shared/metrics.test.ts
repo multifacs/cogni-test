@@ -139,11 +139,9 @@ describe('getRecommendations', () => {
 			memory: 30,
 			attention: 40,
 			thinking: 50,
-			perception: 60,
 			reaction_speed: 70,
 			verbal_function: 80,
 			spacial_perception: 90,
-			spacial_orientation: 100,
 			short_memory: 10,
 			working_memory: 25,
 			long_memory: 35,
@@ -159,11 +157,9 @@ describe('getRecommendations', () => {
 			memory: 0,
 			attention: 0,
 			thinking: 0,
-			perception: 0,
 			reaction_speed: 0,
 			verbal_function: 0,
 			spacial_perception: 0,
-			spacial_orientation: 0,
 			short_memory: 0,
 			working_memory: 0,
 			long_memory: 0,
@@ -171,9 +167,9 @@ describe('getRecommendations', () => {
 		};
 		const recs = getRecommendations(scores);
 		expect(recs.length).toBe(3);
-		// attention and color_perception have no matching tests/exercises,
-		// so the first 3 matched metrics are executive_function, memory, perception
-		expect(recs.map((r) => r.name)).toEqual(['stroop', 'word-morphing', 'munsterberg']);
+		// All metrics are equally weak; ties break by metric name ascending.
+		// attention → munsterberg, color_perception → campimetry, executive_function → stroop.
+		expect(recs.map((r) => r.name)).toEqual(['munsterberg', 'campimetry', 'stroop']);
 	});
 
 	it('returns fewer than 3 when there are insufficient matching tests/exercises', () => {
@@ -186,11 +182,9 @@ describe('getRecommendations', () => {
 			memory: 100,
 			attention: 100,
 			thinking: 100,
-			perception: 100,
 			reaction_speed: 100,
 			verbal_function: 100,
 			spacial_perception: 100,
-			spacial_orientation: 100,
 			short_memory: 100,
 			working_memory: 100,
 			long_memory: 100,
@@ -206,11 +200,9 @@ describe('getRecommendations', () => {
 			memory: 0,
 			attention: 0,
 			thinking: 0,
-			perception: 0,
 			reaction_speed: 0,
 			verbal_function: 0,
 			spacial_perception: 0,
-			spacial_orientation: 0,
 			short_memory: 0,
 			working_memory: 0,
 			long_memory: 0,
@@ -238,9 +230,6 @@ describe('getRecommendations', () => {
 			exercises: [],
 			EXERCISE_SLUG_TO_TEST_TYPE: {}
 		}));
-		vi.doMock('$lib/articles', () => ({
-			articles: []
-		}));
 
 		vi.resetModules();
 
@@ -252,10 +241,8 @@ describe('getRecommendations', () => {
 			attention: 100,
 			color_perception: 100,
 			long_memory: 100,
-			perception: 100,
 			reaction_speed: 100,
 			short_memory: 100,
-			spacial_orientation: 100,
 			spacial_perception: 100,
 			thinking: 100,
 			verbal_function: 100,
@@ -265,6 +252,195 @@ describe('getRecommendations', () => {
 		const recs = getRecs(scores);
 		expect(recs.length).toBe(1);
 		expect(recs[0].name).toBe('dup');
+	});
+
+	it('never recommends articles, only tests and exercises', () => {
+		const scores: Record<SkillMetric, number> = {
+			executive_function: 0,
+			memory: 0,
+			attention: 0,
+			thinking: 0,
+			reaction_speed: 0,
+			verbal_function: 0,
+			spacial_perception: 0,
+			short_memory: 0,
+			working_memory: 0,
+			long_memory: 0,
+			color_perception: 0
+		};
+		const recs = getRecommendations(scores);
+		// Статьи отвязаны от метрик: рекомендации — только тесты и упражнения.
+		for (const rec of recs) {
+			expect(rec.path).not.toContain('/materials/');
+		}
+	});
+});
+
+describe('getUserMetricScores', () => {
+	const USER_METRIC_KEYS = [
+		'executive_function',
+		'attention',
+		'color_perception',
+		'reaction_speed',
+		'spacial_perception',
+		'memory'
+	] as const;
+
+	function session(attempts: Array<{ isCorrect?: boolean; guessed?: boolean; stage?: number }>) {
+		return [{ sessionId: 's1', createdAt: new Date().toISOString(), attempts }];
+	}
+
+	it('returns exactly 6 user metric keys in the canonical order', async () => {
+		const { getResults } = await import('$lib/server/db/controllers/result');
+		vi.mocked(getResults).mockResolvedValue([]);
+		const { getUserMetricScores } = await restoreRealModulesAndImportMetrics();
+		const scores = await getUserMetricScores('empty-user');
+		expect(Object.keys(scores)).toEqual([...USER_METRIC_KEYS]);
+	});
+
+	it('returns all zeros for a user with no sessions', async () => {
+		const { getResults } = await import('$lib/server/db/controllers/result');
+		vi.mocked(getResults).mockResolvedValue([]);
+		const { getUserMetricScores } = await restoreRealModulesAndImportMetrics();
+		const scores = await getUserMetricScores('empty-user');
+		expect(Object.values(scores).every((v) => v === 0)).toBe(true);
+		expect(Object.values(scores)).toHaveLength(6);
+	});
+
+	it('direct metric: averages munsterberg sessions into user attention', async () => {
+		const { getResults } = await import('$lib/server/db/controllers/result');
+		vi.mocked(getResults).mockImplementation(async (type) => {
+			if (type === 'munsterberg') {
+				return [
+					{
+						sessionId: 's1',
+						createdAt: new Date().toISOString(),
+						attempts: [
+							{ guessed: true },
+							{ guessed: true },
+							{ guessed: true },
+							{ guessed: false },
+							{ guessed: false }
+						]
+					}, // 60
+					{
+						sessionId: 's2',
+						createdAt: new Date().toISOString(),
+						attempts: [
+							{ guessed: true },
+							{ guessed: true },
+							{ guessed: true },
+							{ guessed: true },
+							{ guessed: false }
+						]
+					} // 80
+				];
+			}
+			return [];
+		});
+		const { getUserMetricScores } = await restoreRealModulesAndImportMetrics();
+		const scores = await getUserMetricScores('user1');
+		expect(scores.attention).toBe(70); // (60 + 80) / 2
+	});
+
+	it('direct metric: math sessions feed user reaction_speed', async () => {
+		const { getResults } = await import('$lib/server/db/controllers/result');
+		vi.mocked(getResults).mockImplementation(async (type) => {
+			if (type === 'math')
+				return session([
+					{ isCorrect: true },
+					{ isCorrect: true },
+					{ isCorrect: true },
+					{ isCorrect: true },
+					{ isCorrect: false }
+				]); // 80
+			return [];
+		});
+		const { getUserMetricScores } = await restoreRealModulesAndImportMetrics();
+		const scores = await getUserMetricScores('user1');
+		expect(scores.reaction_speed).toBe(80);
+	});
+
+	// Контролируемые реестры: админские working/short/long разведены по разным
+	// тестам/упражнениям, чтобы точно задать входы композита memory.
+	function mockCompositeRegistries() {
+		vi.doMock('$lib/tests', () => ({
+			tests: [
+				{
+					name: 'memory',
+					title: 'Memory',
+					path: '/tests/memory/about',
+					img: '/tests/memory1.svg',
+					admin_metrics: [],
+					user_metrics: ['memory']
+				},
+				{
+					name: 'swallow',
+					title: 'Swallow',
+					path: '/tests/swallow/about',
+					img: '/tests/swallow1.svg',
+					admin_metrics: ['working_memory'],
+					user_metrics: []
+				},
+				{
+					name: 'flanker',
+					title: 'Flanker',
+					path: '/tests/flanker/about',
+					img: '/tests/flanker1.svg',
+					admin_metrics: ['short_memory'],
+					user_metrics: []
+				}
+			]
+		}));
+		vi.doMock('$lib/exercises', () => ({
+			exercises: [
+				{
+					name: 'long-ex',
+					title: 'Long',
+					path: '/exercises/long-ex/about',
+					img: '/exercises/long-ex1.svg',
+					admin_metrics: ['long_memory'],
+					user_metrics: []
+				}
+			],
+			EXERCISE_SLUG_TO_TEST_TYPE: { 'long-ex': 'wordMorphingExercise' }
+		}));
+	}
+
+	function accuracySession(correct: number, total: number) {
+		return session(Array.from({ length: total }, (_, i) => ({ isCorrect: i < correct })));
+	}
+
+	it('composite memory = round(mean(admin working/short/long)); direct memory sessions ignored', async () => {
+		const { getResults } = await import('$lib/server/db/controllers/result');
+		mockCompositeRegistries();
+		vi.mocked(getResults).mockImplementation(async (type) => {
+			// working_memory=60, short_memory=70, long_memory=80 → memory=70
+			if (type === 'swallow') return accuracySession(3, 5); // 60
+			if (type === 'flanker') return accuracySession(7, 10); // 70
+			if (type === 'wordMorphingExercise') return accuracySession(8, 10); // 80
+			if (type === 'memory') return accuracySession(5, 5); // 100 — прямой вклад должен быть проигнорирован
+			return [];
+		});
+		vi.resetModules();
+		const { getUserMetricScores } = await import('./metrics');
+		const scores = await getUserMetricScores('user1');
+		expect(scores.memory).toBe(70); // (60 + 70 + 80) / 3, не 100 от прямой сессии
+	});
+
+	it('composite memory rounds the mean (60, 61, 62 → 61)', async () => {
+		const { getResults } = await import('$lib/server/db/controllers/result');
+		mockCompositeRegistries();
+		vi.mocked(getResults).mockImplementation(async (type) => {
+			if (type === 'swallow') return accuracySession(60, 100); // working=60
+			if (type === 'flanker') return accuracySession(61, 100); // short=61
+			if (type === 'wordMorphingExercise') return accuracySession(62, 100); // long=62
+			return [];
+		});
+		vi.resetModules();
+		const { getUserMetricScores } = await import('./metrics');
+		const scores = await getUserMetricScores('user1');
+		expect(scores.memory).toBe(61);
 	});
 });
 
@@ -374,7 +550,6 @@ describe('getMetricScores', () => {
 		const { getMetricScores } = await restoreRealModulesAndImportMetrics();
 		const scores = await getMetricScores('user1');
 		expect(scores.attention).toBe(100);
-		expect(scores.perception).toBe(100);
 		expect(scores.color_perception).toBe(100);
 	});
 });

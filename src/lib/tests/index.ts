@@ -18,7 +18,7 @@ export const tests: TestData[] = [
 		title: 'Цвет и смысл',
 		path: '/tests/stroop/about',
 		img: '/tests/stroop.svg',
-		admin_metrics: ['executive_function', 'short_memory', 'attention', 'thinking'],
+		admin_metrics: ['executive_function', 'attention', 'thinking'],
 		user_metrics: ['executive_function']
 	},
 	{
@@ -34,16 +34,16 @@ export const tests: TestData[] = [
 		title: 'Поиск слов',
 		path: '/tests/munsterberg/about',
 		img: '/tests/munsterberg1.svg',
-		admin_metrics: ['attention', 'perception', 'verbal_function'],
-		user_metrics: ['perception']
+		admin_metrics: ['attention', 'verbal_function'],
+		user_metrics: ['attention']
 	},
 	{
 		name: 'campimetry',
 		title: 'Скрытая фигура',
 		path: '/tests/campimetry/about',
 		img: '/tests/campimetry1.svg',
-		admin_metrics: ['attention', 'perception', 'color_perception'],
-		user_metrics: ['perception']
+		admin_metrics: ['attention', 'color_perception'],
+		user_metrics: ['color_perception']
 	},
 	{
 		name: 'memory',
@@ -57,14 +57,14 @@ export const tests: TestData[] = [
 			'short_memory',
 			'working_memory'
 		],
-		user_metrics: ['working_memory']
+		user_metrics: ['memory']
 	},
 	{
 		name: 'swallow',
 		title: 'Полет птицы',
 		path: '/tests/swallow/about',
 		img: '/tests/swallow1.svg',
-		admin_metrics: ['executive_function', 'spacial_perception', 'short_memory'],
+		admin_metrics: ['executive_function', 'spacial_perception', 'working_memory'],
 		user_metrics: ['spacial_perception']
 	}
 ];

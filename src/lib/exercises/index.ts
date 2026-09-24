@@ -24,9 +24,9 @@ export const exercises: ExerciseData[] = [
 			'working_memory',
 			'short_memory',
 			'long_memory',
-			'perception',
 			'attention',
-			'thinking'
+			'thinking',
+			'verbal_function'
 		],
 		user_metrics: ['memory']
 	},
@@ -35,8 +35,8 @@ export const exercises: ExerciseData[] = [
 		title: 'Поле зрения',
 		path: '/exercises/campimetry/about',
 		img: '/tests/campimetry1.svg',
-		admin_metrics: ['attention', 'perception', 'color_perception'],
-		user_metrics: ['perception']
+		admin_metrics: ['attention', 'color_perception'],
+		user_metrics: ['color_perception']
 	},
 	{
 		name: 'memory-match',
@@ -51,7 +51,7 @@ export const exercises: ExerciseData[] = [
 		title: 'Повторы в ряду',
 		path: '/exercises/nback-stream/about',
 		img: '/exercises/n-back1.svg',
-		admin_metrics: ['executive_function', 'perception', 'attention', 'short_memory'],
+		admin_metrics: ['executive_function', 'attention', 'working_memory'],
 		user_metrics: ['memory']
 	},
 	{

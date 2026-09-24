@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { tests } from '$lib/tests';
-import { getMetricScores, getRecommendations } from '$lib/shared/metrics';
+import type { SkillMetric } from '$lib/types';
+import { getMetricScores, getUserMetricScores, getRecommendations } from '$lib/shared/metrics';
 import { redirect } from '@sveltejs/kit';
 import { getTestSessionCounts } from '$lib/server/db/controllers/test';
 import { getFeaturesFromDB } from '$lib/server/age/getFeaturesFromDB';
@@ -18,10 +19,14 @@ export const load: PageServerLoad = async ({ cookies }) => {
 	const hasUnfinishedTests = Object.keys(testSessionCounts).length < visibleTests.length;
 	const loggedInAdmin = cookies.get('logged_in_admin'); // logged in admins should be able to access all pages
 
-	const metricScores = await getMetricScores(userId);
-	const hasData = Object.values(metricScores).some((s) => s > 0);
+	// Донат на /home — по ПОЛЬЗОВАТЕЛЬСКИМ метрикам (6 ключей).
+	// MetricsDonutCard ожидает Record<SkillMetric, number>: недостающие админские
+	// ключи читаются через `?? 0` в getMetricShares, поэтому каст безопасен.
+	const userMetricScores = await getUserMetricScores(userId);
+	const hasData = Object.values(userMetricScores).some((s) => s > 0);
 
-	let recommendations = getRecommendations(metricScores);
+	// Рекомендации — по АДМИНСКИМ скорам (полный профиль), как и /metrics.
+	let recommendations = getRecommendations(await getMetricScores(userId));
 	if (recommendations.length === 0) {
 		recommendations = tests
 			.filter((t) => !t.hidden)
@@ -50,7 +55,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 
 	return {
 		recommendations,
-		metricScores,
+		metricScores: userMetricScores as Record<SkillMetric, number>,
 		hasData,
 		hasUnfinishedTests,
 		loggedInAdmin,

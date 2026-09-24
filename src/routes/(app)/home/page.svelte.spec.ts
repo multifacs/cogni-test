@@ -9,7 +9,6 @@ import Page from './+page.svelte';
 import '../../../app.css';
 
 import type { SkillMetric } from '$lib/types';
-import { SKILL_METRICS } from '$lib/shared/metricShares';
 import { streaming } from '$lib/stores/streaming.svelte';
 
 // ─── Хоистированные моки ──────────────────────────────────────────────
@@ -35,11 +34,18 @@ vi.mock('$app/environment', () => ({
 
 // ─── Фикстуры ─────────────────────────────────────────────────────────
 
-function scoresFor(values: number[]): Record<SkillMetric, number> {
-	return Object.fromEntries(SKILL_METRICS.map((m, i) => [m, values[i] ?? 0])) as Record<
-		SkillMetric,
-		number
-	>;
+// /home подаёт в донат 6 ПОЛЬЗОВАТЕЛЬСКИХ метрик (остальные читаются как 0)
+const USER_METRIC_KEYS = [
+	'executive_function',
+	'attention',
+	'color_perception',
+	'reaction_speed',
+	'spacial_perception',
+	'memory'
+] as const;
+
+function scoresFor(values: number[]): Partial<Record<SkillMetric, number>> {
+	return Object.fromEntries(USER_METRIC_KEYS.map((m, i) => [m, values[i] ?? 0]));
 }
 
 function makeData(
@@ -54,8 +60,8 @@ function makeData(
 		recommendations: [],
 		metricScores:
 			options.hasData !== false
-				? scoresFor([10, 20, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-				: scoresFor(new Array(13).fill(0)),
+				? scoresFor([10, 20, 0, 5, 0, 0])
+				: scoresFor(new Array(6).fill(0)),
 		hasData: options.hasData !== false,
 		hasUnfinishedTests: options.hasUnfinishedTests ?? false,
 		loggedInAdmin: options.loggedInAdmin,
@@ -110,7 +116,7 @@ describe('/home page — MetricsDonutCard integration', () => {
 
 	it('renders placeholder when hasData is true but all scores are zero', async () => {
 		const data = makeData({ hasData: true });
-		data.metricScores = scoresFor(new Array(13).fill(0));
+		data.metricScores = scoresFor(new Array(6).fill(0));
 		const { container } = await mountPage(data);
 
 		expect(container.textContent).toContain('Данных по метрикам нет');

@@ -1,16 +1,9 @@
 import type { SkillMetric } from '$lib/types';
 import { tests } from '$lib/tests';
 import { exercises, EXERCISE_SLUG_TO_TEST_TYPE } from '$lib/exercises';
-import { articles } from '$lib/articles';
 import { getResults } from '$lib/server/db/controllers/result';
 import type { TestType } from '$lib/tests/types';
 import { SKILL_METRICS } from './metricShares.js';
-
-/** Слабые метрики → статьи-практики из /materials (бывшие упражнения road-trip и not-lost). */
-const articleMetrics: Record<string, SkillMetric[]> = {
-	'road-trip': ['perception', 'verbal_function', 'thinking'],
-	'not-lost': ['spacial_perception', 'spacial_orientation', 'short_memory']
-};
 
 type AttemptLike = {
 	isCorrect?: boolean;
@@ -72,39 +65,103 @@ export function computeSessionScore(sessionType: string, attempts: AttemptLike[]
 
 type MetricScores = Record<SkillMetric, number>;
 
-export async function getMetricScores(userId: string): Promise<MetricScores> {
-	const scores: Record<string, number[]> = Object.fromEntries(SKILL_METRICS.map((m) => [m, []]));
+/**
+ * Пользовательские метрики доната на /home.
+ * Порядок фиксирован и совпадает с USER_METRICS в тестах и фикстурах.
+ * memory — составная: round(mean(админских working/short/long_memory)).
+ */
+export const USER_METRICS = [
+	'executive_function',
+	'attention',
+	'color_perception',
+	'reaction_speed',
+	'spacial_perception',
+	'memory'
+] as const;
+
+export type UserMetric = (typeof USER_METRICS)[number];
+export type UserMetricScores = Record<UserMetric, number>;
+
+type MetricSource = {
+	name: string;
+	admin_metrics?: SkillMetric[];
+	user_metrics?: SkillMetric[];
+};
+
+/**
+ * Собирает скоры сессий по выбранному набору метрик (admin или user).
+ * Общая механика для getMetricScores и getUserMetricScores — без дублирования.
+ */
+async function gatherSessionScores(
+	userId: string,
+	pick: (source: MetricSource) => SkillMetric[] | undefined,
+	allowed: readonly string[]
+): Promise<Record<string, number[]>> {
+	const buckets: Record<string, number[]> = Object.fromEntries(allowed.map((m) => [m, []]));
+	const allowSet = new Set(allowed);
 
 	const testPromises = tests
-		.filter((test) => test.admin_metrics?.length)
+		.filter((test) => pick(test)?.length)
 		.map(async (test) => {
 			const sessions = await getResults(test.name as TestType, userId);
 			for (const session of sessions) {
 				const score = computeSessionScore(test.name, session.attempts);
-				for (const metric of test.admin_metrics!) {
-					scores[metric].push(score);
+				for (const metric of pick(test)!) {
+					if (allowSet.has(metric)) buckets[metric].push(score);
 				}
 			}
 		});
 
 	const exercisePromises = exercises
-		.filter((ex) => ex.admin_metrics?.length)
+		.filter((ex) => pick(ex)?.length)
 		.map(async (ex) => {
 			const sessionType = EXERCISE_SLUG_TO_TEST_TYPE[ex.name];
 			if (!sessionType) return;
 			const sessions = await getResults(sessionType, userId);
 			for (const session of sessions) {
 				const score = computeSessionScore(sessionType, session.attempts);
-				for (const metric of ex.admin_metrics!) {
-					scores[metric].push(score);
+				for (const metric of pick(ex)!) {
+					if (allowSet.has(metric)) buckets[metric].push(score);
 				}
 			}
 		});
 
 	await Promise.all([...testPromises, ...exercisePromises]);
+	return buckets;
+}
+
+export async function getMetricScores(userId: string): Promise<MetricScores> {
+	const scores = await gatherSessionScores(userId, (s) => s.admin_metrics, SKILL_METRICS);
 
 	const result = {} as MetricScores;
 	for (const metric of SKILL_METRICS) {
+		const arr = scores[metric];
+		result[metric] = arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
+	}
+	return result;
+}
+
+/**
+ * Пользовательские скоры для доната на /home.
+ *
+ * - 5 прямых метрик — среднее скоров сессий тестов/упражнений с этой user-метрикой;
+ * - memory — композит от АДМИНСКИХ значений: round((working + short + long) / 3);
+ * - без данных — 0; ключи — ровно 6 в порядке USER_METRICS.
+ */
+export async function getUserMetricScores(userId: string): Promise<UserMetricScores> {
+	const directMetrics = USER_METRICS.filter((m) => m !== 'memory');
+	const scores = await gatherSessionScores(userId, (s) => s.user_metrics, directMetrics);
+	const adminScores = await getMetricScores(userId);
+
+	const result = {} as UserMetricScores;
+	for (const metric of USER_METRICS) {
+		if (metric === 'memory') {
+			result.memory = Math.round(
+				(adminScores.working_memory + adminScores.short_memory + adminScores.long_memory) /
+					3
+			);
+			continue;
+		}
 		const arr = scores[metric];
 		result[metric] = arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
 	}
@@ -149,19 +206,6 @@ export function getRecommendations(
 			});
 			seenNames.add(exMatch.name);
 			continue;
-		}
-
-		const articleMatch = articles.find(
-			(a) => articleMetrics[a.slug]?.includes(weakMetric) && !seenNames.has(a.slug)
-		);
-		if (articleMatch) {
-			recommendations.push({
-				name: articleMatch.slug,
-				title: articleMatch.title,
-				path: `/materials/${articleMatch.slug}`,
-				img: articleMatch.emoji
-			});
-			seenNames.add(articleMatch.slug);
 		}
 	}
 

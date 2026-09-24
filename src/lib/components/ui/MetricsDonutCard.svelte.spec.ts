@@ -25,7 +25,7 @@ afterEach(cleanup);
 
 describe('MetricsDonutCard', () => {
 	it('(a) renders placeholder when metric scores sum to zero', async () => {
-		const zeroScores = scoresFor(new Array(13).fill(0));
+		const zeroScores = scoresFor(new Array(11).fill(0));
 		const { container } = await render(MetricsDonutCard, {
 			props: { metricScores: zeroScores, hasData: false }
 		});
@@ -34,7 +34,7 @@ describe('MetricsDonutCard', () => {
 	});
 
 	it('(b) renders sectors only for share>0 metrics, in SKILL_METRICS order, with metricColor fills', async () => {
-		const values = new Array(13).fill(0);
+		const values = new Array(11).fill(0);
 		values[0] = 10; // executive_function
 		values[1] = 20; // memory
 		values[2] = 0; // attention
@@ -61,7 +61,7 @@ describe('MetricsDonutCard', () => {
 
 	it('(c) click triggers goto("/metrics")', async () => {
 		mockGoto.mockClear();
-		const zeroScores = scoresFor(new Array(13).fill(0));
+		const zeroScores = scoresFor(new Array(11).fill(0));
 		const { container } = await render(MetricsDonutCard, {
 			props: { metricScores: zeroScores, hasData: false }
 		});
@@ -74,7 +74,7 @@ describe('MetricsDonutCard', () => {
 
 	it('(d) Enter key triggers navigation', async () => {
 		mockGoto.mockClear();
-		const zeroScores = scoresFor(new Array(13).fill(0));
+		const zeroScores = scoresFor(new Array(11).fill(0));
 		const { container } = await render(MetricsDonutCard, {
 			props: { metricScores: zeroScores, hasData: false }
 		});
@@ -86,7 +86,7 @@ describe('MetricsDonutCard', () => {
 	});
 
 	it('(e) interactive element has descriptive aria-label', async () => {
-		const zeroScores = scoresFor(new Array(13).fill(0));
+		const zeroScores = scoresFor(new Array(11).fill(0));
 		const { container } = await render(MetricsDonutCard, {
 			props: { metricScores: zeroScores, hasData: false }
 		});
@@ -95,10 +95,10 @@ describe('MetricsDonutCard', () => {
 	});
 
 	it('(f) sector count and geometry are consistent with share>0 metrics', async () => {
-		const values = new Array(13).fill(0);
-		values[5] = 5; // reaction_speed
-		values[7] = 15; // spacial_perception
-		values[12] = 30; // color_perception
+		const values = new Array(11).fill(0);
+		values[4] = 5; // reaction_speed
+		values[6] = 15; // spacial_perception
+		values[10] = 30; // color_perception
 		const scores = scoresFor(values);
 		const { container } = await render(MetricsDonutCard, {
 			props: { metricScores: scores, hasData: true }

@@ -3,9 +3,9 @@ import { getMetricShares, SKILL_METRICS, metricColor } from './metricShares';
 import type { SkillMetric } from '$lib/types';
 
 describe('SKILL_METRICS', () => {
-	it('contains exactly 13 metrics in a stable order', () => {
-		expect(SKILL_METRICS).toHaveLength(13);
-		expect(new Set(SKILL_METRICS).size).toBe(13);
+	it('contains exactly 11 metrics in a stable order', () => {
+		expect(SKILL_METRICS).toHaveLength(11);
+		expect(new Set(SKILL_METRICS).size).toBe(11);
 	});
 });
 
@@ -24,15 +24,13 @@ describe('getMetricShares', () => {
 			memory: 20,
 			attention: 30,
 			thinking: 40,
-			perception: 50,
-			reaction_speed: 60,
-			verbal_function: 70,
-			spacial_perception: 80,
-			spacial_orientation: 90,
-			short_memory: 100,
-			working_memory: 110,
-			long_memory: 120,
-			color_perception: 130
+			reaction_speed: 50,
+			verbal_function: 60,
+			spacial_perception: 70,
+			short_memory: 80,
+			working_memory: 90,
+			long_memory: 100,
+			color_perception: 110
 		};
 		const result = getMetricShares(scores);
 		expect(result.map((r) => r.metric)).toEqual(SKILL_METRICS);
@@ -44,15 +42,13 @@ describe('getMetricShares', () => {
 			memory: 20,
 			attention: 30,
 			thinking: 40,
-			perception: 50,
-			reaction_speed: 60,
-			verbal_function: 70,
-			spacial_perception: 80,
-			spacial_orientation: 90,
-			short_memory: 100,
-			working_memory: 110,
-			long_memory: 120,
-			color_perception: 130
+			reaction_speed: 50,
+			verbal_function: 60,
+			spacial_perception: 70,
+			short_memory: 80,
+			working_memory: 90,
+			long_memory: 100,
+			color_perception: 110
 		};
 		const result = getMetricShares(scores);
 		const totalShare = result.reduce((sum, r) => sum + r.share, 0);
