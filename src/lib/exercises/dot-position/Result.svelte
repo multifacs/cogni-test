@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { DotPositionResult } from './types';
+	import ResultsChart from './ResultsChart.svelte';
 
 	// exerciseType передаётся generic-страницей результатов, но здесь не нужен;
 	// в деструктуризацию не включаем, чтобы не таскать неиспользуемый проп.
@@ -90,4 +91,6 @@
 			</tbody>
 		</table>
 	{/if}
+
+	<ResultsChart {results} />
 </div>

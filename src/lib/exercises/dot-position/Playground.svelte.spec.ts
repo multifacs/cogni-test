@@ -77,9 +77,14 @@ describe('Dot position playground — click-through', () => {
 		expect(page.getByText('Этап 1 из 3').query()).toBeTruthy();
 		expect(panel()?.dataset.grid).toBe('5');
 
+		// Анти-чит: в memorize-фазе курсор на панели скрыт (нельзя
+		// «припарковать» его на точке), в respond — снова виден.
+		expect(getComputedStyle(panel()!).cursor).toBe('none');
+
 		// Тап при видимой точке (фаза memorize) игнорируется
 		await userEvent.click(panel()!);
 		await waitForRespond();
+		expect(getComputedStyle(panel()!).cursor).toBe('pointer');
 		expect(page.getByText('Верно: 0').query()).toBeTruthy();
 		expect(page.getByText('Ошибок: 0').query()).toBeTruthy();
 

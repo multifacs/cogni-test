@@ -133,7 +133,9 @@
 	<button
 		type="button"
 		bind:this={panel}
-		class="dot-panel relative aspect-square w-full cursor-pointer touch-none overflow-hidden rounded-2xl bg-white select-none"
+		class="dot-panel relative aspect-square w-full touch-none overflow-hidden rounded-2xl bg-white select-none {isMemorize
+			? 'cursor-none'
+			: 'cursor-pointer'}"
 		data-phase={game.phase}
 		data-grid={grid}
 		aria-label="Игровое поле: запомните позицию точки и укажите её после скрытия"

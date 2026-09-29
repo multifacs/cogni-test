@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-svelte';
 import Result from './Result.svelte';
 import '../../../app.css';
+import { Chart } from 'chart.js';
 import type { DotPositionResult } from './types';
 
 /** 9 раундов: 3 этапа, correct-маска, два нетап-раунда (distance: null).
@@ -81,5 +82,67 @@ describe('Dot position Result', () => {
 
 		// 7 определённых distance (два нетапа отфильтрованы): 0.85 / 7 ≈ 0.12
 		expect(page.getByText('Среднее отклонение тапа: 0.12').element()).toBeTruthy();
+	});
+});
+
+describe('Dot position ResultsChart', () => {
+	const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+	/** Chart.js создаётся в onMount — ждём появления инстанса на canvas. */
+	async function waitForChart(): Promise<Chart> {
+		const start = performance.now();
+		while (performance.now() - start < 5000) {
+			const canvas = document.querySelector<HTMLCanvasElement>('canvas');
+			const chart = canvas ? Chart.getChart(canvas) : undefined;
+			if (chart) return chart;
+			await sleep(25);
+		}
+		throw new Error('Timed out waiting for chart instance');
+	}
+
+	it('renders a canvas and creates a chart.js instance', async () => {
+		await render(Result, { results: fixture, meta: null });
+
+		expect(document.querySelector('canvas')).not.toBeNull();
+
+		const chart = await waitForChart();
+		expect(chart).toBeInstanceOf(Chart);
+		expect(Object.keys(Chart.instances).length).toBeGreaterThan(0);
+	});
+
+	it('builds 3 stage datasets with 3 points each and stage labels', async () => {
+		await render(Result, { results: fixture, meta: null });
+
+		const chart = await waitForChart();
+		expect(chart.data.datasets).toHaveLength(3);
+
+		const labels = chart.data.datasets.map((ds) => ds.label);
+		expect(labels).toContain('Этап 1 (сетка 5×5)');
+		expect(labels).toContain('Этап 2 (сетка 3×3)');
+		expect(labels).toContain('Этап 3 (без сетки)');
+
+		for (const dataset of chart.data.datasets) {
+			expect(dataset.data).toHaveLength(3);
+		}
+	});
+
+	it('tooltip callbacks distinguish tap and no-answer rounds', async () => {
+		await render(Result, { results: fixture, meta: null });
+
+		const chart = await waitForChart();
+		const callbacks = (
+			chart.options.plugins as {
+				tooltip: { callbacks: Record<string, (ctx: never) => unknown> };
+			}
+		).tooltip.callbacks;
+
+		// Тап-раунд: attempt 1, distance 0.05
+		const tapPoint = chart.data.datasets[0].data[0] as { x: number; y: number };
+		expect(callbacks.afterLabel({ raw: tapPoint } as never)).toBe('Отклонение: 0.05');
+		expect(callbacks.label({ raw: tapPoint } as never)).toBe('Реакция: 800 мс (Верно)');
+
+		// Нетап-раунд: attempt 3, distance null
+		const noAnswerPoint = chart.data.datasets[0].data[2] as { x: number; y: number };
+		expect(callbacks.afterLabel({ raw: noAnswerPoint } as never)).toBe('Нет ответа');
 	});
 });
