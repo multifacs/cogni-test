@@ -6,6 +6,14 @@ import type { Actions } from './$types';
 import type { PageServerLoad } from './$types';
 import { getProfileSurvey, updateProfileSurvey } from '$lib/server/db/controllers/survey';
 import { autoAddToLatestActiveSession } from '$lib/server/db/controllers/gto';
+import { env } from '$env/dynamic/private';
+import { DEFAULT_USER, shouldSeedDefaultUser } from '$lib/server/db/seed/default-user';
+
+function formatDDMMYYYY(d: Date): string {
+	const day = String(d.getUTCDate()).padStart(2, '0');
+	const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+	return `${day}.${month}.${d.getUTCFullYear()}`;
+}
 
 export const load: PageServerLoad = async ({ cookies }) => {
 	const userId = cookies.get('user_id');
@@ -15,6 +23,23 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		// Кука есть, но пользователя нет — чистим и показываем логин,
 		// вместо редиректа на /home (иначе петля: /home → / → /home).
 		cookies.delete('user_id', { path: '/' });
+	}
+	// DEV-only префилл логина сид-юзером, fail-closed. Гейт — чистый предикат
+	// shouldSeedDefaultUser, тот же, что у сида: единый контракт, оба сайта вызывают
+	// одну функцию с одними аргументами. СОЗНАТЕЛЬНО не читаем состояние сида
+	// (seedDefaultUserOnStartup().seeded): его {seeded:false} при уже существующем
+	// юзере и сброс промиса в finally сделали бы префилл одноразовым. Префилл —
+	// свойство DEV-режима, а не факта сида: юзер может быть удалён из БД,
+	// форма всё равно заполняется.
+	if (shouldSeedDefaultUser({ mode: env.MODE, nodeEnv: process.env.NODE_ENV })) {
+		return {
+			devUser: {
+				firstname: DEFAULT_USER.firstname,
+				lastname: DEFAULT_USER.lastname,
+				birthday: formatDDMMYYYY(DEFAULT_USER.birthday),
+				sex: DEFAULT_USER.sex
+			}
+		};
 	}
 };
 

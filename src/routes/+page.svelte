@@ -8,18 +8,24 @@
 	import DateInput from '$lib/components/ui/login-form/DateInput.svelte';
 	import TextInput from '$lib/components/ui/login-form/TextInput.svelte';
 
-	let { form } = $props();
+	let { form, data } = $props();
 
-	let firstname = $state('');
-	let lastname = $state('');
-	let birthdate = $state('');
-	let sex = $state<'male' | 'female'>('male');
+	// svelte-ignore state_referenced_locally
+	// SvelteKit page data доступны при первом рендере; префилл — одноразовый seed,
+	// реактивность на data не нужна.
+	const devUser = data?.devUser;
+
+	let firstname = $state(devUser?.firstname ?? '');
+	let lastname = $state(devUser?.lastname ?? '');
+	let birthdate = $state(devUser?.birthday ?? '');
+	let sex = $state<'male' | 'female'>(devUser?.sex ?? 'male');
 
 	let firstnameError = $state('');
 	let lastnameError = $state('');
 	let dateError = $state('');
 
-	let consentChecked = $state(false);
+	// Авто-чек согласия — DEV-only convenience для сид-юзера.
+	let consentChecked = $state(Boolean(devUser));
 
 	onMount(() => {
 		userStore.set(null);
