@@ -3,7 +3,7 @@ import type { DotPositionResult } from '../types';
 /** Длительность фазы показа точки (запоминание), мс. */
 export const TIME_MEMORIZE_MS = 5000;
 /** Длительность фазы ответа, мс; нетап тарифицируется как полный таймаут. */
-export const TIME_RESPOND_MS = 10000;
+export const TIME_RESPOND_MS = 5000;
 /** Точек (раундов) на один этап. */
 export const DOTS_PER_STAGE = 3;
 /** Радиус допуска: доля меньшей стороны поля. */
