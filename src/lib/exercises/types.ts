@@ -1,5 +1,6 @@
 import type { AttentionTrialRow } from './attention/types';
 import type { CampimetryResult } from '$lib/tests/campimetry/types';
+import type { DotPositionResult } from './dot-position/types';
 import type { EmojiTrialRow } from './emoji/types';
 import type { FlankerTrialRow } from './flanker/types';
 import type { LettersTrialRow } from './letters/types';
@@ -14,6 +15,7 @@ import type { RhythmResult } from './rhythm/types';
 export type ExerciseType =
 	| 'attention'
 	| 'campimetryExercise'
+	| 'dotPosition'
 	| 'emoji'
 	| 'flanker'
 	| 'letters'
@@ -28,6 +30,7 @@ export type ExerciseType =
 export type ExerciseResultMap = {
 	attention: AttentionTrialRow;
 	campimetryExercise: CampimetryResult;
+	dotPosition: DotPositionResult;
 	emoji: EmojiTrialRow;
 	flanker: FlankerTrialRow;
 	letters: LettersTrialRow;
@@ -43,6 +46,7 @@ export type ExerciseResultMap = {
 export type ExerciseResult =
 	| AttentionTrialRow
 	| CampimetryResult
+	| DotPositionResult
 	| EmojiTrialRow
 	| FlankerTrialRow
 	| LettersTrialRow
@@ -57,6 +61,7 @@ export type ExerciseResult =
 export type ExerciseResults =
 	| AttentionTrialRow[]
 	| CampimetryResult[]
+	| DotPositionResult[]
 	| EmojiTrialRow[]
 	| FlankerTrialRow[]
 	| LettersTrialRow[]
