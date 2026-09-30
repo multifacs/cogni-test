@@ -1,5 +1,6 @@
 import { describe, it, expect, assert } from 'vitest';
 import {
+	TIME_INTRO_MS,
 	TIME_MEMORIZE_MS,
 	TIME_WAIT_MS,
 	TIME_RESPOND_MS,
@@ -31,7 +32,8 @@ function mulberry32(seed: number): () => number {
 }
 
 describe('constants', () => {
-	it('each phase lasts 3000 ms: memorize, wait, respond', () => {
+	it('each phase lasts 3000 ms: intro, memorize, wait, respond', () => {
+		expect(TIME_INTRO_MS).toBe(3000);
 		expect(TIME_MEMORIZE_MS).toBe(3000);
 		expect(TIME_WAIT_MS).toBe(3000);
 		expect(TIME_RESPOND_MS).toBe(3000);
@@ -151,8 +153,22 @@ describe('evaluateRound', () => {
 		expect(result.distance).toBeCloseTo(0.05, 12);
 	});
 
-	it('throws when tapping during memorize phase', () => {
+	it('starts each game in the intro phase', () => {
 		const state = createRoundState(mulberry32(1));
+		expect(state.phase).toBe('intro');
+	});
+
+	it('throws when tapping during the intro phase (input not accepted yet)', () => {
+		const state = createRoundState(mulberry32(1));
+		expect(state.phase).toBe('intro');
+		assert.throws(() => evaluateRound(state, { x: 0.5, y: 0.5 }, 100), /respond phase/);
+	});
+
+	it('throws when tapping during memorize phase', () => {
+		const state: RoundState = {
+			...createRoundState(mulberry32(1)),
+			phase: 'memorize'
+		};
 		expect(state.phase).toBe('memorize');
 		assert.throws(() => evaluateRound(state, { x: 0.5, y: 0.5 }, 100), /respond phase/);
 	});
@@ -184,8 +200,9 @@ describe('nextRound — full run of the state machine', () => {
 		let state = createRoundState(rng);
 		expect(state.attempt).toBe(1);
 		expect(state.stage).toBe(1);
-		expect(state.phase).toBe('memorize');
+		expect(state.phase).toBe('intro');
 
+		let introSeenAgain = false;
 		const seen: Array<{ attempt: number; stage: number }> = [];
 		for (let i = 0; i < 9; i++) {
 			seen.push({ attempt: state.attempt, stage: state.stage });
@@ -196,7 +213,11 @@ describe('nextRound — full run of the state machine', () => {
 				500
 			);
 			state = nextRound(state, outcome, rng);
+			if (state.phase === 'intro') introSeenAgain = true;
 		}
+
+		// Инвариант: intro однократная — nextRound никогда не возвращает 'intro'.
+		expect(introSeenAgain).toBe(false);
 
 		// Сквозная нумерация и этапы 1/1/1/2/2/2/3/3/3.
 		expect(seen.map((r) => r.attempt)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
@@ -218,6 +239,15 @@ describe('nextRound — full run of the state machine', () => {
 		expect(state.attempt).toBe(9);
 		expect(state.correctCount).toBe(0);
 		expect(state.errorCount).toBe(9);
+	});
+
+	it('returns memorize (never intro) after the first round: intro is one-time', () => {
+		const rng = mulberry32(21);
+		const state = createRoundState(rng);
+		const outcome = evaluateRound(toRespond(state), null, 100);
+		const next = nextRound(state, outcome, rng);
+		expect(next.phase).toBe('memorize');
+		expect(next.phase).not.toBe('intro');
 	});
 
 	it('tracks roundInStage within each stage', () => {

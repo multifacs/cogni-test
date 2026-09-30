@@ -10,6 +10,7 @@ import { createRoundState, isHit, TIME_RESPOND_MS } from './logic/engine';
 /** Ускоренные фазы — компонент принимает их через пропы (инъекция времени).
  *  Запас по memorizeMs важен: клик «при видимой точке» должен успеть
  *  сработать до переключения в wait, иначе он засчитается попаданием. */
+const INTRO_MS = 150;
 const MEMORIZE_MS = 300;
 const WAIT_MS = 200;
 const RESPOND_MS = 400;
@@ -106,6 +107,7 @@ describe('Dot position playground — click-through', () => {
 		await render(Playground, {
 			gameEnd: props.gameEnd,
 			sendResults: props.sendResults,
+			introMs: INTRO_MS,
 			memorizeMs: MEMORIZE_MS,
 			waitMs: WAIT_MS,
 			respondMs: RESPOND_MS,
@@ -121,6 +123,9 @@ describe('Dot position playground — click-through', () => {
 		// Текущий раунд — первый кружок, пройденных ещё нет
 		expect(dots()[0].dataset.state).toBe('current');
 		expect(pastCount()).toBe(0);
+
+		// Рендер стартует в intro и доходит до показа точки
+		await waitForMemorize();
 
 		// Анти-чит: в memorize-фазе курсор на панели скрыт (нельзя
 		// «припарковать» его на точке), в respond — снова виден.
@@ -222,11 +227,54 @@ describe('Dot position playground — click-through', () => {
 		expect(props.meta()).toEqual({ dotsPerStage: '3', windowSize: '0.1' });
 	}, 45000);
 
+	it('intro: поле белое, фраза «Начинаем», точка скрыта, тап игнорируется', async () => {
+		const props = makeProps();
+		// userEvent.click с actionability-проверками занимает ~200 мс —
+		// берём запас, чтобы тап гарантированно пришёлся на intro-фазу.
+		const INTRO_SLOW_MS = 400;
+		const { unmount } = await render(Playground, {
+			gameEnd: props.gameEnd,
+			sendResults: props.sendResults,
+			introMs: INTRO_SLOW_MS,
+			memorizeMs: MEMORIZE_MS,
+			waitMs: WAIT_MS,
+			respondMs: RESPOND_MS,
+			rng
+		});
+
+		// Сразу после рендера — intro-фаза: фраза и data-phase на панели
+		expect(phrase()?.textContent).toBe('Начинаем');
+		expect(phrase()?.dataset.phase).toBe('intro');
+		expect(panel()?.dataset.phase).toBe('intro');
+
+		// Поле белое (не respond-подсветка), курсор скрыт — как в memorize/wait
+		expect(panel()?.classList.contains('bg-white')).toBe(true);
+		expect(panel()?.classList.contains('bg-green-50')).toBe(false);
+		expect(getComputedStyle(panel()!).cursor).toBe('none');
+
+		// Точка НЕ отрисована: внутренний div с цветом точки отсутствует
+		expect(panel()?.querySelector('.bg-\\[\\#F26D6D\\]')).toBeNull();
+
+		// Тап в intro — тихий игнор: раунд не стартовал преждевременно
+		await userEvent.click(panel()!);
+		await sleep(50);
+		expect(panel()?.dataset.phase).toBe('intro');
+		expect(pastCount()).toBe(0);
+		expect(props.sendResults).not.toHaveBeenCalled();
+
+		// После intro — штатный переход в memorize с уже готовой позицией точки
+		await waitForMemorize();
+		expect(panel()?.querySelector('.bg-\\[\\#F26D6D\\]')).not.toBeNull();
+
+		unmount();
+	}, 15000);
+
 	it('игнорирует тап вне панели: раунд не завершается, кружки не двигаются', async () => {
 		const props = makeProps();
 		const { unmount } = await render(Playground, {
 			gameEnd: props.gameEnd,
 			sendResults: props.sendResults,
+			introMs: INTRO_MS,
 			memorizeMs: MEMORIZE_MS,
 			waitMs: WAIT_MS,
 			respondMs: RESPOND_MS,
@@ -266,11 +314,15 @@ describe('Dot position playground — click-through', () => {
 		const { unmount } = await render(Playground, {
 			gameEnd: props.gameEnd,
 			sendResults: props.sendResults,
+			introMs: INTRO_MS,
 			memorizeMs: MEMORIZE_MS,
 			waitMs: WAIT_MS,
 			respondMs: RESPOND_MS,
 			rng: rngOffCenter
 		});
+
+		// Рендер стартует в intro — ждём фазу показа точки
+		await waitForMemorize();
 
 		// Пиксельные координаты точки — те же, что использует компонент:
 		// normalizeTap делит (clientX - rect.left) на minSide панели.
@@ -322,6 +374,7 @@ describe('Dot position playground — click-through', () => {
 		const { unmount } = await render(Playground, {
 			gameEnd: props.gameEnd,
 			sendResults: props.sendResults,
+			introMs: INTRO_MS,
 			memorizeMs: MEMORIZE_MS,
 			waitMs: WAIT_MS,
 			respondMs: RESPOND_MS,

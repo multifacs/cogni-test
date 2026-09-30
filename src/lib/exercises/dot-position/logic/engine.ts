@@ -1,5 +1,7 @@
 import type { DotPositionResult } from '../types';
 
+/** Длительность паузы перед началом игры (прогрузка UI, ввод не принимается), мс. */
+export const TIME_INTRO_MS = 3000;
 /** Длительность фазы показа точки (запоминание), мс. */
 export const TIME_MEMORIZE_MS = 3000;
 /** Длительность фазы паузы после скрытия точки, мс; ввод игнорируется. */
@@ -27,12 +29,13 @@ export const STAGES: readonly [StageConfig, StageConfig, StageConfig] = [
 	{ grid: 0 }
 ];
 
-export type DotPositionPhase = 'memorize' | 'wait' | 'respond' | 'finished';
+export type DotPositionPhase = 'intro' | 'memorize' | 'wait' | 'respond' | 'finished';
 
 /**
  * Чистое состояние автомата одного упражнения.
- * Фаза на шаге: показ (memorize) → пауза (wait) → ответ (respond) →
- * тап|таймаут → nextRound(...) → следующий раунд (или finished после 9-го).
+ * Фаза на шаге: интро (intro) → показ (memorize) → пауза (wait) → ответ
+ * (respond) → тап|таймаут → nextRound(...) → следующий раунд (или finished
+ * после 9-го). intro однократная — только на старте игры.
  */
 export type RoundState = {
 	stage: 1 | 2 | 3;
@@ -89,13 +92,13 @@ export function normalizeTap(
 	};
 }
 
-/** Начальное состояние: этап 1, раунд 1, фаза показа. */
+/** Начальное состояние: этап 1, раунд 1, фаза интро (ввод ещё не принимается). */
 export function createRoundState(rng: () => number): RoundState {
 	return {
 		stage: 1,
 		roundInStage: 1,
 		attempt: 1,
-		phase: 'memorize',
+		phase: 'intro',
 		position: randomPosition(rng),
 		correctCount: 0,
 		errorCount: 0

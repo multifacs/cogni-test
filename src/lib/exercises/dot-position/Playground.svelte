@@ -11,6 +11,7 @@
 		nextRound,
 		normalizeTap,
 		STAGES,
+		TIME_INTRO_MS,
 		TIME_MEMORIZE_MS,
 		TIME_RESPOND_MS,
 		TIME_WAIT_MS
@@ -19,6 +20,7 @@
 	let {
 		gameEnd,
 		sendResults,
+		introMs = TIME_INTRO_MS,
 		memorizeMs = TIME_MEMORIZE_MS,
 		waitMs = TIME_WAIT_MS,
 		respondMs = TIME_RESPOND_MS,
@@ -26,6 +28,8 @@
 	}: {
 		gameEnd: () => void;
 		sendResults?: (payload: MetaResult) => void;
+		/** Инъекция длительности intro-паузы перед первым раундом (тесты ускоряют, прод — константа движка). */
+		introMs?: number;
 		/** Инъекция длительности фазы запоминания (тесты ускоряют, прод — константа движка). */
 		memorizeMs?: number;
 		/** Инъекция длительности паузы после скрытия точки (тесты ускоряют, прод — константа движка). */
@@ -61,13 +65,20 @@
 	let progressTimer: ReturnType<typeof setInterval> | undefined;
 
 	const grid = $derived(STAGES[game.stage - 1].grid);
+	const isIntro = $derived(game.phase === 'intro');
 	const isMemorize = $derived(game.phase === 'memorize');
 	// Анти-чит: курсор скрыт, пока точка видна или вот-вот должна появиться
 	// снова — нельзя «припарковать» его на месте точки.
 	const isWait = $derived(game.phase === 'wait');
 	const isRespond = $derived(game.phase === 'respond');
 	const phaseLabel = $derived(
-		game.phase === 'memorize' ? 'Запоминай' : isWait ? 'Приготовься' : 'Отвечай'
+		game.phase === 'intro'
+			? 'Начинаем'
+			: game.phase === 'memorize'
+				? 'Запоминай'
+				: isWait
+					? 'Приготовься'
+					: 'Отвечай'
 	);
 	// Бар показывает пройденную часть фазы: растёт 0→100% слева направо.
 	const elapsed = $derived(phaseDuration - timeLeft);
@@ -85,13 +96,17 @@
 		clearInterval(progressTimer);
 	}
 
-	/** Запускает таймеры текущей фазы: memorize → wait → respond → таймаут раунда. */
+	/** Запускает таймеры текущей фазы: intro → memorize → wait → respond → таймаут раунда. */
 	function startPhase() {
 		clearTimers();
-		phaseDuration = isMemorize ? memorizeMs : isWait ? waitMs : respondMs;
+		phaseDuration = isIntro ? introMs : isMemorize ? memorizeMs : isWait ? waitMs : respondMs;
 		deadline = performance.now() + phaseDuration;
 		timeLeft = phaseDuration;
-		if (isMemorize) {
+		if (isIntro) {
+			// Позиция первой точки уже в game.position от createRoundState —
+			// rng/nextRound здесь не вызываются, intro только держит паузу.
+			phaseTimer = setTimeout(nextPhase, introMs);
+		} else if (isMemorize) {
 			phaseTimer = setTimeout(nextPhase, memorizeMs);
 		} else if (isWait) {
 			phaseTimer = setTimeout(nextPhase, waitMs);
@@ -104,9 +119,9 @@
 		}, 100);
 	}
 
-	/** Переход к следующей фазе раунда: memorize → wait → respond. */
+	/** Переход к следующей фазе раунда: intro → memorize → wait → respond. */
 	function nextPhase() {
-		game.phase = isMemorize ? 'wait' : 'respond';
+		game.phase = isIntro ? 'memorize' : isMemorize ? 'wait' : 'respond';
 		startPhase();
 	}
 
