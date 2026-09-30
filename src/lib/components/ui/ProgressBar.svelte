@@ -10,7 +10,7 @@
 	aria-valuemax={max}
 >
 	<div
-		class="text-primary-foreground flex flex-col justify-center overflow-hidden rounded-full bg-red-500 text-center text-xs whitespace-nowrap transition-[width] duration-300 ease-linear"
+		class="text-primary-foreground flex flex-col justify-center overflow-hidden rounded-full bg-red-500 text-center text-xs whitespace-nowrap"
 		style={`width: ${((progress - min) / (max - min)) * 100}%`}
 	></div>
 </div>
