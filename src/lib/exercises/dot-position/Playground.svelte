@@ -43,8 +43,8 @@
 	/** Всего раундов: по DOTS_PER_STAGE на каждый этап. */
 	const TOTAL_ROUNDS = DOTS_PER_STAGE * STAGES.length;
 
-	/** Цвет кружка-прогресса по этапу: пастельный светофор green-300 / amber-200 / red-300 от лёгкого этапа к сложному. */
-	const STAGE_DOT_COLORS: readonly [string, string, string] = ['#86efac', '#fde68a', '#fca5a5'];
+	/** Светофор этапов green-600 / amber-600 / red-500 от лёгкого к сложному; контраст ≥2:1 к --app-bg (светлый сине-лавандовый градиент), приглушённые past/future задаются opacity в CSS. */
+	const STAGE_DOT_COLORS: readonly [string, string, string] = ['#16a34a', '#d97706', '#ef4444'];
 
 	let panel: HTMLElement | null = $state(null);
 	// rng снапшотится при создании компонента: ГПСЧ упражнения выбирается один
