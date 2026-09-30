@@ -4,6 +4,7 @@ import { exercises, EXERCISE_SLUG_TO_TEST_TYPE } from '$lib/exercises';
 import { getResults } from '$lib/server/db/controllers/result';
 import type { TestType } from '$lib/tests/types';
 import { SKILL_METRICS } from './metricShares.js';
+import { validateSession } from './validation.js';
 
 type AttemptLike = {
 	isCorrect?: boolean;
@@ -108,6 +109,7 @@ async function gatherSessionScores(
 		.map(async (test) => {
 			const sessions = await getResults(test.name as TestType, userId);
 			for (const session of sessions) {
+				if (!validateSession(session.attempts)) continue;
 				const score = computeSessionScore(test.name, session.attempts);
 				for (const metric of pick(test)!) {
 					if (allowSet.has(metric)) buckets[metric].push(score);
