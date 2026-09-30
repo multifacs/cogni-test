@@ -6,18 +6,21 @@
 	import {
 		buildMeta,
 		createRoundState,
+		DOTS_PER_STAGE,
 		evaluateRound,
 		nextRound,
 		normalizeTap,
 		STAGES,
 		TIME_MEMORIZE_MS,
-		TIME_RESPOND_MS
+		TIME_RESPOND_MS,
+		TIME_WAIT_MS
 	} from './logic/engine';
 
 	let {
 		gameEnd,
 		sendResults,
 		memorizeMs = TIME_MEMORIZE_MS,
+		waitMs = TIME_WAIT_MS,
 		respondMs = TIME_RESPOND_MS,
 		rng = Math.random
 	}: {
@@ -25,11 +28,19 @@
 		sendResults?: (payload: MetaResult) => void;
 		/** Инъекция длительности фазы запоминания (тесты ускоряют, прод — константа движка). */
 		memorizeMs?: number;
+		/** Инъекция длительности паузы после скрытия точки (тесты ускоряют, прод — константа движка). */
+		waitMs?: number;
 		/** Инъекция длительности фазы ответа (тесты ускоряют, прод — константа движка). */
 		respondMs?: number;
 		/** Инъекция ГПСЧ: тесты передают детерминированный, прод — Math.random. */
 		rng?: () => number;
 	} = $props();
+
+	/** Всего раундов: по DOTS_PER_STAGE на каждый этап. */
+	const TOTAL_ROUNDS = DOTS_PER_STAGE * STAGES.length;
+
+	/** Цвет кружка-прогресса по этапу: slate-400 / sky-500 / amber-500. */
+	const STAGE_DOT_COLORS: readonly [string, string, string] = ['#94a3b8', '#0ea5e9', '#f59e0b'];
 
 	let panel: HTMLElement | null = $state(null);
 	// rng снапшотится при создании компонента: ГПСЧ упражнения выбирается один
@@ -51,6 +62,13 @@
 
 	const grid = $derived(STAGES[game.stage - 1].grid);
 	const isMemorize = $derived(game.phase === 'memorize');
+	// Анти-чит: курсор скрыт, пока точка видна или вот-вот должна появиться
+	// снова — нельзя «припарковать» его на месте точки.
+	const isWait = $derived(game.phase === 'wait');
+	const isRespond = $derived(game.phase === 'respond');
+	const phaseLabel = $derived(
+		game.phase === 'memorize' ? 'Запоминай' : isWait ? 'Приготовься' : 'Отвечай'
+	);
 
 	onMount(() => {
 		startPhase();
@@ -65,15 +83,17 @@
 		clearInterval(progressTimer);
 	}
 
-	/** Запускает таймеры текущей фазы: memorize → скрытие, respond → таймаут. */
+	/** Запускает таймеры текущей фазы: memorize → wait → respond → таймаут раунда. */
 	function startPhase() {
 		clearTimers();
-		phaseDuration = game.phase === 'respond' ? respondMs : memorizeMs;
+		phaseDuration = isMemorize ? memorizeMs : isWait ? waitMs : respondMs;
 		deadline = performance.now() + phaseDuration;
 		timeLeft = phaseDuration;
-		if (game.phase === 'memorize') {
-			phaseTimer = setTimeout(hideDot, memorizeMs);
-		} else if (game.phase === 'respond') {
+		if (isMemorize) {
+			phaseTimer = setTimeout(nextPhase, memorizeMs);
+		} else if (isWait) {
+			phaseTimer = setTimeout(nextPhase, waitMs);
+		} else if (isRespond) {
 			respondStart = performance.now();
 			phaseTimer = setTimeout(timeoutRound, respondMs);
 		}
@@ -82,8 +102,9 @@
 		}, 100);
 	}
 
-	function hideDot() {
-		game.phase = 'respond';
+	/** Переход к следующей фазе раунда: memorize → wait → respond. */
+	function nextPhase() {
+		game.phase = isMemorize ? 'wait' : 'respond';
 		startPhase();
 	}
 
@@ -92,9 +113,9 @@
 	}
 
 	function handleTap(event: PointerEvent) {
-		// Ввод валиден только в respond-фазе: memorize-тапы игнорируются,
-		// evaluateRound иначе бросает (fail-fast guard движка).
-		if (game.phase !== 'respond' || !panel) return;
+		// Ввод валиден только в respond-фазе: тапы в memorize и wait — тихий
+		// игнор, evaluateRound иначе бросает (fail-fast guard движка).
+		if (!isRespond || !panel) return;
 		const rect = panel.getBoundingClientRect();
 		const tap = normalizeTap(
 			{ width: rect.width, height: rect.height },
@@ -121,21 +142,49 @@
 		sendResults?.({ results, meta: buildMeta() });
 		gameEnd();
 	}
+
+	/** Состояние кружка по номеру раунда: пройденный / текущий / будущий. */
+	function dotState(attempt: number): 'past' | 'current' | 'future' {
+		if (attempt < game.attempt) return 'past';
+		return attempt === game.attempt ? 'current' : 'future';
+	}
 </script>
 
 <div class="flex w-full max-w-md flex-col items-center gap-3">
-	<div class="flex w-full items-center justify-between text-sm" aria-live="polite">
-		<span>Этап {game.stage} из {STAGES.length}</span>
-		<span>Верно: {game.correctCount}</span>
-		<span>Ошибок: {game.errorCount}</span>
-	</div>
+	{#if game.phase !== 'finished'}
+		<!-- Кружки-прогресс: один на раунд, цвет = этап. Корректность НЕ
+		     кодируется — кружки не говорят, попал ли игрок в раунде. -->
+		<div class="flex items-center justify-center gap-2" aria-hidden="true">
+			{#each { length: TOTAL_ROUNDS } as _, index (index)}
+				{@const attempt = index + 1}
+				{@const stage = Math.floor(index / DOTS_PER_STAGE) + 1}
+				{@const state = dotState(attempt)}
+				<span
+					class="progress-dot progress-dot-{state}"
+					style={`--dot-color: ${STAGE_DOT_COLORS[stage - 1]}`}
+					data-attempt={attempt}
+					data-stage={stage}
+					data-state={state}
+				></span>
+			{/each}
+		</div>
+
+		<!-- Фраза состояния над полем: режим фазы без счётчиков. -->
+		<p
+			class="phase-phrase text-sm font-medium text-slate-600"
+			aria-live="polite"
+			data-phase={game.phase}
+		>
+			{phaseLabel}
+		</p>
+	{/if}
 
 	<button
 		type="button"
 		bind:this={panel}
-		class="dot-panel relative aspect-square w-full touch-none overflow-hidden rounded-2xl bg-white select-none {isMemorize
-			? 'cursor-none'
-			: 'cursor-pointer'}"
+		class="dot-panel relative aspect-square w-full touch-none overflow-hidden rounded-2xl select-none {isRespond
+			? 'cursor-pointer bg-green-100'
+			: 'cursor-none bg-white'}"
 		data-phase={game.phase}
 		data-grid={grid}
 		aria-label="Игровое поле: запомните позицию точки и укажите её после скрытия"
@@ -167,3 +216,36 @@
 		<ProgressBar min={0} max={phaseDuration} progress={timeLeft} />
 	{/if}
 </div>
+
+<style>
+	.progress-dot {
+		width: 14px;
+		height: 14px;
+		border-radius: 9999px;
+		background-color: var(--dot-color);
+		transition:
+			box-shadow 0.15s,
+			transform 0.15s,
+			opacity 0.15s;
+	}
+
+	/* Будущий раунд: полупрозрачный контур цвета этапа. */
+	.progress-dot-future {
+		background-color: transparent;
+		box-shadow: inset 0 0 0 2px var(--dot-color);
+		opacity: 0.55;
+	}
+
+	/* Пройденный раунд: заполнен, но приглушён относительно текущего. */
+	.progress-dot-past {
+		opacity: 0.35;
+	}
+
+	/* Текущий раунд: заполнен цветом этапа + кольцо (паттерн campimetry). */
+	.progress-dot-current {
+		box-shadow:
+			0 0 0 3px #fff,
+			0 0 0 5px var(--dot-color);
+		transform: scale(1.1);
+	}
+</style>

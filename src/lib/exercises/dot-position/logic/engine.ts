@@ -1,9 +1,11 @@
 import type { DotPositionResult } from '../types';
 
 /** Длительность фазы показа точки (запоминание), мс. */
-export const TIME_MEMORIZE_MS = 5000;
+export const TIME_MEMORIZE_MS = 3000;
+/** Длительность фазы паузы после скрытия точки, мс; ввод игнорируется. */
+export const TIME_WAIT_MS = 3000;
 /** Длительность фазы ответа, мс; нетап тарифицируется как полный таймаут. */
-export const TIME_RESPOND_MS = 5000;
+export const TIME_RESPOND_MS = 3000;
 /** Точек (раундов) на один этап. */
 export const DOTS_PER_STAGE = 3;
 /** Радиус допуска: доля меньшей стороны поля. */
@@ -25,12 +27,12 @@ export const STAGES: readonly [StageConfig, StageConfig, StageConfig] = [
 	{ grid: 0 }
 ];
 
-export type DotPositionPhase = 'memorize' | 'respond' | 'finished';
+export type DotPositionPhase = 'memorize' | 'wait' | 'respond' | 'finished';
 
 /**
  * Чистое состояние автомата одного упражнения.
- * Фаза на шаге: показ (memorize) → скрытие/ответ (respond) → тап|таймаут →
- * nextRound(...) → следующий раунд (или finished после 9-го).
+ * Фаза на шаге: показ (memorize) → пауза (wait) → ответ (respond) →
+ * тап|таймаут → nextRound(...) → следующий раунд (или finished после 9-го).
  */
 export type RoundState = {
 	stage: 1 | 2 | 3;

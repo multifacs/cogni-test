@@ -9,8 +9,9 @@ import { createRoundState, isHit, TIME_RESPOND_MS } from './logic/engine';
 
 /** Ускоренные фазы — компонент принимает их через пропы (инъекция времени).
  *  Запас по memorizeMs важен: клик «при видимой точке» должен успеть
- *  сработать до переключения в respond, иначе он засчитается попаданием. */
+ *  сработать до переключения в wait, иначе он засчитается попаданием. */
 const MEMORIZE_MS = 300;
+const WAIT_MS = 200;
 const RESPOND_MS = 400;
 
 /** Детерминированный ГПСЧ: randomPosition всегда даёт центр поля (0.5, 0.5). */
@@ -35,6 +36,21 @@ function panel(): HTMLElement | null {
 	return document.querySelector<HTMLElement>('.dot-panel');
 }
 
+/** Фраза состояния над полем («Запоминай» / «Приготовься» / «Отвечай»). */
+function phrase(): HTMLElement | null {
+	return document.querySelector<HTMLElement>('.phase-phrase');
+}
+
+/** Все кружки-прогресса (9 штук, один на раунд). */
+function dots(): HTMLElement[] {
+	return [...document.querySelectorAll<HTMLElement>('.progress-dot')];
+}
+
+/** Пройденные кружки: раунды до текущего включительно уже завершены. */
+function pastCount(): number {
+	return dots().filter((d) => d.dataset.state === 'past').length;
+}
+
 async function waitFor(what: string, predicate: () => boolean, timeoutMs = 5000) {
 	const start = performance.now();
 	while (performance.now() - start < timeoutMs) {
@@ -44,14 +60,19 @@ async function waitFor(what: string, predicate: () => boolean, timeoutMs = 5000)
 	throw new Error(`Timed out waiting for: ${what}`);
 }
 
-/** Ждёт фазу ответа: точка скрыта, панель принимает тапы. */
-function waitForRespond() {
-	return waitFor('respond phase', () => panel()?.dataset.phase === 'respond');
-}
-
 /** Ждёт фазу показа точки. */
 function waitForMemorize() {
 	return waitFor('memorize phase', () => panel()?.dataset.phase === 'memorize');
+}
+
+/** Ждёт фазу паузы: точка скрыта, ввод игнорируется. */
+function waitForWait() {
+	return waitFor('wait phase', () => panel()?.dataset.phase === 'wait');
+}
+
+/** Ждёт фазу ответа: точка скрыта, панель принимает тапы. */
+function waitForRespond() {
+	return waitFor('respond phase', () => panel()?.dataset.phase === 'respond');
 }
 
 describe('Dot position playground — click-through', () => {
@@ -69,45 +90,59 @@ describe('Dot position playground — click-through', () => {
 			gameEnd: props.gameEnd,
 			sendResults: props.sendResults,
 			memorizeMs: MEMORIZE_MS,
+			waitMs: WAIT_MS,
 			respondMs: RESPOND_MS,
 			rng
 		});
 
-		// Этап 1: сетка 5×5
-		expect(page.getByText('Этап 1 из 3').query()).toBeTruthy();
+		// Этап 1: сетка 5×5 — проверяем сетку и раскладку кружков по этапам
 		expect(panel()?.dataset.grid).toBe('5');
+		expect(dots()).toHaveLength(9);
+		expect(dots()[0].dataset.stage).toBe('1');
+		expect(dots()[3].dataset.stage).toBe('2');
+		expect(dots()[6].dataset.stage).toBe('3');
+		// Текущий раунд — первый кружок, пройденных ещё нет
+		expect(dots()[0].dataset.state).toBe('current');
+		expect(pastCount()).toBe(0);
 
 		// Анти-чит: в memorize-фазе курсор на панели скрыт (нельзя
 		// «припарковать» его на точке), в respond — снова виден.
 		expect(getComputedStyle(panel()!).cursor).toBe('none');
+		// Фраза состояния в memorize
+		expect(phrase()?.textContent).toBe('Запоминай');
 
 		// Тап при видимой точке (фаза memorize) игнорируется
 		await userEvent.click(panel()!);
+		await waitForWait();
+		// Анти-чит действует и в wait: точка скрыта, но курсор всё ещё спрятан
+		expect(getComputedStyle(panel()!).cursor).toBe('none');
+		expect(phrase()?.textContent).toBe('Приготовься');
 		await waitForRespond();
 		expect(getComputedStyle(panel()!).cursor).toBe('pointer');
-		expect(page.getByText('Верно: 0').query()).toBeTruthy();
-		expect(page.getByText('Ошибок: 0').query()).toBeTruthy();
+		expect(phrase()?.textContent).toBe('Отвечай');
+		// Панель в respond подсвечена светло-зелёным
+		expect(panel()?.classList.contains('bg-green-100')).toBe(true);
+		expect(pastCount()).toBe(0);
 
 		// Раунд 1 — промах: тап по центру левой верхней ячейки сетки
 		await userEvent.click(document.querySelector('.grid-overlay > div')!);
 		await waitForMemorize();
-		expect(page.getByText('Ошибок: 1').query()).toBeTruthy();
+		expect(pastCount()).toBe(1);
 
 		// Раунд 2 — попадание: тап в центр панели
 		await waitForRespond();
 		await userEvent.click(panel()!);
 		await waitForMemorize();
-		expect(page.getByText('Верно: 1').query()).toBeTruthy();
+		expect(pastCount()).toBe(2);
 
 		// Раунд 3 — таймаут: не тапаем, ждём истечения respondMs
 		await waitForRespond();
 		await waitForMemorize();
+		expect(pastCount()).toBe(3);
 
-		// Этап 2: сетка 3×3, счётчики сохранены
-		expect(page.getByText('Этап 2 из 3').query()).toBeTruthy();
+		// Этап 2: сетка 3×3, прогресс кружков сохранён
 		expect(panel()?.dataset.grid).toBe('3');
-		expect(page.getByText('Верно: 1').query()).toBeTruthy();
-		expect(page.getByText('Ошибок: 2').query()).toBeTruthy();
+		expect(dots()[3].dataset.state).toBe('current');
 
 		// Раунды 4–6 — попадания
 		for (let round = 4; round <= 6; round++) {
@@ -115,11 +150,12 @@ describe('Dot position playground — click-through', () => {
 			await userEvent.click(panel()!);
 			await waitForMemorize();
 		}
+		expect(pastCount()).toBe(6);
 
 		// Этап 3: без сетки
-		expect(page.getByText('Этап 3 из 3').query()).toBeTruthy();
 		expect(panel()?.dataset.grid).toBe('0');
 		expect(document.querySelector('.grid-overlay')).toBeNull();
+		expect(dots()[6].dataset.state).toBe('current');
 
 		// Раунды 7–8 — попадания, раунд 9 — таймаут
 		await waitForRespond();
@@ -130,10 +166,6 @@ describe('Dot position playground — click-through', () => {
 		await waitForMemorize();
 		await waitForRespond();
 		await waitFor('finished phase', () => panel()?.dataset.phase === 'finished');
-
-		// Итог: 6 верных, 3 ошибки
-		expect(page.getByText('Верно: 6').query()).toBeTruthy();
-		expect(page.getByText('Ошибок: 3').query()).toBeTruthy();
 
 		// Контракт завершения: ровно по одному вызову
 		expect(props.gameEnd).toHaveBeenCalledTimes(1);
@@ -171,35 +203,36 @@ describe('Dot position playground — click-through', () => {
 
 		// Мета упражнения
 		expect(props.meta()).toEqual({ dotsPerStage: '3', windowSize: '0.1' });
-	}, 30000);
+	}, 45000);
 
-	it('игнорирует тап вне панели: счётчики не меняются, раунд не завершается', async () => {
+	it('игнорирует тап вне панели: раунд не завершается, кружки не двигаются', async () => {
 		const props = makeProps();
 		const { unmount } = await render(Playground, {
 			gameEnd: props.gameEnd,
 			sendResults: props.sendResults,
 			memorizeMs: MEMORIZE_MS,
+			waitMs: WAIT_MS,
 			respondMs: RESPOND_MS,
 			rng
 		});
 
 		await waitForRespond();
 
-		// Тап по контейнеру счётчиков — вне .dot-panel, обработчик
-		// onpointerdown которого не должен сработать.
-		await userEvent.click(page.getByText('Этап 1 из 3'));
+		// Тап по фразе состояния — элемент над полем, вне .dot-panel,
+		// обработчик onpointerdown которого не должен сработать.
+		await userEvent.click(page.getByText('Отвечай'));
 
 		// Запас по времени: если бы тап «протёк» в панель, раунд завершился
 		// бы мгновенно и фаза ушла в memorize следующего раунда.
 		await sleep(150);
 		expect(panel()?.dataset.phase).toBe('respond');
-		expect(page.getByText('Верно: 0').query()).toBeTruthy();
-		expect(page.getByText('Ошибок: 0').query()).toBeTruthy();
+		expect(pastCount()).toBe(0);
+		expect(props.sendResults).not.toHaveBeenCalled();
 
 		// Раунд завершился только штатным таймаутом respondMs
 		await waitForMemorize();
-		expect(page.getByText('Верно: 0').query()).toBeTruthy();
-		expect(page.getByText('Ошибок: 1').query()).toBeTruthy();
+		expect(pastCount()).toBe(1);
+		expect(props.sendResults).not.toHaveBeenCalled();
 
 		unmount();
 	}, 15000);
@@ -217,6 +250,7 @@ describe('Dot position playground — click-through', () => {
 			gameEnd: props.gameEnd,
 			sendResults: props.sendResults,
 			memorizeMs: MEMORIZE_MS,
+			waitMs: WAIT_MS,
 			respondMs: RESPOND_MS,
 			rng: rngOffCenter
 		});
@@ -233,7 +267,7 @@ describe('Dot position playground — click-through', () => {
 			};
 		};
 
-		// Тап по координатам точки в memorize-фазе: игнор, счётчики не тронуты
+		// Тап по координатам точки в memorize-фазе: игнор, раунд не завершён
 		const memorizeTap = dotClient();
 		panel()!.dispatchEvent(
 			new PointerEvent('pointerdown', {
@@ -243,9 +277,10 @@ describe('Dot position playground — click-through', () => {
 			})
 		);
 		await sleep(50);
-		expect(page.getByText('Верно: 0').query()).toBeTruthy();
-		expect(page.getByText('Ошибок: 0').query()).toBeTruthy();
-		// Штатный переход memorize → respond
+		expect(panel()?.dataset.phase).toBe('memorize');
+		expect(pastCount()).toBe(0);
+		// Штатный переход memorize → wait → respond
+		await waitForWait();
 		await waitForRespond();
 
 		// Тап по тем же координатам в respond-фазе: попадание (расстояние 0)
@@ -258,8 +293,9 @@ describe('Dot position playground — click-through', () => {
 			})
 		);
 		await waitForMemorize();
-		expect(page.getByText('Верно: 1').query()).toBeTruthy();
-		expect(page.getByText('Ошибок: 0').query()).toBeTruthy();
+		expect(pastCount()).toBe(1);
+		expect(dots()[0].dataset.state).toBe('past');
+		expect(dots()[1].dataset.state).toBe('current');
 
 		unmount();
 	}, 15000);

@@ -1,5 +1,7 @@
 import { describe, it, expect, assert } from 'vitest';
 import {
+	TIME_MEMORIZE_MS,
+	TIME_WAIT_MS,
 	TIME_RESPOND_MS,
 	HIT_WINDOW,
 	EDGE_MARGIN,
@@ -29,6 +31,12 @@ function mulberry32(seed: number): () => number {
 }
 
 describe('constants', () => {
+	it('each phase lasts 3000 ms: memorize, wait, respond', () => {
+		expect(TIME_MEMORIZE_MS).toBe(3000);
+		expect(TIME_WAIT_MS).toBe(3000);
+		expect(TIME_RESPOND_MS).toBe(3000);
+	});
+
 	it('edge margin covers hit window so the tolerance circle is never clipped', () => {
 		expect(EDGE_MARGIN).toBeGreaterThanOrEqual(HIT_WINDOW);
 	});
@@ -146,6 +154,15 @@ describe('evaluateRound', () => {
 	it('throws when tapping during memorize phase', () => {
 		const state = createRoundState(mulberry32(1));
 		expect(state.phase).toBe('memorize');
+		assert.throws(() => evaluateRound(state, { x: 0.5, y: 0.5 }, 100), /respond phase/);
+	});
+
+	it('throws when tapping during wait phase (no premature taps)', () => {
+		const state: RoundState = {
+			...createRoundState(mulberry32(1)),
+			phase: 'wait'
+		};
+		expect(state.phase).toBe('wait');
 		assert.throws(() => evaluateRound(state, { x: 0.5, y: 0.5 }, 100), /respond phase/);
 	});
 
