@@ -159,7 +159,7 @@
 	{/if}
 </main>
 
-<section class="low-content grid w-full grid-cols-2 gap-4 sm:max-w-5xl">
+<section class="low-content grid w-full grid-cols-2 gap-4">
 	<Button color="red" goto="/exercises/{slug}">Назад</Button>
 	<Button color="blue" goto="/exercises/{slug}/playground">Пройти снова</Button>
 </section>
