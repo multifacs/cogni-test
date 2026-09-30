@@ -109,7 +109,7 @@ describe('Dot position ResultsChart', () => {
 		// Тап-раунд: attempt 1, distance 0.05
 		const tapPoint = chart.data.datasets[0].data[0] as { x: number; y: number };
 		expect(callbacks.afterLabel({ raw: tapPoint } as never)).toBe('Отклонение: 0.05');
-		expect(callbacks.label({ raw: tapPoint } as never)).toBe('Реакция: 800 мс (Верно)');
+		expect(callbacks.label({ raw: tapPoint } as never)).toBe('Реакция: 800.00 мс (Верно)');
 
 		// Нетап-раунд: attempt 3, distance null
 		const noAnswerPoint = chart.data.datasets[0].data[2] as { x: number; y: number };

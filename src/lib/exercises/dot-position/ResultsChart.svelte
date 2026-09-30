@@ -90,12 +90,12 @@
 							label(context) {
 								const value = context.raw as ChartPoint;
 								const status = value.raw.correct ? 'Верно' : 'Ошибка';
-								return `Реакция: ${value.y} мс (${status})`;
+								return `Реакция: ${value.y.toFixed(2)} мс (${status})`;
 							},
 							afterLabel(context) {
 								const value = context.raw as ChartPoint;
 								return value.raw.distance !== null
-									? `Отклонение: ${value.raw.distance}`
+									? `Отклонение: ${value.raw.distance.toFixed(2)}`
 									: 'Нет ответа';
 							}
 						}

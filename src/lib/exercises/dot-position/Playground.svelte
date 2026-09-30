@@ -43,8 +43,8 @@
 	/** Всего раундов: по DOTS_PER_STAGE на каждый этап. */
 	const TOTAL_ROUNDS = DOTS_PER_STAGE * STAGES.length;
 
-	/** Цвет кружка-прогресса по этапу: slate-400 / sky-500 / amber-500. */
-	const STAGE_DOT_COLORS: readonly [string, string, string] = ['#94a3b8', '#0ea5e9', '#f59e0b'];
+	/** Цвет кружка-прогресса по этапу: пастельный светофор green-300 / amber-200 / red-300 от лёгкого этапа к сложному. */
+	const STAGE_DOT_COLORS: readonly [string, string, string] = ['#86efac', '#fde68a', '#fca5a5'];
 
 	let panel: HTMLElement | null = $state(null);
 	// rng снапшотится при создании компонента: ГПСЧ упражнения выбирается один
@@ -188,7 +188,7 @@
 
 		<!-- Фраза состояния над полем: режим фазы без счётчиков. -->
 		<p
-			class="phase-phrase text-sm font-medium text-slate-600"
+			class="phase-phrase text-xl font-semibold text-slate-600"
 			aria-live="polite"
 			data-phase={game.phase}
 		>
