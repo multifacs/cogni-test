@@ -46,6 +46,23 @@ function dots(): HTMLElement[] {
 	return [...document.querySelectorAll<HTMLElement>('.progress-dot')];
 }
 
+/** Ширина заливки прогресс-бара в процентах (NaN, если бар ещё не отрисован). */
+function fillWidth(): number {
+	const fill = document.querySelector<HTMLElement>('[role="progressbar"] > div');
+	return fill ? Number.parseFloat(fill.style.width) : Number.NaN;
+}
+
+/** Ждёт, пока ширина заливки строго вырастет относительно первого сэмпла,
+ *  и ассертит рост. Поллинг каждые 25 мс: timeLeft обновляется интервалом
+ *  100 мс, и два одиночных сэмпла с фиксированным зазором могут попасть
+ *  в один слот. */
+async function waitForFillGrowth(phase: string, timeoutMs = 500) {
+	await waitFor('progress bar rendered', () => !Number.isNaN(fillWidth()));
+	const firstSample = fillWidth();
+	await waitFor(`${phase} fill growth`, () => fillWidth() > firstSample, timeoutMs);
+	expect(fillWidth()).toBeGreaterThan(firstSample);
+}
+
 /** Пройденные кружки: раунды до текущего включительно уже завершены. */
 function pastCount(): number {
 	return dots().filter((d) => d.dataset.state === 'past').length;
@@ -121,7 +138,7 @@ describe('Dot position playground — click-through', () => {
 		expect(getComputedStyle(panel()!).cursor).toBe('pointer');
 		expect(phrase()?.textContent).toBe('Отвечай');
 		// Панель в respond подсвечена светло-зелёным
-		expect(panel()?.classList.contains('bg-green-100')).toBe(true);
+		expect(panel()?.classList.contains('bg-green-50')).toBe(true);
 		expect(pastCount()).toBe(0);
 
 		// Раунд 1 — промах: тап по центру левой верхней ячейки сетки
@@ -296,6 +313,29 @@ describe('Dot position playground — click-through', () => {
 		expect(pastCount()).toBe(1);
 		expect(dots()[0].dataset.state).toBe('past');
 		expect(dots()[1].dataset.state).toBe('current');
+
+		unmount();
+	}, 15000);
+
+	it('progress bar fills left-to-right during a phase', async () => {
+		const props = makeProps();
+		const { unmount } = await render(Playground, {
+			gameEnd: props.gameEnd,
+			sendResults: props.sendResults,
+			memorizeMs: MEMORIZE_MS,
+			waitMs: WAIT_MS,
+			respondMs: RESPOND_MS,
+			rng
+		});
+
+		// Бар инвертирован: показывает пройденное время (elapsed), а не остаток —
+		// ширина заливки растёт в течение фазы, а не уменьшается.
+		await waitForMemorize();
+		await waitForFillGrowth('memorize');
+
+		// Та же механика в respond-фазе: бар продолжает заполняться слева направо.
+		await waitForRespond();
+		await waitForFillGrowth('respond');
 
 		unmount();
 	}, 15000);

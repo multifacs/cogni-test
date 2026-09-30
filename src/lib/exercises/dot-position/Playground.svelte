@@ -69,6 +69,8 @@
 	const phaseLabel = $derived(
 		game.phase === 'memorize' ? 'Запоминай' : isWait ? 'Приготовься' : 'Отвечай'
 	);
+	// Бар показывает пройденную часть фазы: растёт 0→100% слева направо.
+	const elapsed = $derived(phaseDuration - timeLeft);
 
 	onMount(() => {
 		startPhase();
@@ -183,7 +185,7 @@
 		type="button"
 		bind:this={panel}
 		class="dot-panel relative aspect-square w-full touch-none overflow-hidden rounded-2xl select-none {isRespond
-			? 'cursor-pointer bg-green-100'
+			? 'cursor-pointer bg-green-50'
 			: 'cursor-none bg-white'}"
 		data-phase={game.phase}
 		data-grid={grid}
@@ -213,7 +215,7 @@
 	</button>
 
 	{#if game.phase !== 'finished'}
-		<ProgressBar min={0} max={phaseDuration} progress={timeLeft} />
+		<ProgressBar min={0} max={phaseDuration} progress={elapsed} />
 	{/if}
 </div>
 

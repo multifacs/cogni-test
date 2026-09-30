@@ -1,7 +1,16 @@
 <script lang="ts">
-    let { min, max, progress } = $props();
+	let { min, max, progress } = $props();
 </script>
 
-<div class="flex w-full h-1.5 bg-surface-1 rounded-full overflow-hidden bg-blue-100" role="progressbar" aria-valuenow={progress} aria-valuemin={min} aria-valuemax={max}>
-  <div class="flex flex-col justify-center rounded-full overflow-hidden bg-red-500 text-xs text-primary-foreground text-center whitespace-nowrap transition duration-500" style={`width: ${(progress - min) / (max - min) * 100}%`}></div>
+<div
+	class="bg-surface-1 flex h-1.5 w-full overflow-hidden rounded-full bg-blue-100"
+	role="progressbar"
+	aria-valuenow={progress}
+	aria-valuemin={min}
+	aria-valuemax={max}
+>
+	<div
+		class="text-primary-foreground flex flex-col justify-center overflow-hidden rounded-full bg-red-500 text-center text-xs whitespace-nowrap transition-[width] duration-300 ease-linear"
+		style={`width: ${((progress - min) / (max - min)) * 100}%`}
+	></div>
 </div>

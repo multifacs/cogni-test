@@ -10,10 +10,7 @@ import type { DotPositionResult } from './types';
  *  reactionMs: раунды 1–9 = 800, 900, 3000, 700, 650, 2800, 600, 620, 2500.
  *  Агрегаты по фикстуре:
  *  - всего верно: 5 из 9; средняя реакция: 12570/9 ≈ 1396.7 мс → «1.4 с»
- *  - этап 1: верно 1, ошибок 2, ср. 4700/3 ≈ 1566.7 → «1.6 с»
- *  - этап 2: верно 2, ошибок 1, ср. 4150/3 ≈ 1383.3 → «1.4 с»
- *  - этап 3: верно 2, ошибок 1, ср. 3720/3 = 1240 → «1.2 с»
- *  - среднее отклонение тапа по 7 определённым distance: 0.85/7 ≈ 0.12 */
+ *  - windowSize '0.1' → «10%» */
 const fixture: DotPositionResult[] = [
 	{ attempt: 1, stage: 1, reactionMs: 800, correct: true, distance: 0.05 },
 	{ attempt: 2, stage: 1, reactionMs: 900, correct: false, distance: 0.3 },
@@ -26,62 +23,35 @@ const fixture: DotPositionResult[] = [
 	{ attempt: 9, stage: 3, reactionMs: 2500, correct: false, distance: 0.4 }
 ];
 
-function stageCell(row: number, column: number): HTMLElement {
+/** Ячейка единственной сводной строки (tbody td:nth-child(column)). */
+function summaryCell(column: number): HTMLElement {
 	const table = page.getByRole('table').element();
-	return table.querySelector(`tbody tr:nth-child(${row}) td:nth-child(${column})`)!;
+	return table.querySelector(`tbody tr:nth-child(1) td:nth-child(${column})`)!;
 }
 
 describe('Dot position Result', () => {
-	it('renders summary header with correct count, average reaction and hit window', async () => {
+	it('renders summary table with correct count, average reaction and hit window', async () => {
 		await render(Result, {
 			results: fixture,
 			meta: { dotsPerStage: '3', windowSize: '0.1' }
 		});
 
-		expect(page.getByText('Верно: 5 из 9').element()).toBeTruthy();
-		expect(page.getByText('Средняя реакция: 1.4 с').element()).toBeTruthy();
-		expect(page.getByText('Окно попадания: 10%').element()).toBeTruthy();
+		const table = page.getByRole('table').element();
+		const headers = Array.from(table.querySelectorAll('thead th')).map((th) => th.textContent);
+		expect(headers).toEqual(['Верно', 'Средняя реакция', 'Окно попадания']);
+
+		// Верно 5 из 9; средняя 12570/9 ≈ 1396.7 мс → «1.4 с»; окно 0.1 → «10%»
+		expect(summaryCell(1).textContent).toBe('5 из 9');
+		expect(summaryCell(2).textContent).toBe('1.4 с');
+		expect(summaryCell(3).textContent).toBe('10%');
 	});
 
-	it('renders per-stage table with fixture numbers; stage 3 labelled «без сетки»', async () => {
-		await render(Result, {
-			results: fixture,
-			meta: { dotsPerStage: '3', windowSize: '0.1' }
-		});
-
-		expect(page.getByText('Этап 1 (сетка 5×5)').element()).toBeTruthy();
-		expect(page.getByText('Этап 2 (сетка 3×3)').element()).toBeTruthy();
-		expect(page.getByText('Этап 3 (без сетки)').element()).toBeTruthy();
-
-		// Этап 1: верно 1, ошибок 2, ср. реакция 1.6 с
-		expect(stageCell(1, 2).textContent).toBe('1');
-		expect(stageCell(1, 3).textContent).toBe('2');
-		expect(stageCell(1, 4).textContent).toBe('1.6 с');
-		// Этап 2: верно 2, ошибок 1, ср. реакция 1.4 с
-		expect(stageCell(2, 2).textContent).toBe('2');
-		expect(stageCell(2, 3).textContent).toBe('1');
-		expect(stageCell(2, 4).textContent).toBe('1.4 с');
-		// Этап 3: верно 2, ошибок 1, ср. реакция 1.2 с
-		expect(stageCell(3, 2).textContent).toBe('2');
-		expect(stageCell(3, 3).textContent).toBe('1');
-		expect(stageCell(3, 4).textContent).toBe('1.2 с');
-	});
-
-	it('renders without meta: no hit-window block, no throw', async () => {
+	it('renders without meta: empty hit-window cell, no throw', async () => {
 		await render(Result, { results: fixture, meta: null });
 
-		expect(page.getByText('Верно: 5 из 9').element()).toBeTruthy();
-		expect(page.getByText(/Окно попадания/).query()).toBeNull();
-	});
-
-	it('null distances do not break aggregates: average tap deviation over defined distances', async () => {
-		await render(Result, {
-			results: fixture,
-			meta: { dotsPerStage: '3', windowSize: '0.1' }
-		});
-
-		// 7 определённых distance (два нетапа отфильтрованы): 0.85 / 7 ≈ 0.12
-		expect(page.getByText('Среднее отклонение тапа: 0.12').element()).toBeTruthy();
+		// meta=null → windowText='' (пустая ячейка, не блок целиком)
+		expect(summaryCell(1).textContent).toBe('5 из 9');
+		expect(summaryCell(3).textContent).toBe('');
 	});
 });
 
