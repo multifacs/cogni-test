@@ -94,8 +94,8 @@
 						{:else if !isValid}
 							<span
 								class="inline-block h-2.5 w-2.5 rounded-full bg-red-500"
-								title="Невалидные результаты"
-								aria-label="Невалидные результаты"
+								title="Недействительные результаты"
+								aria-label="Недействительные результаты"
 							></span>
 						{:else}
 							<span
@@ -111,7 +111,7 @@
 							<span
 								class="inline-flex cursor-help items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-500"
 								title="Результаты не учитываются в метриках: слишком быстрые ответы, низкая точность или высокая вариабельность"
-								>Невалидные результаты</span
+								>Недействительные результаты</span
 							>
 						{/if}
 					</span>
