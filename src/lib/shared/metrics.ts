@@ -124,6 +124,7 @@ async function gatherSessionScores(
 			if (!sessionType) return;
 			const sessions = await getResults(sessionType, userId);
 			for (const session of sessions) {
+				if (!validateSession(session.attempts)) continue;
 				const score = computeSessionScore(sessionType, session.attempts);
 				for (const metric of pick(ex)!) {
 					if (allowSet.has(metric)) buckets[metric].push(score);
