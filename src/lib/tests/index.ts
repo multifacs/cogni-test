@@ -70,7 +70,7 @@ export const tests: TestData[] = [
 		title: 'Полет птицы',
 		path: '/tests/swallow/about',
 		label: 'Тест "Ласточка"',
-		img: '/tests/swallow.svg',
+		img: '/tests/swallow1.svg',
 		admin_metrics: ['executive_function', 'spacial_perception', 'working_memory'],
 		user_metrics: ['spacial_perception']
 	}

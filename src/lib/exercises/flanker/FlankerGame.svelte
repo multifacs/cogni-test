@@ -83,6 +83,9 @@
 		// 		finishTest();
 		// 	}
 		// }, 1000);
+		intervalId = setInterval(() => {
+			elapsedTime++;
+		}, 1000);
 	}
 
 	function answer(dir: string) {
