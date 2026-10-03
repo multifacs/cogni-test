@@ -3,6 +3,7 @@
 	import { StroopGame } from './logic/stroop-game';
 	import type { Color, Word, Stage } from './types';
 	import { translate } from '$lib/utils/common';
+	import ProgressBar from '$lib/components/ui/ProgressBar.svelte';
 
 	let { gameEnd, sendResults } = $props();
 
@@ -120,6 +121,10 @@
 		<h1 class="text-center">Конец теста</h1>
 	{/if}
 </div>
+{#if isTestRunning}
+	<ProgressBar min={0} max={DURATION} progress={DURATION - timeLeft} />
+{/if}
+
 <div class="grid grid-cols-[1fr_1fr] gap-4">
 	{#each Object.values(colors) as color (color)}
 		<button
@@ -130,6 +135,3 @@
 		></button>
 	{/each}
 </div>
-{#if isTestRunning}
-	<p class="sm:text-xl">Осталось времени: {timeLeft} сек</p>
-{/if}

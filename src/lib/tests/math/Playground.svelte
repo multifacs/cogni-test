@@ -4,6 +4,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import '@fontsource/fira-code';
 	import type { MathResult } from './types';
+	import ProgressBar from '$lib/components/ui/ProgressBar.svelte';
 
 	let {
 		gameEnd,
@@ -63,7 +64,13 @@
 {:else}
 	<h1 class="text-center">Конец теста</h1>
 {/if}
-
+{#if gameState.getState().isGameRunning}
+	<ProgressBar
+		min={0}
+		max={gameState.DURATION}
+		progress={gameState.DURATION - gameState.getState().timeLeft}
+	/>
+{/if}
 <div class="grid grid-cols-2 gap-2.5">
 	<Button
 		disabled={!gameState.getState().isGameRunning}
@@ -76,9 +83,6 @@
 		onclick={() => handleAnswer(false)}>НЕТ</Button
 	>
 </div>
-{#if gameState.getState().isGameRunning}
-	<p class="sm:text-xl">Осталось времени: {gameState.getState().timeLeft} сек</p>
-{/if}
 
 <style>
 	.inequality {

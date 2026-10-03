@@ -2,6 +2,7 @@
 	import { onDestroy } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import type { NumbersTrialRow, LevelReview } from './types';
+	import ProgressBar from '$lib/components/ui/ProgressBar.svelte';
 
 	type Phase = 'intro' | 'memorize' | 'input' | 'review' | 'finished';
 	type LevelConfig = { level: number; count: number; mode: 'single' | 'mixed' };
@@ -166,7 +167,7 @@
 			исчезновения с экрана.
 		</p>
 		<div class="rounded-2xl bg-white/5 px-6 py-5">
-			<h2 class="mb-3 text-base font-semibold text-center">Инструкция</h2>
+			<h2 class="mb-3 text-center text-base font-semibold">Инструкция</h2>
 			<ol class="flex list-disc flex-col gap-1.5 pl-5">
 				<li class="text-base leading-normal">
 					Вам будут показаны числа, которые нужно запомнить.
@@ -183,21 +184,27 @@
 {:else}
 	<div class="flex flex-col items-center justify-center gap-4">
 		<section class="flex w-full flex-col gap-6 rounded-3xl p-8 backdrop-blur-sm">
-			<h1 class="text-3xl font-bold text-center">Уровень {currentLevelNumber()}</h1>
+			<h1 class="text-center text-3xl font-bold">Уровень {currentLevelNumber()}</h1>
 
 			{#key `${phase}-${currentLevelIndex}`}
 				{#if phase === 'memorize'}
 					<div
 						class="flex flex-col items-center justify-center gap-4 rounded-2xl bg-white/5 p-6"
 					>
-						<div class="flex flex-col items-center justify-between gap-3">
-							<h2 class="text-xl font-semibold text-center">Запомните числа</h2>
+						<div class="flex w-full flex-col items-center justify-between gap-3">
+							<h2 class="text-center text-xl font-semibold">Запомните числа</h2>
 							<div
 								class="min-w-15 rounded-full bg-white px-3.5 py-1 text-center text-sm font-bold whitespace-nowrap text-[#0c1452]"
 							>
 								{countdown} сек
 							</div>
 						</div>
+
+						<ProgressBar
+							min={0}
+							max={studySeconds}
+							progress={studySeconds - countdown}
+						/>
 						<p class="text-sm leading-normal">
 							Смотрите на последовательность до конца отсчета, затем введите ее в том
 							же порядке.
@@ -218,7 +225,7 @@
 				{:else if phase === 'input'}
 					<div class="flex flex-col gap-4 rounded-2xl p-6">
 						<div class="flex flex-col items-center justify-between gap-3">
-							<h2 class="text-xl font-semibold text-center">
+							<h2 class="text-center text-xl font-semibold">
 								Введите числа по порядку
 							</h2>
 							<div
@@ -267,7 +274,7 @@
 					role="dialog"
 					aria-modal="true"
 				>
-					<h2 class="text-2xl font-bold text-center">Уровень {currentReview.level}</h2>
+					<h2 class="text-center text-2xl font-bold">Уровень {currentReview.level}</h2>
 					<p
 						class="text-sm {currentReview.isCorrect
 							? 'text-green-200'
@@ -278,9 +285,9 @@
 							: 'В последовательности есть ошибки.'}
 					</p>
 					<div class="grid grid-cols-2 gap-5">
-						<div class="flex flex-col justify-center items-center">
+						<div class="flex flex-col items-center justify-center">
 							<h3
-								class="mb-2.5 text-sm font-medium tracking-widest uppercase text-center"
+								class="mb-2.5 text-center text-sm font-medium tracking-widest uppercase"
 							>
 								Исходные числа
 							</h3>
@@ -294,9 +301,9 @@
 								{/each}
 							</div>
 						</div>
-						<div class="flex flex-col justify-center items-center">
+						<div class="flex flex-col items-center justify-center">
 							<h3
-								class="mb-2.5 text-sm font-medium tracking-widest uppercase text-center"
+								class="mb-2.5 text-center text-sm font-medium tracking-widest uppercase"
 							>
 								Ваш ввод
 							</h3>

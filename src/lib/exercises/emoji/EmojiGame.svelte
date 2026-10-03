@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
+	import ProgressBar from '$lib/components/ui/ProgressBar.svelte';
 	import type { EmojiTrialRow } from './types';
 
 	let {
@@ -180,6 +181,10 @@
 				>
 			</div>
 		</div>
+
+		{#if started}
+			<ProgressBar min={0} max={TEST_DURATION} progress={TEST_DURATION - timeLeft} />
+		{/if}
 
 		<div
 			class="flex h-64 w-64 items-center justify-center rounded-3xl bg-white shadow-[0_10px_30px_rgba(0,0,0,0.3)]"
