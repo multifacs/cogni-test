@@ -4,6 +4,7 @@ import { exercises, EXERCISE_SLUG_TO_TEST_TYPE } from '$lib/exercises';
 import { getResults } from '$lib/server/db/controllers/result';
 import type { TestType } from '$lib/tests/types';
 import { SKILL_METRICS } from './metricShares.js';
+import { clamp } from '$lib/utils/index.js';
 
 type AttemptLike = {
 	isCorrect?: boolean;
@@ -20,6 +21,28 @@ export type SessionResult = {
 	attempts: AttemptLike[];
 	meta?: unknown;
 };
+
+// NOTE: should use one that will be provided by utils/common after resolving #90
+export function getMedian(values: number[]) {
+	if (values.length === 0) return 0;
+
+	const sorted = [...values].sort((a, b) => a - b);
+	const mid = Math.floor(sorted.length / 2);
+	return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+export function computeReactionSpeed(attempts: AttemptLike[]): number {
+	const correctTimes = attempts
+		.filter((a) => a.isCorrect === true)
+		.map((a) => a.time)
+		.filter((t): t is number => t !== undefined);
+
+	if (!correctTimes.length) return 0;
+
+	const medianCorrectRt = getMedian(correctTimes);
+	const effectiveRt = Math.max(medianCorrectRt, 400);
+	return Math.round(clamp((100 * (2400 - effectiveRt)) / 2000, 0, 100));
+}
 
 export function computeSessionScore(sessionType: string, attempts: AttemptLike[]): number {
 	if (!attempts?.length) return 0;
@@ -108,9 +131,20 @@ async function gatherSessionScores(
 		.map(async (test) => {
 			const sessions = await getResults(test.name as TestType, userId);
 			for (const session of sessions) {
+				const metrics = pick(test);
+				if (!metrics) continue;
+
 				const score = computeSessionScore(test.name, session.attempts);
-				for (const metric of pick(test)!) {
+				for (const metric of metrics) {
+					// TODO: seems like full rewrite of computeSessionScore function
+					// and some of this function (at the very least) will be needed for it to not be stupid.
+					// For now do what needs to be done
+					if (metric === 'reaction_speed') continue;
 					if (allowSet.has(metric)) buckets[metric].push(score);
+
+					if (metrics.includes('reaction_speed') && allowSet.has('reaction_speed')) {
+						buckets['reaction_speed'].push(computeReactionSpeed(session.attempts));
+					}
 				}
 			}
 		});
@@ -122,9 +156,17 @@ async function gatherSessionScores(
 			if (!sessionType) return;
 			const sessions = await getResults(sessionType, userId);
 			for (const session of sessions) {
+				const metrics = pick(ex);
+				if (!metrics) continue;
+
 				const score = computeSessionScore(sessionType, session.attempts);
-				for (const metric of pick(ex)!) {
+				for (const metric of metrics) {
+					if (metric === 'reaction_speed') continue;
 					if (allowSet.has(metric)) buckets[metric].push(score);
+
+					if (metrics.includes('reaction_speed') && allowSet.has('reaction_speed')) {
+						buckets['reaction_speed'].push(computeReactionSpeed(session.attempts));
+					}
 				}
 			}
 		});
