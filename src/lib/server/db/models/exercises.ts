@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, integer, real, text } from 'drizzle-orm/sqlite-core';
 import { session } from '../schema';
 import { generate } from 'short-uuid';
 
@@ -198,6 +198,21 @@ export const wordMorphingExerciseAttempt = sqliteTable('word_morphing_exercise_a
 	isCorrect: integer('is_correct', { mode: 'boolean' }).notNull(),
 	originalCombo: text('original_combo').notNull(),
 	durationSeconds: integer('duration_seconds').notNull(),
+	sessionId: text('session_id')
+		.notNull()
+		.references(() => session.id),
+	createdAt: text('created_at')
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull()
+});
+
+export const dotPositionAttempt = sqliteTable('dot_position_attempt', {
+	id: text('id').primaryKey().notNull().$defaultFn(generate),
+	attempt: integer('attempt').notNull(),
+	stage: integer('stage').notNull(),
+	reactionMs: integer('reaction_ms').notNull(),
+	correct: integer('correct', { mode: 'boolean' }).notNull(),
+	distance: real('distance'),
 	sessionId: text('session_id')
 		.notNull()
 		.references(() => session.id),

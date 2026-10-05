@@ -11,6 +11,7 @@ import {
 import {
 	attentionAttempt,
 	campimetryExerciseAttempt,
+	dotPositionAttempt,
 	emojiAttempt,
 	flankerAttempt,
 	lettersAttempt,
@@ -62,7 +63,8 @@ const attemptTableMap: Record<string, AnyAttemptTable> = {
 	campimetryExercise: campimetryExerciseAttempt,
 	ravenMatrices: ravenAttempt,
 	wordMorphingExercise: wordMorphingExerciseAttempt,
-	rhythm: rhythmAttempt
+	rhythm: rhythmAttempt,
+	dotPosition: dotPositionAttempt
 };
 
 function getQueryTableMap(): Record<string, AnyRelationalTable> {
@@ -84,7 +86,8 @@ function getQueryTableMap(): Record<string, AnyRelationalTable> {
 		ravenMatrices: db.query.ravenAttempt,
 		campimetryExercise: db.query.campimetryExerciseAttempt,
 		wordMorphingExercise: db.query.wordMorphingExerciseAttempt,
-		rhythm: db.query.rhythmAttempt
+		rhythm: db.query.rhythmAttempt,
+		dotPosition: db.query.dotPositionAttempt
 	};
 }
 
@@ -106,7 +109,8 @@ const orderByMap: Record<string, (fields: Record<string, AnyColumn>) => SQL> = {
 	campimetryExercise: (f) => asc(f.attempt),
 	ravenMatrices: (f) => asc(f.taskIndex),
 	wordMorphingExercise: (f) => asc(f.comboIndex),
-	rhythm: (f) => asc(f.attempt)
+	rhythm: (f) => asc(f.attempt),
+	dotPosition: (f) => asc(f.attempt)
 };
 
 function isUniqueConstraintError(err: unknown): boolean {
