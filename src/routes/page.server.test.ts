@@ -1,7 +1,8 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { updateProfileSurvey, getProfileSurvey } from '$lib/server/db/controllers/survey';
 import { autoAddToLatestActiveSession } from '$lib/server/db/controllers/gto';
-import type { Actions } from './$types';
+import { getUserById } from '$lib/server/db';
+import type { Actions, PageServerLoad } from './$types';
 
 const makeCookies = (userId?: string) => ({
 	get: (name: string) => (name === 'user_id' ? userId : undefined)
@@ -19,6 +20,10 @@ const makeActionEvent = (formData: Record<string, string>, userId = 'user-1'): A
 		})
 	}) as ActionEvent;
 
+type LoadEvent = Parameters<PageServerLoad>[0];
+
+const makeLoadEvent = (): LoadEvent => ({ cookies: makeCookies() }) as LoadEvent;
+
 // ─── Mock setup ────────────────────────────────────────────────────────
 
 vi.mock('$lib/server/db/controllers/survey', () => ({
@@ -35,6 +40,10 @@ vi.mock('$lib/server/db', () => ({
 	getUserById: vi.fn(),
 	getUsersAnalytics: vi.fn()
 }));
+
+const { envMock } = vi.hoisted(() => ({ envMock: { MODE: undefined as string | undefined } }));
+
+vi.mock('$env/dynamic/private', () => ({ env: envMock }));
 
 // ─── Tests ─────────────────────────────────────────────────────────────
 
@@ -92,5 +101,69 @@ describe('root +page.server save action', () => {
 		await (actions as Actions).save(makeActionEvent({ gtoId: '' }));
 
 		expect(autoAddToLatestActiveSession).not.toHaveBeenCalled();
+	});
+});
+
+describe('root +page.server load devUser prefill', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		vi.mocked(getUserById).mockResolvedValue(null);
+	});
+
+	afterEach(() => {
+		vi.unstubAllEnvs();
+		envMock.MODE = undefined;
+	});
+
+	it('returns devUser with seed data when MODE=DEV and NODE_ENV is not test', async () => {
+		envMock.MODE = 'DEV';
+		vi.stubEnv('NODE_ENV', 'development');
+
+		const { load } = await import('./+page.server');
+		const result = await load(makeLoadEvent());
+
+		expect(result?.devUser).toEqual({
+			firstname: 'USR',
+			lastname: 'NM',
+			birthday: '01.01.2000',
+			sex: 'male'
+		});
+	});
+
+	it('does NOT return devUser when MODE is PROD', async () => {
+		envMock.MODE = 'PROD';
+		vi.stubEnv('NODE_ENV', 'development');
+
+		const { load } = await import('./+page.server');
+		const result = await load(makeLoadEvent());
+
+		expect(result?.devUser).toBeUndefined();
+	});
+
+	it('does NOT return devUser when NODE_ENV is test', async () => {
+		envMock.MODE = 'DEV';
+		vi.stubEnv('NODE_ENV', 'test');
+
+		const { load } = await import('./+page.server');
+		const result = await load(makeLoadEvent());
+
+		expect(result?.devUser).toBeUndefined();
+	});
+
+	it('returns devUser even when cookie points to a deleted user (stale cookie)', async () => {
+		envMock.MODE = 'DEV';
+		vi.stubEnv('NODE_ENV', 'development');
+
+		const { load } = await import('./+page.server');
+		const cookies = { ...makeCookies('stale-id'), delete: vi.fn() };
+		const result = await load({ cookies } as unknown as LoadEvent);
+
+		expect(result?.devUser).toEqual({
+			firstname: 'USR',
+			lastname: 'NM',
+			birthday: '01.01.2000',
+			sex: 'male'
+		});
+		expect(cookies.delete).toHaveBeenCalledWith('user_id', { path: '/' });
 	});
 });
