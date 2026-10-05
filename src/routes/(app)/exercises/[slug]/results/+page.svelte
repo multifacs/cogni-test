@@ -8,6 +8,7 @@
 	import { formatUserLocalDate } from '$lib/utils/common.js';
 	import { getPendingAttempts, flushQueue, type QueueElement } from '$lib/client/offline-queue';
 	import { type Component } from 'svelte';
+	import { validateSession } from '$lib/shared/validation';
 
 	const { data } = $props();
 	const slug = $derived(data.slug);
@@ -91,6 +92,7 @@
 	{#if mergedResults.length > 0}
 		{#each mergedResults as result (result.sessionId)}
 			{@const meta = parseMeta(result.meta)}
+			{const isValid = validateSession(result.attempts as any)}
 			<div class="w-full rounded-2xl bg-white shadow">
 				<button
 					class={`flex w-full cursor-pointer items-center justify-between rounded-t-2xl px-4 py-3 transition-colors hover:bg-gray-100 ${openedSessionId !== result.sessionId ? 'hover:rounded-b-2xl' : ''}`}
@@ -103,6 +105,12 @@
 								title="Ожидает загрузки"
 								aria-label="Ожидает загрузки"
 							></span>
+						{:else if !isValid}
+							<span
+								class="inline-block h-2.5 w-2.5 rounded-full bg-red-500"
+								title="Недействительные результаты"
+								aria-label="Недействительные результаты"
+							></span>
 						{:else}
 							<span
 								class="inline-block h-2.5 w-2.5 rounded-full bg-green-500"
@@ -114,6 +122,13 @@
 							{openedSessionId === result.sessionId
 								? 'Попытка от ' + formatUserLocalDate(result.createdAt)
 								: formatUserLocalDate(result.createdAt)}
+							{#if !isValid}
+								<span
+									class="inline-flex cursor-help items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-500"
+									title="Результаты не учитываются в метриках: слишком быстрые ответы, низкая точность или высокая вариабельность"
+									>Недействительные результаты</span
+								>
+							{/if}
 						</span>
 						{#if meta?.difficulty}
 							<span
