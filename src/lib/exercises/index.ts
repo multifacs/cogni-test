@@ -61,12 +61,6 @@ export const exercises: ExerciseData[] = [
 		img: '/exercises/raven-matrices1.svg'
 	},
 	{
-		name: 'origami',
-		title: 'Оригами',
-		path: '/exercises/origami/about',
-		img: '/exercises/origami1.svg'
-	},
-	{
 		name: 'emoji',
 		title: 'Смена эмодзи',
 		path: '/exercises/emoji/about',
@@ -109,6 +103,12 @@ export const exercises: ExerciseData[] = [
 		img: '/exercises/rhythm.svg'
 	},
 	{
+		name: 'dot-position',
+		title: 'Точная точка',
+		path: '/exercises/dot-position/about',
+		img: '/exercises/dot-position1.svg'
+	},
+	{
 		name: 'rotation',
 		title: 'Ментальное вращение',
 		path: '/exercises/rotation/about',
@@ -117,16 +117,16 @@ export const exercises: ExerciseData[] = [
 		user_metrics: ['spacial_perception']
 	},
 	{
-		name: 'dot-position',
-		title: 'Точная точка',
-		path: '/exercises/dot-position/about',
-		img: '/exercises/dot-position1.svg'
-	},
-	{
 		name: 'corsi-block',
 		title: 'Блоки Корси',
 		path: '/exercises/corsi-block/about',
 		img: '/exercises/corsi-block1.svg'
+	},
+	{
+		name: 'origami',
+		title: 'Оригами',
+		path: '/exercises/origami/about',
+		img: '/exercises/origami1.svg'
 	}
 ];
 
