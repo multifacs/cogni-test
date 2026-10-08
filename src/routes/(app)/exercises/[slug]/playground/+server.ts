@@ -18,7 +18,8 @@ const SLUG_TO_EXERCISE_TYPE: Record<string, ExerciseType> = {
 	origami: 'origamiExercise',
 	'word-morphing': 'wordMorphingExercise',
 	rhythm: 'rhythm',
-	'dot-position': 'dotPosition'
+	'dot-position': 'dotPosition',
+	rotation: 'rotation'
 };
 
 export const POST: RequestHandler = async ({ params, request, cookies }) => {

@@ -10,6 +10,7 @@ import type { NumbersTrialRow } from './numbers/types';
 import type { OrigamiAttemptRow } from './origami/types';
 import type { PicturesTrialRow } from './pictures/types';
 import type { RavenAttemptRow } from './raven-matrices/types';
+import type { RotationAttemptRow } from './rotation/results-adapter';
 import type { WordMorphingSummaryRow } from './word-morphing/types';
 import type { RhythmResult } from './rhythm/types';
 
@@ -26,6 +27,7 @@ export type ExerciseType =
 	| 'origamiExercise'
 	| 'pictures'
 	| 'ravenMatrices'
+	| 'rotation'
 	| 'wordMorphingExercise'
 	| 'rhythm';
 
@@ -42,6 +44,7 @@ export type ExerciseResultMap = {
 	origamiExercise: OrigamiAttemptRow;
 	pictures: PicturesTrialRow;
 	ravenMatrices: RavenAttemptRow;
+	rotation: RotationAttemptRow;
 	wordMorphingExercise: WordMorphingSummaryRow;
 	rhythm: RhythmResult;
 };
@@ -59,6 +62,7 @@ export type ExerciseResult =
 	| OrigamiAttemptRow
 	| PicturesTrialRow
 	| RavenAttemptRow
+	| RotationAttemptRow
 	| WordMorphingSummaryRow
 	| RhythmResult;
 
@@ -75,6 +79,7 @@ export type ExerciseResults =
 	| OrigamiAttemptRow[]
 	| PicturesTrialRow[]
 	| RavenAttemptRow[]
+	| RotationAttemptRow[]
 	| WordMorphingSummaryRow[]
 	| RhythmResult[];
 
