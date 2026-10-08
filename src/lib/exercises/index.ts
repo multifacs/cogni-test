@@ -121,6 +121,12 @@ export const exercises: ExerciseData[] = [
 		title: 'Точная точка',
 		path: '/exercises/dot-position/about',
 		img: '/exercises/dot-position1.svg'
+	},
+	{
+		name: 'corsi-block',
+		title: 'Блоки Корси',
+		path: '/exercises/corsi-block/about',
+		img: '/exercises/corsi-block1.svg'
 	}
 ];
 
@@ -216,6 +222,11 @@ const exerciseLoaders: Record<string, ExerciseLoader> = {
 		about: () => import('./rotation/About.svelte'),
 		playground: () => import('./rotation/Playground.svelte'),
 		result: () => import('./rotation/Result.svelte')
+	},
+	'corsi-block': {
+		about: () => import('./corsi-block/About.svelte'),
+		playground: () => import('./corsi-block/Playground.svelte'),
+		result: () => import('./corsi-block/Result.svelte')
 	}
 };
 
@@ -239,5 +250,6 @@ export const EXERCISE_SLUG_TO_TEST_TYPE: Record<string, ExerciseType | TestType>
 	'word-morphing': 'wordMorphingExercise',
 	rhythm: 'rhythm',
 	'dot-position': 'dotPosition',
-	rotation: 'rotation'
+	rotation: 'rotation',
+	'corsi-block': 'corsiBlock'
 };

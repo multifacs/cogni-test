@@ -172,6 +172,7 @@
 		<!-- Кружки-прогресс: один на раунд, цвет = этап. Корректность НЕ
 		     кодируется — кружки не говорят, попал ли игрок в раунде. -->
 		<div class="flex items-center justify-center gap-2" aria-hidden="true">
+			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 			{#each { length: TOTAL_ROUNDS } as _, index (index)}
 				{@const attempt = index + 1}
 				{@const stage = Math.floor(index / DOTS_PER_STAGE) + 1}

@@ -11,6 +11,7 @@ import {
 import {
 	attentionAttempt,
 	campimetryExerciseAttempt,
+	corsiBlockAttempt,
 	dotPositionAttempt,
 	emojiAttempt,
 	flankerAttempt,
@@ -68,7 +69,8 @@ const attemptTableMap: Record<string, AnyAttemptTable> = {
 	wordMorphingExercise: wordMorphingExerciseAttempt,
 	rhythm: rhythmAttempt,
 	dotPosition: dotPositionAttempt,
-	rotation: rotationAttempt
+	rotation: rotationAttempt,
+	corsiBlock: corsiBlockAttempt
 };
 
 function getQueryTableMap(): Record<string, AnyRelationalTable> {
@@ -93,7 +95,8 @@ function getQueryTableMap(): Record<string, AnyRelationalTable> {
 		wordMorphingExercise: db.query.wordMorphingExerciseAttempt,
 		rhythm: db.query.rhythmAttempt,
 		dotPosition: db.query.dotPositionAttempt,
-		rotation: db.query.rotationAttempt
+		rotation: db.query.rotationAttempt,
+		corsiBlock: db.query.corsiBlockAttempt
 	};
 }
 
@@ -118,7 +121,8 @@ const orderByMap: Record<string, (fields: Record<string, AnyColumn>) => SQL> = {
 	wordMorphingExercise: (f) => asc(f.comboIndex),
 	rhythm: (f) => asc(f.attempt),
 	dotPosition: (f) => asc(f.attempt),
-	rotation: (f) => asc(f.taskIndex)
+	rotation: (f) => asc(f.taskIndex),
+	corsiBlock: (f) => asc(f.attempt)
 };
 
 function isUniqueConstraintError(err: unknown): boolean {
