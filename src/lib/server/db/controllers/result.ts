@@ -11,6 +11,7 @@ import {
 import {
 	attentionAttempt,
 	campimetryExerciseAttempt,
+	corsiBlockAttempt,
 	dotPositionAttempt,
 	emojiAttempt,
 	flankerAttempt,
@@ -64,7 +65,8 @@ const attemptTableMap: Record<string, AnyAttemptTable> = {
 	ravenMatrices: ravenAttempt,
 	wordMorphingExercise: wordMorphingExerciseAttempt,
 	rhythm: rhythmAttempt,
-	dotPosition: dotPositionAttempt
+	dotPosition: dotPositionAttempt,
+	corsiBlock: corsiBlockAttempt
 };
 
 function getQueryTableMap(): Record<string, AnyRelationalTable> {
@@ -87,7 +89,8 @@ function getQueryTableMap(): Record<string, AnyRelationalTable> {
 		campimetryExercise: db.query.campimetryExerciseAttempt,
 		wordMorphingExercise: db.query.wordMorphingExerciseAttempt,
 		rhythm: db.query.rhythmAttempt,
-		dotPosition: db.query.dotPositionAttempt
+		dotPosition: db.query.dotPositionAttempt,
+		corsiBlock: db.query.corsiBlockAttempt
 	};
 }
 
@@ -110,7 +113,8 @@ const orderByMap: Record<string, (fields: Record<string, AnyColumn>) => SQL> = {
 	ravenMatrices: (f) => asc(f.taskIndex),
 	wordMorphingExercise: (f) => asc(f.comboIndex),
 	rhythm: (f) => asc(f.attempt),
-	dotPosition: (f) => asc(f.attempt)
+	dotPosition: (f) => asc(f.attempt),
+	corsiBlock: (f) => asc(f.attempt)
 };
 
 function isUniqueConstraintError(err: unknown): boolean {

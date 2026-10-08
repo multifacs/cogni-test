@@ -232,3 +232,17 @@ export const rhythmAttempt = sqliteTable('rhythm_attempt', {
 		.default(sql`CURRENT_TIMESTAMP`)
 		.notNull()
 });
+
+export const corsiBlockAttempt = sqliteTable('corsi_block_attempt', {
+	id: text('id').primaryKey().notNull().$defaultFn(generate),
+	attempt: integer('attempt').notNull(),
+	sequenceLength: integer('sequence_length').notNull(),
+	isCorrect: integer('is_correct', { mode: 'boolean' }).notNull(),
+	answerMs: integer('answer_ms').notNull(),
+	sessionId: text('session_id')
+		.notNull()
+		.references(() => session.id),
+	createdAt: text('created_at')
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull()
+});
