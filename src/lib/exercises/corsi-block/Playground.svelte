@@ -246,7 +246,7 @@
 	<!-- Панель квадратная: left/top в % корректны по обеим осям; позиция
 	     движка — ЦЕНТР квадрата, поэтому translate(-50%, -50%). -->
 	<div
-		class="relative aspect-square w-full touch-none overflow-hidden rounded-2xl bg-slate-100 select-none"
+		class="relative aspect-square w-full touch-none rounded-2xl bg-slate-100 select-none flex flex-wrap gap-2 p-2"
 		data-phase={game.phase}
 		aria-label="Игровое поле: запомните порядок подсветки квадратов и повторите его кликами"
 	>
@@ -259,10 +259,9 @@
 					: litIndex === index
 						? 'border-green-600 bg-green-500 shadow-lg'
 						: 'border-slate-200 bg-white'} {isPresentation && litIndex !== index
-					? 'opacity-40'
+					? 'opacity-80'
 					: ''} {isRecall ? 'cursor-pointer hover:border-blue-400' : 'cursor-default'}"
-				style="left: {square.x * 100}%; top: {square.y * 100}%; width: {SQUARE_SIZE *
-					100}%;"
+				style="width: {SQUARE_SIZE * 100}%; height: {SQUARE_SIZE * 100}%;"
 				data-square-index={index}
 				data-lit={litIndex === index || undefined}
 				data-clicked={(showClicked && clickedSquares.has(index)) || undefined}
