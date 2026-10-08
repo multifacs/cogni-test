@@ -61,6 +61,12 @@ export const exercises: ExerciseData[] = [
 		img: '/exercises/raven-matrices1.svg'
 	},
 	{
+		name: 'origami',
+		title: 'Оригами',
+		path: '/exercises/origami/about',
+		img: '/exercises/origami1.svg'
+	},
+	{
 		name: 'emoji',
 		title: 'Смена эмодзи',
 		path: '/exercises/emoji/about',
@@ -152,6 +158,11 @@ const exerciseLoaders: Record<string, ExerciseLoader> = {
 		playground: () => import('./raven-matrices/Playground.svelte'),
 		result: () => import('./raven-matrices/Result.svelte')
 	},
+	origami: {
+		about: () => import('./origami/About.svelte'),
+		playground: () => import('./origami/Playground.svelte'),
+		result: () => import('./origami/Result.svelte')
+	},
 	emoji: {
 		about: () => import('./emoji/About.svelte'),
 		playground: () => import('./emoji/Playground.svelte'),
@@ -211,6 +222,7 @@ export const EXERCISE_SLUG_TO_TEST_TYPE: Record<string, ExerciseType | TestType>
 	numbers: 'numbers',
 	pictures: 'pictures',
 	'raven-matrices': 'ravenMatrices',
+	origami: 'origamiExercise',
 	'word-morphing': 'wordMorphingExercise',
 	rhythm: 'rhythm',
 	'dot-position': 'dotPosition'

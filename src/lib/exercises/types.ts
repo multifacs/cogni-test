@@ -7,6 +7,7 @@ import type { LettersTrialRow } from './letters/types';
 import type { MemoryMatchSummaryRow } from './memory-match/types';
 import type { NBackTrialRow } from './nback-stream/types';
 import type { NumbersTrialRow } from './numbers/types';
+import type { OrigamiAttemptRow } from './origami/types';
 import type { PicturesTrialRow } from './pictures/types';
 import type { RavenAttemptRow } from './raven-matrices/types';
 import type { WordMorphingSummaryRow } from './word-morphing/types';
@@ -22,6 +23,7 @@ export type ExerciseType =
 	| 'memoryMatchExercise'
 	| 'nbackExercise'
 	| 'numbers'
+	| 'origamiExercise'
 	| 'pictures'
 	| 'ravenMatrices'
 	| 'wordMorphingExercise'
@@ -37,6 +39,7 @@ export type ExerciseResultMap = {
 	memoryMatchExercise: MemoryMatchSummaryRow;
 	nbackExercise: NBackTrialRow;
 	numbers: NumbersTrialRow;
+	origamiExercise: OrigamiAttemptRow;
 	pictures: PicturesTrialRow;
 	ravenMatrices: RavenAttemptRow;
 	wordMorphingExercise: WordMorphingSummaryRow;
@@ -53,6 +56,7 @@ export type ExerciseResult =
 	| MemoryMatchSummaryRow
 	| NBackTrialRow
 	| NumbersTrialRow
+	| OrigamiAttemptRow
 	| PicturesTrialRow
 	| RavenAttemptRow
 	| WordMorphingSummaryRow
@@ -68,6 +72,7 @@ export type ExerciseResults =
 	| MemoryMatchSummaryRow[]
 	| NBackTrialRow[]
 	| NumbersTrialRow[]
+	| OrigamiAttemptRow[]
 	| PicturesTrialRow[]
 	| RavenAttemptRow[]
 	| WordMorphingSummaryRow[]

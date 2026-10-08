@@ -15,6 +15,7 @@ const SLUG_TO_EXERCISE_TYPE: Record<string, ExerciseType> = {
 	numbers: 'numbers',
 	pictures: 'pictures',
 	'raven-matrices': 'ravenMatrices',
+	origami: 'origamiExercise',
 	'word-morphing': 'wordMorphingExercise',
 	rhythm: 'rhythm',
 	'dot-position': 'dotPosition'

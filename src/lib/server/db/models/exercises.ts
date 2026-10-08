@@ -114,6 +114,24 @@ export const ravenAttempt = sqliteTable('raven_attempt', {
 		.notNull()
 });
 
+export const origamiAttempt = sqliteTable('origami_attempt', {
+	id: text('id').primaryKey().$defaultFn(generate),
+	taskIndex: integer('task_index').notNull(),
+	difficulty: text('difficulty').notNull(),
+	folds: text('folds').notNull(),
+	selectedIndex: integer('selected_index'),
+	correctIndex: integer('correct_index').notNull(),
+	isCorrect: integer('is_correct', { mode: 'boolean' }).notNull(),
+	responseTimeMs: integer('response_time_ms').notNull(),
+	seed: text('seed').notNull(),
+	sessionId: text('session_id')
+		.notNull()
+		.references(() => session.id, { onDelete: 'cascade' }),
+	createdAt: text('created_at')
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull()
+});
+
 export const picturesAttempt = sqliteTable('pictures_attempt', {
 	id: text('id').primaryKey().$defaultFn(generate),
 	questionIndex: integer('question_index').notNull(),

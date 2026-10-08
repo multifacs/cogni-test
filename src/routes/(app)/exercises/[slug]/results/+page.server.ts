@@ -13,6 +13,7 @@ const slugToExerciseType: Record<string, ExerciseType> = {
 	numbers: 'numbers',
 	pictures: 'pictures',
 	'raven-matrices': 'ravenMatrices',
+	origami: 'origamiExercise',
 	'word-morphing': 'wordMorphingExercise',
 	rhythm: 'rhythm',
 	'dot-position': 'dotPosition'

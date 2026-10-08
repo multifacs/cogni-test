@@ -107,6 +107,11 @@ describe('computeSessionScore', () => {
 		expect(computeSessionScore('nbackExercise', attempts)).toBe(100);
 	});
 
+	it('computes accuracy-based scores (origamiExercise)', () => {
+		const attempts = [{ isCorrect: false }, { isCorrect: true }, { isCorrect: true }];
+		expect(computeSessionScore('origamiExercise', attempts)).toBe(67);
+	});
+
 	it('computes munsterberg score by guessed property', () => {
 		const attempts = [
 			{ guessed: true },
