@@ -9,6 +9,7 @@ import type { NBackTrialRow } from './nback-stream/types';
 import type { NumbersTrialRow } from './numbers/types';
 import type { PicturesTrialRow } from './pictures/types';
 import type { RavenAttemptRow } from './raven-matrices/types';
+import type { RotationAttemptRow } from './rotation/results-adapter';
 import type { WordMorphingSummaryRow } from './word-morphing/types';
 import type { RhythmResult } from './rhythm/types';
 
@@ -24,6 +25,7 @@ export type ExerciseType =
 	| 'numbers'
 	| 'pictures'
 	| 'ravenMatrices'
+	| 'rotation'
 	| 'wordMorphingExercise'
 	| 'rhythm';
 
@@ -39,6 +41,7 @@ export type ExerciseResultMap = {
 	numbers: NumbersTrialRow;
 	pictures: PicturesTrialRow;
 	ravenMatrices: RavenAttemptRow;
+	rotation: RotationAttemptRow;
 	wordMorphingExercise: WordMorphingSummaryRow;
 	rhythm: RhythmResult;
 };
@@ -55,6 +58,7 @@ export type ExerciseResult =
 	| NumbersTrialRow
 	| PicturesTrialRow
 	| RavenAttemptRow
+	| RotationAttemptRow
 	| WordMorphingSummaryRow
 	| RhythmResult;
 
@@ -70,6 +74,7 @@ export type ExerciseResults =
 	| NumbersTrialRow[]
 	| PicturesTrialRow[]
 	| RavenAttemptRow[]
+	| RotationAttemptRow[]
 	| WordMorphingSummaryRow[]
 	| RhythmResult[];
 

@@ -38,6 +38,7 @@ export function computeSessionScore(sessionType: string, attempts: AttemptLike[]
 		case 'numbers':
 		case 'pictures':
 		case 'ravenMatrices':
+		case 'rotation':
 		case 'wordMorphingExercise':
 		case 'nbackExercise': {
 			const correct = attempts.filter((a) => a.isCorrect).length;

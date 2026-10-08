@@ -221,6 +221,28 @@ export const dotPositionAttempt = sqliteTable('dot_position_attempt', {
 		.notNull()
 });
 
+// Ментальное вращение (rotation): по одной строке на каждое из 9 заданий.
+// task_index 1..9, difficulty_level 1|2|3 соответствует сетке grid_size 3/4/6;
+// selected_index NULL = таймаут; seed детерминированно воспроизводит задание.
+export const rotationAttempt = sqliteTable('rotation_attempt', {
+	id: text('id').primaryKey().$defaultFn(generate),
+	taskIndex: integer('task_index').notNull(),
+	difficultyLevel: integer('difficulty_level').notNull(),
+	gridSize: integer('grid_size').notNull(),
+	selectedIndex: integer('selected_index'),
+	correctIndex: integer('correct_index').notNull(),
+	isCorrect: integer('is_correct', { mode: 'boolean' }).notNull(),
+	responseTimeMs: integer('response_time_ms').notNull(),
+	timedOut: integer('timed_out', { mode: 'boolean' }).notNull(),
+	seed: text('seed').notNull(),
+	sessionId: text('session_id')
+		.notNull()
+		.references(() => session.id),
+	createdAt: text('created_at')
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull()
+});
+
 export const rhythmAttempt = sqliteTable('rhythm_attempt', {
 	id: text('id').primaryKey().notNull().$defaultFn(generate),
 	attempt: integer('attempt').notNull(),

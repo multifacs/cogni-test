@@ -21,6 +21,7 @@ import {
 	picturesAttempt,
 	ravenAttempt,
 	rhythmAttempt,
+	rotationAttempt,
 	wordMorphingExerciseAttempt
 } from '$lib/server/db/models/exercises';
 import type { MetaResult as TestMetaResult, RegularResults, TestType } from '$lib/tests/types';
@@ -64,7 +65,8 @@ const attemptTableMap: Record<string, AnyAttemptTable> = {
 	ravenMatrices: ravenAttempt,
 	wordMorphingExercise: wordMorphingExerciseAttempt,
 	rhythm: rhythmAttempt,
-	dotPosition: dotPositionAttempt
+	dotPosition: dotPositionAttempt,
+	rotation: rotationAttempt
 };
 
 function getQueryTableMap(): Record<string, AnyRelationalTable> {
@@ -87,7 +89,8 @@ function getQueryTableMap(): Record<string, AnyRelationalTable> {
 		campimetryExercise: db.query.campimetryExerciseAttempt,
 		wordMorphingExercise: db.query.wordMorphingExerciseAttempt,
 		rhythm: db.query.rhythmAttempt,
-		dotPosition: db.query.dotPositionAttempt
+		dotPosition: db.query.dotPositionAttempt,
+		rotation: db.query.rotationAttempt
 	};
 }
 
@@ -110,7 +113,8 @@ const orderByMap: Record<string, (fields: Record<string, AnyColumn>) => SQL> = {
 	ravenMatrices: (f) => asc(f.taskIndex),
 	wordMorphingExercise: (f) => asc(f.comboIndex),
 	rhythm: (f) => asc(f.attempt),
-	dotPosition: (f) => asc(f.attempt)
+	dotPosition: (f) => asc(f.attempt),
+	rotation: (f) => asc(f.taskIndex)
 };
 
 function isUniqueConstraintError(err: unknown): boolean {

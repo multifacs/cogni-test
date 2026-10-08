@@ -97,6 +97,16 @@ describe('computeSessionScore', () => {
 		expect(computeSessionScore('ravenMatrices', attempts)).toBe(33);
 	});
 
+	it('computes accuracy-based scores (rotation)', () => {
+		const attempts = [
+			{ isCorrect: true },
+			{ isCorrect: true },
+			{ isCorrect: true },
+			{ isCorrect: false }
+		];
+		expect(computeSessionScore('rotation', attempts)).toBe(75);
+	});
+
 	it('computes accuracy-based scores (wordMorphingExercise)', () => {
 		const attempts = [{ isCorrect: true }, { isCorrect: false }];
 		expect(computeSessionScore('wordMorphingExercise', attempts)).toBe(50);

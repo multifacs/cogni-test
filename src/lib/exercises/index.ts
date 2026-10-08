@@ -103,6 +103,14 @@ export const exercises: ExerciseData[] = [
 		img: '/exercises/rhythm.svg'
 	},
 	{
+		name: 'rotation',
+		title: 'Ментальное вращение',
+		path: '/exercises/rotation/about',
+		img: '/exercises/rotation1.svg',
+		admin_metrics: ['spacial_perception', 'thinking', 'attention'],
+		user_metrics: ['spacial_perception']
+	},
+	{
 		name: 'dot-position',
 		title: 'Точная точка',
 		path: '/exercises/dot-position/about',
@@ -192,6 +200,11 @@ const exerciseLoaders: Record<string, ExerciseLoader> = {
 		about: () => import('./dot-position/About.svelte'),
 		playground: () => import('./dot-position/Playground.svelte'),
 		result: () => import('./dot-position/Result.svelte')
+	},
+	rotation: {
+		about: () => import('./rotation/About.svelte'),
+		playground: () => import('./rotation/Playground.svelte'),
+		result: () => import('./rotation/Result.svelte')
 	}
 };
 
@@ -213,5 +226,6 @@ export const EXERCISE_SLUG_TO_TEST_TYPE: Record<string, ExerciseType | TestType>
 	'raven-matrices': 'ravenMatrices',
 	'word-morphing': 'wordMorphingExercise',
 	rhythm: 'rhythm',
-	'dot-position': 'dotPosition'
+	'dot-position': 'dotPosition',
+	rotation: 'rotation'
 };
