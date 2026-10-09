@@ -5,6 +5,7 @@ import { getResults } from '$lib/server/db/controllers/result';
 import type { TestType } from '$lib/tests/types';
 import { SKILL_METRICS } from './metricShares.js';
 import { clamp } from '$lib/utils/index.js';
+import { validateSession } from './validation.js';
 
 type AttemptLike = {
 	isCorrect?: boolean;
@@ -134,6 +135,7 @@ async function gatherSessionScores(
 				const metrics = pick(test);
 				if (!metrics) continue;
 
+				if (!validateSession(session.attempts)) continue;
 				const score = computeSessionScore(test.name, session.attempts);
 				for (const metric of metrics) {
 					// TODO: seems like full rewrite of computeSessionScore function
@@ -159,6 +161,7 @@ async function gatherSessionScores(
 				const metrics = pick(ex);
 				if (!metrics) continue;
 
+				if (!validateSession(session.attempts)) continue;
 				const score = computeSessionScore(sessionType, session.attempts);
 				for (const metric of metrics) {
 					if (metric === 'reaction_speed') continue;

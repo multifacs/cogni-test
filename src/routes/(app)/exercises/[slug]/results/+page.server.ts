@@ -14,7 +14,8 @@ const slugToExerciseType: Record<string, ExerciseType> = {
 	pictures: 'pictures',
 	'raven-matrices': 'ravenMatrices',
 	'word-morphing': 'wordMorphingExercise',
-	rhythm: 'rhythm'
+	rhythm: 'rhythm',
+	'dot-position': 'dotPosition'
 };
 
 export const load: PageServerLoad = async ({ params, cookies }) => {
