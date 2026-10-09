@@ -18,6 +18,7 @@
 	import CategorySelect from './components/CategorySelect.svelte';
 	import TimeSelect from './components/TimeSelect.svelte';
 	import Initial from './components/Initial.svelte';
+	import ProgressBar from '$lib/components/ui/ProgressBar.svelte';
 
 	// Добавляем выбор категории
 	let category: 'words' | 'shapes' = $state('words');
@@ -229,17 +230,18 @@
 			colorChoices = shuffledColors.slice(1, 6);
 		}
 	}
-
+	const waitDuration = $derived(
+		selectedTimeOption.name === 'Пользовательский'
+			? customTimeInSeconds
+			: selectedTimeOption.seconds
+	);
 	async function nextPhase() {
 		if (phase === 'initial') phase = 'replace-adj';
 		else if (phase === 'replace-adj') phase = 'replace-noun';
 		else if (phase === 'replace-noun') {
 			phase = 'wait';
 			// Устанавливаем время на основе выбранной опции
-			const waitTime =
-				selectedTimeOption.name === 'Пользовательский'
-					? customTimeInSeconds
-					: selectedTimeOption.seconds;
+			const waitTime = waitDuration;
 
 			setExpectedCombos();
 
@@ -451,7 +453,7 @@
 {#if showModal}
 	<Modal bind:showModal>
 		{#snippet header()}
-			<h2 class="text-2xl text-[var(--main-text-color) text-center">
+			<h2 class="text-[var(--main-text-color) text-center text-2xl">
 				Подпишитесь на пуш-уведомления
 			</h2>
 		{/snippet}
@@ -471,7 +473,7 @@
 	</Modal>
 {/if}
 
-<div class="flex flex-col items-center gap-6 w-3/4">
+<div class="flex w-3/4 flex-col items-center gap-6">
 	{#if phase === 'category-select'}
 		<CategorySelect {selectCategory} />
 	{:else if phase === 'time-select'}
@@ -498,7 +500,12 @@
 	{:else if phase === 'replace-noun'}
 		<ReplaceNoun {category} {nounChoices} {colorChoices} {currentShape} {setNoun} />
 	{:else if phase === 'wait'}
-		<WaitTimer {timerEndsAt} {currentTime} />
+	<WaitTimer {timerEndsAt} {currentTime} />
+	<ProgressBar
+		min={0}
+		max={waitDuration}
+		progress={Math.min(waitDuration, Math.max(0, waitDuration - ((timerEndsAt ?? 0) - currentTime) / 1000))}
+	/>
 	{:else if phase === 'recall'}
 		<Recall {category} bind:input1 bind:input2 bind:input3 onFinishRecall={finishRecall} />
 	{/if}

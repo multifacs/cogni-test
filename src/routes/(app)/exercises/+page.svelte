@@ -38,10 +38,11 @@
 		<div
 			class="grid w-full grid-cols-2 gap-4 sm:grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] sm:gap-6"
 		>
-			{#each data.exercises as { name, title, path, img } (name)}
+			{#each data.exercises as { name, title, label, path, img } (name)}
 				<ExerciseCard
 					{name}
 					{title}
+					{label}
 					{path}
 					{img}
 					testSessionCounts={exerciseSessionCounts}
