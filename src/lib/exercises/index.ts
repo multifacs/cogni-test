@@ -114,6 +114,12 @@ export const exercises: ExerciseData[] = [
 		label: '\u00A0',
 		path: '/exercises/rhythm/about',
 		img: '/exercises/rhythm.svg'
+	},
+	{
+		name: 'dot-position',
+		title: 'Точная точка',
+		path: '/exercises/dot-position/about',
+		img: '/exercises/dot-position1.svg'
 	}
 ];
 
@@ -194,6 +200,11 @@ const exerciseLoaders: Record<string, ExerciseLoader> = {
 		playground: () => import('./rhythm/Playground.svelte'),
 		result: () => import('./rhythm/Result.svelte'),
 		summary: () => import('./rhythm/Summary.svelte')
+	},
+	'dot-position': {
+		about: () => import('./dot-position/About.svelte'),
+		playground: () => import('./dot-position/Playground.svelte'),
+		result: () => import('./dot-position/Result.svelte')
 	}
 };
 
@@ -214,5 +225,6 @@ export const EXERCISE_SLUG_TO_TEST_TYPE: Record<string, ExerciseType | TestType>
 	pictures: 'pictures',
 	'raven-matrices': 'ravenMatrices',
 	'word-morphing': 'wordMorphingExercise',
-	rhythm: 'rhythm'
+	rhythm: 'rhythm',
+	'dot-position': 'dotPosition'
 };

@@ -11,5 +11,6 @@ export const exerciseToSessionType: Record<string, string> = {
 	numbers: 'numbers',
 	flanker: 'flanker',
 	letters: 'letters',
-	rhythm: 'rhythm'
+	rhythm: 'rhythm',
+	'dot-position': 'dotPosition'
 };

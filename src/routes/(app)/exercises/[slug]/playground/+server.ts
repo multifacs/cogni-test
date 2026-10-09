@@ -16,7 +16,8 @@ const SLUG_TO_EXERCISE_TYPE: Record<string, ExerciseType> = {
 	pictures: 'pictures',
 	'raven-matrices': 'ravenMatrices',
 	'word-morphing': 'wordMorphingExercise',
-	rhythm: 'rhythm'
+	rhythm: 'rhythm',
+	'dot-position': 'dotPosition'
 };
 
 export const POST: RequestHandler = async ({ params, request, cookies }) => {
