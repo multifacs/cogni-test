@@ -117,6 +117,11 @@ describe('computeSessionScore', () => {
 		expect(computeSessionScore('nbackExercise', attempts)).toBe(100);
 	});
 
+	it('computes accuracy-based scores (syllableFormation)', () => {
+		const attempts = Array.from({ length: 5 }, (_, i) => ({ isCorrect: i < 2 }));
+		expect(computeSessionScore('syllableFormation', attempts)).toBe(40);
+	});
+
 	it('computes accuracy-based scores (origamiExercise)', () => {
 		const attempts = [{ isCorrect: false }, { isCorrect: true }, { isCorrect: true }];
 		expect(computeSessionScore('origamiExercise', attempts)).toBe(67);

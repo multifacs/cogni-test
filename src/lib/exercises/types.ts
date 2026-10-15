@@ -14,6 +14,7 @@ import type { RavenAttemptRow } from './raven-matrices/types';
 import type { RotationAttemptRow } from './rotation/results-adapter';
 import type { WordMorphingSummaryRow } from './word-morphing/types';
 import type { RhythmResult } from './rhythm/types';
+import type { SyllableFormationAttemptRow } from './syllable-formation/types';
 
 export type ExerciseType =
 	| 'attention'
@@ -31,7 +32,8 @@ export type ExerciseType =
 	| 'ravenMatrices'
 	| 'rotation'
 	| 'wordMorphingExercise'
-	| 'rhythm';
+	| 'rhythm'
+	| 'syllableFormation';
 
 export type ExerciseResultMap = {
 	attention: AttentionTrialRow;
@@ -50,6 +52,7 @@ export type ExerciseResultMap = {
 	rotation: RotationAttemptRow;
 	wordMorphingExercise: WordMorphingSummaryRow;
 	rhythm: RhythmResult;
+	syllableFormation: SyllableFormationAttemptRow;
 };
 
 export type ExerciseResult =
@@ -68,7 +71,8 @@ export type ExerciseResult =
 	| RavenAttemptRow
 	| RotationAttemptRow
 	| WordMorphingSummaryRow
-	| RhythmResult;
+	| RhythmResult
+	| SyllableFormationAttemptRow;
 
 export type ExerciseResults =
 	| AttentionTrialRow[]
@@ -86,7 +90,8 @@ export type ExerciseResults =
 	| RavenAttemptRow[]
 	| RotationAttemptRow[]
 	| WordMorphingSummaryRow[]
-	| RhythmResult[];
+	| RhythmResult[]
+	| SyllableFormationAttemptRow[];
 
 export type ResultInfo = {
 	sessionId: string;

@@ -286,3 +286,23 @@ export const corsiBlockAttempt = sqliteTable('corsi_block_attempt', {
 		.default(sql`CURRENT_TIMESTAMP`)
 		.notNull()
 });
+
+// Слогообразование: одна строка на псевдословосочетание (5 на сессию).
+export const syllableFormationAttempt = sqliteTable('syllable_formation_attempt', {
+	id: text('id').primaryKey().$defaultFn(generate),
+	attempt: integer('attempt').default(1).notNull(),
+	pairIndex: integer('pair_index').notNull(),
+	phrase: text('phrase').notNull(),
+	association: text('association'),
+	recalledPhrase: text('recalled_phrase'),
+	isCorrect: integer('is_correct', { mode: 'boolean' }).notNull(),
+	reactionTimeMs: integer('reaction_time_ms').notNull(),
+	timedOut: integer('timed_out', { mode: 'boolean' }).notNull(),
+	associationMs: integer('association_ms').notNull(),
+	sessionId: text('session_id')
+		.notNull()
+		.references(() => session.id),
+	createdAt: text('created_at')
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull()
+});

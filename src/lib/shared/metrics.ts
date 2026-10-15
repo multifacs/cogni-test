@@ -41,7 +41,8 @@ export function computeSessionScore(sessionType: string, attempts: AttemptLike[]
 		case 'origamiExercise':
 		case 'rotation':
 		case 'wordMorphingExercise':
-		case 'nbackExercise': {
+		case 'nbackExercise':
+		case 'syllableFormation': {
 			const correct = attempts.filter((a) => a.isCorrect).length;
 			return Math.round((correct / attempts.length) * 100);
 		}

@@ -24,6 +24,7 @@ import {
 	ravenAttempt,
 	rhythmAttempt,
 	rotationAttempt,
+	syllableFormationAttempt,
 	wordMorphingExerciseAttempt
 } from '$lib/server/db/models/exercises';
 import type { MetaResult as TestMetaResult, RegularResults, TestType } from '$lib/tests/types';
@@ -70,7 +71,8 @@ const attemptTableMap: Record<string, AnyAttemptTable> = {
 	rhythm: rhythmAttempt,
 	dotPosition: dotPositionAttempt,
 	rotation: rotationAttempt,
-	corsiBlock: corsiBlockAttempt
+	corsiBlock: corsiBlockAttempt,
+	syllableFormation: syllableFormationAttempt
 };
 
 function getQueryTableMap(): Record<string, AnyRelationalTable> {
@@ -96,7 +98,8 @@ function getQueryTableMap(): Record<string, AnyRelationalTable> {
 		rhythm: db.query.rhythmAttempt,
 		dotPosition: db.query.dotPositionAttempt,
 		rotation: db.query.rotationAttempt,
-		corsiBlock: db.query.corsiBlockAttempt
+		corsiBlock: db.query.corsiBlockAttempt,
+		syllableFormation: db.query.syllableFormationAttempt
 	};
 }
 
@@ -122,7 +125,8 @@ const orderByMap: Record<string, (fields: Record<string, AnyColumn>) => SQL> = {
 	rhythm: (f) => asc(f.attempt),
 	dotPosition: (f) => asc(f.attempt),
 	rotation: (f) => asc(f.taskIndex),
-	corsiBlock: (f) => asc(f.attempt)
+	corsiBlock: (f) => asc(f.attempt),
+	syllableFormation: (f) => asc(f.pairIndex)
 };
 
 function isUniqueConstraintError(err: unknown): boolean {

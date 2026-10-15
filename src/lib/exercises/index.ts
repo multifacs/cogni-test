@@ -127,6 +127,14 @@ export const exercises: ExerciseData[] = [
 		title: 'Оригами',
 		path: '/exercises/origami/about',
 		img: '/exercises/origami1.svg'
+	},
+	{
+		name: 'syllable-formation',
+		title: 'Слогообразование',
+		path: '/exercises/syllable-formation/about',
+		img: '/exercises/syllable-formation1.svg',
+		admin_metrics: ['working_memory', 'short_memory', 'verbal_function'],
+		user_metrics: ['memory']
 	}
 ];
 
@@ -227,6 +235,11 @@ const exerciseLoaders: Record<string, ExerciseLoader> = {
 		about: () => import('./corsi-block/About.svelte'),
 		playground: () => import('./corsi-block/Playground.svelte'),
 		result: () => import('./corsi-block/Result.svelte')
+	},
+	'syllable-formation': {
+		about: () => import('./syllable-formation/About.svelte'),
+		playground: () => import('./syllable-formation/Playground.svelte'),
+		result: () => import('./syllable-formation/Result.svelte')
 	}
 };
 
@@ -251,5 +264,6 @@ export const EXERCISE_SLUG_TO_TEST_TYPE: Record<string, ExerciseType | TestType>
 	rhythm: 'rhythm',
 	'dot-position': 'dotPosition',
 	rotation: 'rotation',
-	'corsi-block': 'corsiBlock'
+	'corsi-block': 'corsiBlock',
+	'syllable-formation': 'syllableFormation'
 };
