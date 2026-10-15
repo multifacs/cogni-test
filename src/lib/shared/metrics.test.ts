@@ -62,6 +62,22 @@ describe('computeSessionScore', () => {
 		expect(computeSessionScore('swallow', attempts)).toBe(50);
 	});
 
+	it('computes accuracy-based scores (numericStroop)', () => {
+		const attempts = [
+			{ isCorrect: true },
+			{ isCorrect: true },
+			{ isCorrect: false },
+			{ isCorrect: true },
+			{ isCorrect: false },
+			{ isCorrect: true },
+			{ isCorrect: true },
+			{ isCorrect: true },
+			{ isCorrect: true },
+			{ isCorrect: true }
+		];
+		expect(computeSessionScore('numericStroop', attempts)).toBe(80);
+	});
+
 	it('computes accuracy-based scores (attention)', () => {
 		const attempts = Array.from({ length: 10 }, (_, i) => ({ isCorrect: i < 7 }));
 		expect(computeSessionScore('attention', attempts)).toBe(70);
@@ -115,6 +131,11 @@ describe('computeSessionScore', () => {
 	it('computes accuracy-based scores (nbackExercise)', () => {
 		const attempts = [{ isCorrect: true }, { isCorrect: true }, { isCorrect: true }];
 		expect(computeSessionScore('nbackExercise', attempts)).toBe(100);
+	});
+
+	it('computes accuracy-based scores (syllableFormation)', () => {
+		const attempts = Array.from({ length: 5 }, (_, i) => ({ isCorrect: i < 2 }));
+		expect(computeSessionScore('syllableFormation', attempts)).toBe(40);
 	});
 
 	it('computes accuracy-based scores (origamiExercise)', () => {

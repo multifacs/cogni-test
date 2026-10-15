@@ -19,7 +19,9 @@ const SLUG_TO_EXERCISE_TYPE: Record<string, ExerciseType> = {
 	rhythm: 'rhythm',
 	'dot-position': 'dotPosition',
 	rotation: 'rotation',
-	'corsi-block': 'corsiBlock'
+	'corsi-block': 'corsiBlock',
+	simon: 'simonTask',
+	'syllable-formation': 'syllableFormation'
 };
 export const POST: RequestHandler = async ({ params, request, cookies }) => {
 	const slug = params.slug!;

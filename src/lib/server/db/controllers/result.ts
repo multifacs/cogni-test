@@ -6,7 +6,8 @@ import {
 	memoryAttempt,
 	swallowAttempt,
 	munsterbergAttempt,
-	campimetryAttempt
+	campimetryAttempt,
+	numericStroopAttempt
 } from '$lib/server/db/models/tests';
 import {
 	attentionAttempt,
@@ -24,6 +25,8 @@ import {
 	ravenAttempt,
 	rhythmAttempt,
 	rotationAttempt,
+	simonTaskAttempt,
+	syllableFormationAttempt,
 	wordMorphingExerciseAttempt
 } from '$lib/server/db/models/exercises';
 import type { MetaResult as TestMetaResult, RegularResults, TestType } from '$lib/tests/types';
@@ -55,6 +58,7 @@ const attemptTableMap: Record<string, AnyAttemptTable> = {
 	swallow: swallowAttempt,
 	munsterberg: munsterbergAttempt,
 	campimetry: campimetryAttempt,
+	numericStroop: numericStroopAttempt,
 	attention: attentionAttempt,
 	emoji: emojiAttempt,
 	flanker: flankerAttempt,
@@ -70,7 +74,9 @@ const attemptTableMap: Record<string, AnyAttemptTable> = {
 	rhythm: rhythmAttempt,
 	dotPosition: dotPositionAttempt,
 	rotation: rotationAttempt,
-	corsiBlock: corsiBlockAttempt
+	corsiBlock: corsiBlockAttempt,
+	simonTask: simonTaskAttempt,
+	syllableFormation: syllableFormationAttempt
 };
 
 function getQueryTableMap(): Record<string, AnyRelationalTable> {
@@ -81,6 +87,7 @@ function getQueryTableMap(): Record<string, AnyRelationalTable> {
 		swallow: db.query.swallowAttempt,
 		munsterberg: db.query.munsterbergAttempt,
 		campimetry: db.query.campimetryAttempt,
+		numericStroop: db.query.numericStroopAttempt,
 		attention: db.query.attentionAttempt,
 		emoji: db.query.emojiAttempt,
 		flanker: db.query.flankerAttempt,
@@ -96,7 +103,9 @@ function getQueryTableMap(): Record<string, AnyRelationalTable> {
 		rhythm: db.query.rhythmAttempt,
 		dotPosition: db.query.dotPositionAttempt,
 		rotation: db.query.rotationAttempt,
-		corsiBlock: db.query.corsiBlockAttempt
+		corsiBlock: db.query.corsiBlockAttempt,
+		simonTask: db.query.simonTaskAttempt,
+		syllableFormation: db.query.syllableFormationAttempt
 	};
 }
 
@@ -107,6 +116,7 @@ const orderByMap: Record<string, (fields: Record<string, AnyColumn>) => SQL> = {
 	swallow: (f) => asc(f.attempt),
 	munsterberg: (f) => asc(f.attempt),
 	campimetry: (f) => asc(f.attempt),
+	numericStroop: (f) => asc(f.attempt),
 	attention: (f) => asc(f.clickIndex),
 	emoji: (f) => asc(f.trialIndex),
 	flanker: (f) => asc(f.trialIndex),
@@ -122,7 +132,9 @@ const orderByMap: Record<string, (fields: Record<string, AnyColumn>) => SQL> = {
 	rhythm: (f) => asc(f.attempt),
 	dotPosition: (f) => asc(f.attempt),
 	rotation: (f) => asc(f.taskIndex),
-	corsiBlock: (f) => asc(f.attempt)
+	corsiBlock: (f) => asc(f.attempt),
+	simonTask: (f) => asc(f.trialIndex),
+	syllableFormation: (f) => asc(f.pairIndex)
 };
 
 function isUniqueConstraintError(err: unknown): boolean {

@@ -66,6 +66,14 @@ export const tests: TestData[] = [
 		img: '/tests/swallow1.svg',
 		admin_metrics: ['executive_function', 'spacial_perception', 'working_memory'],
 		user_metrics: ['spacial_perception']
+	},
+	{
+		name: 'numericStroop',
+		title: 'Число и размер',
+		path: '/tests/numericStroop/about',
+		img: '/tests/numeric-stroop1.svg',
+		admin_metrics: ['executive_function', 'attention'],
+		user_metrics: ['executive_function']
 	}
 ];
 
@@ -111,6 +119,11 @@ const testLoaders: Record<string, TestLoader> = {
 		about: () => import('./swallow/About.svelte'),
 		playground: () => import('./swallow/Playground.svelte'),
 		resultsChart: () => import('./swallow/ResultsChart.svelte')
+	},
+	numericStroop: {
+		about: () => import('./numeric-stroop/About.svelte'),
+		playground: () => import('./numeric-stroop/Playground.svelte'),
+		resultsChart: () => import('./numeric-stroop/ResultsChart.svelte')
 	}
 };
 

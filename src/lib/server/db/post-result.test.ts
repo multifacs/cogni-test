@@ -35,11 +35,13 @@ import type { MemoryResult } from '$lib/tests/memory/types';
 import type { CampimetryResult } from '$lib/tests/campimetry/types';
 import type { SwallowResult, Direction, Background } from '$lib/tests/swallow/types';
 import type { MunsterbergResult } from '$lib/tests/munsterberg/types';
+import type { NumericStroopResult, Side } from '$lib/tests/numeric-stroop/types';
 import {
 	campimetryAttempt,
 	mathAttempt,
 	memoryAttempt,
 	munsterbergAttempt,
+	numericStroopAttempt,
 	stroopAttempt,
 	swallowAttempt
 } from './models/tests';
@@ -216,5 +218,62 @@ describe('postResult', () => {
 		expect(campimetryRows.length).toBe(20);
 		expect(swallowRows.length).toBe(100);
 		expect(munsterbergRows.length).toBe(8);
+	});
+
+	it('posts and reads back a numericStroop session', async () => {
+		await db.insert(user).values({
+			firstname: 'Ns',
+			lastname: 'Ts',
+			birthday: new Date(),
+			sex: 'female'
+		});
+
+		const [targetUser] = await db
+			.select()
+			.from(user)
+			.orderBy(sql`${user.lastActiveAt} DESC`)
+			.limit(1);
+
+		expect(targetUser).toBeDefined();
+
+		const sides: Side[] = ['left', 'right'];
+		const payload: NumericStroopResult[] = Array.from({ length: 10 }, (_, i) => {
+			const leftValue = rnd(1, 9);
+			let rightValue = rnd(1, 9);
+			while (rightValue === leftValue) rightValue = rnd(1, 9);
+			const correctAnswer = sides[rnd(0, 1)];
+			const userAnswer = sides[rnd(0, 1)];
+			return {
+				attempt: i,
+				time: rnd(300, 2000),
+				leftValue,
+				rightValue,
+				congruent: rndBool(0.5),
+				correctAnswer,
+				userAnswer,
+				isCorrect: userAnswer === correctAnswer
+			};
+		});
+
+		const sessionId = await postResult(payload, 'numericStroop', targetUser.id);
+
+		const rows = await db
+			.select()
+			.from(numericStroopAttempt)
+			.where(eq(numericStroopAttempt.sessionId, sessionId));
+
+		expect(rows.length).toBe(10);
+		for (const row of rows) {
+			const expected = payload.find((p) => p.attempt === row.attempt);
+			expect(expected).toBeDefined();
+			expect(row.leftValue).toBe(expected!.leftValue);
+			expect(row.rightValue).toBe(expected!.rightValue);
+			expect(row.congruent).toBe(expected!.congruent);
+			expect(row.correctAnswer).toBe(expected!.correctAnswer);
+			expect(row.userAnswer).toBe(expected!.userAnswer);
+			expect(row.isCorrect).toBe(expected!.isCorrect);
+			expect(row.time).toBe(expected!.time);
+			expect(row.sessionId).toBe(sessionId);
+		}
 	});
 });
