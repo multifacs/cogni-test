@@ -127,6 +127,12 @@ export const exercises: ExerciseData[] = [
 		title: 'Оригами',
 		path: '/exercises/origami/about',
 		img: '/exercises/origami1.svg'
+	},
+	{
+		name: 'simon',
+		title: 'Задание Симона',
+		path: '/exercises/simon/about',
+		img: '/exercises/simon1.svg'
 	}
 ];
 
@@ -227,6 +233,11 @@ const exerciseLoaders: Record<string, ExerciseLoader> = {
 		about: () => import('./corsi-block/About.svelte'),
 		playground: () => import('./corsi-block/Playground.svelte'),
 		result: () => import('./corsi-block/Result.svelte')
+	},
+	simon: {
+		about: () => import('./simon/About.svelte'),
+		playground: () => import('./simon/Playground.svelte'),
+		result: () => import('./simon/Result.svelte')
 	}
 };
 
@@ -251,5 +262,6 @@ export const EXERCISE_SLUG_TO_TEST_TYPE: Record<string, ExerciseType | TestType>
 	rhythm: 'rhythm',
 	'dot-position': 'dotPosition',
 	rotation: 'rotation',
-	'corsi-block': 'corsiBlock'
+	'corsi-block': 'corsiBlock',
+	simon: 'simonTask'
 };

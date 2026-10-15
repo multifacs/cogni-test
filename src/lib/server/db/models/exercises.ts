@@ -286,3 +286,24 @@ export const corsiBlockAttempt = sqliteTable('corsi_block_attempt', {
 		.default(sql`CURRENT_TIMESTAMP`)
 		.notNull()
 });
+
+// Задание Симона (simon): одна строка = один стимул. block 1|2|3,
+// trial_index сквозной 1..35 (ключ сортировки), color/position/congruency —
+// enum-строки, is_correct, response_time_ms (таймаут = окно 3000), timed_out.
+export const simonTaskAttempt = sqliteTable('simon_task_attempt', {
+	id: text('id').primaryKey().notNull().$defaultFn(generate),
+	block: integer('block').notNull(),
+	trialIndex: integer('trial_index').notNull(),
+	color: text('color').notNull(),
+	position: text('position').notNull(),
+	congruency: text('congruency').notNull(),
+	isCorrect: integer('is_correct', { mode: 'boolean' }).notNull(),
+	responseTimeMs: integer('response_time_ms').notNull(),
+	timedOut: integer('timed_out', { mode: 'boolean' }).notNull(),
+	sessionId: text('session_id')
+		.notNull()
+		.references(() => session.id),
+	createdAt: text('created_at')
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull()
+});

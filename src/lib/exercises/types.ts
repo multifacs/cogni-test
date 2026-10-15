@@ -14,6 +14,7 @@ import type { RavenAttemptRow } from './raven-matrices/types';
 import type { RotationAttemptRow } from './rotation/results-adapter';
 import type { WordMorphingSummaryRow } from './word-morphing/types';
 import type { RhythmResult } from './rhythm/types';
+import type { SimonResult } from './simon/types';
 
 export type ExerciseType =
 	| 'attention'
@@ -30,6 +31,7 @@ export type ExerciseType =
 	| 'pictures'
 	| 'ravenMatrices'
 	| 'rotation'
+	| 'simonTask'
 	| 'wordMorphingExercise'
 	| 'rhythm';
 
@@ -48,6 +50,7 @@ export type ExerciseResultMap = {
 	pictures: PicturesTrialRow;
 	ravenMatrices: RavenAttemptRow;
 	rotation: RotationAttemptRow;
+	simonTask: SimonResult;
 	wordMorphingExercise: WordMorphingSummaryRow;
 	rhythm: RhythmResult;
 };
@@ -67,6 +70,7 @@ export type ExerciseResult =
 	| PicturesTrialRow
 	| RavenAttemptRow
 	| RotationAttemptRow
+	| SimonResult
 	| WordMorphingSummaryRow
 	| RhythmResult;
 
@@ -85,6 +89,7 @@ export type ExerciseResults =
 	| PicturesTrialRow[]
 	| RavenAttemptRow[]
 	| RotationAttemptRow[]
+	| SimonResult[]
 	| WordMorphingSummaryRow[]
 	| RhythmResult[];
 
