@@ -129,14 +129,15 @@ describe('(app) layout server load', () => {
 	it('does NOT redirect diagnosed user even on a non-allowed path', async () => {
 		const { load } = await import('./+layout.server');
 
-		// All 6 visible tests have sessions
+		// All 7 visible tests have sessions
 		vi.mocked(getTestSessionCounts).mockResolvedValue({
 			stroop: 1,
 			math: 1,
 			munsterberg: 1,
 			campimetry: 1,
 			memory: 1,
-			swallow: 1
+			swallow: 1,
+			numericStroop: 1
 		});
 
 		const result = (await load(
@@ -154,7 +155,8 @@ describe('(app) layout server load', () => {
 				munsterberg: 1,
 				campimetry: 1,
 				memory: 1,
-				swallow: 1
+				swallow: 1,
+				numericStroop: 1
 			});
 
 		it('is true when MODE is DEV', async () => {

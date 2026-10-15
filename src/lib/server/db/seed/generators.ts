@@ -9,6 +9,7 @@ import type { MemoryResult } from '$lib/tests/memory/types';
 import type { CampimetryResult } from '$lib/tests/campimetry/types';
 import type { SwallowResult, Direction, Background } from '$lib/tests/swallow/types';
 import type { MunsterbergResult } from '$lib/tests/munsterberg/types';
+import type { NumericStroopResult, Side } from '$lib/tests/numeric-stroop/types';
 import type {
 	RavenAttemptRow,
 	TaskClass,
@@ -119,6 +120,27 @@ export function genSwallow(n: number): SwallowResult[] {
 		userAnswer: DIRECTIONS[rnd(0, 3)],
 		isCorrect: rndBool()
 	}));
+}
+
+const STROOP_SIDES: Side[] = ['left', 'right'];
+
+export function genNumericStroop(n: number): NumericStroopResult[] {
+	return Array.from({ length: n }, (_, i) => {
+		// two DISTINCT digits 1..9
+		const leftValue = rnd(1, 9);
+		let rightValue = rnd(1, 9);
+		while (rightValue === leftValue) rightValue = rnd(1, 9);
+		return {
+			attempt: i,
+			time: rnd(300, 2000),
+			leftValue,
+			rightValue,
+			congruent: rndBool(0.5),
+			correctAnswer: STROOP_SIDES[rnd(0, 1)],
+			userAnswer: STROOP_SIDES[rnd(0, 1)],
+			isCorrect: rndBool()
+		};
+	});
 }
 
 export function genMunsterberg(n: number): { results: MunsterbergResult[]; words: string[] } {
@@ -249,6 +271,7 @@ export type DevRandomPayload =
 	| MathResult[]
 	| CampimetryResult[]
 	| SwallowResult[]
+	| NumericStroopResult[]
 	| RavenAttemptRow[]
 	| { results: MemoryResult[]; meta: string[] }
 	| { results: MunsterbergResult[]; meta: string[] };
@@ -274,6 +297,8 @@ export function generateDevRandomResults(slug: string): DevRandomPayload {
 			return genCampimetry(20);
 		case 'swallow':
 			return genSwallow(100);
+		case 'numericStroop':
+			return genNumericStroop(60);
 		case 'memory': {
 			const results = genMemory(10);
 			return { results, meta: MEMORY_META_WORDS };

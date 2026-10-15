@@ -10,6 +10,7 @@ import {
 	mathAttempt,
 	memoryAttempt,
 	munsterbergAttempt,
+	numericStroopAttempt,
 	stroopAttempt,
 	swallowAttempt
 } from './models/tests';
@@ -20,7 +21,8 @@ import {
 	genMemory,
 	genCampimetry,
 	genSwallow,
-	genMunsterberg
+	genMunsterberg,
+	genNumericStroop
 } from './seed/generators';
 
 describe.skipIf(!process.env.SEED_DB)('seed results', () => {
@@ -94,5 +96,53 @@ describe.skipIf(!process.env.SEED_DB)('seed results', () => {
 		expect(campimetryRows.length).toBe(20);
 		expect(swallowRows.length).toBe(100);
 		expect(munsterbergRows.length).toBe(8);
+	});
+
+	it('seeds valid numericStroop results for the last active user', async () => {
+		const { db } = await import('$lib/server/db');
+		const { postResult } = await import('./controllers/result');
+		let [targetUser] = await db
+			.select()
+			.from(user)
+			.orderBy(sql`${user.lastActiveAt} DESC`)
+			.limit(1);
+
+		if (!targetUser) {
+			await db.insert(user).values({
+				firstname: 'Te',
+				lastname: 'St',
+				birthday: new Date(),
+				sex: 'male'
+			});
+			[targetUser] = await db
+				.select()
+				.from(user)
+				.orderBy(sql`${user.lastActiveAt} DESC`)
+				.limit(1);
+		}
+
+		if (!targetUser) {
+			throw new Error('Failed to find or create a target user for seeding results');
+		}
+
+		const payload = genNumericStroop(60);
+		const sessionId = await postResult(payload, 'numericStroop', targetUser.id);
+
+		const rows = await db
+			.select()
+			.from(numericStroopAttempt)
+			.where(eq(numericStroopAttempt.sessionId, sessionId));
+
+		expect(rows.length).toBe(60);
+		for (const row of rows) {
+			expect(row.leftValue).toBeGreaterThanOrEqual(1);
+			expect(row.leftValue).toBeLessThanOrEqual(9);
+			expect(row.rightValue).toBeGreaterThanOrEqual(1);
+			expect(row.rightValue).toBeLessThanOrEqual(9);
+			expect(row.leftValue).not.toBe(row.rightValue);
+			expect(['left', 'right']).toContain(row.correctAnswer);
+			expect(['left', 'right']).toContain(row.userAnswer);
+			expect(typeof row.congruent).toBe('boolean');
+		}
 	});
 });

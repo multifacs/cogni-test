@@ -31,6 +31,7 @@ export function computeSessionScore(sessionType: string, attempts: AttemptLike[]
 		case 'stroop':
 		case 'memory':
 		case 'swallow':
+		case 'numericStroop':
 		case 'attention':
 		case 'emoji':
 		case 'flanker':

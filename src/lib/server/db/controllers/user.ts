@@ -175,6 +175,7 @@ export async function getUsersAnalytics() {
 			munsterberg: tests.munsterberg || 0,
 			memory: tests.memory || 0,
 			swallow: tests.swallow || 0,
+			numericStroop: tests.numericStroop || 0,
 			campimetry: tests.campimetry || 0,
 
 			// null-поля анкеты

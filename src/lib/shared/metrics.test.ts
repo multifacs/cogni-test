@@ -62,6 +62,22 @@ describe('computeSessionScore', () => {
 		expect(computeSessionScore('swallow', attempts)).toBe(50);
 	});
 
+	it('computes accuracy-based scores (numericStroop)', () => {
+		const attempts = [
+			{ isCorrect: true },
+			{ isCorrect: true },
+			{ isCorrect: false },
+			{ isCorrect: true },
+			{ isCorrect: false },
+			{ isCorrect: true },
+			{ isCorrect: true },
+			{ isCorrect: true },
+			{ isCorrect: true },
+			{ isCorrect: true }
+		];
+		expect(computeSessionScore('numericStroop', attempts)).toBe(80);
+	});
+
 	it('computes accuracy-based scores (attention)', () => {
 		const attempts = Array.from({ length: 10 }, (_, i) => ({ isCorrect: i < 7 }));
 		expect(computeSessionScore('attention', attempts)).toBe(70);

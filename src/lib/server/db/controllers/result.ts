@@ -6,7 +6,8 @@ import {
 	memoryAttempt,
 	swallowAttempt,
 	munsterbergAttempt,
-	campimetryAttempt
+	campimetryAttempt,
+	numericStroopAttempt
 } from '$lib/server/db/models/tests';
 import {
 	attentionAttempt,
@@ -55,6 +56,7 @@ const attemptTableMap: Record<string, AnyAttemptTable> = {
 	swallow: swallowAttempt,
 	munsterberg: munsterbergAttempt,
 	campimetry: campimetryAttempt,
+	numericStroop: numericStroopAttempt,
 	attention: attentionAttempt,
 	emoji: emojiAttempt,
 	flanker: flankerAttempt,
@@ -81,6 +83,7 @@ function getQueryTableMap(): Record<string, AnyRelationalTable> {
 		swallow: db.query.swallowAttempt,
 		munsterberg: db.query.munsterbergAttempt,
 		campimetry: db.query.campimetryAttempt,
+		numericStroop: db.query.numericStroopAttempt,
 		attention: db.query.attentionAttempt,
 		emoji: db.query.emojiAttempt,
 		flanker: db.query.flankerAttempt,
@@ -107,6 +110,7 @@ const orderByMap: Record<string, (fields: Record<string, AnyColumn>) => SQL> = {
 	swallow: (f) => asc(f.attempt),
 	munsterberg: (f) => asc(f.attempt),
 	campimetry: (f) => asc(f.attempt),
+	numericStroop: (f) => asc(f.attempt),
 	attention: (f) => asc(f.clickIndex),
 	emoji: (f) => asc(f.trialIndex),
 	flanker: (f) => asc(f.trialIndex),

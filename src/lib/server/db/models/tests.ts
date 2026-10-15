@@ -154,4 +154,31 @@ export const swallowAttempt = sqliteTable(
 	]
 );
 
+const STROOP_SIDES = ['left', 'right'];
 
+export const numericStroopAttempt = sqliteTable(
+	'numeric_stroop_attempt',
+	{
+		id: text('id').primaryKey().notNull().$defaultFn(generate),
+		attempt: integer('attempt').notNull(),
+		time: integer('time').notNull(),
+		leftValue: integer('left_value').notNull(),
+		rightValue: integer('right_value').notNull(),
+		congruent: integer('congruent', { mode: 'boolean' }).notNull(),
+		correctAnswer: text('correct_answer').notNull(),
+		userAnswer: text('user_answer'),
+		isCorrect: integer('is_correct', { mode: 'boolean' }).notNull().default(false),
+		sessionId: text('session_id')
+			.notNull()
+			.references(() => session.id),
+		createdAt: text('created_at')
+			.default(sql`CURRENT_TIMESTAMP`)
+			.notNull()
+	},
+	(table) => [
+		check('correct_answer_check', enumCheck(table.correctAnswer, STROOP_SIDES)),
+		check('user_answer_check', enumCheck(table.userAnswer, STROOP_SIDES)), // nullable
+		check('left_value_range', sql`${table.leftValue} between 1 and 9`),
+		check('right_value_range', sql`${table.rightValue} between 1 and 9`)
+	]
+);

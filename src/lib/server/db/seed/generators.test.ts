@@ -9,6 +9,7 @@ import {
 	genMemory,
 	genCampimetry,
 	genSwallow,
+	genNumericStroop,
 	genMunsterberg,
 	genRaven,
 	generateDevRandomResults,
@@ -22,6 +23,9 @@ import type { Color } from '$lib/tests/stroop/types';
 import type { Sign } from '$lib/tests/math/types';
 import type { CampimetryResult } from '$lib/tests/campimetry/types';
 import type { SwallowResult, Direction, Background } from '$lib/tests/swallow/types';
+import type { NumericStroopResult, Side } from '$lib/tests/numeric-stroop/types';
+
+const STROOP_SIDES: Side[] = ['left', 'right'];
 
 const ITERATIONS = 50;
 
@@ -185,6 +189,30 @@ describe('result generators', () => {
 		}
 	});
 
+	it('genNumericStroop(n) returns exactly n elements with monotonic attempt indices', () => {
+		for (let i = 0; i < ITERATIONS; i++) {
+			expect(genNumericStroop(60)).toHaveLength(60);
+			expect(genNumericStroop(0)).toHaveLength(0);
+			genNumericStroop(20).forEach((r, idx) => expect(r.attempt).toBe(idx));
+		}
+	});
+
+	it('genNumericStroop valid digits, sides and congruency', () => {
+		for (let i = 0; i < ITERATIONS; i++) {
+			for (const r of genNumericStroop(20) as NumericStroopResult[]) {
+				expect(r.leftValue).toBeGreaterThanOrEqual(1);
+				expect(r.leftValue).toBeLessThanOrEqual(9);
+				expect(r.rightValue).toBeGreaterThanOrEqual(1);
+				expect(r.rightValue).toBeLessThanOrEqual(9);
+				expect(r.leftValue).not.toBe(r.rightValue);
+				expect(STROOP_SIDES).toContain(r.correctAnswer);
+				expect(STROOP_SIDES).toContain(r.userAnswer);
+				expect(typeof r.congruent).toBe('boolean');
+				expect(typeof r.isCorrect).toBe('boolean');
+			}
+		}
+	});
+
 	it('genMunsterberg(8) returns results and words of same length <= 8', () => {
 		for (let i = 0; i < ITERATIONS; i++) {
 			const { results, words } = genMunsterberg(8);
@@ -329,13 +357,21 @@ describe('genRaven', () => {
 });
 
 describe('generateDevRandomResults', () => {
-	it('returns flat arrays for stroop, math, campimetry, swallow, raven-matrices', () => {
-		const flatSlugs = ['stroop', 'math', 'campimetry', 'swallow', 'raven-matrices'] as const;
+	it('returns flat arrays for stroop, math, campimetry, swallow, numericStroop, raven-matrices', () => {
+		const flatSlugs = [
+			'stroop',
+			'math',
+			'campimetry',
+			'swallow',
+			'numericStroop',
+			'raven-matrices'
+		] as const;
 		const expectedLengths: Record<string, number> = {
 			stroop: 25,
 			math: 10,
 			campimetry: 20,
 			swallow: 100,
+			numericStroop: 60,
 			'raven-matrices': 10
 		};
 

@@ -4,6 +4,7 @@ import type { MunsterbergResult } from './munsterberg/types';
 import type { MemoryResult } from './memory/types';
 import type { SwallowResult } from './swallow/types';
 import type { CampimetryResult } from './campimetry/types';
+import type { NumericStroopResult } from './numeric-stroop/types';
 import type { RavenFullResult } from '$lib/exercises/raven-matrices/types';
 
 export { type TestData } from './index';
@@ -15,6 +16,7 @@ export type TestType =
 	| 'memory'
 	| 'swallow'
 	| 'campimetry'
+	| 'numericStroop'
 	| 'ravenMatrices';
 
 export type TestResultMap = {
@@ -24,6 +26,7 @@ export type TestResultMap = {
 	memory: MemoryResult;
 	swallow: SwallowResult;
 	campimetry: CampimetryResult;
+	numericStroop: NumericStroopResult;
 	ravenMatrices: RavenFullResult;
 };
 
@@ -33,7 +36,8 @@ export type RegularResult =
 	| MunsterbergResult
 	| MemoryResult
 	| SwallowResult
-	| CampimetryResult;
+	| CampimetryResult
+	| NumericStroopResult;
 
 export type RegularResults =
 	| StroopResult[]
@@ -41,7 +45,8 @@ export type RegularResults =
 	| MunsterbergResult[]
 	| MemoryResult[]
 	| SwallowResult[]
-	| CampimetryResult[];
+	| CampimetryResult[]
+	| NumericStroopResult[];
 
 export type ResultInfo = {
 	sessionId: string;
