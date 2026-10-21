@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { SyllablePair } from '../types';
 import { SYLLABLES } from './syllables';
-import { generateSessionPairs, pairToPhrase } from './generation';
+import { generateSessionPairs, pairToPhrase, randomWordLength } from './generation';
 
 /** Мультипликативный LCG для детерминированных тестов. */
 function lcg(seed: number): () => number {
@@ -96,25 +96,57 @@ describe('generateSessionPairs', () => {
 		expect(() => generateSessionPairs(lcg(1), ['ба'])).toThrow(
 			/Pool of 1 distinct syllables cannot fill a word of \d+/
 		);
-		// 2 различимых слога: слово длины 2 возможно, но при длине 3+ — throw.
-		expect(() => generateSessionPairs(lcg(3), ['ба', 'ко'])).toThrow(
+		// 2 различимых слога хватает только на слово длины 2; rng() = 0.99
+		// всегда даёт длину 5 → throw гарантирован, без зависимости от весов.
+		expect(() => generateSessionPairs(() => 0.99, ['ба', 'ко'])).toThrow(
 			/Pool of 2 distinct syllables cannot fill a word of \d+/
 		);
 	});
 });
 
+describe('randomWordLength', () => {
+	it('maps rng rolls to the weighted lengths 2/3/4/5 (40/30/20/10)', () => {
+		const at = (roll: number) => randomWordLength(() => roll);
+		expect(at(0)).toBe(2);
+		expect(at(0.399)).toBe(2);
+		expect(at(0.4)).toBe(3);
+		expect(at(0.699)).toBe(3);
+		expect(at(0.7)).toBe(4);
+		expect(at(0.899)).toBe(4);
+		expect(at(0.9)).toBe(5);
+		expect(at(0.999)).toBe(5);
+		// rng() === 1 клампится, а не вылетает за таблицу.
+		expect(at(1)).toBe(5);
+	});
+
+	it('skews towards shorter words over many draws', () => {
+		const rng = lcg(123);
+		const draws = 10_000;
+		const counts: Record<number, number> = { 2: 0, 3: 0, 4: 0, 5: 0 };
+		for (let i = 0; i < draws; i += 1) {
+			counts[randomWordLength(rng)] += 1;
+		}
+		expect(counts[2]).toBeGreaterThan(counts[3]);
+		expect(counts[3]).toBeGreaterThan(counts[4]);
+		expect(counts[4]).toBeGreaterThan(counts[5]);
+		// Пятисложные — около 10% (допуск на дисперсию LCG).
+		expect(counts[5] / draws).toBeLessThan(0.15);
+	});
+});
+
 describe('pairToPhrase', () => {
-	it('joins syllables with hyphens and words with a space', () => {
+	it('joins syllables without hyphens and words with a space', () => {
 		const pair: SyllablePair = { word1: ['ба', 'ко', 'ми'], word2: ['ло', 'те', 'су'] };
-		expect(pairToPhrase(pair)).toBe('ба-ко-ми ло-те-су');
+		expect(pairToPhrase(pair)).toBe('бакоми лотесу');
 	});
 
 	it('renders the whole generated session in the expected format', () => {
 		for (const pair of generateSessionPairs(lcg(7))) {
 			const phrase = pairToPhrase(pair);
+			expect(phrase).not.toContain('-');
 			const [word1, word2] = phrase.split(' ');
-			expect(word1).toBe(pair.word1.join('-'));
-			expect(word2).toBe(pair.word2.join('-'));
+			expect(word1).toBe(pair.word1.join(''));
+			expect(word2).toBe(pair.word2.join(''));
 		}
 	});
 });

@@ -3,8 +3,19 @@ import { SYLLABLES } from './syllables';
 
 const PAIRS_PER_SESSION = 5;
 const WORDS_PER_PAIR = 2;
-const MIN_SYLLABLES_PER_WORD = 2;
-const MAX_SYLLABLES_PER_WORD = 5;
+
+/**
+ * Веса длин слова: короткие слова встречаются чаще длинных.
+ * Пропорция 2/3/4/5 слогов — 40/30/20/10.
+ */
+const WORD_LENGTH_WEIGHTS = [
+	{ syllables: 2, weight: 40 },
+	{ syllables: 3, weight: 30 },
+	{ syllables: 4, weight: 20 },
+	{ syllables: 5, weight: 10 }
+] as const;
+
+const TOTAL_WEIGHT = WORD_LENGTH_WEIGHTS.reduce((sum, { weight }) => sum + weight, 0);
 
 /**
  * Fisher-Yates с инжектируемым rng. Возвращает копию — исходный массив
@@ -19,17 +30,25 @@ function shuffledCopy<T>(items: readonly T[], rng: () => number): T[] {
 	return copy;
 }
 
-function randomWordLength(rng: () => number): number {
-	return (
-		MIN_SYLLABLES_PER_WORD +
-		Math.floor(rng() * (MAX_SYLLABLES_PER_WORD - MIN_SYLLABLES_PER_WORD + 1))
-	);
+/**
+ * Взвешенная длина слова: 2 слога — 40%, 3 — 30%, 4 — 20%, 5 — 10%.
+ * rng клампится в [0, 1], чтобы значение ровно 1 не вылетало за таблицу.
+ */
+export function randomWordLength(rng: () => number = Math.random): number {
+	const roll = Math.min(Math.max(rng(), 0), 1) * TOTAL_WEIGHT;
+	let cumulative = 0;
+	for (const { syllables, weight } of WORD_LENGTH_WEIGHTS) {
+		cumulative += weight;
+		if (roll < cumulative) return syllables;
+	}
+	return WORD_LENGTH_WEIGHTS[WORD_LENGTH_WEIGHTS.length - 1].syllables;
 }
 
 /**
  * Генерирует 5 пар псевдословосочетаний.
  *
- * Каждая пара — 2 слова по 2–5 слогов. Слоги всегда уникальны внутри
+ * Каждая пара — 2 слова по 2–5 слогов; короткие слова вероятнее
+ * (2 слога — 40%, 3 — 30%, 4 — 20%, 5 — 10%). Слоги всегда уникальны внутри
  * одного слова; внутри пары — уникальны, пока в пуле есть неиспользованные
  * различимые слоги (при малом пуле повторы между словами допустимы).
  * Между парами слоги не повторяются, пока пул не исчерпан (выбор без
@@ -86,7 +105,7 @@ export function generateSessionPairs(
 	});
 }
 
-/** '({ба, ко, ми}, {ло, те, су})' → 'ба-ко-ми ло-те-су'. */
+/** '({ба, ко, ми}, {ло, те, су})' → 'бакоми лотесу'. */
 export function pairToPhrase(pair: SyllablePair): string {
-	return `${pair.word1.join('-')} ${pair.word2.join('-')}`;
+	return `${pair.word1.join('')} ${pair.word2.join('')}`;
 }

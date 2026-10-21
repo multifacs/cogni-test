@@ -3,6 +3,7 @@ import { page, userEvent } from 'vitest/browser';
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-svelte';
 import Playground from './Playground.svelte';
+import { SYLLABLES } from './logic/syllables';
 import { validateAssociation } from './logic/validation';
 import type { SyllableFormationAttemptRow, SyllablePair } from './types';
 
@@ -58,10 +59,44 @@ const CANDIDATE_ASSOCIATIONS = [
 	'тёплый чай'
 ];
 
-/** 'ба-ко-ми ло-те-су' → ({ба, ко, ми}, {ло, те, су}) — обратная пара к pairToPhrase. */
+const SYLLABLE_SET = new Set(SYLLABLES);
+const SYLLABLE_LENGTHS = [4, 3, 2];
+
+/** Сегментация слова по пулу слогов (слог — 2–4 символа) через DP с мемо:
+ *  жадный выбор longest-first может «перепрыгнуть» границу слога и оставить
+ *  неразложимый хвост, поэтому перебираем варианты с бэктрекингом. */
+function splitIntoSyllables(word: string): string[] {
+	const memo = new Map<number, string[] | null>();
+
+	const solve = (start: number): string[] | null => {
+		if (start === word.length) return [];
+		const cached = memo.get(start);
+		if (cached !== undefined) return cached;
+
+		for (const length of SYLLABLE_LENGTHS) {
+			const syllable = word.slice(start, start + length);
+			if (!SYLLABLE_SET.has(syllable)) continue;
+			const rest = solve(start + length);
+			if (rest !== null) {
+				const result = [syllable, ...rest];
+				memo.set(start, result);
+				return result;
+			}
+		}
+		memo.set(start, null);
+		return null;
+	};
+
+	const result = solve(0);
+	if (result === null) throw new Error(`cannot split into syllables: '${word}'`);
+	return result;
+}
+
+/** 'бакоми лотесу' → ({ба, ко, ми}, {ло, те, су}) — обратная пара к pairToPhrase. */
 function phraseToPair(phrase: string): SyllablePair {
-	const [word1, word2] = phrase.trim().split(' ');
-	return { word1: word1.split('-'), word2: word2.split('-') };
+	const words = phrase.trim().split(/\s+/);
+	if (words.length !== 2) throw new Error(`unexpected phrase: '${phrase}'`);
+	return { word1: splitIntoSyllables(words[0]), word2: splitIntoSyllables(words[1]) };
 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

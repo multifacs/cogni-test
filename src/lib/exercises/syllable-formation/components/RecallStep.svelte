@@ -53,12 +53,12 @@
 			type="text"
 			autocomplete="off"
 			autofocus
-			placeholder="например: ба-ко-ми ло-те-су"
+			placeholder="например: бакоми лотесу"
 			{value}
 			oninput={(e) => onInput(e.currentTarget.value)}
 		/>
 		<p class="text-xs text-[var(--main-text-color)] opacity-70 sm:text-sm">
-			Формат не важен: дефисы, пробелы и регистр не учитываются.
+			Регистр и пробелы не учитываются — дефисы можно ставить как удобно.
 		</p>
 		<Button color="green" type="submit">Ответить</Button>
 	</form>
