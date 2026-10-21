@@ -20,7 +20,7 @@ export type SyllablePair = {
 
 export type SyllableFormationAttemptRow = {
 	pairIndex: number; // 1..5
-	phrase: string; // отображаемая форма: 'ба-ко-ми ло-те-су'
+	phrase: string; // отображаемая форма: 'бакоми лотесу'
 	association: string | null; // ассоциация пользователя; null — таймаут на этапе придумывания
 	isCorrect: boolean; // восстановлено ли сочетание верно
 	reactionTimeMs: number; // латентность восстановления; 120000 при таймауте
