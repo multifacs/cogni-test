@@ -1,42 +1,31 @@
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
+	import { onDestroy } from 'svelte';
 	import ProgressBar from '$lib/components/ui/ProgressBar.svelte';
 	import type { MetaResult } from '$lib/exercises/types';
 	import {
-		BLOCK1_TRIALS,
-		BLOCK2_TRIALS,
-		BLOCK3_TRIALS,
+		BLOCK_DURATIONS_MS,
 		buildMeta,
-		buildSession,
+		createTrialSource,
 		evaluateTrial,
-		FEEDBACK_MS,
-		INTER_TRIAL_MS,
-		RESPONSE_WINDOW_MS,
-		TOTAL_TRIALS
+		FEEDBACK_MS
 	} from './logic/engine';
-	import type { SimonColor, SimonPosition, SimonResult, SimonTrial } from './types';
+	import type { SimonBlock, SimonColor, SimonPosition, SimonResult, SimonTrial } from './types';
 
 	let {
 		gameEnd,
 		sendResults,
-		introMs = 2000,
-		responseWindowMs = RESPONSE_WINDOW_MS,
+		blockDurationsMs = BLOCK_DURATIONS_MS,
 		feedbackMs = FEEDBACK_MS,
-		itiMs = INTER_TRIAL_MS,
 		rng = Math.random
 	}: {
 		/** Локальный финальный экран (контракт страницы playground). */
 		gameEnd: () => void;
 		/** Сохранение результатов сессии (контракт страницы playground). */
 		sendResults?: (payload: MetaResult) => void;
-		/** Инъекция длительности экрана инструкции блока (тесты ускоряют). */
-		introMs?: number;
-		/** Инъекция окна ответа на пробу; нетап тарифицируется как полный windowMs. */
-		responseWindowMs?: number;
-		/** Инъекция длительности фида после ответа (тесты ускоряют). */
+		/** Инъекция длительностей частей (тесты ускоряют). */
+		blockDurationsMs?: Record<SimonBlock, number>;
+		/** Инъекция длительности вспышки после ответа (тесты ускоряют). */
 		feedbackMs?: number;
-		/** Инъекция межпробного интервала (тесты ускоряют). */
-		itiMs?: number;
 		/** Инъекция ГПСЧ: тесты передают детерминированный, прод — Math.random. */
 		rng?: () => number;
 	} = $props();
@@ -44,66 +33,80 @@
 	// rng снапшотится при создании компонента: ГПСЧ упражнения выбирается один
 	// раз и не меняется в процессе игры (паттерн corsi).
 	// svelte-ignore state_referenced_locally
-	const session: SimonTrial[] = buildSession(rng);
+	const source = createTrialSource(rng);
 
-	type Phase = 'block-intro' | 'stimulus' | 'feedback' | 'iti' | 'finished';
+	type Phase = 'block-intro' | 'stimulus' | 'feedback' | 'finished';
 
 	let phase = $state<Phase>('block-intro');
-	/** Индекс текущей пробы в session (0-базный). */
-	let trialIdx = $state(0);
+	/** Номер текущей части: 1 → 2 → 3. */
+	let block = $state<SimonBlock>(1);
+	/** Проба, предъявленная в текущей фазе stimulus/feedback. */
+	let currentTrial = $state<SimonTrial | null>(null);
 	/** Фраза фида зависит от исхода только что завершённой пробы. */
 	let lastIsCorrect = $state(true);
-	// Реальные значения фаз устанавливает startPhase() в onMount — до первой
-	// отрисовки; константы здесь лишь безопасные заглушки типов (паттерн corsi).
-	let phaseDuration = $state(RESPONSE_WINDOW_MS);
-	let timeLeft = $state(RESPONSE_WINDOW_MS);
+	/**
+	 * Остаток времени текущей части, мс. Инициализируется дефолтной
+	 * длительностью части 1; реальное значение выставляет startBlock()
+	 * (важно для тестов с инъекцией коротких частей).
+	 */
+	let blockTimeLeft = $state(BLOCK_DURATIONS_MS[1]);
 
 	// Аккумулятор результатов: пробы идут строго последовательно, поэтому
 	// обычного массива достаточно; пересоздаётся вместе с компонентом.
 	let results: SimonResult[] = [];
 	let trialStart = 0;
-	let deadline = 0;
-	let phaseTimer: ReturnType<typeof setTimeout> | undefined;
-	let progressTimer: ReturnType<typeof setInterval> | undefined;
+	let blockDeadline = 0;
+	let feedbackTimer: ReturnType<typeof setTimeout> | undefined;
+	let blockTimer: ReturnType<typeof setTimeout> | undefined;
+	let tickTimer: ReturnType<typeof setInterval> | undefined;
 
-	const currentTrial = $derived(session[trialIdx]);
-	const currentBlock = $derived(currentTrial?.block ?? 1);
-	/** Размер текущего блока: 5 / 10 / 20. */
-	const blockSize = $derived(
-		currentBlock === 1 ? BLOCK1_TRIALS : currentBlock === 2 ? BLOCK2_TRIALS : BLOCK3_TRIALS
+	const blockDuration = $derived(blockDurationsMs[block] ?? BLOCK_DURATIONS_MS[block]);
+	const secondsLeft = $derived(Math.max(0, Math.ceil(blockTimeLeft / 1000)));
+	/** На интро показываем полную длительность части, а не остаток. */
+	const displayedSeconds = $derived(
+		phase === 'block-intro' ? Math.round(blockDuration / 1000) : secondsLeft
 	);
-	/** Номер пробы внутри текущего блока, 1-базный (для счётчика «Часть X: N/M»). */
-	const trialInBlock = $derived(
-		currentTrial ? trialIdx - blockStartIndex(currentBlock) + 1 : 1
-	);
-	const completedTrials = $derived(Math.min(results.length, TOTAL_TRIALS));
+	// Бар под счётчиком показывает истёкшую долю текущей части; clamp
+	// защищает от отрицательного прогресса до первого startBlock().
+	const elapsed = $derived(Math.max(0, Math.min(blockDuration, blockDuration - blockTimeLeft)));
 	const isStimulus = $derived(phase === 'stimulus');
-	const isBlock3 = $derived(currentBlock === 3);
-
-	/** Кружок виден на протяжении всей пробы: stimulus + feedback (фид). */
 	const showCircle = $derived(phase === 'stimulus' || phase === 'feedback');
+
 	const phaseLabel = $derived.by(() => {
 		switch (phase) {
 			case 'block-intro':
 				return 'Инструкция';
 			case 'stimulus':
-				return 'Отвечай по цвету';
+				return 'Отвечай стрелкой по цвету';
 			case 'feedback':
 				return lastIsCorrect ? 'Верно' : 'Ошибка';
-			case 'iti':
-				return 'Приготовься';
 			default:
 				return '';
 		}
 	});
-	// Бар под полем показывает истёкшую долю текущей фазы (паттерн corsi:
-	// незакрашенный остаток = оставшееся время окна ответа).
-	const elapsed = $derived(phaseDuration - timeLeft);
 
-	const BLOCK_INTROS: Record<number, string> = {
-		1: 'Нажимай кнопку под цвет кружка: красный — слева, синий — справа',
-		2: 'Кружок появится слева или справа. Нажимай по ЦВЕТУ, не по месту: красный — слева, синий — справа',
-		3: 'Теперь 4 цвета: красный — слева, синий — справа, зелёный — сверху, жёлтый — снизу'
+	const BLOCK_INTROS: Record<SimonBlock, string> = {
+		1: 'Нажимайте стрелку, соответствующую цвету кружка.',
+		2: 'Кружок может появиться слева или справа. Отвечайте по ЦВЕТУ, а не по месту.',
+		3: 'Четыре цвета — четыре стрелки. Отвечайте по цвету, а не по позиции кружка.'
+	};
+
+	/** Памятка «цвет → стрелка» на экране инструкции части. */
+	const LEGEND: Record<SimonBlock, { color: SimonColor; arrow: string }[]> = {
+		1: [
+			{ color: 'red', arrow: '←' },
+			{ color: 'blue', arrow: '→' }
+		],
+		2: [
+			{ color: 'red', arrow: '←' },
+			{ color: 'blue', arrow: '→' }
+		],
+		3: [
+			{ color: 'red', arrow: '←' },
+			{ color: 'blue', arrow: '→' },
+			{ color: 'green', arrow: '↑' },
+			{ color: 'yellow', arrow: '↓' }
+		]
 	};
 
 	/** Позиция центра кружка в % поля для каждой позиции стимула. */
@@ -115,17 +118,12 @@
 		down: { x: 50, y: 73 }
 	};
 
-	const BUTTONS_BLOCKS_12: { color: SimonColor; position: 'left' | 'right'; label: string; cls: string }[] = [
-		{ color: 'red', position: 'left', label: 'Красный', cls: 'bg-red-500' },
-		{ color: 'blue', position: 'right', label: 'Синий', cls: 'bg-blue-500' }
-	];
-
-	const BUTTONS_BLOCK_3: { color: SimonColor; position: 'up' | 'left' | 'right' | 'down'; label: string; cls: string }[] = [
-		{ color: 'green', position: 'up', label: 'Зелёный', cls: 'bg-green-500' },
-		{ color: 'red', position: 'left', label: 'Красный', cls: 'bg-red-500' },
-		{ color: 'blue', position: 'right', label: 'Синий', cls: 'bg-blue-500' },
-		{ color: 'yellow', position: 'down', label: 'Жёлтый', cls: 'bg-yellow-400' }
-	];
+	const DOT_CLS: Record<SimonColor, string> = {
+		red: 'bg-red-500',
+		blue: 'bg-blue-500',
+		green: 'bg-green-500',
+		yellow: 'bg-yellow-400'
+	};
 
 	const CIRCLE_CLS: Record<SimonColor, string> = {
 		red: 'bg-red-500',
@@ -134,115 +132,132 @@
 		yellow: 'bg-yellow-400'
 	};
 
-	/** Сквозной индекс первой пробы блока (0-базный). */
-	function blockStartIndex(block: number): number {
-		if (block <= 1) return 0;
-		if (block === 2) return BLOCK1_TRIALS;
-		return BLOCK1_TRIALS + BLOCK2_TRIALS;
-	}
+	const ANSWER_BTN_CLS =
+		'cursor-pointer rounded-xl bg-slate-200 font-semibold text-slate-700 transition-transform duration-100 select-none hover:scale-105 hover:bg-slate-300';
 
-	onMount(() => {
-		startPhase();
-	});
+	const BUTTONS_BLOCKS_12: {
+		color: 'red' | 'blue';
+		position: 'left' | 'right';
+		arrow: string;
+		label: string;
+	}[] = [
+		{ color: 'red', position: 'left', arrow: '←', label: 'влево' },
+		{ color: 'blue', position: 'right', arrow: '→', label: 'вправо' }
+	];
+
+	const BUTTONS_BLOCK_3: {
+		color: SimonColor;
+		position: 'up' | 'left' | 'right' | 'down';
+		arrow: string;
+		label: string;
+	}[] = [
+		{ color: 'green', position: 'up', arrow: '↑', label: 'вверх' },
+		{ color: 'red', position: 'left', arrow: '←', label: 'влево' },
+		{ color: 'blue', position: 'right', arrow: '→', label: 'вправо' },
+		{ color: 'yellow', position: 'down', arrow: '↓', label: 'вниз' }
+	];
+
+	/** Ячейка D-pad для стрелки части 3. */
+	function dpadCell(position: 'up' | 'left' | 'right' | 'down'): string {
+		switch (position) {
+			case 'up':
+				return 'col-start-2 row-start-1';
+			case 'left':
+				return 'col-start-1 row-start-2';
+			case 'right':
+				return 'col-start-3 row-start-2';
+			default:
+				return 'col-start-2 row-start-3';
+		}
+	}
 
 	onDestroy(() => {
 		clearTimers();
 	});
 
 	function clearTimers() {
-		clearTimeout(phaseTimer);
-		clearInterval(progressTimer);
+		clearTimeout(feedbackTimer);
+		clearTimeout(blockTimer);
+		clearInterval(tickTimer);
 	}
 
-	/** Запускает таймеры текущей фазы: block-intro → stimulus → feedback → iti → … */
-	function startPhase() {
+	/** Старт части: общий таймер части + первая проба. */
+	function startBlock() {
 		clearTimers();
-		switch (phase) {
-			case 'block-intro':
-				phaseDuration = introMs;
-				phaseTimer = setTimeout(beginTrial, introMs);
-				break;
-			case 'stimulus':
-				phaseDuration = responseWindowMs;
-				trialStart = performance.now();
-				phaseTimer = setTimeout(timeoutTrial, responseWindowMs);
-				break;
-			case 'feedback':
-				phaseDuration = feedbackMs;
-				phaseTimer = setTimeout(proceedAfterFeedback, feedbackMs);
-				break;
-			case 'iti':
-				phaseDuration = itiMs;
-				phaseTimer = setTimeout(advance, itiMs);
-				break;
-		}
-		deadline = performance.now() + phaseDuration;
-		timeLeft = phaseDuration;
-		progressTimer = setInterval(() => {
-			timeLeft = Math.max(0, deadline - performance.now());
+		blockDeadline = performance.now() + blockDuration;
+		blockTimeLeft = blockDuration;
+		blockTimer = setTimeout(endBlock, blockDuration);
+		tickTimer = setInterval(() => {
+			blockTimeLeft = Math.max(0, blockDeadline - performance.now());
 		}, 100);
+		nextTrial();
 	}
 
-	function beginTrial() {
+	/**
+	 * Следующая проба. Если время части уже вышло (например, фидбек
+	 * закончился ровно на границе), часть закрывается без предъявления.
+	 */
+	function nextTrial() {
+		clearTimeout(feedbackTimer);
+		if (performance.now() >= blockDeadline) {
+			endBlock();
+			return;
+		}
+		currentTrial = source.next(block);
+		trialStart = performance.now();
 		phase = 'stimulus';
-		startPhase();
 	}
 
-	/** Ответ по кнопке: валиден только в stimulus, иначе тихий no-op (паттерн corsi). */
+	/** Ответ стрелкой: валиден только в stimulus, иначе тихий no-op. */
 	function answer(color: SimonColor) {
 		if (!isStimulus || !currentTrial) return;
-		finishTrial(evaluateTrial(currentTrial, color, performance.now() - trialStart, responseWindowMs));
-	}
-
-	function timeoutTrial() {
-		if (!currentTrial) return;
-		// Нетап тарифицируется как полный таймаут — движку пробрасываем windowMs.
-		finishTrial(evaluateTrial(currentTrial, null, responseWindowMs, responseWindowMs));
-	}
-
-	function finishTrial(result: SimonResult) {
+		const result = evaluateTrial(
+			currentTrial,
+			color,
+			performance.now() - trialStart,
+			results.length + 1
+		);
 		results.push(result);
 		lastIsCorrect = result.isCorrect;
 		phase = 'feedback';
-		startPhase();
+		feedbackTimer = setTimeout(nextTrial, feedbackMs);
 	}
 
-	function proceedAfterFeedback() {
-		phase = 'iti';
-		startPhase();
-	}
-
-	function advance() {
-		if (trialIdx + 1 >= session.length) {
-			finish();
+	/**
+	 * Конец части по таймеру. Неотвеченная проба на границе не сохраняется:
+	 * результаты фиксируют только завершённые ответы. После частей 1–2 —
+	 * экран инструкции следующей части (таймер стоит), после части 3 — финиш.
+	 */
+	function endBlock() {
+		clearTimers();
+		currentTrial = null;
+		if (block < 3) {
+			block = (block + 1) as SimonBlock;
+			blockTimeLeft = blockDuration;
+			phase = 'block-intro';
 			return;
 		}
-		trialIdx += 1;
-		// Перед первым trial каждого блока — экран инструкции.
-		phase = session[trialIdx].block !== session[trialIdx - 1].block ? 'block-intro' : 'stimulus';
-		startPhase();
+		finish();
 	}
 
 	function finish() {
 		clearTimers();
+		currentTrial = null;
 		phase = 'finished';
 		sendResults?.({ results, meta: buildMeta() });
 		gameEnd();
 	}
 
 	/**
-	 * Единственная точка выхода из block-intro (и тап по кнопке, и Enter/Space).
-	 * Guard по фазе гасит двойной ввод в одном кадре (fast tap + Enter):
-	 * второй вызов уже видит phase 'stimulus' и тихо выходит, не перезапуская
-	 * таймер окна ответа.
+	 * Единственная точка выхода из block-intro (и тап, и Enter/Space).
+	 * Guard по фазе гасит двойной ввод в одном кадре.
 	 */
 	function continueIntro() {
 		if (phase !== 'block-intro') return;
-		clearTimers();
-		beginTrial();
+		startBlock();
 	}
 
-	/** Клавиатура: стрелки эквивалентны кнопкам. Up/Down активны только в блоке 3. */
+	/** Клавиатура: стрелки эквивалентны кнопкам. Up/Down активны только в части 3. */
 	function handleKeydown(event: KeyboardEvent) {
 		if (phase === 'block-intro' && (event.key === 'Enter' || event.key === ' ')) {
 			event.preventDefault();
@@ -258,8 +273,8 @@
 		};
 		const color = arrowToColor[event.key];
 		if (!color) return;
-		// В блоках1–2 только red/blue: вверх/вниз — тихий no-op.
-		if (!isBlock3 && (color === 'green' || color === 'yellow')) return;
+		// В частях 1–2 только red/blue: вверх/вниз — тихий no-op.
+		if (block !== 3 && (color === 'green' || color === 'yellow')) return;
 		event.preventDefault();
 		answer(color);
 	}
@@ -269,21 +284,17 @@
 
 <div class="flex w-full max-w-md flex-col items-center gap-3">
 	{#if phase !== 'finished'}
-		<!-- Счётчик блока + общий прогресс сессии (35 проб — кружками было бы
-		     слишком много, поэтому текст + бар). -->
+		<!-- Счётчик части + таймер части. Прогресс-бар показывает истёкшую
+		     долю времени части (как таймер в «Ласточке»). -->
 		<div class="flex w-full flex-col items-center gap-2" aria-hidden="true">
 			<p class="text-sm font-semibold text-slate-600" data-block-counter>
-				Часть {currentBlock} из 3 · {trialInBlock}/{blockSize}
+				Часть {block} из 3 · ⏱ {displayedSeconds} с
 			</p>
-			<ProgressBar min={0} max={TOTAL_TRIALS} progress={completedTrials} />
+			<ProgressBar min={0} max={blockDuration} progress={elapsed} />
 		</div>
 
 		<!-- Фраза состояния над полем: режим фазы без счётчиков. -->
-		<p
-			class="phase-phrase text-xl font-semibold text-slate-600"
-			aria-live="polite"
-			data-phase={phase}
-		>
+		<p class="phase-phrase text-xl font-semibold text-slate-600" aria-live="polite">
 			{phaseLabel}
 		</p>
 	{/if}
@@ -293,10 +304,11 @@
 	<div
 		class="relative flex aspect-square w-full touch-none items-center justify-center rounded-2xl bg-slate-100 select-none"
 		data-phase={phase}
-		aria-label="Игровое поле: кружок появляется на поле, ответьте кнопкой его цвета"
+		data-block={block}
+		aria-label="Игровое поле: цветной кружок, отвечайте стрелкой по цвету"
 	>
 		{#if phase === 'block-intro'}
-			<!-- Экран инструкции блока: тап/Enter продолжают раньше таймера. -->
+			<!-- Экран инструкции части: тап/Enter начинают часть. -->
 			<button
 				type="button"
 				class="flex h-full w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl px-6 text-center"
@@ -306,18 +318,38 @@
 				}}
 			>
 				<span class="text-sm font-medium tracking-wide text-slate-400 uppercase">
-					Часть {currentBlock} из 3
+					Часть {block} из 3 · {Math.round(blockDuration / 1000)} секунд
 				</span>
-				<span class="text-lg font-semibold text-slate-700 sm:text-xl">
-					{BLOCK_INTROS[currentBlock]}
+				<span class="max-w-xs text-lg font-semibold text-slate-700 sm:text-xl">
+					{BLOCK_INTROS[block]}
 				</span>
-				<span class="text-sm text-slate-400">Нажмите, чтобы продолжить</span>
+				<span class="text-sm text-slate-400">Запомните соответствие:</span>
+				<span class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+					{#each LEGEND[block] as item (item.color)}
+						<span
+							class="inline-flex items-center gap-1 text-lg font-semibold text-slate-700"
+						>
+							<span
+								class="inline-block h-4 w-4 rounded-full {DOT_CLS[item.color]}"
+								aria-hidden="true"
+							></span>
+							{item.arrow}
+						</span>
+					{/each}
+				</span>
+				<span
+					class="mt-1 inline-flex items-center gap-2 rounded-full bg-slate-800 px-5 py-2.5 text-base font-semibold text-white shadow-lg ring-2 ring-slate-400/40"
+				>
+					Нажмите, чтобы начать
+				</span>
 			</button>
 		{:else if showCircle && currentTrial}
 			{@const coords = POSITION_COORDS[currentTrial.position]}
 			{@const isFeedback = phase === 'feedback'}
 			<div
-				class="absolute aspect-square rounded-full transition-transform duration-150 {CIRCLE_CLS[currentTrial.color]} {isFeedback
+				class="absolute aspect-square rounded-full transition-transform duration-150 {CIRCLE_CLS[
+					currentTrial.color
+				]} {isFeedback
 					? lastIsCorrect
 						? 'scale-110 ring-8 ring-green-300'
 						: 'scale-95 ring-8 ring-red-300'
@@ -331,54 +363,26 @@
 		{/if}
 	</div>
 
-	{#if phase !== 'finished' && phase !== 'block-intro'}
-		<!-- Обратный отсчёт текущей фазы: в stimulus — окно ответа. -->
-		<ProgressBar min={0} max={phaseDuration} progress={elapsed} />
-	{/if}
-
 	{#if phase !== 'finished'}
-		<!-- Кнопки ответа: блоки 1–2 — два цвета, блок 3 — D-pad крестом.
+		<!-- Кнопки ответа — только стрелки, без цветовой подсказки: цвет
+		     нужно перевести в направление по памятке из инструкции.
 		     Ввод валиден только в stimulus (тихий no-op иначе). -->
-		{#if isBlock3}
-			<div class="grid w-40 grid-cols-3 grid-rows-3 gap-2" data-dpad>
+		{#if block === 3}
+			<div class="grid w-52 grid-cols-3 grid-rows-3 gap-2" data-dpad>
 				{#each BUTTONS_BLOCK_3 as btn (btn.color)}
-					{#if btn.position === 'up'}
-						<button
-							type="button"
-							class="col-start-2 row-start-1 h-14 cursor-pointer rounded-xl {btn.cls} transition-transform duration-100 select-none hover:scale-105 {isStimulus ? '' : 'opacity-50'}"
-							data-button={btn.color}
-							data-button-position={btn.position}
-							aria-label="Ответ: {btn.label}"
-							onclick={() => answer(btn.color)}
-						></button>
-					{:else if btn.position === 'left'}
-						<button
-							type="button"
-							class="col-start-1 row-start-2 h-14 cursor-pointer rounded-xl {btn.cls} transition-transform duration-100 select-none hover:scale-105 {isStimulus ? '' : 'opacity-50'}"
-							data-button={btn.color}
-							data-button-position={btn.position}
-							aria-label="Ответ: {btn.label}"
-							onclick={() => answer(btn.color)}
-						></button>
-					{:else if btn.position === 'right'}
-						<button
-							type="button"
-							class="col-start-3 row-start-2 h-14 cursor-pointer rounded-xl {btn.cls} transition-transform duration-100 select-none hover:scale-105 {isStimulus ? '' : 'opacity-50'}"
-							data-button={btn.color}
-							data-button-position={btn.position}
-							aria-label="Ответ: {btn.label}"
-							onclick={() => answer(btn.color)}
-						></button>
-					{:else}
-						<button
-							type="button"
-							class="col-start-2 row-start-3 h-14 cursor-pointer rounded-xl {btn.cls} transition-transform duration-100 select-none hover:scale-105 {isStimulus ? '' : 'opacity-50'}"
-							data-button={btn.color}
-							data-button-position={btn.position}
-							aria-label="Ответ: {btn.label}"
-							onclick={() => answer(btn.color)}
-						></button>
-					{/if}
+					<button
+						type="button"
+						class="{dpadCell(
+							btn.position
+						)} h-16 w-full text-2xl {ANSWER_BTN_CLS} {isStimulus ? '' : 'opacity-50'}"
+						data-button={btn.color}
+						data-button-position={btn.position}
+						data-arrow={btn.position}
+						aria-label="Ответ: {btn.label}"
+						onclick={() => answer(btn.color)}
+					>
+						{btn.arrow}
+					</button>
 				{/each}
 			</div>
 		{:else}
@@ -386,12 +390,17 @@
 				{#each BUTTONS_BLOCKS_12 as btn (btn.color)}
 					<button
 						type="button"
-						class="h-16 flex-1 cursor-pointer rounded-2xl {btn.cls} transition-transform duration-100 select-none hover:scale-105 {isStimulus ? '' : 'opacity-50'}"
+						class="h-16 flex-1 text-3xl {ANSWER_BTN_CLS} {isStimulus
+							? ''
+							: 'opacity-50'}"
 						data-button={btn.color}
 						data-button-position={btn.position}
+						data-arrow={btn.position}
 						aria-label="Ответ: {btn.label}"
 						onclick={() => answer(btn.color)}
-					></button>
+					>
+						{btn.arrow}
+					</button>
 				{/each}
 			</div>
 		{/if}

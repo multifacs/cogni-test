@@ -96,10 +96,10 @@ function summaryCell(rowIndex: number, column: number): HTMLElement {
 }
 
 describe('Simon Result', () => {
-	it('renders per-block summary table with overall row, simon effect and window', async () => {
+	it('renders per-block summary table with overall row, simon effect and block durations', async () => {
 		await render(Result, {
 			results: fixture,
-			meta: { blocks: '5+10+20', windowMs: '3000' }
+			meta: { blockDurationsMs: '10000+30000+60000' }
 		});
 
 		const table = page.getByRole('table').element();
@@ -151,15 +151,25 @@ describe('Simon Result', () => {
 		expect(effectText).toContain('Эффект Симона (инконгруэнтные − конгруэнтные):');
 		expect(effectText).toContain('102 мс');
 
-		// Окно ответа: meta.windowMs '3000' → «3 с»
-		expect(page.getByText(/Окно ответа/).element().textContent).toBe('Окно ответа: 3 с');
+		// Длительности частей: meta.blockDurationsMs → «10 / 30 / 60 с»
+		expect(page.getByText(/Длительность частей/).element().textContent).toBe(
+			'Длительность частей: 10 / 30 / 60 с'
+		);
 	});
 
-	it('renders without meta: no window line, no throw', async () => {
+	it('renders without meta: no duration line, no throw', async () => {
 		await render(Result, { results: fixture, meta: null });
 
 		expect(summaryCell(4, 2).textContent).toBe('35');
+		expect(page.getByText(/Длительность частей/).elements()).toHaveLength(0);
 		expect(page.getByText(/Окно ответа/).elements()).toHaveLength(0);
+	});
+
+	it('legacy meta: old sessions with windowMs still show the response window', async () => {
+		await render(Result, { results: fixture, meta: { windowMs: '3000' } });
+
+		expect(page.getByText(/Длительность частей/).elements()).toHaveLength(0);
+		expect(page.getByText(/Окно ответа/).element().textContent).toBe('Окно ответа: 3 с');
 	});
 
 	it('empty results: no crash, zero totals with «—», no canvas', async () => {

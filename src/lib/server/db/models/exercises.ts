@@ -287,9 +287,11 @@ export const corsiBlockAttempt = sqliteTable('corsi_block_attempt', {
 		.notNull()
 });
 
-// Задание Симона (simon): одна строка = один стимул. block 1|2|3,
-// trial_index сквозной 1..35 (ключ сортировки), color/position/congruency —
-// enum-строки, is_correct, response_time_ms (таймаут = окно 3000), timed_out.
+// Задание Симона (simon): одна строка = один сохранённый ответ. block 1|2|3,
+// trial_index — порядковый номер ответа 1..N в рамках сессии (ключ сортировки;
+// части идут на время, поэтому число проб не фиксировано), color/position/
+// congruency — enum-строки, is_correct, response_time_ms, timed_out (в новых
+// сессиях всегда false — лимита на пробу нет, поле для старых данных).
 export const simonTaskAttempt = sqliteTable('simon_task_attempt', {
 	id: text('id').primaryKey().notNull().$defaultFn(generate),
 	block: integer('block').notNull(),
