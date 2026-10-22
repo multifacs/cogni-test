@@ -9,7 +9,11 @@ import type { MemoryResult } from '$lib/tests/memory/types';
 import type { CampimetryResult } from '$lib/tests/campimetry/types';
 import type { SwallowResult, Direction, Background } from '$lib/tests/swallow/types';
 import type { MunsterbergResult } from '$lib/tests/munsterberg/types';
-import type { NumericStroopResult, Side } from '$lib/tests/numeric-stroop/types';
+import type {
+	NumericStroopBackground,
+	NumericStroopResult,
+	Side
+} from '$lib/tests/numeric-stroop/types';
 import type {
 	RavenAttemptRow,
 	TaskClass,
@@ -123,6 +127,7 @@ export function genSwallow(n: number): SwallowResult[] {
 }
 
 const STROOP_SIDES: Side[] = ['left', 'right'];
+const NUMERIC_STROOP_BACKGROUNDS: NumericStroopBackground[] = ['yellow', 'green'];
 
 export function genNumericStroop(n: number): NumericStroopResult[] {
 	return Array.from({ length: n }, (_, i) => {
@@ -135,6 +140,7 @@ export function genNumericStroop(n: number): NumericStroopResult[] {
 			time: rnd(300, 2000),
 			leftValue,
 			rightValue,
+			background: NUMERIC_STROOP_BACKGROUNDS[i % 2],
 			congruent: rndBool(0.5),
 			correctAnswer: STROOP_SIDES[rnd(0, 1)],
 			userAnswer: STROOP_SIDES[rnd(0, 1)],

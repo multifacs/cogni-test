@@ -248,6 +248,7 @@ describe('postResult', () => {
 				time: rnd(300, 2000),
 				leftValue,
 				rightValue,
+				background: i % 2 === 0 ? 'yellow' : 'green',
 				congruent: rndBool(0.5),
 				correctAnswer,
 				userAnswer,
@@ -268,6 +269,7 @@ describe('postResult', () => {
 			expect(expected).toBeDefined();
 			expect(row.leftValue).toBe(expected!.leftValue);
 			expect(row.rightValue).toBe(expected!.rightValue);
+			expect(row.background).toBe(expected!.background);
 			expect(row.congruent).toBe(expected!.congruent);
 			expect(row.correctAnswer).toBe(expected!.correctAnswer);
 			expect(row.userAnswer).toBe(expected!.userAnswer);

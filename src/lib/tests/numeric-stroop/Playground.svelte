@@ -2,7 +2,18 @@
 	import { onDestroy, onMount, untrack } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { NumericStroopGame } from './logic/numeric-stroop-game';
-	import type { NumericStroopResult, Side } from './types';
+	import type {
+		NumericStroopBackground,
+		NumericStroopResult,
+		NumericStroopTask,
+		Side
+	} from './types';
+
+	// Background colour is the rule cue: yellow — font size, green — value.
+	const BACKGROUND_COLORS: Record<NumericStroopBackground, string> = {
+		yellow: 'var(--camp-light-yellow)',
+		green: 'var(--button-green)'
+	};
 
 	// game / durationMs инжектятся только из тестов — контракт для
 	// реальных страниц не меняется (Task 1.3 монтирует без них).
@@ -23,10 +34,11 @@
 	// поэтому untrack: без него Svelte предупреждает state_referenced_locally.
 	let game = untrack(() => injectedGame ?? new NumericStroopGame());
 
-	let currentTask = $state({
-		left: { value: 0, size: 'small' as const },
-		right: { value: 0, size: 'small' as const },
-		correctAnswer: 'left' as Side,
+	let currentTask = $state<NumericStroopTask>({
+		left: { value: 0, size: 'small' },
+		right: { value: 0, size: 'small' },
+		background: 'yellow',
+		correctAnswer: 'left',
 		congruent: true
 	});
 	let timeLeft = $state(0);
@@ -81,9 +93,17 @@
 	<div class="timer">⏱ {timeLeft} сек</div>
 </div>
 
-<h2 class="text-center">Какое число больше по размеру?</h2>
+<h2 class="text-center">
+	{currentTask.background === 'yellow'
+		? 'Какое число больше по размеру?'
+		: 'Какое число больше по значению?'}
+</h2>
 
-<div class="stimulus flex items-baseline justify-center gap-16">
+<div
+	class="stimulus-panel flex items-baseline justify-center gap-16 rounded-2xl px-12 py-6"
+	data-rule={currentTask.background}
+	style="background-color: {BACKGROUND_COLORS[currentTask.background]};"
+>
 	<span class="number" style="font-size: {currentTask.left.size === 'big' ? '6rem' : '3rem'};"
 		>{currentTask.left.value}</span
 	>

@@ -1,12 +1,23 @@
-import type { NumberSide, NumericStroopResult, NumericStroopTask, Side } from '../types';
+import {
+	RULE_BY_BACKGROUND,
+	type NumberSide,
+	type NumericStroopBackground,
+	type NumericStroopResult,
+	type NumericStroopTask,
+	type Side
+} from '../types';
 
 const MIN_DIGIT = 1;
 const MAX_DIGIT = 9;
 
+const BACKGROUNDS: NumericStroopBackground[] = ['yellow', 'green'];
+
 /**
  * Numeric Stroop core logic (issue multifacs/cogni-test#103).
  *
- * The user answers which of two numbers is bigger BY FONT SIZE (physical size).
+ * Background colour selects the active rule (task switching, like Swallow):
+ * yellow — the user answers which number is bigger BY FONT SIZE (physical size),
+ * green — which number is bigger BY VALUE. The distractors swap accordingly.
  * Task generation is lazy and unbounded: the only game boundary is the 60s
  * timer owned by the UI component.
  */
@@ -41,6 +52,7 @@ export class NumericStroopGame {
 			time: timeTaken,
 			leftValue: currentTask.left.value,
 			rightValue: currentTask.right.value,
+			background: currentTask.background,
 			congruent: currentTask.congruent,
 			correctAnswer: currentTask.correctAnswer,
 			userAnswer: answer,
@@ -69,6 +81,7 @@ export class NumericStroopGame {
 	private rollTask(): NumericStroopTask {
 		const { big, small } = this.rollDistinctDigits();
 		const bigSide: Side = Math.random() < 0.5 ? 'left' : 'right';
+		const background = BACKGROUNDS[Math.floor(Math.random() * BACKGROUNDS.length)];
 		const congruent = Math.random() < 0.5;
 
 		// Congruent: the bigger VALUE gets the big FONT.
@@ -85,7 +98,12 @@ export class NumericStroopGame {
 				? { value: bigValue, size: 'big' }
 				: { value: smallValue, size: 'small' };
 
-		return { left, right, correctAnswer: bigSide, congruent };
+		// The active rule decides which feature is the target:
+		// yellow → big font (bigSide), green → bigger value.
+		const valueSide: Side = left.value > right.value ? 'left' : 'right';
+		const correctAnswer = RULE_BY_BACKGROUND[background] === 'size' ? bigSide : valueSide;
+
+		return { left, right, background, correctAnswer, congruent };
 	}
 
 	private rollDistinctDigits(): { big: number; small: number } {
@@ -103,6 +121,7 @@ export class NumericStroopGame {
 
 	private isSameTask(a: NumericStroopTask, b: NumericStroopTask): boolean {
 		return (
+			a.background === b.background &&
 			a.correctAnswer === b.correctAnswer &&
 			a.left.value === b.left.value &&
 			a.right.value === b.right.value

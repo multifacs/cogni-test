@@ -207,6 +207,7 @@ describe('result generators', () => {
 				expect(r.leftValue).not.toBe(r.rightValue);
 				expect(STROOP_SIDES).toContain(r.correctAnswer);
 				expect(STROOP_SIDES).toContain(r.userAnswer);
+				expect(['yellow', 'green']).toContain(r.background);
 				expect(typeof r.congruent).toBe('boolean');
 				expect(typeof r.isCorrect).toBe('boolean');
 			}

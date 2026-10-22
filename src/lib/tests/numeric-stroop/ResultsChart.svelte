@@ -115,7 +115,11 @@
 							label: function (context) {
 								const value = context.raw as ChartPoint;
 								const status = value.isCorrect ? 'Верно' : 'Неверно';
-								return `Реакция: ${value.y} мс (${status})`;
+								const rule =
+									value.raw.background === 'yellow'
+										? 'по размеру'
+										: 'по значению';
+								return [`Реакция: ${value.y} мс (${status})`, `Правило: ${rule}`];
 							}
 						}
 					},
