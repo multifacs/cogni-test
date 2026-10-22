@@ -4,22 +4,10 @@ import { render } from 'vitest-browser-svelte';
 import Playground from './Playground.svelte';
 import '../../../app.css';
 import type { MetaResult } from '$lib/exercises/types';
-import type { SimonColor, SimonResult } from './types';
-import { buildSession, TOTAL_TRIALS } from './logic/engine';
+import type { SimonBlock, SimonColor, SimonResult } from './types';
+import { COLOR_TO_POSITION } from './logic/engine';
 
-/** Ускоренные фазы — компонент принимает их через пропы (инъекция времени).
- *  Окно ответа (4000 мс) с запасом вмещает trusted-клик userEvent. */
-/** Интро блока длинное: тест тапает по data-continue раньше таймера, а
- *  короткое интро (100 мс) детачит кнопку до завершения stability-check
- *  trusted-клика («element was detached»). */
-const INTRO_MS = 3000;
-const FEEDBACK_MS = 120;
-const ITI_MS = 80;
-const RESPONSE_WINDOW_MS = 4000;
-
-/** Детерминированный ГПСЧ (mulberry32): одинаковый сид → одинаковая сессия.
- *  Фабрика выдаёт СВЕЖИЙ поток на каждый вызов: компонент и эталонный прогон
- *  движка потребляют одинаковый поток независимо. */
+/** Детерминированный ГПСЧ (mulberry32): одинаковый сид → одинаковая сессия. */
 function mulberry32(seed: number): () => number {
 	let a = seed >>> 0;
 	return () => {
@@ -32,6 +20,15 @@ function mulberry32(seed: number): () => number {
 }
 
 const SEED = 42;
+/**
+ * Короткие части для браузерного теста: длительность — единственный
+ * источник недетерминизма числа проб, поэтому 4 с на часть дают
+ * несколько проб даже под нагрузкой CI.
+ */
+const BLOCK_MS = 4000;
+const BLOCK_DURATIONS: Record<SimonBlock, number> = { 1: BLOCK_MS, 2: BLOCK_MS, 3: BLOCK_MS };
+/** Вспышка достаточно длинная, чтобы тест успел надёжно её заметить. */
+const FEEDBACK_MS = 400;
 
 function makeProps() {
 	const gameEnd = vi.fn();
@@ -53,7 +50,7 @@ function panel(): HTMLElement | null {
 	return document.querySelector<HTMLElement>('[data-phase]');
 }
 
-/** Фраза состояния над полем («Отвечай по цвету» / «Верно» / «Ошибка»). */
+/** Фраза состояния над полем («Отвечай стрелкой по цвету» / «Верно» / «Ошибка»). */
 function phrase(): HTMLElement | null {
 	return document.querySelector<HTMLElement>('.phase-phrase');
 }
@@ -68,6 +65,11 @@ function button(color: SimonColor): HTMLElement | null {
 	return document.querySelector<HTMLElement>(`[data-button="${color}"]`);
 }
 
+/** Экран инструкции части. */
+function continueButton(): HTMLElement | null {
+	return document.querySelector<HTMLElement>('[data-continue]');
+}
+
 async function waitFor(what: string, predicate: () => boolean, timeoutMs = 10_000) {
 	const start = performance.now();
 	while (performance.now() - start < timeoutMs) {
@@ -77,63 +79,55 @@ async function waitFor(what: string, predicate: () => boolean, timeoutMs = 10_00
 	throw new Error(`Timed out waiting for: ${what}`);
 }
 
-/** Дожидается начала следующей пробы: пропускает экран инструкции блока
- *  (тап по data-continue), если он показан. */
-async function nextStimulus() {
-	await waitFor('stimulus or block-intro', () =>
-		panel() ? panel().dataset.phase === 'stimulus' || panel().dataset.phase === 'block-intro' : false
-	);
-	if (panel().dataset.phase === 'block-intro') {
-		await userEvent.click(document.querySelector<HTMLElement>('[data-continue]')!);
+/**
+ * Доигрывает сессию до финиша: жмёт «продолжить» на интро частей и отвечает
+ * на каждую показанную пробу её цветом (кнопки — стрелки, data-button
+ * по-прежнему цвет). Неотвеченные пробы на границе части отбрасываются
+ * самим компонентом — тест их не досчитывает.
+ */
+async function playUntilFinished() {
+	for (let guard = 0; guard < 600; guard++) {
+		const phase = panel()?.dataset.phase;
+		if (phase === 'finished') return;
+		if (phase === 'block-intro') {
+			await userEvent.click(continueButton()!);
+			continue;
+		}
+		if (phase === 'stimulus') {
+			const color = circle()!.dataset.color as SimonColor;
+			await userEvent.click(button(color)!);
+			// Ответ обработан, если компонент ушёл в фидбек (или сразу закрыл часть).
+			await waitFor('answer processed', () =>
+				['feedback', 'block-intro', 'finished'].includes(panel()?.dataset.phase ?? '')
+			);
+			continue;
+		}
+		await waitFor('next phase', () => {
+			const next = panel()?.dataset.phase;
+			return next === 'stimulus' || next === 'block-intro' || next === 'finished';
+		});
 	}
-	await waitFor('stimulus phase', () => panel()?.dataset.phase === 'stimulus');
-}
-
-/** Отвечает на текущую пробу цветом expected: кнопкой или стрелкой
- *  (ArrowLeft=red, ArrowRight=blue). */
-async function answerColor(color: SimonColor, useKeyboard: 'left' | 'right' | null = null) {
-	const el = circle()!;
-	expect(el.dataset.color).toBe(color);
-	if (useKeyboard) {
-		await userEvent.keyboard(useKeyboard === 'left' ? '[ArrowLeft]' : '[ArrowRight]');
-	} else {
-		await userEvent.click(button(color)!);
-	}
-	await waitFor('feedback phase', () => panel()?.dataset.phase === 'feedback');
-}
-
-/** Стрелка, соответствующая цвету (red→left, blue→right). */
-function arrowFor(color: SimonColor): 'left' | 'right' {
-	return color === 'red' ? 'left' : 'right';
+	throw new Error('Сессия не завершилась за отведённое число шагов');
 }
 
 describe('Simon playground — click-through', () => {
-	it('полный прогон: 35 проб (клавиатура в блоке 1, кнопки в блоках 2–3), кружки сверены с движком, sendResults ровно один раз, gameEnd вызван', async () => {
-		// Сверка с движком: тот же сид даёт ту же сессию из 35 проб.
-		const expected = buildSession(mulberry32(SEED));
-		expect(expected).toHaveLength(TOTAL_TRIALS);
-
+	it('непрерывный прогон: части по таймеру, стрелки без цветов, результаты сохранены', async () => {
 		const props = makeProps();
 		const { unmount } = await render(Playground, {
 			gameEnd: props.gameEnd,
 			sendResults: props.sendResults,
-			introMs: INTRO_MS,
-			responseWindowMs: RESPONSE_WINDOW_MS,
+			blockDurationsMs: BLOCK_DURATIONS,
 			feedbackMs: FEEDBACK_MS,
-			itiMs: ITI_MS,
 			rng: mulberry32(SEED)
 		});
 
-		for (let i = 0; i < expected.length; i++) {
-			await nextStimulus();
-			const trial = expected[i];
-			// Кружок совпадает с движком: и цвет, и позиция.
-			expect(circle()!.dataset.color).toBe(trial.color);
-			expect(circle()!.dataset.position).toBe(trial.position);
-			// Блок 1 — клавиатура (red/blue → стрелки left/right), остальное кнопками.
-			await answerColor(trial.color, trial.block === 1 ? arrowFor(trial.color) : null);
-		}
+		// Кнопки ответа — стрелки без цветовой заливки (проверяем на интро части 1).
+		expect(button('red')!.textContent?.trim()).toBe('←');
+		expect(button('blue')!.textContent?.trim()).toBe('→');
+		expect(button('red')!.className).not.toContain('bg-red-500');
+		expect(button('blue')!.className).not.toContain('bg-blue-500');
 
+		await playUntilFinished();
 		await waitFor('finished phase', () => panel()?.dataset.phase === 'finished');
 
 		// Контракт завершения: ровно по одному вызову.
@@ -141,96 +135,102 @@ describe('Simon playground — click-through', () => {
 		expect(props.sendResults).toHaveBeenCalledTimes(1);
 
 		const results = props.results();
-		expect(results).toHaveLength(35);
-		expect(results.map((r) => r.trialIndex)).toEqual(Array.from({ length: 35 }, (_, i) => i + 1));
-		// Все ответы верные, таймаутов нет.
+		expect(results.length).toBeGreaterThan(0);
+		// Нумерация сохранённых ответов непрерывна, начиная с 1.
+		expect(results.map((r) => r.trialIndex)).toEqual(results.map((_, i) => i + 1));
 		expect(results.every((r) => r.isCorrect)).toBe(true);
 		expect(results.every((r) => !r.timedOut)).toBe(true);
-		// Время ответа внутри окна и положительное.
+		expect(results.every((r) => r.responseTimeMs > 0)).toBe(true);
+
+		// Все три части успели дать хотя бы по одной пробе.
+		expect([...new Set(results.map((r) => r.block))]).toEqual([1, 2, 3]);
+
+		// Каждая сохранённая проба валидна для своего блока.
 		for (const r of results) {
-			expect(r.responseTimeMs).toBeGreaterThan(0);
-			expect(r.responseTimeMs).toBeLessThan(RESPONSE_WINDOW_MS);
+			if (r.block === 1) {
+				expect(['red', 'blue']).toContain(r.color);
+				expect(r.position).toBe('center');
+				expect(r.congruency).toBe('neutral');
+				continue;
+			}
+			expect(r.position).not.toBe('center');
+			if (r.block === 2) expect(['red', 'blue']).toContain(r.color);
+			expect(r.congruency === 'congruent').toBe(r.position === COLOR_TO_POSITION[r.color]);
 		}
 
-		// Мета упражнения (константы движка, а не инъекция теста).
-		expect(props.meta()).toEqual({ blocks: '5+10+20', windowMs: '3000' });
+		// Мета упражнения — константы движка, а не инъекция теста.
+		expect(props.meta()).toEqual({ blockDurationsMs: '10000+30000+60000' });
 
 		unmount();
-		// Полный прогон 35 проб флакует под параллельной нагрузкой client-прогона CI.
 	}, 120_000);
 
-	it('неверный ответ: isCorrect false, цвет нажатой кнопки зафиксирован как ответ', async () => {
-		const expected = buildSession(mulberry32(SEED));
+	it('неверный ответ: isCorrect false, цвет нажатой стрелки зафиксирован как ответ', async () => {
 		const props = makeProps();
 		const { unmount } = await render(Playground, {
 			gameEnd: props.gameEnd,
 			sendResults: props.sendResults,
-			introMs: INTRO_MS,
-			responseWindowMs: RESPONSE_WINDOW_MS,
+			blockDurationsMs: BLOCK_DURATIONS,
 			feedbackMs: FEEDBACK_MS,
-			itiMs: ITI_MS,
 			rng: mulberry32(SEED)
 		});
 
-		// Первая проба: намеренно неправильный цвет (в блоке 1 только red/blue).
-		await nextStimulus();
-		const first = expected[0];
-		const wrongColor: SimonColor = first.color === 'red' ? 'blue' : 'red';
-		expect(circle()!.dataset.color).toBe(first.color);
+		await waitFor('block 1 intro', () => panel()?.dataset.phase === 'block-intro');
+		await userEvent.click(continueButton()!);
+		await waitFor('block 1 stimulus', () => panel()?.dataset.phase === 'stimulus');
+
+		// Первая проба: намеренно неправильный цвет (в части 1 только red/blue).
+		const firstColor = circle()!.dataset.color as SimonColor;
+		const wrongColor: SimonColor = firstColor === 'red' ? 'blue' : 'red';
 		await userEvent.click(button(wrongColor)!);
 		await waitFor('feedback phase', () => panel()?.dataset.phase === 'feedback');
 		expect(phrase()?.textContent).toBe('Ошибка');
 
 		// Остальные пробы доигрываем верно, чтобы сессия дошла до sendResults.
-		for (let i = 1; i < expected.length; i++) {
-			await nextStimulus();
-			await answerColor(expected[i].color);
-		}
+		await playUntilFinished();
 		await waitFor('finished phase', () => panel()?.dataset.phase === 'finished');
 
 		const results = props.results();
-		expect(results).toHaveLength(35);
+		expect(results.length).toBeGreaterThan(0);
 		expect(results[0].isCorrect).toBe(false);
 		expect(results[0].timedOut).toBe(false);
 		expect(results[0].trialIndex).toBe(1);
+		expect(results[0].color).toBe(firstColor);
 		expect(results.slice(1).every((r) => r.isCorrect)).toBe(true);
 
 		unmount();
 	}, 120_000);
 
-	it('таймаут: без ответа проба ошибочная, timedOut true и время = окну', async () => {
-		const expected = buildSession(mulberry32(SEED));
+	it('таймер части: без ответов в части 1 её пробы не сохраняются, часть 2 начинается с 1', async () => {
 		const props = makeProps();
-		// Короткое окно только для таймаутной первой пробы; остальные пробы
-		// доигрываем сразу по появлению кружка (клик укладывается в окно).
-		const SHORT_WINDOW_MS = 1000;
 		const { unmount } = await render(Playground, {
 			gameEnd: props.gameEnd,
 			sendResults: props.sendResults,
-			introMs: INTRO_MS,
-			responseWindowMs: SHORT_WINDOW_MS,
+			blockDurationsMs: BLOCK_DURATIONS,
 			feedbackMs: FEEDBACK_MS,
-			itiMs: ITI_MS,
 			rng: mulberry32(SEED)
 		});
 
-		// Первая проба: не отвечаем — окно истекает само.
-		await nextStimulus();
-		await waitFor('feedback phase', () => panel()?.dataset.phase === 'feedback');
-		expect(phrase()?.textContent).toBe('Ошибка');
+		await waitFor('block 1 intro', () => panel()?.dataset.phase === 'block-intro');
+		await userEvent.click(continueButton()!);
+		await waitFor('block 1 stimulus', () => panel()?.dataset.phase === 'stimulus');
 
-		for (let i = 1; i < expected.length; i++) {
-			await nextStimulus();
-			await answerColor(expected[i].color);
-		}
+		// Не отвечаем: часть 1 должна закрыться сама по общему таймеру.
+		await waitFor(
+			'block 2 intro',
+			() => panel()?.dataset.block === '2' && panel()?.dataset.phase === 'block-intro',
+			BLOCK_MS + 5000
+		);
+		expect(props.sendResults).not.toHaveBeenCalled();
+
+		await playUntilFinished();
 		await waitFor('finished phase', () => panel()?.dataset.phase === 'finished');
 
 		const results = props.results();
-		expect(results[0].timedOut).toBe(true);
-		expect(results[0].isCorrect).toBe(false);
-		expect(results[0].responseTimeMs).toBe(SHORT_WINDOW_MS);
-		// Мета — константы движка, а не инъекция теста.
-		expect(props.meta()).toEqual({ blocks: '5+10+20', windowMs: '3000' });
+		expect(results.length).toBeGreaterThan(0);
+		// Неотвеченная проба части 1 не сохранилась и не заняла trialIndex.
+		expect(results.some((r) => r.block === 1)).toBe(false);
+		expect(results[0].block).toBe(2);
+		expect(results[0].trialIndex).toBe(1);
 
 		unmount();
 	}, 120_000);

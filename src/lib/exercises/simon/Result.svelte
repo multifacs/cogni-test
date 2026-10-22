@@ -25,6 +25,17 @@
 		return `${Math.round(fraction * 100)} %`;
 	}
 
+	// Новая мета: длительности частей в мс, «10000+30000+60000» →
+	// «Длительность частей: 10 / 30 / 60 с».
+	const blockDurationsText = $derived.by(() => {
+		const raw = meta?.blockDurationsMs;
+		if (raw == null) return '';
+		const parts = raw.split('+').map(Number);
+		if (parts.length === 0 || parts.some((ms) => !Number.isFinite(ms))) return '';
+		return `${parts.map((ms) => (ms >= 1000 ? Math.round(ms / 1000) : ms)).join(' / ')} с`;
+	});
+
+	// Старые сессии хранят окно ответа на пробу — показываем его как fallback.
 	const windowText = $derived.by(() => {
 		const raw = meta?.windowMs;
 		if (raw == null) return '';
@@ -89,7 +100,9 @@
 		Эффект Симона (инконгруэнтные − конгруэнтные):
 		{summary.effect.effectMs !== null ? formatMs(summary.effect.effectMs) : '—'}
 	</p>
-	{#if windowText}
+	{#if blockDurationsText}
+		<p class="text-gray-600 dark:text-gray-400">Длительность частей: {blockDurationsText}</p>
+	{:else if windowText}
 		<p class="text-gray-600 dark:text-gray-400">Окно ответа: {windowText}</p>
 	{/if}
 

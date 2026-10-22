@@ -114,7 +114,7 @@ describe('postResult simonTask', () => {
 		const sessionId = await postResult(
 			{
 				results: buildFullSession(),
-				meta: { blocks: '5+10+20', windowMs: '3000' }
+				meta: { blockDurationsMs: '10000+30000+60000' }
 			},
 			'simonTask',
 			u.id
@@ -125,7 +125,7 @@ describe('postResult simonTask', () => {
 		expect(sess).toBeDefined();
 		expect(sess.testType).toBe('simonTask');
 		expect(sess.meta).toBeTruthy();
-		expect(JSON.parse(sess.meta!)).toEqual({ blocks: '5+10+20', windowMs: '3000' });
+		expect(JSON.parse(sess.meta!)).toEqual({ blockDurationsMs: '10000+30000+60000' });
 
 		const rows = await db
 			.select()
@@ -140,7 +140,9 @@ describe('postResult simonTask', () => {
 		expect(found).toBeDefined();
 		const attempts = found!.attempts as SimonResult[];
 		expect(attempts.length).toBe(35);
-		expect(attempts.map((a) => a.trialIndex)).toEqual(Array.from({ length: 35 }, (_, i) => i + 1));
+		expect(attempts.map((a) => a.trialIndex)).toEqual(
+			Array.from({ length: 35 }, (_, i) => i + 1)
+		);
 	});
 
 	it('stores raw column values the schema expects', async () => {
@@ -217,7 +219,7 @@ function buildFullSession(): SimonResult[] {
 	for (let i = 1; i <= 35; i++) {
 		const block = i <= 5 ? 1 : i <= 15 ? 2 : 3;
 		results.push({
-			block: (block as 1 | 2 | 3),
+			block: block as 1 | 2 | 3,
 			trialIndex: i,
 			color: colors[i % colors.length]!,
 			position: positions[i % positions.length]!,
