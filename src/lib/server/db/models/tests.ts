@@ -164,6 +164,7 @@ export const numericStroopAttempt = sqliteTable(
 		time: integer('time').notNull(),
 		leftValue: integer('left_value').notNull(),
 		rightValue: integer('right_value').notNull(),
+		background: text('background').notNull().default('yellow'),
 		congruent: integer('congruent', { mode: 'boolean' }).notNull(),
 		correctAnswer: text('correct_answer').notNull(),
 		userAnswer: text('user_answer'),
@@ -176,6 +177,7 @@ export const numericStroopAttempt = sqliteTable(
 			.notNull()
 	},
 	(table) => [
+		check('background_check', enumCheck(table.background, ['yellow', 'green'])),
 		check('correct_answer_check', enumCheck(table.correctAnswer, STROOP_SIDES)),
 		check('user_answer_check', enumCheck(table.userAnswer, STROOP_SIDES)), // nullable
 		check('left_value_range', sql`${table.leftValue} between 1 and 9`),

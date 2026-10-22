@@ -142,6 +142,7 @@ describe.skipIf(!process.env.SEED_DB)('seed results', () => {
 			expect(row.leftValue).not.toBe(row.rightValue);
 			expect(['left', 'right']).toContain(row.correctAnswer);
 			expect(['left', 'right']).toContain(row.userAnswer);
+			expect(['yellow', 'green']).toContain(row.background);
 			expect(typeof row.congruent).toBe('boolean');
 		}
 	});
