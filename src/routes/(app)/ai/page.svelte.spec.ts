@@ -112,7 +112,7 @@ async function mountPage(data: ReturnType<typeof makeData> = makeData([])) {
 // ─── Тесты ────────────────────────────────────────────────────────────
 
 describe('/ai — хаб этапов: карточки', () => {
-	it('done-карточка — ссылка с исходным href, CTA «Пройти заново» и aria-label', async () => {
+	it('done-карточка — ссылка с исходным href, aria-label; видимого CTA нет', async () => {
 		const { container } = await mountPage(makeData(['survey', 'ai-life', 'tests']));
 
 		// survey: href с query не теряется
@@ -134,7 +134,8 @@ describe('/ai — хаб этапов: карточки', () => {
 				.getAttribute('href')
 		).toBe('/tests?from=ai');
 
-		expect(container.textContent).toContain('Пройти заново');
+		// CTA «Пройти заново» удалён с карточек
+		expect(container.textContent).not.toContain('Пройти заново');
 	});
 
 	it('classification done → href /ai/classification', async () => {
@@ -169,25 +170,27 @@ describe('/ai — хаб этапов: карточки', () => {
 		expect(container.textContent).toContain('Заблокировано');
 	});
 
-	it('next-карточка — ссылка с CTA «Начать» (регресс)', async () => {
+	it('next-карточка — ссылка с aria-label; видимого CTA «Начать» нет (регресс)', async () => {
 		const { container } = await mountPage(makeData(['survey']));
 
 		const nextLink = page.getByRole('link', { name: 'Перейти: ИИ в жизни' });
 		await expect.element(nextLink).toBeInTheDocument();
 		expect(nextLink.element().getAttribute('href')).toBe('/ai/ai-life');
 
-		const nextItem = container.querySelector('li.stage.next');
-		expect(nextItem?.querySelector('a.stage-link.next .stage-cta')?.textContent).toBe('Начать');
+		// CTA «Начать» удалён с next-карточки
+		expect(container.textContent).not.toContain('Начать');
+		expect(container.querySelector('.stage-cta')).toBeNull();
 	});
 
-	it('done-CTA «Пройти заново» — ellipsis-поведение (сжатие на узких экранах)', async () => {
+	it('done-карточка — бейдж «Пройдено» с ellipsis-поведением, CTA нет', async () => {
 		const { container } = await mountPage(makeData(['survey', 'ai-life', 'tests']));
 
-		const doneCta = container.querySelector('a.stage-link.done .stage-cta');
-		expect(doneCta).not.toBeNull();
-		expect(doneCta?.textContent).toBe('Пройти заново');
+		expect(container.querySelector('.stage-cta')).toBeNull();
 
-		const style = getComputedStyle(doneCta as Element);
+		const badges = [...container.querySelectorAll('a.stage-link.done .stage-badge')];
+		expect(badges).toHaveLength(3);
+
+		const style = getComputedStyle(badges[0] as Element);
 		expect(style.overflow).toBe('hidden');
 		expect(style.textOverflow).toBe('ellipsis');
 		expect(style.whiteSpace).toBe('nowrap');

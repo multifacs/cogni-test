@@ -54,7 +54,6 @@
 								<span class="stage-title">{stage.title}</span>
 								<span class="stage-description">{stage.description}</span>
 							</span>
-							<span class="stage-cta">Начать</span>
 						</a>
 					{:else if stage.status === 'done'}
 						<!-- Done-карточка — кликабельная ссылка: перезапись результатов
@@ -74,7 +73,6 @@
 							</span>
 							<span class="stage-actions">
 								<span class="stage-badge">Пройдено</span>
-								<span class="stage-cta">Пройти заново</span>
 							</span>
 						</a>
 					{:else}
@@ -204,25 +202,6 @@
 		font-size: 0.875rem;
 		opacity: 0.75;
 		color: var(--main-text-color);
-	}
-
-	.stage-cta {
-		margin-left: auto;
-		font-weight: 600;
-		color: var(--button-green-text);
-		/* Узкие экраны: CTA сжимается с «…», а не растягивает/выталкивает карточку.
-		   Цепочка сжатия: .stage-link (flex) → .stage-info / .stage-actions
-		   (min-width: 0, max-width 40%) → этот CTA. */
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		min-width: 0;
-	}
-
-	.stage-link.done .stage-cta {
-		/* Вторичный CTA «Пройти заново» — приглушённый, не green:
-		   green — только primary «Начать». */
-		color: var(--button-blue-text);
 	}
 
 	.stage-actions {

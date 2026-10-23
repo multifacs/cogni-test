@@ -73,7 +73,7 @@
 					<div class="flex w-full flex-col items-center justify-center">
 						<div class="flex w-full max-w-5xl flex-col items-center gap-6">
 							{#if fromAi}
-								<Button color="blue" goto="/ai">← Меню ИИ-влияние</Button>
+								<Button color="red" goto="/ai">← Меню ИИ-влияние</Button>
 							{/if}
 							<h2 style="text-align:center; color: var(--main-text-color);">
 								Пройдите всю анкету подряд или выберите нужный раздел

@@ -8,6 +8,7 @@
 	import { getContext, onMount } from 'svelte';
 	import { page } from '$app/state';
 	import RecommendationCard from '$lib/components/ui/RecommendationCard.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import { streaming, startStreaming } from '$lib/stores/streaming.svelte';
 
 	let { data } = $props();
@@ -43,13 +44,7 @@
 <main class="main flex w-full flex-col items-center justify-center-safe">
 	<div class="flex w-full max-w-5xl flex-col items-center justify-center-safe gap-4 sm:gap-6">
 		{#if fromAi}
-			<a
-				href="/ai"
-				class="text-sm font-semibold underline underline-offset-4"
-				style="color: var(--main-accent-color);"
-			>
-				← Меню ИИ-влияние
-			</a>
+			<Button color="red" goto="/ai">← Меню ИИ-влияние</Button>
 		{/if}
 		<div class="w-full">
 			<RecommendationCard
