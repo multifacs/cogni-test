@@ -34,11 +34,16 @@ export const load: LayoutServerLoad = async ({ cookies, url }) => {
 
 	// As user will be eventually redirected to /tests page to start diagnostic it's required to allow /tests.
 	// As well it's probably a good idea to allow /profile so user can logout for example.
-	const allowedPaths = ['/home', '/tests', '/profile', '/admin', '/gto', '/questionary'];
+	const allowedPaths = ['/home', '/tests', '/profile', '/admin', '/gto', '/questionary', '/ai'];
 	if (undiagnosed) {
 		let allowed = false;
 		for (const allowedPath of allowedPaths) {
-			if (url.pathname.startsWith(allowedPath)) {
+			// '/ai' требует точного match: голый startsWith('/ai') пропускал бы /aiX.
+			const isMatch =
+				allowedPath === '/ai'
+					? url.pathname === '/ai' || url.pathname.startsWith('/ai/')
+					: url.pathname.startsWith(allowedPath);
+			if (isMatch) {
 				allowed = true;
 				break;
 			}
@@ -102,8 +107,6 @@ export const load: LayoutServerLoad = async ({ cookies, url }) => {
 	if (!profileSurvey) {
 		profileSurvey = { ...getDefaultValues(), userId };
 	}
-
-	console.log(profileSurvey);
 
 	return {
 		user,

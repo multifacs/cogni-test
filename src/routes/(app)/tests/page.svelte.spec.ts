@@ -22,7 +22,12 @@ vi.mock('$app/navigation', () => ({
 }));
 
 vi.mock('$app/paths', () => ({
-	resolve: (path: string) => navMocks.resolve(path)
+	resolve: (path: string) => navMocks.resolve(path),
+	// $app/state (импортится страницей для ?from=ai ссылки) требует
+	// именованные экспорты assets/base из paths-модуля — без них
+	// named-import падает на загрузке спека
+	assets: '',
+	base: ''
 }));
 
 vi.mock('$app/environment', () => ({
