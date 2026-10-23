@@ -172,7 +172,6 @@
 
 <main class="main glass-scene flex w-full flex-col items-center justify-center-safe">
 	<div class="glass-bg" aria-hidden="true">
-		<div class="glass-blob glass-blob--top"></div>
 		<div class="glass-blob glass-blob--bottom"></div>
 	</div>
 

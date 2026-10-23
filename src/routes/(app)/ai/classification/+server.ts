@@ -1,17 +1,19 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { saveClassificationResult } from '$lib/server/db/controllers/classification';
-import type {
-	ClassificationGroupInput,
-	ClassificationPayloadInput
+import {
+	ControllerError,
+	saveClassificationWords
 } from '$lib/server/db/controllers/classification';
+import type { ClassificationGroupInput } from '$lib/server/db/controllers/classification';
 
-/** Валидация payload на границе: не-объект, groups не массив, элементы/words не той формы → 400. */
-function parsePayload(body: unknown): ClassificationPayloadInput | null {
+/**
+ * Этап 1 (слова): payload = { groups }. Поле retelling больше НЕ принимается —
+ * пересказ сдаётся отдельным маршрутом retelling/+server.ts.
+ */
+function parsePayload(body: unknown): ClassificationGroupInput[] | null {
 	if (body === null || typeof body !== 'object' || Array.isArray(body)) return null;
-	const { groups, retelling } = body as Record<string, unknown>;
+	const { groups } = body as Record<string, unknown>;
 	if (!Array.isArray(groups)) return null;
-	if (typeof retelling !== 'string') return null;
 	const parsedGroups: ClassificationGroupInput[] = [];
 	for (const group of groups) {
 		if (group === null || typeof group !== 'object' || Array.isArray(group)) return null;
@@ -20,7 +22,7 @@ function parsePayload(body: unknown): ClassificationPayloadInput | null {
 		if (typeof feature !== 'string') return null;
 		parsedGroups.push({ words, feature });
 	}
-	return { groups: parsedGroups, retelling };
+	return parsedGroups;
 }
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
@@ -34,15 +36,18 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		return json({ error: 'Invalid JSON body' }, { status: 400 });
 	}
 
-	const payload = parsePayload(body);
-	if (!payload) {
+	const groups = parsePayload(body);
+	if (!groups) {
 		return json({ error: 'Invalid payload' }, { status: 400 });
 	}
 
 	try {
-		const sessionId = await saveClassificationResult(userId, payload);
+		const sessionId = await saveClassificationWords(userId, groups);
 		return json({ ok: true, sessionId }, { status: 201 });
 	} catch (e) {
+		if (e instanceof ControllerError) {
+			return json({ error: e.message }, { status: e.status });
+		}
 		return json({ error: e instanceof Error ? e.message : 'Unknown error' }, { status: 400 });
 	}
 };

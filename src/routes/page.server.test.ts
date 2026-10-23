@@ -224,16 +224,16 @@ describe('root +page.server login action ai flow', () => {
 		vi.mocked(createUser).mockResolvedValue({ id: 'new-user-1' } as never);
 	});
 
-	const makeLoginEvent = (search = ''): ActionEvent =>
+	const makeLoginEvent = (search = '', extraForm: Record<string, string> = {}): ActionEvent =>
 		({
 			cookies: makeLoginCookies(),
 			request: new Request(`http://localhost/${search}`, {
 				method: 'POST',
-				body: new URLSearchParams(VALID_LOGIN_FORM)
+				body: new URLSearchParams({ ...VALID_LOGIN_FORM, ...extraForm })
 			})
 		}) as unknown as ActionEvent;
 
-	it('redirects to /ai and sets ai_flow cookie when ai query param present (no prior cookie)', async () => {
+	it('redirects to /ai and sets ai_flow cookie when ai query param present (fallback path)', async () => {
 		const { actions } = await import('./+page.server');
 		const event = makeLoginEvent('?ai');
 		const redirect = await catchRedirect(async () => (actions as Actions).login(event));
@@ -254,7 +254,23 @@ describe('root +page.server login action ai flow', () => {
 		});
 	});
 
-	it('redirects to /home and does NOT set ai_flow cookie when no ai query param', async () => {
+	it('redirects to /ai and sets ai_flow cookie when form data carries ai flag (browser POST on ?/login loses query)', async () => {
+		const { actions } = await import('./+page.server');
+		const event = makeLoginEvent('', { ai: '1' });
+		const redirect = await catchRedirect(async () => (actions as Actions).login(event));
+
+		expect(redirect.status).toBe(307);
+		expect(redirect.location).toBe('/ai');
+		const cookies = event.cookies as unknown as { set: ReturnType<typeof vi.fn> };
+		expect(cookies.set).toHaveBeenCalledWith('ai_flow', '1', {
+			path: '/',
+			secure: true,
+			httpOnly: true,
+			maxAge: 60 * 60 * 24 * 30
+		});
+	});
+
+	it('redirects to /home and does NOT set ai_flow cookie when no ai signal at all', async () => {
 		const { actions } = await import('./+page.server');
 		const event = makeLoginEvent();
 		const redirect = await catchRedirect(async () => (actions as Actions).login(event));
@@ -262,7 +278,7 @@ describe('root +page.server login action ai flow', () => {
 		expect(redirect.status).toBe(307);
 		expect(redirect.location).toBe('/home');
 		const cookies = event.cookies as unknown as { set: ReturnType<typeof vi.fn> };
-		expect(cookies.set).toHaveBeenCalledTimes(1);
-		expect(cookies.set).toHaveBeenCalledWith('user_id', 'new-user-1', expect.anything());
+		const setCookieNames = cookies.set.mock.calls.map((call) => call[0]);
+		expect(setCookieNames).toEqual(['user_id']);
 	});
 });

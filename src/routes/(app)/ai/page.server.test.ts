@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { getAiSurveyProgress } from '$lib/server/db/controllers/ai-survey';
+import { hasCompletedClassification } from '$lib/server/db/controllers/classification';
 import { getTestSessionCounts } from '$lib/server/db/controllers/test';
 import type { PageServerData, PageServerLoad } from './$types';
 
@@ -11,6 +12,10 @@ vi.mock('$lib/server/db/controllers/ai-survey', () => ({
 
 vi.mock('$lib/server/db/controllers/test', () => ({
 	getTestSessionCounts: vi.fn()
+}));
+
+vi.mock('$lib/server/db/controllers/classification', () => ({
+	hasCompletedClassification: vi.fn()
 }));
 
 vi.mock('@sveltejs/kit', async () => {
@@ -70,6 +75,9 @@ const FILLED_3 = { birthCity: 'Город', currentCityType: 'big', education: '
 const AI_PROGRESS_0 = { answered: 0, visibleTotal: 10, percent: 0 };
 const AI_PROGRESS_10 = { answered: 1, visibleTotal: 10, percent: 10 };
 
+// Контракт завершённости классификации: hasCompletedClassification → boolean
+// (re-take семантика Plan v4: страница теста больше не редиректит завершившего).
+
 async function loadStages(event: LoadEvent): Promise<PageServerData> {
 	const { load } = await import('./+page.server');
 	return (await load(event)) as PageServerData;
@@ -82,6 +90,7 @@ describe('/ai page server load: этап «Анкета» (profileSurveyPercent)
 		vi.clearAllMocks();
 		vi.mocked(getAiSurveyProgress).mockResolvedValue(AI_PROGRESS_0);
 		vi.mocked(getTestSessionCounts).mockResolvedValue({});
+		vi.mocked(hasCompletedClassification).mockResolvedValue(false);
 	});
 
 	it('null profileSurvey → первый этап next, остальные locked', async () => {
@@ -120,6 +129,7 @@ describe('/ai page server load: этап «Анкета» (profileSurveyPercent)
 describe('/ai page server load: статусы этапов', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		vi.mocked(hasCompletedClassification).mockResolvedValue(false);
 	});
 
 	it('свежий юзер (ничего не пройдено) → только первый этап next, остальные locked', async () => {
@@ -134,10 +144,8 @@ describe('/ai page server load: статусы этапов', () => {
 
 	it('все 4 этапа пройдены → все done и allDone=true', async () => {
 		vi.mocked(getAiSurveyProgress).mockResolvedValue(AI_PROGRESS_10);
-		vi.mocked(getTestSessionCounts).mockResolvedValue({
-			...ALL_TEST_SESSIONS,
-			classification: 1
-		});
+		vi.mocked(getTestSessionCounts).mockResolvedValue({ ...ALL_TEST_SESSIONS });
+		vi.mocked(hasCompletedClassification).mockResolvedValue(true);
 
 		const result = await loadStages(
 			makeEvent({ userId: 'user-1', profileSurvey: { ...FILLED_4 } })
@@ -172,7 +180,8 @@ describe('/ai page server load: статусы этапов', () => {
 	it('5 из 6 тестов → этап tests НЕ done (нужны все видимые тесты)', async () => {
 		vi.mocked(getAiSurveyProgress).mockResolvedValue(AI_PROGRESS_10);
 		const { swallow, ...fiveTests } = ALL_TEST_SESSIONS;
-		vi.mocked(getTestSessionCounts).mockResolvedValue({ ...fiveTests, classification: 1 });
+		vi.mocked(getTestSessionCounts).mockResolvedValue({ ...fiveTests });
+		vi.mocked(hasCompletedClassification).mockResolvedValue(true);
 
 		const result = await loadStages(
 			makeEvent({ userId: 'user-1', profileSurvey: { ...FILLED_4 } })
@@ -180,6 +189,36 @@ describe('/ai page server load: статусы этапов', () => {
 
 		expect(result.stages.map((s) => s.status)).toEqual(['done', 'done', 'next', 'done']);
 		expect(result.allDone).toBe(false);
+	});
+});
+
+describe('/ai page server load: этап «Классификация» (hasCompletedClassification)', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		vi.mocked(getAiSurveyProgress).mockResolvedValue(AI_PROGRESS_10);
+		vi.mocked(getTestSessionCounts).mockResolvedValue({ ...ALL_TEST_SESSIONS });
+	});
+
+	it('hasCompleted=false (нет ни одного пересказа) → этап classification НЕ done, он next', async () => {
+		vi.mocked(hasCompletedClassification).mockResolvedValue(false);
+
+		const result = await loadStages(
+			makeEvent({ userId: 'user-1', profileSurvey: { ...FILLED_4 } })
+		);
+
+		expect(result.stages.map((s) => s.status)).toEqual(['done', 'done', 'done', 'next']);
+		expect(result.allDone).toBe(false);
+	});
+
+	it('hasCompleted=true (есть пересказ в любой попытке) → этап done, allDone=true', async () => {
+		vi.mocked(hasCompletedClassification).mockResolvedValue(true);
+
+		const result = await loadStages(
+			makeEvent({ userId: 'user-1', profileSurvey: { ...FILLED_4 } })
+		);
+
+		expect(result.stages.map((s) => s.status)).toEqual(['done', 'done', 'done', 'done']);
+		expect(result.allDone).toBe(true);
 	});
 });
 

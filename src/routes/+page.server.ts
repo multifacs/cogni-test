@@ -45,10 +45,11 @@ export const load: PageServerLoad = async ({ cookies, url }) => {
 
 export const actions = {
 	login: async ({ cookies, request }) => {
-		// Форма может поститься на URL, сохраняющий query-строку `?ai` —
-		// читаем флаг ИИ-потока из URL, а не из cookies.
-		const aiFlow = new URL(request.url).searchParams.has('ai');
+		// Форма может поститься на URL, сохраняющий query-строку `?ai`, но
+		// action `?/login` заменяет её целиком — поэтому ИИ-поток читаем И из
+		// hidden-поля формы, И из URL (fallback для прямых POST с ?ai).
 		const data = await request.formData();
+		const aiFlow = data.has('ai') || new URL(request.url).searchParams.has('ai');
 		if (!checkFormData(data)) {
 			return fail(400, { message: 'Проверьте правильность заполнения полей' });
 		}

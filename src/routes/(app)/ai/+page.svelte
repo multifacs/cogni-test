@@ -30,7 +30,6 @@
 
 <main class="main glass-scene flex w-full flex-col items-center justify-center-safe">
 	<div class="glass-bg" aria-hidden="true">
-		<div class="glass-blob glass-blob--top"></div>
 		<div class="glass-blob glass-blob--bottom"></div>
 	</div>
 
@@ -57,24 +56,37 @@
 							</span>
 							<span class="stage-cta">Начать</span>
 						</a>
-					{:else}
-						<div
-							class="stage-link"
-							class:done={stage.status === 'done'}
-							class:locked={stage.status === 'locked'}
+					{:else if stage.status === 'done'}
+						<!-- Done-карточка — кликабельная ссылка: перезапись результатов
+					     (анкета → редактирование, ИИ-анкета → upsert, тесты → новые
+					     сессии, классификация → перезапуск). stage.href уже несёт
+					     нужный query (?from=ai) — используем как есть. -->
+						<a
+							href={stage.href}
+							class="stage-link done"
+							aria-label={`Пройти заново: ${stage.title}`}
+							onclick={() => localStorage.removeItem(AI_THANKS_SHOWN_KEY)}
 						>
-							<span class="stage-number"
-								>{stage.status === 'done' ? '✓' : index + 1}</span
-							>
+							<span class="stage-number">✓</span>
 							<span class="stage-info">
 								<span class="stage-title">{stage.title}</span>
 								<span class="stage-description">{stage.description}</span>
 							</span>
-							{#if stage.status === 'done'}
+							<span class="stage-actions">
 								<span class="stage-badge">Пройдено</span>
-							{:else}
+								<span class="stage-cta">Пройти заново</span>
+							</span>
+						</a>
+					{:else}
+						<div class="stage-link locked">
+							<span class="stage-number">{index + 1}</span>
+							<span class="stage-info">
+								<span class="stage-title">{stage.title}</span>
+								<span class="stage-description">{stage.description}</span>
+							</span>
+							<span class="stage-actions">
 								<span class="stage-badge locked-badge">Заблокировано</span>
-							{/if}
+							</span>
 						</div>
 					{/if}
 				</li>
@@ -148,6 +160,11 @@
 		opacity: 0.55;
 		background-color: transparent;
 		border: 1px solid var(--input-bg-color);
+		text-decoration: none;
+	}
+
+	.stage-link.done:hover {
+		opacity: 0.85;
 	}
 
 	.stage-link.locked {
@@ -175,6 +192,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.25rem;
+		min-width: 0;
 	}
 
 	.stage-title {
@@ -192,16 +210,43 @@
 		margin-left: auto;
 		font-weight: 600;
 		color: var(--button-green-text);
+		/* Узкие экраны: CTA сжимается с «…», а не растягивает/выталкивает карточку.
+		   Цепочка сжатия: .stage-link (flex) → .stage-info / .stage-actions
+		   (min-width: 0, max-width 40%) → этот CTA. */
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		min-width: 0;
+	}
+
+	.stage-link.done .stage-cta {
+		/* Вторичный CTA «Пройти заново» — приглушённый, не green:
+		   green — только primary «Начать». */
+		color: var(--button-blue-text);
+	}
+
+	.stage-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-left: auto;
+		/* до ~40% ширины карточки: бейдж/CTA не вытесняют заголовок */
+		max-width: 40%;
+		min-width: 0;
 	}
 
 	.stage-badge {
-		margin-left: auto;
 		font-size: 0.75rem;
 		font-weight: 600;
 		padding: 0.25rem 0.75rem;
 		border-radius: 999px;
 		background-color: var(--button-blue);
 		color: var(--button-blue-text);
+		/* Узкие экраны: текст бейджа срезается с «…», а не растягивает карточку */
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		min-width: 0;
 	}
 
 	.modal-overlay {

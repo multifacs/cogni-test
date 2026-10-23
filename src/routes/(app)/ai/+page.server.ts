@@ -1,6 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import { AI_SURVEY_PASSED_PERCENT } from '$lib/ai/questionnaire/types';
 import { getAiSurveyProgress } from '$lib/server/db/controllers/ai-survey';
+import { hasCompletedClassification } from '$lib/server/db/controllers/classification';
 import { getTestSessionCounts } from '$lib/server/db/controllers/test';
 import { tests } from '$lib/tests';
 import { fullFlow } from '../questionary/flows';
@@ -54,8 +55,10 @@ export const load: PageServerLoad = async ({ cookies, parent }) => {
 	const testSessionCounts = await getTestSessionCounts(userId);
 	const testsDone = visibleTests.every((t) => (testSessionCounts[t.name] ?? 0) > 0);
 
-	// Этап «Классификация»: есть сессия testType 'classification'
-	const classificationDone = (testSessionCounts['classification'] ?? 0) > 0;
+	// Этап «Классификация»: выполнен при наличии пересказа в любой попытке
+	// (контракт hasCompletedClassification; страница теста при этом поддерживает
+	// re-take — done-карточка ведёт на страницу, а не в тупик).
+	const classificationDone = await hasCompletedClassification(userId);
 
 	const stageFlags: Record<AiStage['id'], boolean> = {
 		survey: surveyDone,

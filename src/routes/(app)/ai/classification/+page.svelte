@@ -10,7 +10,14 @@
 		CLASSIFICATION_MAX_GROUPS,
 		isWordInText
 	} from '$lib/ai/classification-text';
+	import type { PageData } from './$types';
 
+	// ─── State machine (words → retelling → thanks) ────────────────────
+	//
+	// Вход с data.stage === 'retelling' (возврат пользователя после ухода
+	// со страницы) — сразу этап 2: стимул НЕ рендерится ни в каком виде.
+
+	type Stage = 'words' | 'retelling' | 'thanks';
 	type Group = {
 		id: number;
 		words: string[];
@@ -18,22 +25,47 @@
 		wordInput: string;
 	};
 
+	let { data }: { data: PageData } = $props();
+
 	let groupSeq = 0;
 
 	function makeGroup(): Group {
 		return { id: groupSeq++, words: [], feature: '', wordInput: '' };
 	}
 
+	// Начальный этап фиксируется один раз при входе на страницу (load):
+	// дальнейшие переходы — локальная state machine, data больше не читается.
+	// svelte-ignore state_referenced_locally — захват начального значения намерен.
+	const initialStage: Stage = data.stage === 'retelling' ? 'retelling' : 'words';
+	// svelte-ignore state_referenced_locally
+	const initialSessionId = data.sessionId ?? null;
+
+	let stage = $state<Stage>(initialStage);
+	let sessionId = $state<string | null>(initialSessionId);
 	let groups = $state<Group[]>([makeGroup()]);
 	let retelling = $state('');
 	let submitting = $state(false);
-	let submitted = $state(false);
 	let errorMsg = $state('');
 
 	const headerContext = getContext<{ value: string }>('headerText');
 
+	// ─── Блокировка «Готово» этапа 1 (защита от случайного нажатия) ────
+	//
+	// Кнопка неактивна первые 30 секунд от появления этапа 1, с видимым
+	// обратным отсчётом «Готово (25 с)». Reload страницы СОЗНАТЕЛЬНО
+	// сбрасывает отсчёт (не чинить через sessionStorage).
+
+	const WORDS_LOCK_SECONDS = 30;
+	let lockRemaining = $state(WORDS_LOCK_SECONDS);
+
 	onMount(() => {
 		if (headerContext) headerContext.value = 'Классификация';
+		if (data.stage === 'retelling') return;
+		const timer = setInterval(() => {
+			lockRemaining -= 1;
+			if (lockRemaining <= 0) clearInterval(timer);
+		}, 1000);
+		return () => clearInterval(timer);
 	});
 
 	// ─── Редактор групп (паттерн CustomChoice) ─────────────────────────
@@ -87,14 +119,10 @@
 		return !isWordInText(word, CLASSIFICATION_TEXT);
 	}
 
-	// ─── Отправка ───────────────────────────────────────────────────────
+	// ─── Этап 1: отправка слов ─────────────────────────────────────────
 
-	const hasAnyWord = $derived(
-		groups.some((g) => g.words.length > 0 || g.wordInput.trim() !== '')
-	);
-
-	async function submit(): Promise<void> {
-		if (submitting || submitted) return;
+	async function submitWords(): Promise<void> {
+		if (submitting || stage !== 'words' || lockRemaining > 0) return;
 
 		// коммитим незавершённые вводы слов
 		for (const group of groups) addWord(group);
@@ -114,16 +142,59 @@
 			const res = await fetch('/ai/classification', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ groups: payloadGroups, retelling: retelling.trim() })
+				body: JSON.stringify({ groups: payloadGroups })
 			});
 			if (res.status === 201) {
-				submitted = true;
+				const body = (await res.json().catch(() => null)) as { sessionId?: unknown } | null;
+				if (typeof body?.sessionId === 'string') {
+					sessionId = body.sessionId;
+					stage = 'retelling';
+					return;
+				}
+				errorMsg = 'Некорректный ответ сервера. Попробуйте ещё раз.';
 				return;
 			}
 			if (res.status === 401) {
 				errorMsg = 'Сессия истекла. Войдите в систему заново.';
 			} else {
 				errorMsg = 'Не удалось отправить ответ. Попробуйте ещё раз.';
+			}
+		} catch {
+			errorMsg = 'Ошибка сети. Проверьте соединение и попробуйте ещё раз.';
+		} finally {
+			submitting = false;
+		}
+	}
+
+	// ─── Этап 2: отправка пересказа ───────────────────────────────────
+
+	async function submitRetelling(): Promise<void> {
+		if (submitting || stage !== 'retelling') return;
+		if (!sessionId) {
+			// Не должно случаться (этап 2 достигается только с sessionId),
+			// но fail-loud лучше отправки мусора на сервер.
+			errorMsg = 'Сессия не найдена. Обновите страницу.';
+			return;
+		}
+
+		submitting = true;
+		errorMsg = '';
+		try {
+			const res = await fetch('/ai/classification/retelling', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ sessionId, retelling: retelling.trim() })
+			});
+			if (res.status === 201) {
+				stage = 'thanks';
+				return;
+			}
+			if (res.status === 401) {
+				errorMsg = 'Сессия истекла. Войдите в систему заново.';
+			} else if (res.status === 409) {
+				errorMsg = 'Пересказ для этой попытки уже отправлен.';
+			} else {
+				errorMsg = 'Не удалось отправить пересказ. Попробуйте ещё раз.';
 			}
 		} catch {
 			errorMsg = 'Ошибка сети. Проверьте соединение и попробуйте ещё раз.';
@@ -167,10 +238,9 @@
 	onvisibilitychange={() => (stimulusHidden = document.hidden)}
 />
 
-{#if submitted}
+{#if stage === 'thanks'}
 	<main class="main glass-scene flex w-full flex-col items-center justify-center-safe">
 		<div class="glass-bg" aria-hidden="true">
-			<div class="glass-blob glass-blob--top"></div>
 			<div class="glass-blob glass-blob--bottom"></div>
 		</div>
 
@@ -182,10 +252,44 @@
 			<Button color="green" onclick={() => goto('/ai')}>← Вернуться в меню</Button>
 		</div>
 	</main>
-{:else}
+{:else if stage === 'retelling'}
+	<!-- Этап 2: пересказ. Стимульный текст ОТСУТСТВУЕТ в DOM полностью —
+	     никаких hidden-копий (пользователь пересказывает по памяти). -->
 	<main class="main glass-scene flex w-full flex-col items-center justify-center-safe">
 		<div class="glass-bg" aria-hidden="true">
-			<div class="glass-blob glass-blob--top"></div>
+			<div class="glass-blob glass-blob--bottom"></div>
+		</div>
+
+		<div class="glass-card page-card relative z-1 flex w-full max-w-3xl flex-col gap-6 p-6">
+			<h2 class="card-title">Перескажите текст</h2>
+
+			<label class="retelling-label" for="retelling">{RETELLING_INSTRUCTION}</label>
+			<textarea
+				id="retelling"
+				class="retelling"
+				data-testid="retelling"
+				rows="3"
+				maxlength={CLASSIFICATION_MAX_TEXT_LENGTH}
+				bind:value={retelling}></textarea>
+
+			{#if errorMsg}
+				<p class="error" data-testid="error" role="alert">{errorMsg}</p>
+			{/if}
+
+			<Button
+				id="retelling-done"
+				color="green"
+				onclick={submitRetelling}
+				disabled={submitting}
+			>
+				{submitting ? 'Отправка...' : 'Готово'}
+			</Button>
+		</div>
+	</main>
+{:else}
+	<!-- Этап 1: текст + редактор групп слов. -->
+	<main class="main glass-scene flex w-full flex-col items-center justify-center-safe">
+		<div class="glass-bg" aria-hidden="true">
 			<div class="glass-blob glass-blob--bottom"></div>
 		</div>
 
@@ -198,6 +302,7 @@
 				Стимульный текст: защита best-effort (см. комментарий в <script>).
 				user-select:none + блокировка copy/cut/contextmenu/dragstart +
 				скрытие при blur/visibilitychange/PrintScreen + @media print.
+				Рендерится ТОЛЬКО на этапе 1.
 			-->
 			<div
 				role="region"
@@ -292,21 +397,21 @@
 				+
 			</button>
 
-			<label class="retelling-label" for="retelling">{RETELLING_INSTRUCTION}</label>
-			<textarea
-				id="retelling"
-				class="retelling"
-				data-testid="retelling"
-				rows="3"
-				maxlength={CLASSIFICATION_MAX_TEXT_LENGTH}
-				bind:value={retelling}></textarea>
-
 			{#if errorMsg}
 				<p class="error" data-testid="error" role="alert">{errorMsg}</p>
 			{/if}
 
-			<Button color="green" onclick={submit} disabled={submitting}>
-				{submitting ? 'Отправка...' : 'Отправить'}
+			<Button
+				id="words-done"
+				color="green"
+				onclick={submitWords}
+				disabled={lockRemaining > 0 || submitting}
+			>
+				{lockRemaining > 0
+					? `Готово (${lockRemaining} с)`
+					: submitting
+						? 'Отправка...'
+						: 'Готово'}
 			</Button>
 		</div>
 	</main>
@@ -398,7 +503,7 @@
 	.chips {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.5rem;
+		gap: 1rem;
 	}
 
 	.word-chip {

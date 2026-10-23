@@ -24,7 +24,7 @@
 			: null
 	);
 
-	/** Короткая подпись колонки: '1'..'5' и «Затрудняюсь» для развёрнутой опции. */
+	/** Короткая подпись опции: '1'..'5' и «Затрудняюсь» для развёрнутой. */
 	function scaleLabel(scale: string): string {
 		return scale.length === 1 ? scale : 'Затрудняюсь';
 	}
@@ -35,27 +35,23 @@
 </script>
 
 <div class="matrix">
-	<div class="matrix-row head">
-		<span class="row-text"></span>
-		{#each MATRIX_SCALE as scale (scale)}
-			<span class="scale-label" title={scale}>{scaleLabel(scale)}</span>
-		{/each}
-	</div>
-
 	{#each question.rows as row (row)}
 		<div class="matrix-row">
 			<span class="row-text">{row}</span>
-			{#each MATRIX_SCALE as scale (scale)}
-				<label class="cell">
-					<input
-						type="radio"
-						name={`${question.id}: ${row}`}
-						checked={answer?.[row] === scale}
-						onchange={() => choose(row, scale)}
-						aria-label={`${row} — ${scale}`}
-					/>
-				</label>
-			{/each}
+			<div class="options" role="radiogroup" aria-label={row}>
+				{#each MATRIX_SCALE as scale (scale)}
+					<label class="option">
+						<input
+							type="radio"
+							name={`${question.id}: ${row}`}
+							checked={answer?.[row] === scale}
+							onchange={() => choose(row, scale)}
+							aria-label={`${row} — ${scale}`}
+						/>
+						<span class="option-label">{scaleLabel(scale)}</span>
+					</label>
+				{/each}
+			</div>
 		</div>
 	{/each}
 </div>
@@ -64,19 +60,13 @@
 	.matrix {
 		display: flex;
 		flex-direction: column;
-		gap: 0.25rem;
-		overflow-x: auto;
+		gap: 1rem;
 	}
 
 	.matrix-row {
-		display: grid;
-		grid-template-columns: minmax(12rem, 1fr) repeat(6, 2.75rem);
-		align-items: center;
-		gap: 0.25rem;
-	}
-
-	.matrix-row.head {
-		padding-bottom: 0.25rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.375rem;
 	}
 
 	.row-text {
@@ -84,33 +74,43 @@
 		line-height: 1.35;
 		color: var(--main-text-color);
 		overflow-wrap: anywhere;
-		padding-right: 0.5rem;
 	}
 
-	.scale-label {
-		text-align: center;
-		font-size: 0.75rem;
-		font-weight: 600;
-		opacity: 0.6;
-		color: var(--main-text-color);
+	/* 6 опций в одном ряду на 100% ширины контейнера — без горизонтального скролла */
+	.options {
+		display: grid;
+		grid-template-columns: repeat(6, 1fr);
+		gap: 0.25rem;
 	}
 
-	.cell {
+	.option {
 		display: flex;
+		flex-direction: column;
 		align-items: center;
-		justify-content: center;
+		gap: 0.25rem;
+		cursor: pointer;
 	}
 
-	.cell input {
+	.option input {
 		height: 1.25rem;
 		width: 1.25rem;
 		cursor: pointer;
 		accent-color: var(--main-accent-color);
 	}
 
+	.option-label {
+		text-align: center;
+		font-size: 0.6875rem;
+		line-height: 1.2;
+		font-weight: 600;
+		opacity: 0.6;
+		color: var(--main-text-color);
+		overflow-wrap: anywhere;
+	}
+
 	@media (max-width: 639px) {
-		.matrix-row {
-			grid-template-columns: minmax(9rem, 1fr) repeat(6, 2rem);
+		.option-label {
+			font-size: 0.625rem;
 		}
 	}
 </style>

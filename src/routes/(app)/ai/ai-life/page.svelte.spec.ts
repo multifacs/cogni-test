@@ -157,13 +157,29 @@ describe('/ai/ai-life — типы вопросов', () => {
 		const row2 = 'Потребление контента: просмотр развлекательных видео (Reels/Shorts), мемов';
 		expect(container.textContent).toContain(row1);
 
+		// вертикальная раскладка: текст строки + radiogroup из 6 опций под ним
+		const row1Group = container.querySelector(
+			`.options[aria-label="${row1}"]`
+		) as HTMLElement | null;
+		expect(row1Group).not.toBeNull();
+		expect(row1Group?.querySelectorAll('input[type="radio"]')).toHaveLength(6);
+
 		matrixRadio(container, row1, '3')?.click();
-		// на радио матрицы: untrusted DOM-click (ячейка узкая, trusted промахивается)
 		matrixRadio(container, row2, 'Затрудняюсь ответить')?.click();
 
 		expect(matrixRadio(container, row1, '3')?.checked).toBe(true);
 		expect(matrixRadio(container, row2, 'Затрудняюсь ответить')?.checked).toBe(true);
 		expect(matrixRadio(container, row1, '3')?.checked).toBe(true);
+
+		// выбор записывается в answers и уходит в autosave
+		await sleep(700);
+		expect(fetchMock).toHaveBeenCalled();
+		const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+		const answers = JSON.parse((init.body as FormData).get('answers') as string) as Record<
+			string,
+			Record<string, string>
+		>;
+		expect(answers.q3).toMatchObject({ [row1]: '3', [row2]: 'Затрудняюсь ответить' });
 	});
 
 	it('multi: q10 — «Ничего из этого» снимает остальные и наоборот', async () => {
