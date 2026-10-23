@@ -10,6 +10,7 @@
 	import RecommendationCard from '$lib/components/ui/RecommendationCard.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { streaming, startStreaming } from '$lib/stores/streaming.svelte';
+	import { withFromAi } from '$lib/ai/flow';
 
 	let { data } = $props();
 
@@ -62,7 +63,13 @@
 			class="grid w-full grid-cols-2 gap-4 sm:grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] sm:gap-6"
 		>
 			{#each data.tests as { name, title, path, img } (title)}
-				<ExerciseCard {name} {title} {path} {img} {testSessionCounts} />
+				<ExerciseCard
+					{name}
+					{title}
+					path={withFromAi(path, page.url)}
+					{img}
+					{testSessionCounts}
+				/>
 			{/each}
 		</div>
 	</div>

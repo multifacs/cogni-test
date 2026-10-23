@@ -195,6 +195,18 @@ describe('/ai — хаб этапов: карточки', () => {
 		expect(style.textOverflow).toBe('ellipsis');
 		expect(style.whiteSpace).toBe('nowrap');
 	});
+
+	it('бейджи «Пройдено»/«Заблокировано» не обрезаются (регресс)', async () => {
+		const { container } = await mountPage(makeData(['survey']));
+
+		const badges = [...container.querySelectorAll('.stage-badge')];
+		// «Пройдено» + «Заблокировано»
+		expect(badges.length).toBeGreaterThanOrEqual(3);
+		for (const badge of badges) {
+			// текст влезает целиком: ellipsis не срабатывает
+			expect(badge.scrollWidth).toBeLessThanOrEqual(badge.clientWidth);
+		}
+	});
 });
 
 describe('/ai — модалка завершения', () => {

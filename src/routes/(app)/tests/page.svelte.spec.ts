@@ -124,6 +124,31 @@ describe('/tests page — переход из ИИ (?from=ai)', () => {
 	});
 });
 
+describe('/tests page — from=ai прокидывается в карточки тестов', () => {
+	it('при ?from=ai карточки (a.card) ведут на about?from=ai', async () => {
+		navMocks.pageUrl.searchParams.set('from', 'ai');
+		const { container } = await mountPage(makeData());
+
+		// Сетка тестов (ExerciseCard); отдельно RecommendationCard тоже
+		// рендерит a.card (goto /tests) — его исключаем скоупом .grid
+		const cards = container.querySelectorAll('.grid a.card');
+		expect(cards.length).toBeGreaterThan(0);
+		for (const card of cards) {
+			expect(card.getAttribute('href')).toContain('from=ai');
+		}
+	});
+
+	it('без query карточки не содержат from=ai', async () => {
+		const { container } = await mountPage(makeData());
+
+		const cards = container.querySelectorAll('.grid a.card');
+		expect(cards.length).toBeGreaterThan(0);
+		for (const card of cards) {
+			expect(card.getAttribute('href')).not.toContain('from=ai');
+		}
+	});
+});
+
 describe('/tests page — streaming store wiring', () => {
 	it('клик по карточке запуска строит очередь в store и переходит к первому непройденному тесту', async () => {
 		const data = makeData({ testSessionCounts: { stroop: 1 } }); // stroop пройден → очередь из math и munsterberg

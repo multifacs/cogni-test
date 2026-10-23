@@ -137,8 +137,8 @@
 	.stage-link {
 		display: flex;
 		align-items: center;
-		gap: 1rem;
-		padding: 1rem 1.25rem;
+		gap: 0.75rem;
+		padding: 0.625rem 0.875rem;
 		border-radius: 1rem;
 		background-color: var(--input-bg-color);
 		transition: transform 0.15s ease;
@@ -173,8 +173,8 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 2rem;
-		height: 2rem;
+		width: 1.75rem;
+		height: 1.75rem;
 		border-radius: 50%;
 		flex-shrink: 0;
 		font-weight: 700;
@@ -195,11 +195,12 @@
 
 	.stage-title {
 		font-weight: 700;
+		font-size: 0.9375rem;
 		color: var(--main-text-color);
 	}
 
 	.stage-description {
-		font-size: 0.875rem;
+		font-size: 0.8125rem;
 		opacity: 0.75;
 		color: var(--main-text-color);
 	}
@@ -209,15 +210,18 @@
 		align-items: center;
 		gap: 0.5rem;
 		margin-left: auto;
-		/* до ~40% ширины карточки: бейдж/CTA не вытесняют заголовок */
-		max-width: 40%;
+		/* не сжимаем ниже содержимого: сжатие карточки поглощает
+		   .stage-info (min-width: 0), а бейдж остаётся читаемым */
+		flex-shrink: 0;
+		/* до ~45% ширины карточки: бейдж/CTA не вытесняют заголовок */
+		max-width: 45%;
 		min-width: 0;
 	}
 
 	.stage-badge {
-		font-size: 0.75rem;
+		font-size: 0.6875rem;
 		font-weight: 600;
-		padding: 0.25rem 0.75rem;
+		padding: 0.125rem 0.5rem;
 		border-radius: 999px;
 		background-color: var(--button-blue);
 		color: var(--button-blue-text);

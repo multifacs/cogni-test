@@ -19,3 +19,24 @@ export function isAiFlowUrl(url: AiFlowUrlLike): boolean {
 		url.searchParams.get('from') === 'ai'
 	);
 }
+
+/**
+ * Propagates the `from=ai` marker through outgoing navigation: appends
+ * `from=ai` to the target path when the current URL was entered from the
+ * AI flow, otherwise returns the path unchanged (no-op).
+ *
+ * Keeps the marker alive across the whole tests chain so the red
+ * «← Меню ИИ-влияние» button survives the return to /tests.
+ *
+ * @example
+ * // current URL has ?from=ai
+ * withFromAi('/tests', page.url); // '/tests?from=ai'
+ * withFromAi('/x?gtoSessionId=1', page.url); // '/x?gtoSessionId=1&from=ai'
+ * @example
+ * // current URL has no from=ai (or from=other)
+ * withFromAi('/tests', page.url); // '/tests'
+ */
+export function withFromAi<T extends string>(path: T, url: AiFlowUrlLike): T {
+	if (url.searchParams.get('from') !== 'ai') return path;
+	return (path + (path.includes('?') ? '&' : '?') + 'from=ai') as T;
+}
