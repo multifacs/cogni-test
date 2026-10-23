@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import { profileSurveyStore, userStore } from '$lib/stores/user.js';
 	import { resolve } from '$app/paths';
@@ -57,6 +58,10 @@
 		</div>
 
 		<form class="login-form" method="POST" action="?/login" use:enhance>
+			{#if page.url.searchParams.has('ai')}
+				<!-- action="?/login" затирает query-строку: передаём ИИ-флаг через форму -->
+				<input type="hidden" name="ai" value="1" />
+			{/if}
 			<div class="field">
 				<label for="firstname">Введите ваше имя</label>
 				<TextInput

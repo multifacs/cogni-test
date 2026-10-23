@@ -1,21 +1,31 @@
 import { getResults } from '$lib/server/db/controllers/result.js';
+import { getTestSessionCounts } from '$lib/server/db/controllers/test.js';
+import { tests } from '$lib/tests';
+import { redirect } from '@sveltejs/kit';
 import type { TestResultMap } from '$lib/tests/types';
 import type { PageServerLoad } from './$types';
-// import { error } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ params, cookies }) => {
 	const slug = params.slug as keyof TestResultMap;
-	console.log(slug);
 	const userId = cookies.get('user_id') as string;
 
-	const results = await getResults(slug, userId);
-	console.log('results: ', results);
+	// ИИ-поток: после завершения диагностики один раз уводим на хаб /ai.
+	// Guard-порядок: нет ai_flow → обычный load; не все тесты → обычный load;
+	// одноразовый флаг стоит → обычный load; иначе redirect + флаг.
+	if (cookies.get('ai_flow') !== '1') {
+		const results = await getResults(slug, userId);
+		return { results };
+	}
 
-	// try {
-	// 	await import(`$lib/tests/${slug}/Results.svelte`);
-	// } catch {
-	// 	error(404, 'test not found');
-	// }
+	const visibleTests = tests.filter((t) => !t.hidden);
+	const testSessionCounts = await getTestSessionCounts(userId);
+	const allTestsDone = visibleTests.every((t) => (testSessionCounts[t.name] ?? 0) > 0);
 
-	return { results };
+	if (!allTestsDone || cookies.get('ai_flow_done') === '1') {
+		const results = await getResults(slug, userId);
+		return { results };
+	}
+
+	cookies.set('ai_flow_done', '1', { path: '/', secure: true, httpOnly: true });
+	redirect(307, '/ai');
 };

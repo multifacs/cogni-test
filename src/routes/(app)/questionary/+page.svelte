@@ -33,6 +33,7 @@
 
 	// GTO-режим хаба: включается только явным ?gto=true в URL
 	const gtoMode = $derived(page.url.searchParams.get('gto') === 'true');
+	const fromAi = $derived(page.url.searchParams.get('from') === 'ai');
 
 	function start(flow: Flow) {
 		activeFlow = flow;
@@ -71,6 +72,9 @@
 				{:else}
 					<div class="flex w-full flex-col items-center justify-center">
 						<div class="flex w-full max-w-5xl flex-col items-center gap-6">
+							{#if fromAi}
+								<Button color="red" goto="/ai">← Меню ИИ-влияние</Button>
+							{/if}
 							<h2 style="text-align:center; color: var(--main-text-color);">
 								Пройдите всю анкету подряд или выберите нужный раздел
 							</h2>

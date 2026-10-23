@@ -10,6 +10,7 @@
 	import { enqueueAttempt } from '$lib/client/offline-queue';
 	import type { DevAction } from '$lib/types/header-action';
 	import { generate } from 'short-uuid';
+	import { withFromAi } from '$lib/ai/flow';
 
 	const { data } = $props();
 	const slug = $derived(data.slug);
@@ -42,7 +43,7 @@
 
 	// Единая цель «Назад»: в потоковом режиме — /home (стрим не останавливается),
 	// иначе обычный backUrl (about в GTO-сессии / список тестов).
-	const backTarget = $derived(isStreaming ? '/home' : backUrl);
+	const backTarget = $derived(withFromAi(isStreaming ? '/home' : backUrl, page.url));
 
 	$effect(() => {
 		// Reset game state when the test changes (e.g. GTO navigating between tests)
@@ -165,14 +166,14 @@
 					// Save-порядок (offline): сначала снять тест с streaming-очереди,
 					// затем goto — results-страница должна увидеть очередь без этого теста.
 					completeTest(slug);
-					goto(resolve(`/tests/${slug}/results`));
+					goto(withFromAi(resolve(`/tests/${slug}/results`), page.url));
 					return;
 				}
 
 				// Save-порядок (online): сначала снять тест с streaming-очереди,
 				// затем goto — results-страница должна увидеть очередь без этого теста.
 				completeTest(slug);
-				goto(resolve(`/tests/${slug}/results`));
+				goto(withFromAi(resolve(`/tests/${slug}/results`), page.url));
 			}
 		} catch {
 			saveError = true;
@@ -212,7 +213,9 @@
 				{#if gtoSessionId}
 					<Button color="blue" goto="/gto">К сессиям ГТО</Button>
 				{:else}
-					<Button color="blue" goto={`/tests/${slug}/results`}>Результаты</Button>
+					<Button color="blue" goto={withFromAi(`/tests/${slug}/results`, page.url)}
+						>Результаты</Button
+					>
 				{/if}
 			</section>
 		{/if}

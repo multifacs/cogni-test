@@ -55,7 +55,8 @@ async function readLatestSnapshotTables(): Promise<Set<string>> {
 describe('extractExpectedTables', () => {
 	it('extracts exactly the tables exported by the real schema', () => {
 		const expected = extractExpectedTables(schema);
-		expect(expected.size).toBe(28);
+		// 31 таблица: 28 + ai_survey, classification_word_group, classification_retelling (миграция 0008)
+		expect(expected.size).toBe(31);
 		// DB column names, not TS keys (firstname -> first_name)
 		expect(expected.get('user')).toContain('first_name');
 		expect(expected.get('user')).not.toContain('firstname');
@@ -69,7 +70,8 @@ describe('extractExpectedTables', () => {
 
 	it('ignores non-table exports', () => {
 		const withJunk = { ...schema, notATable: () => {}, alsoNot: 42 };
-		expect(extractExpectedTables(withJunk).size).toBe(28);
+		// 31 таблица: см. комментарий в тесте выше (миграция 0008)
+		expect(extractExpectedTables(withJunk).size).toBe(31);
 	});
 });
 

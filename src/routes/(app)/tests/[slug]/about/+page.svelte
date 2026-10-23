@@ -4,6 +4,7 @@
 	import { testRegistry } from '$lib/tests';
 	import { page } from '$app/state';
 	import { isStreamingActive } from '$lib/stores/streaming.svelte';
+	import { withFromAi } from '$lib/ai/flow';
 
 	const { data } = $props();
 	const slug = $derived(data.slug);
@@ -22,7 +23,9 @@
 
 	// Единая цель «Назад»: в потоковом режиме — /home, иначе /gto (GTO-сессия)
 	// или /tests (обычный запуск).
-	const backTarget = $derived(isStreaming ? '/home' : gtoSessionId ? '/gto' : '/tests');
+	const backTarget = $derived(
+		withFromAi(isStreaming ? '/home' : gtoSessionId ? '/gto' : '/tests', page.url)
+	);
 
 	$effect(() => {
 		Component = null;
@@ -37,9 +40,12 @@
 	import Card from '$lib/components/ui/Card.svelte';
 
 	const playgroundUrl = $derived(
-		(gtoSessionId
-			? `/tests/${slug}/playground?gtoSessionId=${gtoSessionId}`
-			: `/tests/${slug}/playground`) satisfies PathnameWithSearchOrHash
+		withFromAi(
+			(gtoSessionId
+				? `/tests/${slug}/playground?gtoSessionId=${gtoSessionId}`
+				: `/tests/${slug}/playground`) satisfies PathnameWithSearchOrHash,
+			page.url
+		)
 	);
 </script>
 
@@ -54,7 +60,9 @@
 		<Button color="red" goto={backTarget}>Назад</Button>
 		<Button color="green" goto={playgroundUrl}>Начать</Button>
 		{#if !gtoSessionId}
-			<Button color="blue" goto={`/tests/${slug}/results`}>История</Button>
+			<Button color="blue" goto={withFromAi(`/tests/${slug}/results`, page.url)}
+				>История</Button
+			>
 		{/if}
 	</section>
 {:else}

@@ -438,6 +438,56 @@ describe('tests playground — Назад ведёт на /home в потоко�
 	});
 });
 
+describe('tests playground — from=ai прокидывается в навигацию', () => {
+	it('?from=ai: завершение теста → goto на /tests/${slug}/results?from=ai', async () => {
+		navMocks.url.searchParams = new URLSearchParams('from=ai');
+		await mountPage({ slug: 'stroop' });
+
+		await userEvent.click(page.getByTestId('stub-full-run'));
+		await settle();
+
+		expect(navMocks.goto).toHaveBeenCalledWith('/tests/stroop/results?from=ai');
+	});
+
+	it('?from=ai: offline-fallback (POST !ok + enqueue) → goto на results?from=ai', async () => {
+		navMocks.url.searchParams = new URLSearchParams('from=ai');
+		fetchMock.mockImplementation(async () => failedResponse());
+
+		await mountPage({ slug: 'stroop' });
+		await userEvent.click(page.getByTestId('stub-full-run'));
+		await settle();
+
+		expect(navMocks.goto).toHaveBeenCalledWith('/tests/stroop/results?from=ai');
+	});
+
+	it('?from=ai: кнопка «Результаты» на end-screen ведёт на results?from=ai', async () => {
+		navMocks.url.searchParams = new URLSearchParams('from=ai');
+		await mountPage({ slug: 'stroop' });
+
+		await userEvent.click(page.getByTestId('stub-full-run'));
+		await settle();
+
+		await expect.element(page.getByRole('button', { name: 'Результаты' })).toBeVisible();
+		await page.getByRole('button', { name: 'Результаты' }).click();
+
+		expect(navMocks.goto).toHaveBeenCalledWith('/tests/stroop/results?from=ai', {
+			invalidateAll: false
+		});
+	});
+
+	it('?from=ai: «Назад» (пустая очередь) ведёт на about?from=ai', async () => {
+		navMocks.url.searchParams = new URLSearchParams('from=ai');
+		await mountPage({ slug: 'stroop' });
+
+		const back = page.getByRole('button', { name: 'Назад' });
+		await back.click();
+
+		expect(navMocks.goto).toHaveBeenCalledWith('/tests/stroop?from=ai', {
+			invalidateAll: false
+		});
+	});
+});
+
 describe('tests playground — StreamingBadge удалён со страницы', () => {
 	it('(i) очередь непуста (resolved-ветка): бейджа нет', async () => {
 		startStreaming(STREAM_TESTS, {});

@@ -11,6 +11,8 @@
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import { validateSession } from '$lib/shared/validation';
+	import { page } from '$app/state';
+	import { withFromAi } from '$lib/ai/flow';
 
 	const { data } = $props();
 	const slug = $derived(data.slug);
@@ -149,8 +151,10 @@
 </main>
 
 <section class="low-content grid grid-cols-2 gap-4">
-	<Button color="red" goto="/tests">{isStreamingActive() ? 'К следующему' : 'К тестам'}</Button>
-	<Button color="blue" goto={`/tests/${slug}`}>Заново</Button>
+	<Button color="red" goto={withFromAi('/tests', page.url)}>
+		{isStreamingActive() ? 'К следующему' : 'К тестам'}
+	</Button>
+	<Button color="blue" goto={withFromAi(`/tests/${slug}`, page.url)}>Заново</Button>
 </section>
 
 <style>

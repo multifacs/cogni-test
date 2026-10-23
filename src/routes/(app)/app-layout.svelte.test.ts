@@ -14,7 +14,12 @@ import '../../app.css';
 
 // vi.hoisted: vi.mock поднимается в начало файла, обычные top-level
 // переменные внутри фабрики будут undefined
-const mocks = vi.hoisted(() => ({ url: { pathname: '/' } }));
+const mocks = vi.hoisted(() => ({
+	// isAiFlowUrl(page.url) в layout читает searchParams.get('from') —
+	// без searchParams мок падает с TypeError. URLSearchParams реалистичнее
+	// get: () => null: покрывает и .get, и .set в тестах AI-потока.
+	url: { pathname: '/', searchParams: new URLSearchParams() }
+}));
 
 vi.mock('$app/state', () => ({
 	page: { url: mocks.url }
@@ -44,8 +49,11 @@ const layoutData = {
 	allowedPaths: []
 } as unknown as LayoutData;
 
-async function mountLayout(pathname: string) {
+async function mountLayout(pathname: string, search?: string) {
 	mocks.url.pathname = pathname;
+	// Свежие searchParams на каждый маунт: без сброса from=ai протекал бы
+	// в следующие тесты (vi.clearAllMocks не трогает URLSearchParams)
+	mocks.url.searchParams = new URLSearchParams(search);
 	return await render(AppLayout, {
 		props: { data: layoutData, children }
 	});
@@ -129,6 +137,48 @@ describe('(app) layout — скрытие нижней навигации на <
 		const { container } = await mountLayout('/home');
 		const slot = getNavSlot(container);
 
+		expect(getComputedStyle(slot).display).not.toBe('none');
+	});
+});
+
+describe('(app) layout — скрытие навбара на ИИ-потоке', () => {
+	// AI-flow скрывает навбар на ВСЕХ брейкпоинтах (в отличие от <sm) —
+	// проверяем на широком viewport, чтобы изолировать от мобильного скрытия
+	it('/ai: nav-slot получает nav-flow-hidden (display: none), но nav остаётся в DOM', async () => {
+		await page.viewport(1280, 800);
+		const { container } = await mountLayout('/ai');
+		const slot = getNavSlot(container);
+
+		expect(slot.classList.contains('nav-flow-hidden')).toBe(true);
+		expect(getComputedStyle(slot).display).toBe('none');
+		// NavBar не выносится из DOM — только скрывается стилем
+		expect(slot.querySelector('nav.nav')).not.toBeNull();
+	});
+
+	it('/tests?from=ai: навбар скрыт', async () => {
+		await page.viewport(1280, 800);
+		const { container } = await mountLayout('/tests', 'from=ai');
+		const slot = getNavSlot(container);
+
+		expect(slot.classList.contains('nav-flow-hidden')).toBe(true);
+		expect(getComputedStyle(slot).display).toBe('none');
+	});
+
+	it('/home?from=ai: навбар скрыт', async () => {
+		await page.viewport(1280, 800);
+		const { container } = await mountLayout('/home', 'from=ai');
+		const slot = getNavSlot(container);
+
+		expect(slot.classList.contains('nav-flow-hidden')).toBe(true);
+		expect(getComputedStyle(slot).display).toBe('none');
+	});
+
+	it('контроль: /home без query — класс nav-flow-hidden отсутствует, навбар виден', async () => {
+		await page.viewport(1280, 800);
+		const { container } = await mountLayout('/home');
+		const slot = getNavSlot(container);
+
+		expect(slot.classList.contains('nav-flow-hidden')).toBe(false);
 		expect(getComputedStyle(slot).display).not.toBe('none');
 	});
 });

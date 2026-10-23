@@ -1,12 +1,23 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { updateProfileSurvey, getProfileSurvey } from '$lib/server/db/controllers/survey';
 import { autoAddToLatestActiveSession } from '$lib/server/db/controllers/gto';
-import { getUserById } from '$lib/server/db';
+import { createUser, getUserById } from '$lib/server/db';
 import type { Actions, PageServerLoad } from './$types';
 
 const makeCookies = (userId?: string) => ({
 	get: (name: string) => (name === 'user_id' ? userId : undefined)
 });
+
+type RedirectShape = { status: number; location: string };
+
+const catchRedirect = async (fn: () => Promise<unknown>): Promise<RedirectShape> => {
+	try {
+		await fn();
+	} catch (e) {
+		return e as RedirectShape;
+	}
+	throw new Error('expected redirect to be thrown');
+};
 
 type ActionValue = Actions[keyof Actions];
 type ActionEvent = Parameters<ActionValue>[0];
@@ -22,7 +33,20 @@ const makeActionEvent = (formData: Record<string, string>, userId = 'user-1'): A
 
 type LoadEvent = Parameters<PageServerLoad>[0];
 
-const makeLoadEvent = (): LoadEvent => ({ cookies: makeCookies() }) as LoadEvent;
+const makeLoadEvent = (search = '', userId?: string): LoadEvent =>
+	({ cookies: makeCookies(userId), url: new URL(`http://localhost/${search}`) }) as LoadEvent;
+
+const VALID_LOGIN_FORM = {
+	firstname: 'Иван',
+	lastname: 'Ив',
+	birthday: '01.01.2000',
+	sex: 'male'
+};
+
+const makeLoginCookies = () => ({
+	get: (name: string) => (name === 'user_id' ? undefined : undefined),
+	set: vi.fn()
+});
 
 // ─── Mock setup ────────────────────────────────────────────────────────
 
@@ -165,5 +189,96 @@ describe('root +page.server load devUser prefill', () => {
 			sex: 'male'
 		});
 		expect(cookies.delete).toHaveBeenCalledWith('user_id', { path: '/' });
+	});
+});
+
+describe('root +page.server load ai redirect', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it('redirects logged-in user to /home when no ai query param', async () => {
+		vi.mocked(getUserById).mockResolvedValue({ id: 'user-1' } as never);
+
+		const { load } = await import('./+page.server');
+		const redirect = await catchRedirect(async () => load(makeLoadEvent('', 'user-1')));
+
+		expect(redirect.status).toBe(307);
+		expect(redirect.location).toBe('/home');
+	});
+
+	it('redirects logged-in user to /ai when ai query param present', async () => {
+		vi.mocked(getUserById).mockResolvedValue({ id: 'user-1' } as never);
+
+		const { load } = await import('./+page.server');
+		const redirect = await catchRedirect(async () => load(makeLoadEvent('?ai', 'user-1')));
+
+		expect(redirect.status).toBe(307);
+		expect(redirect.location).toBe('/ai');
+	});
+});
+
+describe('root +page.server login action ai flow', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		vi.mocked(createUser).mockResolvedValue({ id: 'new-user-1' } as never);
+	});
+
+	const makeLoginEvent = (search = '', extraForm: Record<string, string> = {}): ActionEvent =>
+		({
+			cookies: makeLoginCookies(),
+			request: new Request(`http://localhost/${search}`, {
+				method: 'POST',
+				body: new URLSearchParams({ ...VALID_LOGIN_FORM, ...extraForm })
+			})
+		}) as unknown as ActionEvent;
+
+	it('redirects to /ai and sets ai_flow cookie when ai query param present (fallback path)', async () => {
+		const { actions } = await import('./+page.server');
+		const event = makeLoginEvent('?ai');
+		const redirect = await catchRedirect(async () => (actions as Actions).login(event));
+
+		expect(redirect.status).toBe(307);
+		expect(redirect.location).toBe('/ai');
+		const cookies = event.cookies as unknown as { set: ReturnType<typeof vi.fn> };
+		expect(cookies.set).toHaveBeenCalledWith('user_id', 'new-user-1', {
+			path: '/',
+			secure: true,
+			maxAge: 60 * 60 * 24 * 30
+		});
+		expect(cookies.set).toHaveBeenCalledWith('ai_flow', '1', {
+			path: '/',
+			secure: true,
+			httpOnly: true,
+			maxAge: 60 * 60 * 24 * 30
+		});
+	});
+
+	it('redirects to /ai and sets ai_flow cookie when form data carries ai flag (browser POST on ?/login loses query)', async () => {
+		const { actions } = await import('./+page.server');
+		const event = makeLoginEvent('', { ai: '1' });
+		const redirect = await catchRedirect(async () => (actions as Actions).login(event));
+
+		expect(redirect.status).toBe(307);
+		expect(redirect.location).toBe('/ai');
+		const cookies = event.cookies as unknown as { set: ReturnType<typeof vi.fn> };
+		expect(cookies.set).toHaveBeenCalledWith('ai_flow', '1', {
+			path: '/',
+			secure: true,
+			httpOnly: true,
+			maxAge: 60 * 60 * 24 * 30
+		});
+	});
+
+	it('redirects to /home and does NOT set ai_flow cookie when no ai signal at all', async () => {
+		const { actions } = await import('./+page.server');
+		const event = makeLoginEvent();
+		const redirect = await catchRedirect(async () => (actions as Actions).login(event));
+
+		expect(redirect.status).toBe(307);
+		expect(redirect.location).toBe('/home');
+		const cookies = event.cookies as unknown as { set: ReturnType<typeof vi.fn> };
+		const setCookieNames = cookies.set.mock.calls.map((call) => call[0]);
+		expect(setCookieNames).toEqual(['user_id']);
 	});
 });
