@@ -2,6 +2,11 @@ import { render, cleanup } from 'vitest-browser-svelte';
 import { page } from 'vitest/browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import Page from './+page.svelte';
+import {
+	AI_SURVEY_QUESTION_BY_ID,
+	AI_SURVEY_QUESTIONS
+} from '../../../../lib/ai/questionnaire/questions';
+import type { AiSurveyAnswers } from '../../../../lib/ai/questionnaire/types';
 
 // app.css подключает Tailwind — без него утилиты не сгенерируются
 // в тестовом окружении, и trusted-клик может промахиваться по мишеням
@@ -60,6 +65,42 @@ function makeData(
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * Полные ответы для ВСЕХ 38 вопросов анкеты (включая q7 и q8 из обеих
+ * веток Q6): фикстура ставит q6 = options[0] = «Да, ежедневно», поэтому
+ * фактическая ветка — 'yes', где q7 видим; без заполненного q7 happy-path
+ * submit ушёл бы на redirect. Заполнены все вопросы — любая производная
+ * ветка полностью отвечена, анкета проходит гейт submit.
+ */
+function fullAnswers(overrides: AiSurveyAnswers = {}): AiSurveyAnswers {
+	const answers: AiSurveyAnswers = {};
+	for (const q of AI_SURVEY_QUESTIONS) {
+		switch (q.type) {
+			case 'single':
+				answers[q.id] = { choice: q.options[0] };
+				break;
+			case 'multi':
+				answers[q.id] = { choices: [q.options[0]] };
+				break;
+			case 'matrix':
+				answers[q.id] = Object.fromEntries(
+					q.rows.map((row) => [row, 'Затрудняюсь ответить'])
+				);
+				break;
+			case 'open':
+				answers[q.id] = 'Ответ';
+				break;
+			case 'number':
+				answers[q.id] = 2000;
+				break;
+			case 'ladder':
+				answers[q.id] = 5;
+				break;
+		}
+	}
+	return { ...answers, ...overrides };
+}
+
 // ─── Хелперы ──────────────────────────────────────────────────────────
 
 async function mountPage(data: ReturnType<typeof makeData> = makeData(), search = '') {
@@ -80,6 +121,14 @@ function inputForLabel(container: HTMLElement, labelText: string): HTMLInputElem
 /** Радио матрицы — по aria-label «строка — шкала». */
 function matrixRadio(container: HTMLElement, row: string, scale: string): HTMLInputElement | null {
 	return container.querySelector(`input[aria-label="${row} — ${scale}"]`);
+}
+
+/** Кнопка nav-row по точному тексту («Следующий →» / «Отправить»). */
+function navButton(container: HTMLElement, text: string): HTMLButtonElement | null {
+	return (
+		[...container.querySelectorAll('button')].find((b) => b.textContent?.trim() === text) ??
+		null
+	);
 }
 
 // ─── Тесты ────────────────────────────────────────────────────────────
@@ -272,7 +321,9 @@ describe('/ai/ai-life — типы вопросов', () => {
 	});
 
 	it('ladder: q38 — 10 ступеней, последняя карта → «Отправить» → save + /ai', async () => {
-		const { container } = await mountPage(makeData(), '?q=35');
+		// fullAnswers заполняет q6 = «Да, ежедневно» → ветка «да» (37 видимых),
+		// последний индекс 36 (q38), а не 35 как в ветке «unanswered»
+		const { container } = await mountPage(makeData({ answers: fullAnswers() }), '?q=36');
 
 		const steps = [...container.querySelectorAll('button.step')];
 		expect(steps).toHaveLength(10);
@@ -286,6 +337,65 @@ describe('/ai/ai-life — типы вопросов', () => {
 			expect(navMocks.goto).toHaveBeenCalled();
 		});
 		expect(navMocks.goto.mock.calls[0]?.[0]).toBe('/ai');
+	});
+});
+
+describe('/ai/ai-life — обязательные вопросы', () => {
+	it('?q=0 без ответа: «Следующий →» disabled; ответ активирует, клик → ?q=1', async () => {
+		const { container } = await mountPage(makeData(), '?q=0');
+
+		expect(navButton(container, 'Следующий →')?.disabled).toBe(true);
+		expect(navMocks.goto).not.toHaveBeenCalled();
+		// подсказка видна, пока текущий вопрос не отвечен
+		expect(container.textContent).toContain('Вопрос обязательный — ответьте, чтобы продолжить');
+
+		await page.getByText('Несколько раз в день', { exact: true }).click();
+
+		expect(navButton(container, 'Следующий →')?.disabled).toBe(false);
+		expect(container.textContent).not.toContain(
+			'Вопрос обязательный — ответьте, чтобы продолжить'
+		);
+
+		await page.getByRole('button', { name: 'Следующий →' }).click();
+		expect(navMocks.goto).toHaveBeenCalledWith('/ai/ai-life?q=1', expect.anything());
+	});
+
+	it('matrix q3 (?q=2): одна строка из 8 → «Следующий →» disabled; все 8 строк → активна', async () => {
+		const { container } = await mountPage(makeData(), '?q=2');
+
+		const q3 = AI_SURVEY_QUESTION_BY_ID.get('q3');
+		if (!q3 || q3.type !== 'matrix') {
+			throw new Error('q3 is not a matrix question');
+		}
+
+		expect(navButton(container, 'Следующий →')?.disabled).toBe(true);
+
+		// одна строка из восьми — всё ещё недостаточно
+		matrixRadio(container, q3.rows[0]!, 'Затрудняюсь ответить')?.click();
+		expect(navButton(container, 'Следующий →')?.disabled).toBe(true);
+
+		// все 8 строк — вопрос отвечен
+		for (const row of q3.rows) {
+			matrixRadio(container, row, 'Затрудняюсь ответить')?.click();
+		}
+		// untrusted DOM-клики: даём Svelte отфлашить derived currentAnswered
+		await sleep(20);
+		expect(navButton(container, 'Следующий →')?.disabled).toBe(false);
+	});
+
+	it('«Отправить» перенаправляет на первый неотвеченный (?q=0), а не на /ai', async () => {
+		const answers = fullAnswers();
+		delete answers['q1'];
+		// ветка «да» (q6 = «Да, ежедневно»): 37 видимых, последний индекс 36
+		await mountPage(makeData({ answers }), '?q=36');
+
+		await page.getByRole('button', { name: 'Отправить' }).click();
+
+		await vi.waitFor(() => {
+			expect(navMocks.goto).toHaveBeenCalled();
+		});
+		expect(navMocks.goto).toHaveBeenCalledWith('/ai/ai-life?q=0', expect.anything());
+		expect(navMocks.goto.mock.calls.some((c) => c?.[0] === '/ai')).toBe(false);
 	});
 });
 
@@ -377,7 +487,11 @@ describe('/ai/ai-life — автосохранение', () => {
 	});
 
 	it('«Отправить» сохраняет финальные ответы (включая префилл Q28/Q29) до перехода', async () => {
-		await mountPage(makeData(), '?q=35');
+		// ветка «да» (q6 = «Да, ежедневно»): 37 видимых, последний индекс 36
+		await mountPage(
+			makeData({ answers: fullAnswers({ q29: { choice: 'Мужской' } }) }),
+			'?q=36'
+		);
 
 		await page.getByRole('button', { name: '7' }).click();
 		await page.getByRole('button', { name: 'Отправить' }).click();

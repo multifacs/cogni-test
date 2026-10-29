@@ -155,6 +155,28 @@ export function isAnswered(
 	}
 }
 
+/**
+ * Полностью ли отвечен обязательный вопрос.
+ *
+ * single/multi/open/number/ladder — семантика isAnswered (number/ladder —
+ * только Number.isFinite, без диапазонов). matrix — строже: true только если
+ * КАЖДАЯ строка из question.rows имеет непустое строковое значение; лишние
+ * ключи ответа (строки не из question.rows) игнорируются.
+ */
+export function isRequiredAnswered(
+	question: AiSurveyQuestion,
+	value: AiSurveyAnswerValue | undefined
+): boolean {
+	if (question.type === 'matrix') {
+		if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+			return false;
+		}
+		const answer = value as Record<string, unknown>;
+		return question.rows.every((row) => typeof answer[row] === 'string' && answer[row] !== '');
+	}
+	return isAnswered(question, value);
+}
+
 /** Результат расчета прогресса анкеты. */
 export interface AiSurveyProgress {
 	/** Число видимых вопросов с непустым ответом. */

@@ -7,6 +7,7 @@
 	import { AI_SURVEY_INTRO } from '$lib/ai/questionnaire/questions';
 	import {
 		computeAiSurveyProgress,
+		isRequiredAnswered,
 		nextQuestion,
 		q6Branch,
 		visibleQuestions
@@ -63,6 +64,11 @@
 	const currentQuestion = $derived(currentIndex >= 0 ? (visible[currentIndex] ?? null) : null);
 	const isLast = $derived(currentIndex === visible.length - 1);
 
+	// Все вопросы обязательные: без ответа нельзя ни идти дальше, ни отправить.
+	const currentAnswered = $derived(
+		currentQuestion !== null && isRequiredAnswered(currentQuestion, answers[currentQuestion.id])
+	);
+
 	onMount(() => {
 		if (headerContext) headerContext.value = 'Анкета ИИ';
 	});
@@ -83,6 +89,7 @@
 	}
 
 	function next() {
+		if (!currentAnswered) return;
 		if (!currentQuestion) return;
 		const nextId = nextQuestion(currentQuestion.id, branch);
 		if (nextId === null) return;
@@ -152,6 +159,15 @@
 	});
 
 	async function submit() {
+		if (!currentAnswered) return;
+		// Первый неотвеченный видимый вопрос — на него, подсказка появится сама.
+		const firstUnansweredIndex = visible.findIndex(
+			(q) => !isRequiredAnswered(q, answers[q.id])
+		);
+		if (firstUnansweredIndex !== -1) {
+			void goto(`/ai/ai-life?q=${firstUnansweredIndex}`, NAV_OPTS);
+			return;
+		}
 		if (saveTimer !== null) {
 			clearTimeout(saveTimer);
 			saveTimer = null;
@@ -194,12 +210,20 @@
 					bind:value={answers[currentQuestion.id]}
 				/>
 
+				{#if !currentAnswered}
+					<p class="required-hint">Вопрос обязательный — ответьте, чтобы продолжить</p>
+				{/if}
+
 				<div class="nav-row">
 					<Button color="blue" onclick={prev}>← Предыдущий</Button>
 					{#if isLast}
-						<Button color="green" onclick={submit}>Отправить</Button>
+						<Button color="green" onclick={submit} disabled={!currentAnswered}
+							>Отправить</Button
+						>
 					{:else}
-						<Button color="green" onclick={next}>Следующий →</Button>
+						<Button color="green" onclick={next} disabled={!currentAnswered}
+							>Следующий →</Button
+						>
 					{/if}
 				</div>
 			</div>
@@ -232,6 +256,13 @@
 		font-size: 0.8125rem;
 		font-weight: 600;
 		opacity: 0.6;
+		color: var(--main-text-color);
+	}
+
+	.required-hint {
+		font-size: 0.8125rem;
+		font-weight: 600;
+		opacity: 1;
 		color: var(--main-text-color);
 	}
 

@@ -33,7 +33,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_1,
 		text: 'Как часто вы заходите в социальные сети и мессенджеры?',
 		type: 'single',
-		required: false,
+		required: true,
 		options: [
 			'Несколько раз в час',
 			'Несколько раз в день',
@@ -48,7 +48,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_1,
 		text: 'Сколько времени в день у Вас уходит на социальные сети и мессенджеры в среднем?',
 		type: 'single',
-		required: false,
+		required: true,
 		options: ['Менее 1 часа', 'От 1 до 3 часов', 'От 3 до 5 часов', 'Более 5 часов', UNSURE],
 		other: { label: 'Другое (укажите, сколько)' }
 	},
@@ -57,7 +57,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_1,
 		text: 'Для каких целей Вы чаще всего используете социальные сети? (Оцените по шкале от 1 до 5, где 1 – никогда, 5 – постоянно).',
 		type: 'matrix',
-		required: false,
+		required: true,
 		rows: [
 			'Коммуникация: общение с друзьями, семьей, коллегами, групповые чаты',
 			'Потребление контента: просмотр развлекательных видео (Reels/Shorts), мемов',
@@ -74,7 +74,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_1,
 		text: 'Сколько времени в день Вы осознанно проводите без уведомлений и фоновых приложений?',
 		type: 'single',
-		required: false,
+		required: true,
 		options: [
 			'Почти всегда: у меня «тихие часы», уведомления включены только для близких',
 			'Стараюсь 1–2 часа в день проводить без лишних сигналов',
@@ -88,7 +88,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_1,
 		text: 'Как Вы справляетесь с информационным шумом?',
 		type: 'single',
-		required: false,
+		required: true,
 		options: [
 			'Фильтрую источники, отписываюсь, использую правила сортировки',
 			'Время от времени «разгребаю» подписки, но быстро снова накапливается',
@@ -104,7 +104,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_2,
 		text: 'Используете ли Вы технологии генеративного искусственного интеллекта (ИИ), умных алгоритмов и нейросетей?',
 		type: 'single',
-		required: false,
+		required: true,
 		options: [
 			'Да, ежедневно',
 			'Да, несколько раз в неделю',
@@ -120,14 +120,14 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_2,
 		text: 'Какими именно технологиями ИИ Вы пользуетесь?',
 		type: 'open',
-		required: false
+		required: true
 	},
 	{
 		id: 'q8',
 		block: BLOCK_2,
 		text: 'Почему Вы не используете нейросети? (Выберете любое количество вариантов)',
 		type: 'multi',
-		required: false,
+		required: true,
 		options: [
 			'Незачем ими пользоваться, нет таких задач',
 			'Недостаток собственных знаний о возможностях нейросетей',
@@ -142,7 +142,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_2,
 		text: 'В каких сферах Вы используете нейросети? (Выберете любое количество вариантов)',
 		type: 'multi',
-		required: false,
+		required: true,
 		options: ['Для работы', 'Для учебы', 'Для развлечения', 'Для общения', UNSURE],
 		other: { label: 'Другое (что именно?)' }
 	},
@@ -151,7 +151,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_2,
 		text: 'Какие задачи Вы решаете при помощи нейросетей? (Выберете любое количество вариантов)',
 		type: 'multi',
-		required: false,
+		required: true,
 		options: [
 			'Поиск информации',
 			'Поиск советов по бытовым житейским вопросам',
@@ -180,7 +180,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_2,
 		text: 'Что Вас больше всего привлекает в нейросетях? (Выберете любое количество вариантов)',
 		type: 'multi',
-		required: false,
+		required: true,
 		options: [
 			'Упрощение рутинных задач',
 			'Скорость обработки данных',
@@ -205,7 +205,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_2,
 		text: 'Как бы Вы описали Ваш уровень использования нейросетей?',
 		type: 'single',
-		required: false,
+		required: true,
 		options: [
 			'Минимальный – я почти не пользуюсь нейросети для досуга, учебы или работы',
 			'Базовый – я активно использую нейросети для досуга, учебы или работы, зная базовые настройки',
@@ -219,7 +219,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_2,
 		text: 'Как часто Вы используете нейросети для учебных задач (подготовки домашней работы/курсовых работ/рефератов)?',
 		type: 'single',
-		required: false,
+		required: true,
 		options: [
 			'Ежедневно',
 			'Несколько раз в неделю',
@@ -236,7 +236,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_2,
 		text: 'Как Вы видите роль нейросетей в своей учебе/работе?',
 		type: 'single',
-		required: false,
+		required: true,
 		options: [
 			'Инструмент поддержки: помогает, но финальные решения и ответственность – за мной',
 			'Помощник в рутине: автоматизирую повторяющиеся задачи',
@@ -252,7 +252,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_2,
 		text: 'Насколько Вы доверяете ответам и решениям, которые дают нейросети по учебным/рабочим задачам?',
 		type: 'single',
-		required: false,
+		required: true,
 		options: [
 			'Полностью доверяю и использую ответы без изменений',
 			'Доверяю, но всегда перепроверяю факты, формулы и источники',
@@ -268,7 +268,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_2,
 		text: 'В каких ситуациях Вы с наибольшей вероятностью обратитесь к нейросети для личного разговора? (Выберете любое количество ответов)',
 		type: 'multi',
-		required: false,
+		required: true,
 		options: [
 			'Когда мне одиноко или скучно',
 			'Когда я испытываю сильный стресс или тревогу',
@@ -287,7 +287,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_2,
 		text: 'Насколько Вы доверяете советам, которые дают нейросети по личным темам?',
 		type: 'single',
-		required: false,
+		required: true,
 		options: [
 			'Полностью доверяю и стараюсь следовать рекомендациям',
 			'Доверяю, но всегда перепроверяю информацию или думаю своей головой',
@@ -301,7 +301,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_2,
 		text: 'Как Вы оцениваете вероятность появления следующих проблем в Вашей жизни? (Оцените по шкале от 1 до 5, где 1 – низкая вероятность, 5 – высокая вероятность).',
 		type: 'matrix',
-		required: false,
+		required: true,
 		rows: [
 			'Утечка или похищение персональных данных',
 			'Распространение фейковых новостей, риск не суметь отличить правду от вымысла',
@@ -329,7 +329,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_2,
 		text: 'Как Вы оцениваете вероятность появления следующих возможностей в Вашей жизни из-за использования нейросетей? (Оцените по шкале от 1 до 5, где 1 – низкая вероятность, 5 – высокая вероятность).',
 		type: 'matrix',
-		required: false,
+		required: true,
 		rows: [
 			'Освобождается время для творчества, так как нейросети берут на себя рутину',
 			'Развиваются навыки формирования четкого запроса (промпт-инжиниринг)',
@@ -349,7 +349,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_2,
 		text: 'Как часто Вы сталкиваетесь со следующими ситуациями при использовании нейросетей? (Оцените по шкале от 1 до 5, где 1 – никогда, 2 – редко, 3 – иногда, 4 – часто, 5 – постоянно).',
 		type: 'matrix',
-		required: false,
+		required: true,
 		rows: [
 			'Я замечаю, что трачу на общение с нейросетями гораздо больше времени, чем планировал(а) изначально',
 			'Если у меня нет доступа к нейросетям (например, нет интернета), я чувствую раздражение, тревогу или беспокойство',
@@ -375,7 +375,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_2,
 		text: 'Были ли в Вашей жизни случаи, когда использование нейросетей привело к негативным последствиям, но Вы все равно продолжили ими пользоваться? (Например: получили низкую оценку из-за галлюцинаций ИИ, потратили время на исправление его ошибок, получили неверный совет и т.п.).',
 		type: 'single',
-		required: false,
+		required: true,
 		options: ['Да, неоднократно', 'Да, один раз', 'Нет, такого не было', UNSURE],
 		other: { label: 'Другое (что именно?)' }
 	},
@@ -384,7 +384,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_2,
 		text: 'Как Вы думаете, насколько часто Ваши одногруппники проводят время в нейросетях?',
 		type: 'single',
-		required: false,
+		required: true,
 		options: [
 			'Большинство моих одногруппников вообще не пользуются нейросети для личных или учебных задач',
 			'Используют редко, только для конкретных задач (решить задачу, перевести текст)',
@@ -400,7 +400,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_2,
 		text: 'Как Вы думаете, почему многие студенты предпочитают не афишировать использование нейросетей в учебе? (Выберете любое количество вариантов ответа)',
 		type: 'multi',
-		required: false,
+		required: true,
 		options: [
 			'Они боятся осуждения со стороны преподавателей',
 			'Они боятся санкций со стороны университета',
@@ -416,7 +416,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_2,
 		text: 'Как Вам кажется, развитие нейросетей приносит больше пользы или вреда обществу?',
 		type: 'single',
-		required: false,
+		required: true,
 		options: [
 			'Точно больше пользы',
 			'Скорее больше пользы',
@@ -431,7 +431,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_2,
 		text: 'А лично Вам нейросети больше помогают или вредят?',
 		type: 'single',
-		required: false,
+		required: true,
 		options: [
 			'Точно больше помогают',
 			'Скорее больше помогают',
@@ -446,7 +446,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_2,
 		text: 'Изменят ли в будущем жизнь человечества нейросети?',
 		type: 'single',
-		required: false,
+		required: true,
 		options: ['Точно да', 'Скорее да', 'Скорее нет', 'Точно нет', UNSURE]
 	},
 	{
@@ -454,7 +454,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_2,
 		text: 'В какую сторону, по Вашему мнению, в будущем нейросети изменят жизнь человечества?',
 		type: 'single',
-		required: false,
+		required: true,
 		options: [
 			'Точно в положительную',
 			'Скорее в положительную',
@@ -470,14 +470,14 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_3,
 		text: 'Укажите, пожалуйста, год Вашего рождения?',
 		type: 'number',
-		required: false
+		required: true
 	},
 	{
 		id: 'q29',
 		block: BLOCK_3,
 		text: 'Укажите, пожалуйста, Ваш пол.',
 		type: 'single',
-		required: false,
+		required: true,
 		options: ['Женский', 'Мужской']
 	},
 	{
@@ -485,7 +485,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_3,
 		text: 'Какой из вариантов наилучшим образом описывает место, где Вы жили до поступления в ВУЗ?',
 		type: 'single',
-		required: false,
+		required: true,
 		options: [
 			'Cтоличный город (Москва или Санкт-Петербург)',
 			'Областной центр',
@@ -501,14 +501,14 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_3,
 		text: 'Сколько в Вашей родительской семье было детей, включая Вас?',
 		type: 'number',
-		required: false
+		required: true
 	},
 	{
 		id: 'q32',
 		block: BLOCK_3,
 		text: 'На каком курсе ВУЗа Вы обучаетесь сейчас',
 		type: 'single',
-		required: false,
+		required: true,
 		options: [
 			'1 курс',
 			'2 курс',
@@ -523,7 +523,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_3,
 		text: 'Какой профиль Вашего образования?',
 		type: 'single',
-		required: false,
+		required: true,
 		options: [
 			'Математические науки',
 			'Естественные науки (Физика и астрономия, Химия, Науки о Земле, Биологические науки)',
@@ -543,7 +543,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_3,
 		text: 'Совмещаете ли Вы учебу в ВУЗе с работой?',
 		type: 'single',
-		required: false,
+		required: true,
 		options: [
 			'Нет, только учусь в ВУЗе',
 			'Да, совмещаю учебу в ВУЗе с работой на постоянной основе',
@@ -556,7 +556,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_3,
 		text: 'К какой из нижеперечисленных групп по уровню дохода Вы бы могли отнести свою семью?',
 		type: 'single',
-		required: false,
+		required: true,
 		options: [
 			'Не хватает денег даже на еду',
 			'Хватает на еду, но не хватает на покупку одежды и обуви',
@@ -572,7 +572,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_3,
 		text: 'Каково Ваше семейное положение?',
 		type: 'single',
-		required: false,
+		required: true,
 		options: ['Состою в отношениях/браке', 'Не состою в отношениях/браке', 'Не хочу отвечать']
 	},
 	{
@@ -580,7 +580,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_3,
 		text: 'Есть ли у Вас дети?',
 		type: 'single',
-		required: false,
+		required: true,
 		options: ['Да', 'Нет', 'Не хочу отвечать']
 	},
 	{
@@ -588,7 +588,7 @@ export const AI_SURVEY_QUESTIONS: AiSurveyQuestion[] = [
 		block: BLOCK_3,
 		text: 'Вообразите, пожалуйста, лестницу, ступеньки которой пронумерованы от 1 внизу до 10 наверху. Самая верхняя ступенька лестницы представляет наилучшую возможную для Вас жизнь, а самая нижняя – наихудшую возможную для Вас жизнь. На какой ступени этой лестницы Вы находитесь в настоящий момент?',
 		type: 'ladder',
-		required: false,
+		required: true,
 		min: 1,
 		max: 10
 	}

@@ -8,13 +8,14 @@ import {
 } from './questions';
 import {
 	computeAiSurveyProgress,
+	isRequiredAnswered,
 	isVisible,
 	nextQuestion,
 	q6Branch,
 	visibleQuestions,
 	visibleTotal
 } from './branching';
-import type { AiSurveyAnswers } from './types';
+import type { AiSurveyAnswers, AiSurveyAnswerValue, AiSurveyQuestion } from './types';
 
 describe('AI survey questions data', () => {
 	it('contains exactly 38 questions with unique ids q1..q38', () => {
@@ -23,10 +24,10 @@ describe('AI survey questions data', () => {
 		expect(new Set(AI_SURVEY_QUESTION_ORDER).size).toBe(38);
 	});
 
-	it('every question is optional (required: false) and has block + text + known type', () => {
+	it('every question is required and has block + text + known type', () => {
 		const knownTypes = new Set(['single', 'multi', 'matrix', 'open', 'number', 'ladder']);
 		for (const q of AI_SURVEY_QUESTIONS) {
-			expect(q.required).toBe(false);
+			expect(q.required).toBe(true);
 			expect(q.block).not.toBe('');
 			expect(q.text).not.toBe('');
 			expect(knownTypes.has(q.type)).toBe(true);
@@ -212,5 +213,78 @@ describe('AI survey progress thresholds', () => {
 	it('blank open answer does not count', () => {
 		const answers: AiSurveyAnswers = { q7: '   ' };
 		expect(computeAiSurveyProgress(answers).answered).toBe(0);
+	});
+});
+
+describe('isRequiredAnswered (обязательные вопросы)', () => {
+	const matrix = AI_SURVEY_QUESTION_BY_ID.get('q3');
+	if (!matrix || matrix.type !== 'matrix') {
+		throw new Error('q3 is not a matrix question');
+	}
+	const rows = matrix.rows;
+	const allRowsAnswer: Record<string, string> = Object.fromEntries(
+		rows.map((row) => [row, 'Затрудняюсь ответить'])
+	);
+
+	const qOf = (id: string): AiSurveyQuestion => {
+		const q = AI_SURVEY_QUESTION_BY_ID.get(id);
+		if (!q) throw new Error(`unknown question ${id}`);
+		return q;
+	};
+
+	it('matrix: частично заполненные строки → false, все строки из question.rows → true', () => {
+		const partial: Record<string, string> = { [rows[0]!]: '5' };
+		expect(isRequiredAnswered(matrix, partial)).toBe(false);
+		expect(isRequiredAnswered(matrix, allRowsAnswer)).toBe(true);
+	});
+
+	it('matrix: все question.rows отвечены + лишний ключ → true (лишние игнорируются)', () => {
+		const withExtra: Record<string, string> = {
+			...allRowsAnswer,
+			'несуществующая строка': '3'
+		};
+		expect(isRequiredAnswered(matrix, withExtra)).toBe(true);
+	});
+
+	it('matrix: не все question.rows отвечены + лишний ключ → false', () => {
+		const partial: Record<string, string> = {
+			[rows[0]!]: '5',
+			'несуществующая строка': '3'
+		};
+		expect(isRequiredAnswered(matrix, partial)).toBe(false);
+	});
+
+	it('multi: {choices: []} → false; {choices: [], other: "x"} → true', () => {
+		const multi = qOf('q10');
+		const empty: AiSurveyAnswerValue = { choices: [] };
+		const otherOnly: AiSurveyAnswerValue = { choices: [], other: 'x' };
+		expect(isRequiredAnswered(multi, empty)).toBe(false);
+		expect(isRequiredAnswered(multi, otherOnly)).toBe(true);
+	});
+
+	it('single: undefined → false, валидный выбор → true', () => {
+		const single = qOf('q1');
+		expect(isRequiredAnswered(single, undefined)).toBe(false);
+		expect(isRequiredAnswered(single, { choice: 'Несколько раз в день' })).toBe(true);
+	});
+
+	it('open: undefined → false, непустой текст → true', () => {
+		const open = qOf('q7');
+		expect(isRequiredAnswered(open, undefined)).toBe(false);
+		expect(isRequiredAnswered(open, 'Ответ')).toBe(true);
+	});
+
+	it('number: undefined → false, 2000 → true, NaN → false', () => {
+		const number = qOf('q28');
+		expect(isRequiredAnswered(number, undefined)).toBe(false);
+		expect(isRequiredAnswered(number, 2000)).toBe(true);
+		expect(isRequiredAnswered(number, Number.NaN)).toBe(false);
+	});
+
+	it('ladder: undefined → false, 5 → true, NaN → false', () => {
+		const ladder = qOf('q38');
+		expect(isRequiredAnswered(ladder, undefined)).toBe(false);
+		expect(isRequiredAnswered(ladder, 5)).toBe(true);
+		expect(isRequiredAnswered(ladder, Number.NaN)).toBe(false);
 	});
 });
