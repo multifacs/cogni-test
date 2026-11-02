@@ -3,6 +3,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import type { LettersTrialRow, RoundEntry } from './types';
 	import { SvelteMap } from 'svelte/reactivity';
+	import ProgressBar from '$lib/components/ui/ProgressBar.svelte';
 
 	let {
 		gameEnd,
@@ -212,10 +213,10 @@
 			<p class="text-center text-base font-semibold text-[#4caf50]">
 				Букв: {lettersToShow.length}
 			</p>
-			<p class="text-center text-base">
-				Время игры: {elapsed} сек
-			</p>
 		</div>
+
+		<!-- Полоска на запоминание -->
+		<ProgressBar min={0} max={SHOW_SECONDS} progress={SHOW_SECONDS - showTime} />
 
 		<div
 			class="flex max-w-4xl flex-wrap justify-center gap-3 rounded-3xl bg-white/8 p-5 backdrop-blur-sm"
@@ -243,14 +244,15 @@
 				{userAnswer.length ? userAnswer.join('') : '—'}
 			</p>
 		</div>
+		<ProgressBar min={0} max={MAX_GAME_SECONDS} progress={elapsed} />
 
-		<div class="flex flex-wrap justify-center max-w-3xl gap-3 rounded-3xl bg-white/8 p-5">
+		<div class="flex max-w-3xl flex-wrap justify-center gap-3 rounded-3xl bg-white/8 p-5">
 			{#each gridLetters as letter, i (i)}
 				<button
 					type="button"
 					class={userAnswer.includes(letter)
-						? 'h-16 w-16 rounded-2xl cursor-pointer bg-[#4caf50]! font-bold '
-						: 'h-16 w-16 rounded-2xl cursor-pointer bg-white font-bold '}
+						? 'h-16 w-16 cursor-pointer rounded-2xl bg-[#4caf50]! font-bold '
+						: 'h-16 w-16 cursor-pointer rounded-2xl bg-white font-bold '}
 					onclick={() => pick(letter)}>{letter}</button
 				>
 			{/each}

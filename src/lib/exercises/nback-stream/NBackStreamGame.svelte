@@ -3,6 +3,7 @@
 	import StreamBoard from './StreamBoard.svelte';
 	import type { Domain, TargetFeature, Stimulus, ClickEvent, NBackTrialRow } from './types';
 	import { generateSequence } from './logic/generator';
+	import ProgressBar from '$lib/components/ui/ProgressBar.svelte';
 
 	let {
 		gameEnd,
@@ -142,11 +143,27 @@
 	}
 
 	onDestroy(() => clearInterval(tickTimer));
+
+	function getHintText(): string {
+	if (domain === 'figures') {
+		return nBack === 1
+			? 'Запомните первую фигуру'
+			: nBack === 2
+				? 'Запомните первые две фигуры'
+				: 'Запомните первые три фигуры';
+	}
+	// numbers
+	return nBack === 1
+		? 'Запомните первое число'
+		: nBack === 2
+			? 'Запомните первые два числа'
+			: 'Запомните первые три числа';
+}
 </script>
 
 {#if phase === 'config'}
 	<div class="flex flex-col gap-4">
-		<h2 class="text-xl font-semibold text-center">Выберите режим</h2>
+		<h2 class="text-center text-xl font-semibold">Выберите режим</h2>
 		<div class="grid max-w-xl grid-cols-2 gap-4">
 			<button
 				class="card {domain === 'figures' ? 'selected' : ''}"
@@ -202,11 +219,10 @@
 			{/if}
 		</div>
 		<div class="-mt-1 text-center text-sm opacity-70">Осталось ~ {remainSec} c</div>
-
+		<ProgressBar min={0} max={60} progress={60 - remainSec} />
 		{#if current && current.truth === null}
 			<div class="hint">
-				Запомните {nBack === 1 ? 'первую' : nBack === 2 ? 'первые две' : 'первые три'}
-				{domain === 'figures' ? 'фигур' : 'числа'} — ответы пока не принимаются.
+				{getHintText()} — ответы пока не принимаются. 
 			</div>
 		{/if}
 
@@ -297,9 +313,7 @@
 		background-color: #6fcf97;
 		cursor: pointer;
 	}
-	.btn:hover {
-		background: #f8fafc;
-	}
+	
 	.btn.primary {
 		border-color: #3b82f6;
 	}

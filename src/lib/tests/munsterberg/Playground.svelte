@@ -4,23 +4,17 @@
 	import type { Cell, Word, Selection, MunsterbergResult } from './types';
 	import ProgressBar from '$lib/components/ui/ProgressBar.svelte';
 
-	// Props
 	let { data, gameEnd, sendResults } = $props();
 
-	// Grid settings
 	const GRID_COLS = 9;
 	const GRID_ROWS = 11;
 
-	// Calculate cell size to fit available width on mobile
-	// Border accounting: 1px outer grid border + 1px per cell border on each side
-	// Total width = GRID_COLS * CELL_W + (GRID_COLS + 1) * 1 (borders)
 	const BORDER_PX = 1;
 	const TOTAL_BORDER_W = (GRID_COLS + 1) * BORDER_PX;
 
 	let CELL_W = $state(42);
 	let CELL_H = $state(42);
 
-	// State
 	let innerWidth = $state(0);
 	let innerHeight = $state(0);
 	let isGameRunning = $state(false);
@@ -37,7 +31,6 @@
 	let isDragging = false;
 	let isResetting = false;
 
-	// Time tracking
 	let startTime: number = $state(0);
 
 	onMount(() => {
@@ -46,7 +39,6 @@
 	});
 
 	function recalcCellSize() {
-		// Measure the real available width from the grid's own parent (.main has padding: 4%)
 		const parent = overlay.parentElement;
 		let availableW: number;
 		if (parent) {
@@ -56,11 +48,6 @@
 		} else {
 			availableW = innerWidth;
 		}
-		// Available height: .main is the scroll container (grid rows:
-		// banner / main / low-content / nav) — everything outside it is chrome.
-		// The grid is main's first item and the flexible justify-evenly gaps
-		// collapse to zero once the content fills the area, so the whole
-		// content box is usable.
 		const main = overlay.closest('main, .main') as HTMLElement | null;
 		let availableH: number;
 		if (main) {
@@ -70,23 +57,18 @@
 		} else {
 			availableH = innerHeight;
 		}
-		// Reserve space for the ProgressBar / result heading rendered below the grid
-		availableH -= 28;
+		// Reserve space for the ProgressBar + heading
+		availableH -= 90;
 		const desktopW = 42;
-		// On narrow screens CELL_H = CELL_W * 0.85, so convert the height
-		// budget into a width constraint through that ratio
 		const cellRatio = 0.85;
 		const TOTAL_BORDER_H = (GRID_ROWS + 1) * BORDER_PX;
 		const wByWidth = Math.floor((availableW - TOTAL_BORDER_W) / GRID_COLS);
 		const wByHeight = Math.floor((availableH - TOTAL_BORDER_H) / GRID_ROWS / cellRatio);
 		const calculatedW = Math.min(wByWidth, wByHeight);
-		// Use calculated size on small screens, cap at desktop default on larger
 		CELL_W = Math.min(Math.max(calculatedW, 14), desktopW);
-		// Proportional height: on desktop 1:1, on narrower screens slightly shorter
 		CELL_H = CELL_W >= desktopW ? desktopW : Math.floor(CELL_W * 0.85);
 	}
 
-	// Recalculate when viewport changes
 	$effect(() => {
 		if (innerWidth > 0) recalcCellSize();
 	});
@@ -148,10 +130,7 @@
 		sendResults({
 			results: generatedWords.map((x) => {
 				const { value, ...rest } = x;
-				const result: MunsterbergResult = {
-					...rest,
-					word: value
-				};
+				const result: MunsterbergResult = { ...rest, word: value };
 				return result;
 			}),
 			meta: generatedWords.map((x) => x.value)
@@ -161,7 +140,6 @@
 	function markFoundAndRecordTime(found: Word) {
 		found.attempt = guessedCount;
 		found.guessed = true;
-		console.log(startTime, performance.now());
 		found.time = clamp(Math.floor(performance.now() - startTime), 0, 60000);
 		resetTime();
 	}
@@ -215,10 +193,6 @@
 	}
 
 	function getEventSelection(e: TouchEvent | PointerEvent): Selection | null {
-		// clientX/Y are viewport-relative; getBoundingClientRect() is too,
-		// so this stays correct regardless of scroll position or offset parents.
-		// No preventDefault here: the grid has touch-action: none (touch-none),
-		// so the browser will not scroll while dragging over it.
 		const rect = overlay.getBoundingClientRect();
 		const x = 'touches' in e ? e.touches[0].clientX : e.clientX;
 		const y = 'touches' in e ? e.touches[0].clientY : e.clientY;
@@ -275,19 +249,52 @@
 	});
 </script>
 
+{#if isGameRunning}
+	<div class="mb-3 flex w-full max-w-md flex-col items-center gap-2">
+		<ProgressBar min={0} max={60} progress={60 - timer} />
+		<div class="flex w-full items-center justify-between gap-3">
+			<p class="text-sm sm:text-base" style="color: var(--main-text-color);">
+				Найдите слова
+			</p>
+			<p class="text-sm font-bold sm:text-base" style="color: var(--button-green-text);">
+				{guessedCount} / {generatedWords.length}
+			</p>
+		</div>
+	</div>
+{:else}
+	<div class="mb-3 flex flex-col items-center gap-4 py-4">
+		<svg
+			class="h-16 w-16"
+			style="color: var(--button-green);"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="2"
+			viewBox="0 0 24 24"
+		>
+			<path
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+			/>
+		</svg>
+		<h1 class="text-center text-2xl font-bold">Тест окончен</h1>
+		<p class="text-center text-base" style="opacity: 0.7;">
+			Вы отгадали {guessedCount}/{generatedWords.length} за {60 - timer} сек.
+		</p>
+	</div>
+{/if}
+
 <button
-	class="
-	pointer-events-auto
-	z-0
-	box-border
-	grid
-	cursor-pointer
-	touch-none
-	border
-	border-gray-700
-	select-none
+	class="pointer-events-auto z-0 box-border grid cursor-pointer touch-none select-none"
+	style="
+		grid-template-columns: repeat({GRID_COLS}, {CELL_W}px);
+		grid-template-rows: repeat({GRID_ROWS}, {CELL_H}px);
+		border: 1px solid var(--input-bg-color);
+		border-radius: 0.75rem;
+		overflow: hidden;
+		background-color: #ffffff;
+		margin: 0 auto;
 	"
-	style="grid-template-columns: repeat({GRID_COLS}, {CELL_W}px); grid-template-rows: repeat({GRID_ROWS}, {CELL_H}px);"
 	bind:this={overlay}
 	ontouchstart={handleInteraction}
 	ontouchmove={handleInteraction}
@@ -301,39 +308,32 @@
 		{#each row as cell, j (j)}
 			<div
 				class="
-						cell
-						pointer-events-none
-						relative
-						z-1
-						box-border
-						flex
-						transform-gpu
-						touch-none
-						items-center
-						justify-center
-						border
-						border-gray-700
-						text-center
-						transition-all
-						duration-300
-						select-none
-						{isSelected(i, j) ? 'selected z-2 overflow-hidden border-transparent shadow-md' : ''}
-						{cell.isCorrect ? 'correct text-black' : ''}
-						{cell.isIncorrect ? 'incorrect text-black' : ''}"
+					cell
+					pointer-events-none
+					relative
+					z-1
+					box-border
+					flex
+					transform-gpu
+					touch-none
+					items-center
+					justify-center
+					border
+					text-center
+					transition-all
+					duration-300
+					select-none
+					{isSelected(i, j) ? 'selected z-2 overflow-hidden border-transparent shadow-md' : ''}
+					{cell.isCorrect ? 'correct text-black' : ''}
+					{cell.isIncorrect ? 'incorrect text-black' : ''}
+				"
+				style="border-color: var(--input-bg-color);"
 			>
 				{cell.letter}
 			</div>
 		{/each}
 	{/each}
 </button>
-{#if isGameRunning}
-	<!-- <h3>{`0${timer === 60 ? 1 : 0}:${timer % 60 < 10 ? '0' : ''}${timer % 60}`}</h3> -->
-	<ProgressBar min={0} max={60} progress={60 - timer} />
-{:else}
-	<h3 class="text-center">
-		Вы отгадали {guessedCount}/{generatedWords.length} за {60 - timer} сек.
-	</h3>
-{/if}
 
 <svelte:window bind:innerWidth bind:innerHeight />
 
@@ -343,13 +343,15 @@
 		transform-style: preserve-3d;
 	}
 	.selected {
-		background-color: rgb(249, 193, 98);
+		background-color: var(--button-blue);
+		color: var(--button-blue-text);
 	}
 	.correct {
-		background-color: rgb(152, 222, 86);
-		color: var(--main-bg-color);
+		background-color: var(--button-green);
+		color: var(--button-green-text);
 	}
 	.incorrect {
-		background-color: rgb(251, 88, 69);
+		background-color: var(--button-red);
+		color: var(--button-red-text);
 	}
 </style>
