@@ -130,12 +130,12 @@
 			</div>
 
 			<div
-				class="grid w-full flex-1 grid-cols-3 content-center justify-items-center gap-5 sm:gap-6"
+				class="grid w-full flex-1 grid-cols-2 content-center justify-items-center gap-4 sm:grid-cols-3 sm:gap-6"
 			>
 				{#each Object.values(colors) as color (color)}
 					<button
 						type="button"
-						class="aspect-square w-full max-w-[10rem] cursor-pointer rounded-2xl border-none shadow-md transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] sm:max-w-[12rem]"
+						class="aspect-square w-[45%] cursor-pointer rounded-2xl border-none shadow-md transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] sm:w-[65%]"
 						style="background-color: {color};"
 						aria-label={color}
 						onclick={() => handleAnswer(color)}
