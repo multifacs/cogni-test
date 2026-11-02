@@ -70,6 +70,7 @@ async function completeFlowFromHub(startButtonName: string) {
 beforeEach(() => {
 	navMocks.pageUrl.searchParams.delete('gto');
 	navMocks.pageUrl.searchParams.delete('keep');
+	navMocks.pageUrl.searchParams.delete('from');
 });
 
 afterEach(() => {
@@ -79,6 +80,14 @@ afterEach(() => {
 	profileSurveyStore.set(null);
 	userStore.set(null);
 });
+
+/** Карточка раздела по заголовку h3 (детерминированный scoped-локатор). */
+function sectionCardButton(container: HTMLElement, sectionTitle: string): HTMLButtonElement {
+	const card = [...container.querySelectorAll('.glass-card')].find(
+		(c) => c.querySelector('h3')?.textContent === sectionTitle
+	);
+	return card?.querySelector('button') as HTMLButtonElement;
+}
 
 // ─── Тесты ────────────────────────────────────────────────────────────
 
@@ -100,10 +109,12 @@ describe('questionary hub — GTO-флаг', () => {
 
 	it('завершение section-flow при ?gto=false НЕ вызывает replaceState', async () => {
 		navMocks.pageUrl.searchParams.set('gto', 'false');
-		await mountHub();
+		const { container } = await mountHub();
 
-		// первый «Начать» — карточка раздела (не «Начать прохождение»)
-		await userEvent.click(page.getByRole('button', { name: 'Начать', exact: true }).first());
+		// кнопка «Начать» карточки раздела «Основное» — детерминированный
+		// scoped-локатор вместо .first() (при ?from=ai в хабе появляется
+		// ещё одна кнопка, .first() по глобальному getByRole стал бы хрупким)
+		sectionCardButton(container, 'Основное')?.click();
 		await userEvent.click(page.getByRole('button', { name: 'Далее', exact: true }));
 		await userEvent.click(page.getByRole('button', { name: 'Завершить', exact: true }));
 		await new Promise((r) => setTimeout(r, 25));
@@ -134,5 +145,49 @@ describe('questionary hub — GTO-флаг', () => {
 		await mountHub();
 
 		expect(await page.getByRole('button', { name: 'Продолжить с ГТО' }).query()).toBeFalsy();
+	});
+});
+
+describe('questionary hub — переход из ИИ (?from=ai)', () => {
+	it('при ?from=ai рендерится кнопка «← Меню ИИ-влияние», клик ведёт на /ai', async () => {
+		navMocks.pageUrl.searchParams.set('from', 'ai');
+		const { container } = await mountHub();
+
+		const aiButton = page.getByRole('button', { name: '← Меню ИИ-влияние' });
+		expect(await aiButton.query()).toBeTruthy();
+
+		// кнопка в standalone-рендере выше viewport (main justify-center-safe,
+		// без layout-скролла) — untrusted DOM-click, как в ai-life спеке:
+		// обработчик onclick логики от trusted-клика не отличается
+		const btn = [...container.querySelectorAll('button')].find((b) =>
+			b.textContent?.includes('← Меню ИИ-влияние')
+		);
+		btn?.click();
+
+		// Button с goto-prop вызывает goto(resolve(path), { invalidateAll })
+		expect(navMocks.goto.mock.calls[0]?.[0]).toBe('/ai');
+	});
+
+	it('без ?from=ai кнопка «← Меню ИИ-влияние» отсутствует', async () => {
+		await mountHub();
+
+		expect(await page.getByRole('button', { name: '← Меню ИИ-влияние' }).query()).toBeFalsy();
+	});
+
+	it('при ?from=ai section-«Начать» кликается детерминированно (без .first())', async () => {
+		navMocks.pageUrl.searchParams.set('from', 'ai');
+		const { container } = await mountHub();
+
+		// «Начать» scoped к карточке раздела «Основное» — конфликтов
+		// с новой AI-кнопкой нет
+		const sectionStart = sectionCardButton(container, 'Основное');
+		expect(sectionStart?.textContent).toBe('Начать');
+		sectionStart?.click();
+
+		// Svelte перерисовывает асинхронно после untrusted DOM-клика
+		await new Promise((r) => setTimeout(r, 25));
+
+		// поток раздела открылся: появилась навигация FlowRunner
+		expect(await page.getByRole('button', { name: 'Далее', exact: true }).query()).toBeTruthy();
 	});
 });

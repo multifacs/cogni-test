@@ -15,11 +15,11 @@ function formatDDMMYYYY(d: Date): string {
 	return `${day}.${month}.${d.getUTCFullYear()}`;
 }
 
-export const load: PageServerLoad = async ({ cookies }) => {
+export const load: PageServerLoad = async ({ cookies, url }) => {
 	const userId = cookies.get('user_id');
 	if (userId) {
 		const user: User | null = await getUserById(userId);
-		if (user) redirect(307, '/home');
+		if (user) redirect(307, url.searchParams.has('ai') ? '/ai' : '/home');
 		// Кука есть, но пользователя нет — чистим и показываем логин,
 		// вместо редиректа на /home (иначе петля: /home → / → /home).
 		cookies.delete('user_id', { path: '/' });
@@ -45,7 +45,11 @@ export const load: PageServerLoad = async ({ cookies }) => {
 
 export const actions = {
 	login: async ({ cookies, request }) => {
+		// Форма может поститься на URL, сохраняющий query-строку `?ai`, но
+		// action `?/login` заменяет её целиком — поэтому ИИ-поток читаем И из
+		// hidden-поля формы, И из URL (fallback для прямых POST с ?ai).
 		const data = await request.formData();
+		const aiFlow = data.has('ai') || new URL(request.url).searchParams.has('ai');
 		if (!checkFormData(data)) {
 			return fail(400, { message: 'Проверьте правильность заполнения полей' });
 		}
@@ -62,7 +66,16 @@ export const actions = {
 
 		if (id) {
 			cookies.set('user_id', id, { path: '/', secure: true, maxAge: 60 * 60 * 24 * 30 });
-			redirect(307, '/home');
+			if (aiFlow) {
+				// Маркер ИИ-потока: читается позже (авто-редирект после тестов).
+				cookies.set('ai_flow', '1', {
+					path: '/',
+					secure: true,
+					httpOnly: true,
+					maxAge: 60 * 60 * 24 * 30
+				});
+			}
+			redirect(307, aiFlow ? '/ai' : '/home');
 		}
 
 		return fail(500, { message: 'Не удалось создать пользователя. Попробуйте ещё раз' });

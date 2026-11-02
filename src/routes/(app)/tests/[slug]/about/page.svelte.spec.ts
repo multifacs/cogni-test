@@ -151,6 +151,40 @@ describe('tests about — Назад ведёт на /home в потоковом
 	});
 });
 
+describe('tests about — from=ai прокидывается в навигацию', () => {
+	it('?from=ai: «Назад» ведёт на /tests?from=ai, «Начать» — на playground?from=ai', async () => {
+		navMocks.url.searchParams = new URLSearchParams('from=ai');
+		await mountPage({ slug: 'stroop' });
+
+		await expect.element(page.getByText('stub-full-run')).toBeVisible();
+
+		const back = page.getByRole('button', { name: 'Назад' });
+		await back.click();
+		expect(navMocks.goto).toHaveBeenCalledWith('/tests?from=ai', { invalidateAll: false });
+
+		const start = page.getByRole('button', { name: 'Начать' });
+		await start.click();
+		expect(navMocks.goto).toHaveBeenCalledWith('/tests/stroop/playground?from=ai', {
+			invalidateAll: false
+		});
+	});
+
+	it('?from=ai + gtoSessionId: «Начать» сохраняет оба query-параметра', async () => {
+		navMocks.url.searchParams = new URLSearchParams('gtoSessionId=42&from=ai');
+		await mountPage({ slug: 'stroop' });
+
+		await expect.element(page.getByText('stub-full-run')).toBeVisible();
+
+		await page.getByRole('button', { name: 'Начать' }).click();
+		expect(navMocks.goto).toHaveBeenCalledWith(
+			'/tests/stroop/playground?gtoSessionId=42&from=ai',
+			{
+				invalidateAll: false
+			}
+		);
+	});
+});
+
 describe('tests about — StreamingBadge удалён со страницы', () => {
 	it('(a) resolved-ветка + очередь непуста: бейджа нет', async () => {
 		startStreaming(STREAM_TESTS, {});

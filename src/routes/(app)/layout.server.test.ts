@@ -146,6 +146,56 @@ describe('(app) layout server load', () => {
 		expect(result.undiagnosed).toBe(false);
 	});
 
+	it('does NOT redirect undiagnosed user to / when accessing /ai and allowedPaths contains /ai', async () => {
+		const { load } = await import('./+layout.server');
+
+		// no test sessions = unfinished tests
+		vi.mocked(getTestSessionCounts).mockResolvedValue({});
+
+		const result = (await load(makeEvent('/ai', { userId: 'user-1' }))) as LayoutServerData;
+		expect(result).toBeDefined();
+		expect(result.undiagnosed).toBe(true);
+		expect(result.allowedPaths).toContain('/ai');
+	});
+
+	it('does NOT redirect undiagnosed user when accessing /ai/classification', async () => {
+		const { load } = await import('./+layout.server');
+
+		vi.mocked(getTestSessionCounts).mockResolvedValue({});
+
+		const result = (await load(
+			makeEvent('/ai/classification', { userId: 'user-1' })
+		)) as LayoutServerData;
+		expect(result).toBeDefined();
+		expect(result.undiagnosed).toBe(true);
+	});
+
+	it('redirects undiagnosed user to / when accessing /aiX (exact /ai match required)', async () => {
+		const { load } = await import('./+layout.server');
+
+		vi.mocked(getTestSessionCounts).mockResolvedValue({});
+
+		try {
+			await load(makeEvent('/aiX', { userId: 'user-1' }));
+			expect.fail('Expected redirect');
+		} catch (e) {
+			const redirect = asRedirect(e);
+			expect(redirect.status).toBe(307);
+			expect(redirect.location).toBe('/');
+		}
+	});
+
+	it('user with only classification sessions stays undiagnosed (classification NOT a diagnostic test)', async () => {
+		const { load } = await import('./+layout.server');
+
+		// classification-сессии не входят в 6 диагностических тестов
+		vi.mocked(getTestSessionCounts).mockResolvedValue({ classification: 5 });
+
+		const result = (await load(makeEvent('/ai', { userId: 'user-1' }))) as LayoutServerData;
+		expect(result).toBeDefined();
+		expect(result.undiagnosed).toBe(true);
+	});
+
 	describe('isDevMode', () => {
 		const allSessionsDone = () =>
 			vi.mocked(getTestSessionCounts).mockResolvedValue({

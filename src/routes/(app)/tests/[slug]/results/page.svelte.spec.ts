@@ -16,7 +16,13 @@ const navMocks = vi.hoisted(() => ({
 	goto: vi.fn<(path: string, opts?: { invalidateAll?: boolean }) => Promise<void>>(() =>
 		Promise.resolve()
 	),
-	invalidateAll: vi.fn<() => Promise<void>>(() => Promise.resolve())
+	invalidateAll: vi.fn<() => Promise<void>>(() => Promise.resolve()),
+	// Страница читает page.url (?from=ai) — управляем через реальный URL
+	pageUrl: new URL('http://localhost/tests/stroop/results')
+}));
+
+vi.mock('$app/state', () => ({
+	page: { url: navMocks.pageUrl }
 }));
 
 vi.mock('$app/navigation', () => ({
@@ -24,9 +30,12 @@ vi.mock('$app/navigation', () => ({
 	invalidateAll: (...args: unknown[]) => navMocks.invalidateAll(...(args as []))
 }));
 
-// resolve → identity: goto-кнопка Button получает путь «как есть»
+// resolve → identity: goto-кнопка Button получает путь «как есть»;
+// assets/base — именованные экспорты, требуемые $app/state
 vi.mock('$app/paths', () => ({
-	resolve: (path: string) => path
+	resolve: (path: string) => path,
+	assets: '',
+	base: ''
 }));
 
 // store startStreaming работает напрямую (browser=true)
@@ -72,9 +81,19 @@ type ServerSession = {
 	meta?: unknown;
 };
 
+// Валидные попытки (time/isCorrect): иначе validateSession помечает ряды
+// красным бейджем «Недействительные результаты», а не зелёным «Загружено»
 const SERVER_SESSIONS: ServerSession[] = [
-	{ sessionId: 'srv-1', createdAt: '2026-09-10T10:00:00.000Z', attempts: [{ a: 1 }] },
-	{ sessionId: 'srv-2', createdAt: '2026-09-11T10:00:00.000Z', attempts: [{ a: 2 }] }
+	{
+		sessionId: 'srv-1',
+		createdAt: '2026-09-10T10:00:00.000Z',
+		attempts: [{ time: 800, isCorrect: true }]
+	},
+	{
+		sessionId: 'srv-2',
+		createdAt: '2026-09-11T10:00:00.000Z',
+		attempts: [{ time: 900, isCorrect: true }]
+	}
 ];
 
 // Живая streaming-очередь: один непройденный видимый тест
@@ -116,6 +135,7 @@ async function mountPage(pending: QueueElement[] = []) {
 beforeEach(() => {
 	navMocks.goto.mockClear();
 	navMocks.invalidateAll.mockClear();
+	navMocks.pageUrl.searchParams.delete('from');
 	queueMocks.getPendingAttempts.mockReset();
 	queueMocks.flushQueue.mockReset();
 	queueMocks.flushQueue.mockImplementation(async () => ({
@@ -181,6 +201,30 @@ describe('tests results — merge pending offline attempts', () => {
 		expect(container.querySelectorAll('[title="Загружено"]')).toHaveLength(2);
 		expect(queueMocks.flushQueue).not.toHaveBeenCalled();
 		expect(navMocks.invalidateAll).not.toHaveBeenCalled();
+	});
+});
+
+describe('tests results — from=ai прокидывается в навигацию', () => {
+	it('?from=ai: «К тестам» ведёт на /tests?from=ai', async () => {
+		navMocks.pageUrl.searchParams.set('from', 'ai');
+		await mountPage([]);
+
+		await page.getByRole('button', { name: 'К тестам' }).click();
+
+		expect(navMocks.goto).toHaveBeenCalledTimes(1);
+		expect(navMocks.goto).toHaveBeenCalledWith('/tests?from=ai', { invalidateAll: false });
+	});
+
+	it('?from=ai: «Заново» ведёт на /tests/<slug>?from=ai', async () => {
+		navMocks.pageUrl.searchParams.set('from', 'ai');
+		await mountPage([]);
+
+		await page.getByRole('button', { name: 'Заново' }).click();
+
+		expect(navMocks.goto).toHaveBeenCalledTimes(1);
+		expect(navMocks.goto).toHaveBeenCalledWith('/tests/stroop?from=ai', {
+			invalidateAll: false
+		});
 	});
 });
 
