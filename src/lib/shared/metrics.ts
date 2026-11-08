@@ -53,6 +53,7 @@ export function computeSessionScore(
 		case 'stroop':
 		case 'memory':
 		case 'swallow':
+		case 'numericStroop':
 		case 'attention':
 		case 'emoji':
 		case 'flanker':
@@ -60,8 +61,11 @@ export function computeSessionScore(
 		case 'numbers':
 		case 'pictures':
 		case 'ravenMatrices':
+		case 'origamiExercise':
+		case 'rotation':
 		case 'wordMorphingExercise':
-		case 'nbackExercise': {
+		case 'nbackExercise':
+		case 'syllableFormation': {
 			const correct = attempts.filter((a) => a.isCorrect).length;
 			return Math.round((correct / attempts.length) * 100);
 		}

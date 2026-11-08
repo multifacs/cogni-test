@@ -120,6 +120,40 @@ export const exercises: ExerciseData[] = [
 		title: 'Точная точка',
 		path: '/exercises/dot-position/about',
 		img: '/exercises/dot-position1.svg'
+	},
+	{
+		name: 'rotation',
+		title: 'Ментальное вращение',
+		path: '/exercises/rotation/about',
+		img: '/exercises/rotation1.svg',
+		admin_metrics: ['spacial_perception', 'thinking', 'attention'],
+		user_metrics: ['spacial_perception']
+	},
+	{
+		name: 'corsi-block',
+		title: 'Блоки Корси',
+		path: '/exercises/corsi-block/about',
+		img: '/exercises/corsi-block1.svg'
+	},
+	{
+		name: 'origami',
+		title: 'Оригами',
+		path: '/exercises/origami/about',
+		img: '/exercises/origami1.svg'
+	},
+	{
+		name: 'simon',
+		title: 'Задание Симона',
+		path: '/exercises/simon/about',
+		img: '/exercises/simon1.svg'
+	},
+	{
+		name: 'syllable-formation',
+		title: 'Слогообразование',
+		path: '/exercises/syllable-formation/about',
+		img: '/exercises/syllable-formation1.svg',
+		admin_metrics: ['working_memory', 'short_memory', 'verbal_function'],
+		user_metrics: ['memory']
 	}
 ];
 
@@ -165,6 +199,11 @@ const exerciseLoaders: Record<string, ExerciseLoader> = {
 		playground: () => import('./raven-matrices/Playground.svelte'),
 		result: () => import('./raven-matrices/Result.svelte')
 	},
+	origami: {
+		about: () => import('./origami/About.svelte'),
+		playground: () => import('./origami/Playground.svelte'),
+		result: () => import('./origami/Result.svelte')
+	},
 	emoji: {
 		about: () => import('./emoji/About.svelte'),
 		playground: () => import('./emoji/Playground.svelte'),
@@ -205,6 +244,26 @@ const exerciseLoaders: Record<string, ExerciseLoader> = {
 		about: () => import('./dot-position/About.svelte'),
 		playground: () => import('./dot-position/Playground.svelte'),
 		result: () => import('./dot-position/Result.svelte')
+	},
+	rotation: {
+		about: () => import('./rotation/About.svelte'),
+		playground: () => import('./rotation/Playground.svelte'),
+		result: () => import('./rotation/Result.svelte')
+	},
+	'corsi-block': {
+		about: () => import('./corsi-block/About.svelte'),
+		playground: () => import('./corsi-block/Playground.svelte'),
+		result: () => import('./corsi-block/Result.svelte')
+	},
+	simon: {
+		about: () => import('./simon/About.svelte'),
+		playground: () => import('./simon/Playground.svelte'),
+		result: () => import('./simon/Result.svelte')
+	},
+	'syllable-formation': {
+		about: () => import('./syllable-formation/About.svelte'),
+		playground: () => import('./syllable-formation/Playground.svelte'),
+		result: () => import('./syllable-formation/Result.svelte')
 	}
 };
 
@@ -224,7 +283,12 @@ export const EXERCISE_SLUG_TO_TEST_TYPE: Record<string, ExerciseType | TestType>
 	numbers: 'numbers',
 	pictures: 'pictures',
 	'raven-matrices': 'ravenMatrices',
+	origami: 'origamiExercise',
 	'word-morphing': 'wordMorphingExercise',
 	rhythm: 'rhythm',
-	'dot-position': 'dotPosition'
+	'dot-position': 'dotPosition',
+	rotation: 'rotation',
+	'corsi-block': 'corsiBlock',
+	simon: 'simonTask',
+	'syllable-formation': 'syllableFormation'
 };

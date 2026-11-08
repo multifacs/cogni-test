@@ -37,6 +37,7 @@ import {
 	mathAttempt,
 	memoryAttempt,
 	munsterbergAttempt,
+	numericStroopAttempt,
 	stroopAttempt,
 	swallowAttempt
 } from '$lib/server/db/models/tests';
@@ -54,6 +55,7 @@ beforeEach(async () => {
 	await db.delete(memoryAttempt);
 	await db.delete(campimetryAttempt);
 	await db.delete(swallowAttempt);
+	await db.delete(numericStroopAttempt);
 	await db.delete(munsterbergAttempt);
 	await db.delete(session);
 	await db.delete(user);
@@ -101,14 +103,14 @@ describe('ensureDefaultUserSeeded', () => {
 		expect(found.lastActiveAt).toBeNull();
 	});
 
-	it('creates exactly 6 sessions with correct attempt counts', async () => {
+	it('creates exactly 7 sessions with correct attempt counts', async () => {
 		const { userId } = (await ensureDefaultUserSeeded(db)) as {
 			seeded: true;
 			userId: string;
 		};
 
 		const sessions = await db.select().from(session).where(eq(session.userId, userId));
-		expect(sessions).toHaveLength(6);
+		expect(sessions).toHaveLength(7);
 
 		const sessionIds: Record<string, string> = {};
 		for (const s of sessions) {
@@ -120,6 +122,7 @@ describe('ensureDefaultUserSeeded', () => {
 			'math',
 			'memory',
 			'munsterberg',
+			'numericStroop',
 			'stroop',
 			'swallow'
 		]);
@@ -155,6 +158,12 @@ describe('ensureDefaultUserSeeded', () => {
 		expect(campimetryRows).toHaveLength(20);
 		expect(swallowRows).toHaveLength(100);
 		expect(munsterbergRows).toHaveLength(8);
+
+		const numericStroopRows = await db
+			.select()
+			.from(numericStroopAttempt)
+			.where(eq(numericStroopAttempt.sessionId, sessionIds.numericStroop));
+		expect(numericStroopRows).toHaveLength(60);
 	});
 
 	it('returns { seeded: false } on second call without creating extra sessions', async () => {
@@ -166,7 +175,7 @@ describe('ensureDefaultUserSeeded', () => {
 			.select()
 			.from(session)
 			.where(eq(session.userId, firstUserId));
-		expect(sessionsBefore).toHaveLength(6);
+		expect(sessionsBefore).toHaveLength(7);
 
 		const second = await ensureDefaultUserSeeded(db);
 		expect(second.seeded).toBe(false);
@@ -175,7 +184,7 @@ describe('ensureDefaultUserSeeded', () => {
 			.select()
 			.from(session)
 			.where(eq(session.userId, firstUserId));
-		expect(sessionsAfter).toHaveLength(6);
+		expect(sessionsAfter).toHaveLength(7);
 	});
 });
 
@@ -199,7 +208,7 @@ describe('seedDefaultUserOnStartup concurrency dedup', () => {
 				.select()
 				.from(session)
 				.where(eq(session.userId, users[0].id));
-			expect(sessionsRows).toHaveLength(6);
+			expect(sessionsRows).toHaveLength(7);
 		} finally {
 			process.env.NODE_ENV = originalNodeEnv;
 		}

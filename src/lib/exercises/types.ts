@@ -1,5 +1,6 @@
 import type { AttentionTrialRow } from './attention/types';
 import type { CampimetryResult } from '$lib/tests/campimetry/types';
+import type { CorsiBlockResult } from './corsi-block/types';
 import type { DotPositionResult } from './dot-position/types';
 import type { EmojiTrialRow } from './emoji/types';
 import type { FlankerTrialRow } from './flanker/types';
@@ -7,14 +8,19 @@ import type { LettersTrialRow } from './letters/types';
 import type { MemoryMatchSummaryRow } from './memory-match/types';
 import type { NBackTrialRow } from './nback-stream/types';
 import type { NumbersTrialRow } from './numbers/types';
+import type { OrigamiAttemptRow } from './origami/types';
 import type { PicturesTrialRow } from './pictures/types';
 import type { RavenAttemptRow } from './raven-matrices/types';
+import type { RotationAttemptRow } from './rotation/results-adapter';
 import type { WordMorphingSummaryRow } from './word-morphing/types';
 import type { RhythmResult } from './rhythm/types';
+import type { SimonResult } from './simon/types';
+import type { SyllableFormationAttemptRow } from './syllable-formation/types';
 
 export type ExerciseType =
 	| 'attention'
 	| 'campimetryExercise'
+	| 'corsiBlock'
 	| 'dotPosition'
 	| 'emoji'
 	| 'flanker'
@@ -22,14 +28,19 @@ export type ExerciseType =
 	| 'memoryMatchExercise'
 	| 'nbackExercise'
 	| 'numbers'
+	| 'origamiExercise'
 	| 'pictures'
 	| 'ravenMatrices'
+	| 'rotation'
+	| 'simonTask'
 	| 'wordMorphingExercise'
-	| 'rhythm';
+	| 'rhythm'
+	| 'syllableFormation';
 
 export type ExerciseResultMap = {
 	attention: AttentionTrialRow;
 	campimetryExercise: CampimetryResult;
+	corsiBlock: CorsiBlockResult;
 	dotPosition: DotPositionResult;
 	emoji: EmojiTrialRow;
 	flanker: FlankerTrialRow;
@@ -37,15 +48,20 @@ export type ExerciseResultMap = {
 	memoryMatchExercise: MemoryMatchSummaryRow;
 	nbackExercise: NBackTrialRow;
 	numbers: NumbersTrialRow;
+	origamiExercise: OrigamiAttemptRow;
 	pictures: PicturesTrialRow;
 	ravenMatrices: RavenAttemptRow;
+	rotation: RotationAttemptRow;
+	simonTask: SimonResult;
 	wordMorphingExercise: WordMorphingSummaryRow;
 	rhythm: RhythmResult;
+	syllableFormation: SyllableFormationAttemptRow;
 };
 
 export type ExerciseResult =
 	| AttentionTrialRow
 	| CampimetryResult
+	| CorsiBlockResult
 	| DotPositionResult
 	| EmojiTrialRow
 	| FlankerTrialRow
@@ -53,14 +69,19 @@ export type ExerciseResult =
 	| MemoryMatchSummaryRow
 	| NBackTrialRow
 	| NumbersTrialRow
+	| OrigamiAttemptRow
 	| PicturesTrialRow
 	| RavenAttemptRow
+	| RotationAttemptRow
+	| SimonResult
 	| WordMorphingSummaryRow
-	| RhythmResult;
+	| RhythmResult
+	| SyllableFormationAttemptRow;
 
 export type ExerciseResults =
 	| AttentionTrialRow[]
 	| CampimetryResult[]
+	| CorsiBlockResult[]
 	| DotPositionResult[]
 	| EmojiTrialRow[]
 	| FlankerTrialRow[]
@@ -68,10 +89,14 @@ export type ExerciseResults =
 	| MemoryMatchSummaryRow[]
 	| NBackTrialRow[]
 	| NumbersTrialRow[]
+	| OrigamiAttemptRow[]
 	| PicturesTrialRow[]
 	| RavenAttemptRow[]
+	| RotationAttemptRow[]
+	| SimonResult[]
 	| WordMorphingSummaryRow[]
-	| RhythmResult[];
+	| RhythmResult[]
+	| SyllableFormationAttemptRow[];
 
 export type ResultInfo = {
 	sessionId: string;

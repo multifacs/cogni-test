@@ -37,6 +37,7 @@
 					<th scope="col" class="px-6 py-3 font-medium"> Memory </th>
 
 					<th scope="col" class="px-6 py-3 font-medium"> Swallow </th>
+					<th scope="col" class="px-6 py-3 font-medium"> Число и размер </th>
 
 					<th scope="col" class="px-6 py-3 font-medium"> Campimetry </th>
 
@@ -87,6 +88,10 @@
 
 						<td class="px-6 py-4 text-center">
 							{user.swallow}
+						</td>
+
+						<td class="px-6 py-4 text-center">
+							{user.numericStroop}
 						</td>
 
 						<td class="px-6 py-4 text-center">

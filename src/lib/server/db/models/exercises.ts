@@ -114,6 +114,24 @@ export const ravenAttempt = sqliteTable('raven_attempt', {
 		.notNull()
 });
 
+export const origamiAttempt = sqliteTable('origami_attempt', {
+	id: text('id').primaryKey().$defaultFn(generate),
+	taskIndex: integer('task_index').notNull(),
+	difficulty: text('difficulty').notNull(),
+	folds: text('folds').notNull(),
+	selectedIndex: integer('selected_index'),
+	correctIndex: integer('correct_index').notNull(),
+	isCorrect: integer('is_correct', { mode: 'boolean' }).notNull(),
+	responseTimeMs: integer('response_time_ms').notNull(),
+	seed: text('seed').notNull(),
+	sessionId: text('session_id')
+		.notNull()
+		.references(() => session.id, { onDelete: 'cascade' }),
+	createdAt: text('created_at')
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull()
+});
+
 export const picturesAttempt = sqliteTable('pictures_attempt', {
 	id: text('id').primaryKey().$defaultFn(generate),
 	questionIndex: integer('question_index').notNull(),
@@ -221,10 +239,89 @@ export const dotPositionAttempt = sqliteTable('dot_position_attempt', {
 		.notNull()
 });
 
+// Ментальное вращение (rotation): по одной строке на каждое из 9 заданий.
+// task_index 1..9, difficulty_level 1|2|3 соответствует сетке grid_size 3/4/6;
+// selected_index NULL = таймаут; seed детерминированно воспроизводит задание.
+export const rotationAttempt = sqliteTable('rotation_attempt', {
+	id: text('id').primaryKey().$defaultFn(generate),
+	taskIndex: integer('task_index').notNull(),
+	difficultyLevel: integer('difficulty_level').notNull(),
+	gridSize: integer('grid_size').notNull(),
+	selectedIndex: integer('selected_index'),
+	correctIndex: integer('correct_index').notNull(),
+	isCorrect: integer('is_correct', { mode: 'boolean' }).notNull(),
+	responseTimeMs: integer('response_time_ms').notNull(),
+	timedOut: integer('timed_out', { mode: 'boolean' }).notNull(),
+	seed: text('seed').notNull(),
+	sessionId: text('session_id')
+		.notNull()
+		.references(() => session.id),
+	createdAt: text('created_at')
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull()
+});
+
 export const rhythmAttempt = sqliteTable('rhythm_attempt', {
 	id: text('id').primaryKey().notNull().$defaultFn(generate),
 	attempt: integer('attempt').notNull(),
 	note: integer('note').notNull(),
+	sessionId: text('session_id')
+		.notNull()
+		.references(() => session.id),
+	createdAt: text('created_at')
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull()
+});
+
+export const corsiBlockAttempt = sqliteTable('corsi_block_attempt', {
+	id: text('id').primaryKey().notNull().$defaultFn(generate),
+	attempt: integer('attempt').notNull(),
+	sequenceLength: integer('sequence_length').notNull(),
+	isCorrect: integer('is_correct', { mode: 'boolean' }).notNull(),
+	answerMs: integer('answer_ms').notNull(),
+	sessionId: text('session_id')
+		.notNull()
+		.references(() => session.id),
+	createdAt: text('created_at')
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull()
+});
+
+// Задание Симона (simon): одна строка = один сохранённый ответ. block 1|2|3,
+// trial_index — порядковый номер ответа 1..N в рамках сессии (ключ сортировки;
+// части идут на время, поэтому число проб не фиксировано), color/position/
+// congruency — enum-строки, is_correct, response_time_ms, timed_out (в новых
+// сессиях всегда false — лимита на пробу нет, поле для старых данных).
+export const simonTaskAttempt = sqliteTable('simon_task_attempt', {
+	id: text('id').primaryKey().notNull().$defaultFn(generate),
+	block: integer('block').notNull(),
+	trialIndex: integer('trial_index').notNull(),
+	color: text('color').notNull(),
+	position: text('position').notNull(),
+	congruency: text('congruency').notNull(),
+	isCorrect: integer('is_correct', { mode: 'boolean' }).notNull(),
+	responseTimeMs: integer('response_time_ms').notNull(),
+	timedOut: integer('timed_out', { mode: 'boolean' }).notNull(),
+	sessionId: text('session_id')
+		.notNull()
+		.references(() => session.id),
+	createdAt: text('created_at')
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull()
+});
+
+// Слогообразование: одна строка на псевдословосочетание (5 на сессию).
+export const syllableFormationAttempt = sqliteTable('syllable_formation_attempt', {
+	id: text('id').primaryKey().$defaultFn(generate),
+	attempt: integer('attempt').default(1).notNull(),
+	pairIndex: integer('pair_index').notNull(),
+	phrase: text('phrase').notNull(),
+	association: text('association'),
+	recalledPhrase: text('recalled_phrase'),
+	isCorrect: integer('is_correct', { mode: 'boolean' }).notNull(),
+	reactionTimeMs: integer('reaction_time_ms').notNull(),
+	timedOut: integer('timed_out', { mode: 'boolean' }).notNull(),
+	associationMs: integer('association_ms').notNull(),
 	sessionId: text('session_id')
 		.notNull()
 		.references(() => session.id),

@@ -62,6 +62,22 @@ describe('computeSessionScore', () => {
 		expect(computeSessionScore('swallow', attempts)).toBe(50);
 	});
 
+	it('computes accuracy-based scores (numericStroop)', () => {
+		const attempts = [
+			{ isCorrect: true },
+			{ isCorrect: true },
+			{ isCorrect: false },
+			{ isCorrect: true },
+			{ isCorrect: false },
+			{ isCorrect: true },
+			{ isCorrect: true },
+			{ isCorrect: true },
+			{ isCorrect: true },
+			{ isCorrect: true }
+		];
+		expect(computeSessionScore('numericStroop', attempts)).toBe(80);
+	});
+
 	it('computes accuracy-based scores (attention)', () => {
 		const attempts = Array.from({ length: 10 }, (_, i) => ({ isCorrect: i < 7 }));
 		expect(computeSessionScore('attention', attempts)).toBe(70);
@@ -97,6 +113,16 @@ describe('computeSessionScore', () => {
 		expect(computeSessionScore('ravenMatrices', attempts)).toBe(33);
 	});
 
+	it('computes accuracy-based scores (rotation)', () => {
+		const attempts = [
+			{ isCorrect: true },
+			{ isCorrect: true },
+			{ isCorrect: true },
+			{ isCorrect: false }
+		];
+		expect(computeSessionScore('rotation', attempts)).toBe(75);
+	});
+
 	it('computes accuracy-based scores (wordMorphingExercise)', () => {
 		const attempts = [{ isCorrect: true }, { isCorrect: false }];
 		expect(computeSessionScore('wordMorphingExercise', attempts)).toBe(50);
@@ -105,6 +131,16 @@ describe('computeSessionScore', () => {
 	it('computes accuracy-based scores (nbackExercise)', () => {
 		const attempts = [{ isCorrect: true }, { isCorrect: true }, { isCorrect: true }];
 		expect(computeSessionScore('nbackExercise', attempts)).toBe(100);
+	});
+
+	it('computes accuracy-based scores (syllableFormation)', () => {
+		const attempts = Array.from({ length: 5 }, (_, i) => ({ isCorrect: i < 2 }));
+		expect(computeSessionScore('syllableFormation', attempts)).toBe(40);
+	});
+
+	it('computes accuracy-based scores (origamiExercise)', () => {
+		const attempts = [{ isCorrect: false }, { isCorrect: true }, { isCorrect: true }];
+		expect(computeSessionScore('origamiExercise', attempts)).toBe(67);
 	});
 
 	it('computes munsterberg score by guessed property', () => {
@@ -388,7 +424,7 @@ describe('getUserMetricScores', () => {
 		});
 		const { getUserMetricScores } = await restoreRealModulesAndImportMetrics();
 		const scores = await getUserMetricScores('user1');
-		expect(scores.reaction_speed).toBe(80);
+		expect(scores.reaction_speed).toBe(95); // 500 ms → (2400 - 500) / 2000 × 100
 	});
 
 	// Контролируемые реестры: админские working/short/long разведены по разным
@@ -588,7 +624,7 @@ describe('getMetricScores', () => {
 		const scores = await getMetricScores('user1');
 		expect(scores.attention).toBe(50); // math contributes to attention
 		expect(scores.thinking).toBe(50); // math contributes to thinking
-		expect(scores.reaction_speed).toBe(50); // math contributes to reaction_speed
+		expect(scores.reaction_speed).toBe(95); // reaction speed uses 500 ms, independently of accuracy
 	});
 
 	it('averages scores across multiple sessions of the same test', async () => {

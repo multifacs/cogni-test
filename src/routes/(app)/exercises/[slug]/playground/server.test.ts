@@ -113,6 +113,21 @@ describe('playground POST route', () => {
 		expect(postResult).not.toHaveBeenCalled();
 	});
 
+	it('POST with origami slug → 201 (slug passes SLUG_TO_EXERCISE_TYPE)', async () => {
+		vi.mocked(postResult).mockResolvedValue('origami-session-1');
+
+		const { POST } = await import('./+server');
+		const res = await POST(
+			makeEvent({ slug: 'origami', body: { results: [] }, userId: 'user-1' })
+		);
+
+		expect(res.status).toBe(201);
+		const body = await res.json();
+		expect(body).toEqual({ sessionId: 'origami-session-1' });
+
+		expect(postResult).toHaveBeenCalledWith([], 'origamiExercise', 'user-1');
+	});
+
 	it('POST with MetaResult body → 201, meta preserved through to postResult', async () => {
 		vi.mocked(postResult).mockResolvedValue('meta-session-id-789');
 

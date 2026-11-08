@@ -7,7 +7,8 @@ import {
 	genMemory,
 	genCampimetry,
 	genSwallow,
-	genMunsterberg
+	genMunsterberg,
+	genNumericStroop
 } from './generators';
 import { env } from '$env/dynamic/private';
 import type { LibSQLDatabase } from 'drizzle-orm/libsql';
@@ -63,6 +64,7 @@ export async function ensureDefaultUserSeeded(
 		await postResult(genMemory(10), 'memory', created.id);
 		await postResult(genCampimetry(20), 'campimetry', created.id);
 		await postResult(genSwallow(100), 'swallow', created.id);
+		await postResult(genNumericStroop(60), 'numericStroop', created.id);
 		const { results: munResults } = genMunsterberg(8);
 		await postResult(munResults, 'munsterberg', created.id);
 	} catch (err) {

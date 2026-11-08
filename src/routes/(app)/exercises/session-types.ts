@@ -5,6 +5,7 @@ export const exerciseToSessionType: Record<string, string> = {
 	'memory-match': 'memoryMatchExercise',
 	'nback-stream': 'nbackExercise',
 	'raven-matrices': 'ravenMatrices',
+	origami: 'origamiExercise',
 	emoji: 'emoji',
 	attention: 'attention',
 	pictures: 'pictures',
@@ -12,5 +13,9 @@ export const exerciseToSessionType: Record<string, string> = {
 	flanker: 'flanker',
 	letters: 'letters',
 	rhythm: 'rhythm',
-	'dot-position': 'dotPosition'
+	'dot-position': 'dotPosition',
+	rotation: 'rotation',
+	'corsi-block': 'corsiBlock',
+	simon: 'simonTask',
+	'syllable-formation': 'syllableFormation'
 };

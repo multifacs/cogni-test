@@ -1,7 +1,6 @@
 import { getResults } from '$lib/server/db/controllers/result.js';
 import type { ExerciseType } from '$lib/exercises/types.js';
 import type { PageServerLoad } from './$types';
-
 const slugToExerciseType: Record<string, ExerciseType> = {
 	attention: 'attention',
 	campimetry: 'campimetryExercise',
@@ -13,11 +12,15 @@ const slugToExerciseType: Record<string, ExerciseType> = {
 	numbers: 'numbers',
 	pictures: 'pictures',
 	'raven-matrices': 'ravenMatrices',
+	origami: 'origamiExercise',
 	'word-morphing': 'wordMorphingExercise',
 	rhythm: 'rhythm',
-	'dot-position': 'dotPosition'
+	'dot-position': 'dotPosition',
+	rotation: 'rotation',
+	'corsi-block': 'corsiBlock',
+	simon: 'simonTask',
+	'syllable-formation': 'syllableFormation'
 };
-
 export const load: PageServerLoad = async ({ params, cookies }) => {
 	const slug = params.slug;
 	const exerciseType = slugToExerciseType[slug];

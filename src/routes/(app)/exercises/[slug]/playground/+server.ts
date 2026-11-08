@@ -3,7 +3,6 @@ import { generateDevRandomResults } from '$lib/server/db/seed/generators.js';
 import { json } from '@sveltejs/kit';
 import type { ExerciseResults, MetaResult, ExerciseType } from '$lib/exercises/types.js';
 import type { RequestHandler } from '@sveltejs/kit';
-
 const SLUG_TO_EXERCISE_TYPE: Record<string, ExerciseType> = {
 	attention: 'attention',
 	campimetry: 'campimetryExercise',
@@ -15,11 +14,15 @@ const SLUG_TO_EXERCISE_TYPE: Record<string, ExerciseType> = {
 	numbers: 'numbers',
 	pictures: 'pictures',
 	'raven-matrices': 'ravenMatrices',
+	origami: 'origamiExercise',
 	'word-morphing': 'wordMorphingExercise',
 	rhythm: 'rhythm',
-	'dot-position': 'dotPosition'
+	'dot-position': 'dotPosition',
+	rotation: 'rotation',
+	'corsi-block': 'corsiBlock',
+	simon: 'simonTask',
+	'syllable-formation': 'syllableFormation'
 };
-
 export const POST: RequestHandler = async ({ params, request, cookies }) => {
 	const slug = params.slug!;
 	const exerciseType = SLUG_TO_EXERCISE_TYPE[slug];
@@ -28,14 +31,12 @@ export const POST: RequestHandler = async ({ params, request, cookies }) => {
 	}
 	const userId = cookies.get('user_id');
 	if (!userId) return json({ error: 'Unauthorized' }, { status: 401 });
-
 	const {
 		results,
 		sessionId,
 		action
 	}: { results: ExerciseResults | MetaResult; sessionId?: string; action?: string } =
 		await request.json();
-
 	if (action === 'generate-random') {
 		if (slug !== 'raven-matrices') {
 			return json(
@@ -51,7 +52,6 @@ export const POST: RequestHandler = async ({ params, request, cookies }) => {
 			return json({ error: 'Forbidden' }, { status: 403 });
 		}
 	}
-
 	try {
 		const storedSessionId = sessionId
 			? await postResult(results, exerciseType, userId, sessionId)

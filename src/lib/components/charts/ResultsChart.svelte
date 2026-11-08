@@ -17,6 +17,7 @@
 	import type { MemoryResult } from '$lib/tests/memory/types';
 	import type { MunsterbergResult } from '$lib/tests/munsterberg/types';
 	import type { CampimetryResult } from '$lib/tests/campimetry/types';
+	import type { NumericStroopResult } from '$lib/tests/numeric-stroop/types';
 
 	let {
 		testType,
@@ -79,8 +80,15 @@
 				};
 			});
 		}
-		if (testType == 'math' || testType == 'swallow' || testType == 'memory') {
-			return (results as MathResult[] | SwallowResult[] | MemoryResult[]).map((result) => {
+		if (
+			testType == 'math' ||
+			testType == 'swallow' ||
+			testType == 'memory' ||
+			testType == 'numericStroop'
+		) {
+			return (
+				results as MathResult[] | SwallowResult[] | MemoryResult[] | NumericStroopResult[]
+			).map((result) => {
 				return {
 					x: result.attempt + 1,
 					y: result.time,
