@@ -1,3 +1,4 @@
+import { tests } from '$lib/tests';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { getAiSurveyProgress } from '$lib/server/db/controllers/ai-survey';
 import { hasCompletedClassification } from '$lib/server/db/controllers/classification';
@@ -51,15 +52,9 @@ function asRedirect(e: unknown): RedirectLike {
 	return e as RedirectLike;
 }
 
-// 6 видимых диагностических тестов (см. layout.server.test.ts)
-const ALL_TEST_SESSIONS = {
-	stroop: 1,
-	math: 1,
-	munsterberg: 1,
-	campimetry: 1,
-	memory: 1,
-	swallow: 1
-};
+const ALL_TEST_SESSIONS = Object.fromEntries(
+	tests.filter((test) => !test.hidden).map((test) => [test.name, 1])
+);
 
 // fullFlow содержит 32 вопроса: 4 заполненных = floor(12.5%) = 12% ≥ 10 → done;
 // 3 заполненных = floor(9.375%) = 9% < 10 → не done. Ровно 10% при 32 вопросах
@@ -177,10 +172,9 @@ describe('/ai page server load: статусы этапов', () => {
 		expect(result.stages.map((s) => s.status)).toEqual(['done', 'done', 'next', 'locked']);
 	});
 
-	it('5 из 6 тестов → этап tests НЕ done (нужны все видимые тесты)', async () => {
+	it('один тест не пройден → этап tests НЕ done (нужны все видимые тесты)', async () => {
 		vi.mocked(getAiSurveyProgress).mockResolvedValue(AI_PROGRESS_10);
-		const { swallow, ...fiveTests } = ALL_TEST_SESSIONS;
-		vi.mocked(getTestSessionCounts).mockResolvedValue({ ...fiveTests });
+		vi.mocked(getTestSessionCounts).mockResolvedValue({ ...ALL_TEST_SESSIONS, swallow: 0 });
 		vi.mocked(hasCompletedClassification).mockResolvedValue(true);
 
 		const result = await loadStages(

@@ -424,7 +424,7 @@ describe('getUserMetricScores', () => {
 		});
 		const { getUserMetricScores } = await restoreRealModulesAndImportMetrics();
 		const scores = await getUserMetricScores('user1');
-		expect(scores.reaction_speed).toBe(80);
+		expect(scores.reaction_speed).toBe(95); // 500 ms → (2400 - 500) / 2000 × 100
 	});
 
 	// Контролируемые реестры: админские working/short/long разведены по разным
@@ -624,7 +624,7 @@ describe('getMetricScores', () => {
 		const scores = await getMetricScores('user1');
 		expect(scores.attention).toBe(50); // math contributes to attention
 		expect(scores.thinking).toBe(50); // math contributes to thinking
-		expect(scores.reaction_speed).toBe(50); // math contributes to reaction_speed
+		expect(scores.reaction_speed).toBe(95); // reaction speed uses 500 ms, independently of accuracy
 	});
 
 	it('averages scores across multiple sessions of the same test', async () => {

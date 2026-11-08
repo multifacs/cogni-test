@@ -93,6 +93,7 @@ export type ExerciseResults =
 	| PicturesTrialRow[]
 	| RavenAttemptRow[]
 	| RotationAttemptRow[]
+	| SimonResult[]
 	| WordMorphingSummaryRow[]
 	| RhythmResult[]
 	| SyllableFormationAttemptRow[];

@@ -143,7 +143,7 @@ async function playTimeoutRound() {
 }
 
 describe('Corsi block playground — click-through', () => {
-	it('верный заход: клики по последовательности → «Верно», следующий заход длиннее; доска свёрена с движком', async () => {
+	it('верный заход: клики по последовательности → «Верно», следующий заход длиннее; плитки доступны для клика', async () => {
 		// Сверка с движком: тот же сид даёт ту же доску и первую последовательность.
 		const expected = createGameState(mulberry32(SEED));
 		expect(expected.sequenceLength).toBe(3);
@@ -168,11 +168,15 @@ describe('Corsi block playground — click-through', () => {
 		// Порядок подсветки совпадает с последовательностью движка
 		expect(seq).toEqual(expected.sequence);
 
-		// Доска: центры ВСЕХ квадратов совпадают с движковыми (% от панели)
+		// После изменения дизайна плитки размещаются flex-раскладкой,
+		// а не абсолютными координатами движка. Проверяем реальные мишени.
+		const boardBounds = square(0)!.parentElement!.getBoundingClientRect();
 		for (let i = 0; i < expected.board.length; i++) {
-			const el = square(i)!;
-			expect(Number.parseFloat(el.style.left) / 100).toBeCloseTo(expected.board[i].x, 5);
-			expect(Number.parseFloat(el.style.top) / 100).toBeCloseTo(expected.board[i].y, 5);
+			const bounds = square(i)!.getBoundingClientRect();
+			expect(bounds.width).toBeGreaterThan(0);
+			expect(bounds.height).toBeGreaterThan(0);
+			expect(bounds.left).toBeGreaterThanOrEqual(boardBounds.left);
+			expect(bounds.right).toBeLessThanOrEqual(boardBounds.right);
 		}
 
 		for (const index of seq) {

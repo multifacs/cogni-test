@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { getResults } from '$lib/server/db/controllers/result.js';
 import { getTestSessionCounts } from '$lib/server/db/controllers/test.js';
+import { tests } from '$lib/tests';
 import type { PageServerLoad } from './$types';
 
 const makeCookies = (opts: { userId?: string; aiFlow?: string; aiFlowDone?: string } = {}) => {
@@ -16,7 +17,9 @@ const makeCookies = (opts: { userId?: string; aiFlow?: string; aiFlowDone?: stri
 
 type LoadEvent = Parameters<PageServerLoad>[0];
 
-const makeEvent = (opts: { userId?: string; aiFlow?: string; aiFlowDone?: string } = {}): LoadEvent =>
+const makeEvent = (
+	opts: { userId?: string; aiFlow?: string; aiFlowDone?: string } = {}
+): LoadEvent =>
 	({
 		params: { slug: 'stroop' },
 		cookies: makeCookies(opts)
@@ -29,14 +32,11 @@ function asRedirect(e: unknown): RedirectLike {
 }
 
 const allSessionsDone = () =>
-	vi.mocked(getTestSessionCounts).mockResolvedValue({
-		stroop: 1,
-		math: 1,
-		munsterberg: 1,
-		campimetry: 1,
-		memory: 1,
-		swallow: 1
-	});
+	vi
+		.mocked(getTestSessionCounts)
+		.mockResolvedValue(
+			Object.fromEntries(tests.filter((test) => !test.hidden).map((test) => [test.name, 1]))
+		);
 
 // ─── Mock setup ────────────────────────────────────────────────────────
 
@@ -66,7 +66,7 @@ describe('(app) tests/[slug]/results load — ai_flow redirect', () => {
 		vi.mocked(getResults).mockResolvedValue([] as never);
 	});
 
-	it('redirects to /ai when ai_flow cookie set and all 6 tests done', async () => {
+	it('redirects to /ai when ai_flow cookie set and all visible tests done', async () => {
 		const { load } = await import('./+page.server');
 		allSessionsDone();
 

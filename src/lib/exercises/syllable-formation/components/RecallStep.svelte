@@ -47,6 +47,8 @@
 		<label class="text-sm text-[var(--main-text-color)] sm:text-base" for="recall-input">
 			Запишите сочетание, которое вы запомнили с этой ассоциацией
 		</label>
+		<!-- Ввод фокусируется при смене шага упражнения с ограниченным временем. -->
+		<!-- svelte-ignore a11y_autofocus -->
 		<input
 			id="recall-input"
 			class="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-center text-lg text-white placeholder:text-white/50 focus:ring-2 focus:ring-white/40 focus:outline-hidden sm:text-xl"
