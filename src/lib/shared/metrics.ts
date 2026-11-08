@@ -4,6 +4,7 @@ import { exercises, EXERCISE_SLUG_TO_TEST_TYPE } from '$lib/exercises';
 import { getResults } from '$lib/server/db/controllers/result';
 import type { TestType } from '$lib/tests/types';
 import { SKILL_METRICS } from './metricShares.js';
+import { clamp, getMedian } from '$lib/utils/index.js';
 import { validateSession } from './validation.js';
 
 type AttemptLike = {
@@ -22,8 +23,29 @@ export type SessionResult = {
 	meta?: unknown;
 };
 
-export function computeSessionScore(sessionType: string, attempts: AttemptLike[]): number {
+export function computeReactionSpeed(attempts: AttemptLike[]): number {
+	const correctTimes = attempts
+		.filter((a) => a.isCorrect === true)
+		.map((a) => a.time)
+		.filter((t): t is number => t !== undefined);
+
+	if (!correctTimes.length) return 0;
+
+	const medianCorrectRt = getMedian(correctTimes);
+	const effectiveRt = Math.max(medianCorrectRt, 400);
+	return Math.round(clamp((100 * (2400 - effectiveRt)) / 2000, 0, 100));
+}
+
+export function computeSessionScore(
+	sessionType: string,
+	attempts: AttemptLike[],
+	metric?: string
+): number {
 	if (!attempts?.length) return 0;
+
+	// this still kinda sucks, especially will be in the future
+	// when there will be more metrics computed
+	if (metric === 'reaction_speed') return computeReactionSpeed(attempts);
 
 	switch (sessionType) {
 		// Accuracy-based tests
@@ -109,10 +131,15 @@ async function gatherSessionScores(
 		.map(async (test) => {
 			const sessions = await getResults(test.name as TestType, userId);
 			for (const session of sessions) {
+				const metrics = pick(test);
+				if (!metrics) continue;
+
 				if (!validateSession(session.attempts)) continue;
-				const score = computeSessionScore(test.name, session.attempts);
-				for (const metric of pick(test)!) {
-					if (allowSet.has(metric)) buckets[metric].push(score);
+				for (const metric of metrics) {
+					if (!allowSet.has(metric)) continue;
+
+					const score = computeSessionScore(test.name, session.attempts, metric);
+					buckets[metric].push(score);
 				}
 			}
 		});
@@ -124,10 +151,15 @@ async function gatherSessionScores(
 			if (!sessionType) return;
 			const sessions = await getResults(sessionType, userId);
 			for (const session of sessions) {
+				const metrics = pick(ex);
+				if (!metrics) continue;
+
 				if (!validateSession(session.attempts)) continue;
-				const score = computeSessionScore(sessionType, session.attempts);
-				for (const metric of pick(ex)!) {
-					if (allowSet.has(metric)) buckets[metric].push(score);
+				for (const metric of metrics) {
+					if (!allowSet.has(metric)) continue;
+
+					const score = computeSessionScore(sessionType, session.attempts, metric);
+					buckets[metric].push(score);
 				}
 			}
 		});
