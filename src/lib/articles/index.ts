@@ -27,7 +27,7 @@ export const articles: ArticleData[] = [
 	{
 		slug: 'sleep',
 		title: 'Сон: зачем он нужен и как его улучшить',
-		emoji: '/materials/heart.svg',
+		emoji: '/materials/sleep.svg',
 		time: '5'
 	},
 	{

@@ -338,8 +338,22 @@ describe('getUserMetricScores', () => {
 		'memory'
 	] as const;
 
-	function session(attempts: Array<{ isCorrect?: boolean; guessed?: boolean; stage?: number }>) {
-		return [{ sessionId: 's1', createdAt: new Date().toISOString(), attempts }];
+	// da1f9d0 добавил validateSession-фильтр в gatherSessionScores: сессии без
+	// time >= MIN_RESPONSE_TIME_MS (300) отбрасываются (validity ratio = 0).
+	// Хелпер проставляет константный time всем попыткам моков; MAD = 0,
+	// поэтому проверка вариативности тоже проходит.
+	function session(
+		attempts: Array<{
+			isCorrect?: boolean;
+			guessed?: boolean;
+			stage?: number;
+			time?: number;
+		}>
+	) {
+		const attemptsWithTime = attempts.map((a) => ({ time: 500, ...a }));
+		return [
+			{ sessionId: 's1', createdAt: new Date().toISOString(), attempts: attemptsWithTime }
+		];
 	}
 
 	it('returns exactly 6 user metric keys in the canonical order', async () => {
@@ -368,22 +382,22 @@ describe('getUserMetricScores', () => {
 						sessionId: 's1',
 						createdAt: new Date().toISOString(),
 						attempts: [
-							{ guessed: true },
-							{ guessed: true },
-							{ guessed: true },
-							{ guessed: false },
-							{ guessed: false }
+							{ guessed: true, time: 500 },
+							{ guessed: true, time: 500 },
+							{ guessed: true, time: 500 },
+							{ guessed: false, isCorrect: true, time: 500 },
+							{ guessed: false, isCorrect: true, time: 500 }
 						]
 					}, // 60
 					{
 						sessionId: 's2',
 						createdAt: new Date().toISOString(),
 						attempts: [
-							{ guessed: true },
-							{ guessed: true },
-							{ guessed: true },
-							{ guessed: true },
-							{ guessed: false }
+							{ guessed: true, time: 500 },
+							{ guessed: true, time: 500 },
+							{ guessed: true, time: 500 },
+							{ guessed: true, time: 500 },
+							{ guessed: false, isCorrect: true, time: 500 }
 						]
 					} // 80
 				];
@@ -459,8 +473,21 @@ describe('getUserMetricScores', () => {
 		}));
 	}
 
+	// validateSession требует correctness (isCorrect ?? guessed) строго > 0.7.
+	// Для accuracy-сессий с ratio <= 0.7 заменяем минимально необходимое число
+	// некорректных попыток на { guessed: true } без isCorrect: валидатор
+	// засчитывает их как correct (isCorrect undefined → ?? берёт guessed),
+	// а computeSessionScore для accuracy-тестов смотрит только isCorrect —
+	// проверяемое значение скора не меняется.
 	function accuracySession(correct: number, total: number) {
-		return session(Array.from({ length: total }, (_, i) => ({ isCorrect: i < correct })));
+		const guessedNeeded = Math.max(0, Math.floor(total * 0.7) + 1 - correct);
+		return session(
+			Array.from({ length: total }, (_, i) => {
+				if (i < correct) return { isCorrect: true };
+				if (i < correct + guessedNeeded) return { guessed: true };
+				return { isCorrect: false };
+			})
+		);
 	}
 
 	it('composite memory = round(mean(admin working/short/long)); direct memory sessions ignored', async () => {
@@ -583,7 +610,12 @@ describe('getMetricScores', () => {
 					{
 						sessionId: 's1',
 						createdAt: new Date().toISOString(),
-						attempts: [{ isCorrect: true }, { isCorrect: false }]
+						// { guessed: true } без isCorrect — для validateSession
+						// (correctness > 0.7); скор остаётся 50 (isCorrect 1/2).
+						attempts: [
+							{ isCorrect: true, time: 500 },
+							{ guessed: true, time: 500 }
+						]
 					}
 				];
 			return [];
@@ -603,12 +635,20 @@ describe('getMetricScores', () => {
 					{
 						sessionId: 's1',
 						createdAt: new Date().toISOString(),
-						attempts: [{ isCorrect: true }, { isCorrect: false }]
+						// { guessed: true } без isCorrect — чтобы сессия прошла
+						// validateSession (correctness > 0.7); скор остаётся 50.
+						attempts: [
+							{ isCorrect: true, time: 500 },
+							{ guessed: true, time: 500 }
+						]
 					}, // 50
 					{
 						sessionId: 's2',
 						createdAt: new Date().toISOString(),
-						attempts: [{ isCorrect: true }, { isCorrect: true }]
+						attempts: [
+							{ isCorrect: true, time: 500 },
+							{ isCorrect: true, time: 500 }
+						]
 					} // 100
 				];
 			}
@@ -627,7 +667,7 @@ describe('getMetricScores', () => {
 					{
 						sessionId: 's1',
 						createdAt: new Date().toISOString(),
-						attempts: [{ isCorrect: true }]
+						attempts: [{ isCorrect: true, time: 500 }]
 					}
 				]; // 100
 			if (type === 'math')
@@ -635,7 +675,9 @@ describe('getMetricScores', () => {
 					{
 						sessionId: 's1',
 						createdAt: new Date().toISOString(),
-						attempts: [{ isCorrect: false }]
+						// { guessed: true } без isCorrect — чтобы сессия прошла
+						// validateSession; скор 0 (isCorrect нет).
+						attempts: [{ guessed: true, time: 500 }]
 					}
 				]; // 0
 			return [];
@@ -654,7 +696,7 @@ describe('getMetricScores', () => {
 					{
 						sessionId: 's1',
 						createdAt: new Date().toISOString(),
-						attempts: [{ stage: 2 }]
+						attempts: [{ stage: 2, isCorrect: true, time: 500 }]
 					}
 				];
 			return [];

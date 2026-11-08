@@ -3,11 +3,16 @@
 	import { MemoryGame } from './logic/memory-game';
 	import Button from '$lib/components/ui/Button.svelte';
 	import type { MemoryResult } from './types';
+	import ProgressBar from '$lib/components/ui/ProgressBar.svelte';
 
 	interface MemoryAndMeta {
 		results: MemoryResult[];
 		meta: string[];
 	}
+
+	const WAITING_DURATION = 5;
+	const MEMORIZE_DURATION = 15;
+	const TASK_DURATION = 5;
 
 	let {
 		data,
@@ -48,7 +53,7 @@
 
 	function startWaitingPhase() {
 		phase = 'waiting';
-		timeLeft = 5;
+		timeLeft = WAITING_DURATION;
 		timer = setInterval(() => {
 			timeLeft--;
 			if (timeLeft <= 0) {
@@ -60,7 +65,7 @@
 
 	function startMemorization() {
 		phase = 'memorize';
-		timeLeft = 15;
+		timeLeft = MEMORIZE_DURATION;
 
 		timer = setInterval(() => {
 			timeLeft--;
@@ -84,7 +89,7 @@
 
 		game.startNextTask();
 		currentWord = game.getCurrentTask().value;
-		timeLeft = 5;
+		timeLeft = TASK_DURATION;
 
 		if (timer) clearInterval(timer);
 		timer = setInterval(() => {
@@ -115,11 +120,24 @@
 	onDestroy(() => {
 		clearInterval(timer);
 	});
+
+	const currentDuration = $derived(
+	phase === 'waiting'
+		? WAITING_DURATION
+		: phase === 'memorize'
+			? MEMORIZE_DURATION
+			: phase === 'task'
+				? TASK_DURATION
+				: 0
+);
 </script>
 
 {#if phase === 'waiting'}
 	<p class="sm:text-2xl">Слова появятся через {timeLeft} секунд...</p>
+<ProgressBar min={0} max={currentDuration} progress={currentDuration - timeLeft} />
 {:else if phase === 'memorize'}
+	<ProgressBar min={0} max={currentDuration} progress={currentDuration - timeLeft} />
+
 	<p class="sm:text-2xl">Запомните слова:</p>
 	<div class="flex flex-col gap-2">
 		<div class="mem-grid">
@@ -133,15 +151,15 @@
 			{/each}
 		</div>
 	</div>
-	<p class="sm:text-2xl">Осталось времени: {timeLeft} сек</p>
 {:else if phase === 'task'}
+<ProgressBar min={0} max={currentDuration} progress={currentDuration - timeLeft} />
 	<p class="sm:text-2xl">Было ли это слово?</p>
 	<h1 class="text-center">{currentWord}</h1>
 	<div class="color-grid">
 		<Button color="green" onclick={() => handleAnswer(true)}>ДА</Button>
 		<Button color="red" onclick={() => handleAnswer(false)}>НЕТ</Button>
 	</div>
-	<p class="sm:text-2xl">Осталось времени: {timeLeft} сек</p>
+	
 {:else}
 	<h1 class="text-center">Конец теста</h1>
 {/if}

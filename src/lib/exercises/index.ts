@@ -7,6 +7,7 @@ export type ExerciseData = {
 	name: string;
 	title: string;
 	path: string;
+	label?: string;
 	img: string;
 	admin_metrics?: SkillMetric[];
 	user_metrics?: SkillMetric[];
@@ -19,7 +20,8 @@ export const exercises: ExerciseData[] = [
 		name: 'word-morphing',
 		title: 'Цепочка слов',
 		path: '/exercises/word-morphing/about',
-		img: '/exercises/word-morphing1.svg',
+		label: '\u00A0',
+		img: '/exercises/word-morphing.svg',
 		admin_metrics: [
 			'working_memory',
 			'short_memory',
@@ -34,7 +36,8 @@ export const exercises: ExerciseData[] = [
 		name: 'campimetry',
 		title: 'Поле зрения',
 		path: '/exercises/campimetry/about',
-		img: '/tests/campimetry1.svg',
+		label: 'Расширенная кампиметрия',
+		img: '/tests/campimetry.svg',
 		admin_metrics: ['attention', 'color_perception'],
 		user_metrics: ['color_perception']
 	},
@@ -42,7 +45,8 @@ export const exercises: ExerciseData[] = [
 		name: 'memory-match',
 		title: 'Найди пару',
 		path: '/exercises/memory-match/about',
-		img: '/exercises/memory-match1.svg',
+		label: '\u00A0',
+		img: '/exercises/memory-match.svg',
 		admin_metrics: ['spacial_perception', 'short_memory', 'attention'],
 		user_metrics: ['memory']
 	},
@@ -50,55 +54,64 @@ export const exercises: ExerciseData[] = [
 		name: 'nback-stream',
 		title: 'Повторы в ряду',
 		path: '/exercises/nback-stream/about',
-		img: '/exercises/n-back1.svg',
+		label: '\u00A0',
+		img: '/exercises/n-back.svg',
 		admin_metrics: ['executive_function', 'attention', 'working_memory'],
 		user_metrics: ['memory']
 	},
 	{
 		name: 'raven-matrices',
 		title: 'Матрицы Равена',
+		label: '\u00A0',
 		path: '/exercises/raven-matrices/about',
-		img: '/exercises/raven-matrices1.svg'
+		img: '/exercises/raven-matrices.svg'
 	},
 	{
 		name: 'emoji',
 		title: 'Смена эмодзи',
+		label: '\u00A0',
 		path: '/exercises/emoji/about',
-		img: '/exercises/emoji1.svg'
+		img: '/exercises/emoji.svg'
 	},
 	{
 		name: 'attention',
 		title: 'Найди число',
+		label: '\u00A0',
 		path: '/exercises/attention/about',
-		img: '/exercises/attention1.svg'
+		img: '/exercises/attention.svg'
 	},
 	{
 		name: 'pictures',
 		title: 'Детали картинок',
+		label: '\u00A0',
 		path: '/exercises/pictures/about',
-		img: '/exercises/pictures1.svg'
+		img: '/exercises/pictures.svg'
 	},
 	{
 		name: 'numbers',
 		title: 'Цифровой ряд',
+		label: '\u00A0',
 		path: '/exercises/numbers/about',
-		img: '/exercises/numbers1.svg'
+		img: '/exercises/numbers.svg'
 	},
 	{
 		name: 'flanker',
 		title: 'Стрелки',
+		label: '\u00A0',
 		path: '/exercises/flanker/about',
-		img: '/exercises/flanker1.svg'
+		img: '/exercises/flanker.svg'
 	},
 	{
 		name: 'letters',
 		title: 'Цепочка букв',
+		label: '\u00A0',
 		path: '/exercises/letters/about',
-		img: '/exercises/letters1.svg'
+		img: '/exercises/letters.svg'
 	},
 	{
 		name: 'rhythm',
 		title: 'Ритм',
+		label: '\u00A0',
 		path: '/exercises/rhythm/about',
 		img: '/exercises/rhythm.svg'
 	},

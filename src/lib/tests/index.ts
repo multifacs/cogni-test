@@ -6,6 +6,7 @@ export type TestData = {
 	name: string;
 	title: string;
 	path: string;
+	label?: string;
 	img: string;
 	hidden?: boolean;
 	admin_metrics?: SkillMetric[];
@@ -17,6 +18,7 @@ export const tests: TestData[] = [
 		name: 'stroop',
 		title: 'Цвет и смысл',
 		path: '/tests/stroop/about',
+		label: 'Тест Струпа',
 		img: '/tests/stroop.svg',
 		admin_metrics: ['executive_function', 'attention', 'thinking'],
 		user_metrics: ['executive_function']
@@ -25,7 +27,8 @@ export const tests: TestData[] = [
 		name: 'math',
 		title: 'Быстрый счет',
 		path: '/tests/math/about',
-		img: '/tests/math1.svg',
+		img: '/tests/math.svg',
+		label: '\u00A0',
 		admin_metrics: ['attention', 'thinking', 'reaction_speed'],
 		user_metrics: ['reaction_speed']
 	},
@@ -33,7 +36,8 @@ export const tests: TestData[] = [
 		name: 'munsterberg',
 		title: 'Поиск слов',
 		path: '/tests/munsterberg/about',
-		img: '/tests/munsterberg1.svg',
+		label: 'Тест Мюнстерберга',
+		img: '/tests/munsterberg.svg',
 		admin_metrics: ['attention', 'verbal_function'],
 		user_metrics: ['attention']
 	},
@@ -41,7 +45,8 @@ export const tests: TestData[] = [
 		name: 'campimetry',
 		title: 'Скрытая фигура',
 		path: '/tests/campimetry/about',
-		img: '/tests/campimetry1.svg',
+		label: 'Кампиметрия',
+		img: '/tests/campimetry.svg',
 		admin_metrics: ['attention', 'color_perception'],
 		user_metrics: ['color_perception']
 	},
@@ -49,7 +54,8 @@ export const tests: TestData[] = [
 		name: 'memory',
 		title: 'Слова и повторы',
 		path: '/tests/memory/about',
-		img: '/tests/memory1.svg',
+		label: '\u00A0',
+		img: '/tests/memory.svg',
 		admin_metrics: [
 			'attention',
 			'reaction_speed',
@@ -63,6 +69,7 @@ export const tests: TestData[] = [
 		name: 'swallow',
 		title: 'Полет птицы',
 		path: '/tests/swallow/about',
+		label: 'Тест "Ласточка"',
 		img: '/tests/swallow1.svg',
 		admin_metrics: ['executive_function', 'spacial_perception', 'working_memory'],
 		user_metrics: ['spacial_perception']

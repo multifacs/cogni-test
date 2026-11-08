@@ -1,4 +1,5 @@
 import { render, cleanup } from 'vitest-browser-svelte';
+import { page } from 'vitest/browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import Page from './+page.svelte';
 
@@ -12,7 +13,14 @@ import { streaming, startStreaming, requestStreamingStart } from '$lib/stores/st
 
 const navMocks = vi.hoisted(() => ({
 	goto: vi.fn<(path: string) => Promise<void>>(() => Promise.resolve()),
-	resolve: vi.fn<(path: string) => string>((path: string) => path)
+	resolve: vi.fn<(path: string) => string>((path: string) => path),
+	// Страница читает page.url.searchParams (?from=ai) — управляем через
+	// реальный URL, как в questionary/page.svelte.test.ts
+	pageUrl: new URL('http://localhost/tests')
+}));
+
+vi.mock('$app/state', () => ({
+	page: { url: navMocks.pageUrl }
 }));
 
 // ─── Моки ─────────────────────────────────────────────────────────────
@@ -22,7 +30,12 @@ vi.mock('$app/navigation', () => ({
 }));
 
 vi.mock('$app/paths', () => ({
-	resolve: (path: string) => navMocks.resolve(path)
+	resolve: (path: string) => navMocks.resolve(path),
+	// $app/state (импортится страницей для ?from=ai ссылки) требует
+	// именованные экспорты assets/base из paths-модуля — без них
+	// named-import падает на загрузке спека
+	assets: '',
+	base: ''
 }));
 
 vi.mock('$app/environment', () => ({
@@ -71,6 +84,8 @@ beforeEach(() => {
 	startStreaming([], {});
 	navMocks.goto.mockClear();
 	navMocks.resolve.mockClear();
+	// from=ai не должен протекать между тестами
+	navMocks.pageUrl.searchParams.delete('from');
 });
 
 afterEach(() => {
@@ -79,6 +94,60 @@ afterEach(() => {
 });
 
 // ─── Тесты ────────────────────────────────────────────────────────────
+
+describe('/tests page — переход из ИИ (?from=ai)', () => {
+	it('при ?from=ai рендерится кнопка «← Меню ИИ-влияние», клик ведёт на /ai', async () => {
+		navMocks.pageUrl.searchParams.set('from', 'ai');
+		const { container } = await mountPage(makeData());
+
+		const aiButton = page.getByRole('button', { name: '← Меню ИИ-влияние' });
+		expect(await aiButton.query()).toBeTruthy();
+
+		// untrusted DOM-click по прецеденту questionary/page.svelte.test.ts:
+		// кнопка может лежать вне viewport (main justify-center-safe без
+		// layout-скролла), обработчик от trusted-клика не отличается
+		const btn = [...container.querySelectorAll('button')].find((b) =>
+			b.textContent?.includes('← Меню ИИ-влияние')
+		);
+		btn?.click();
+		await new Promise((r) => setTimeout(r, 25));
+
+		// Button с goto-prop вызывает goto(resolve(path), { invalidateAll: false })
+		expect(navMocks.goto).toHaveBeenCalledTimes(1);
+		expect(navMocks.goto.mock.calls[0]?.[0]).toBe('/ai');
+	});
+
+	it('без ?from=ai кнопка «← Меню ИИ-влияние» отсутствует', async () => {
+		await mountPage(makeData());
+
+		expect(await page.getByRole('button', { name: '← Меню ИИ-влияние' }).query()).toBeFalsy();
+	});
+});
+
+describe('/tests page — from=ai прокидывается в карточки тестов', () => {
+	it('при ?from=ai карточки (a.card) ведут на about?from=ai', async () => {
+		navMocks.pageUrl.searchParams.set('from', 'ai');
+		const { container } = await mountPage(makeData());
+
+		// Сетка тестов (ExerciseCard); отдельно RecommendationCard тоже
+		// рендерит a.card (goto /tests) — его исключаем скоупом .grid
+		const cards = container.querySelectorAll('.grid a.card');
+		expect(cards.length).toBeGreaterThan(0);
+		for (const card of cards) {
+			expect(card.getAttribute('href')).toContain('from=ai');
+		}
+	});
+
+	it('без query карточки не содержат from=ai', async () => {
+		const { container } = await mountPage(makeData());
+
+		const cards = container.querySelectorAll('.grid a.card');
+		expect(cards.length).toBeGreaterThan(0);
+		for (const card of cards) {
+			expect(card.getAttribute('href')).not.toContain('from=ai');
+		}
+	});
+});
 
 describe('/tests page — streaming store wiring', () => {
 	it('клик по карточке запуска строит очередь в store и переходит к первому непройденному тесту', async () => {

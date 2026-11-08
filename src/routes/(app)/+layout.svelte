@@ -5,6 +5,7 @@
 	import { profileSurveyStore, userStore } from '$lib/stores/user';
 	import { pushService } from '$lib/pushService';
 	import { flushQueue } from '$lib/client/offline-queue';
+	import { isAiFlowUrl } from '$lib/ai/flow';
 
 	import Button from '$lib/components/ui/Button.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
@@ -40,6 +41,13 @@
 	const hideNavOnSmallScreens = $derived(
 		/^\/(tests|exercises|materials)\/.+/.test(page.url.pathname)
 	);
+
+	// AI-flow surfaces (/ai, /ai/*, or ?from=ai) hide the NavBar on ALL
+	// breakpoints — they render their own full-screen UI without the nav.
+	// Small-screen hiding stays a separate concern: it is driven by the
+	// <sm media query via .nav-hidden, so it must not fold into this flag
+	// (otherwise section subpages lose the nav on desktop too).
+	const hideNavBar = $derived(isAiFlowUrl(page.url));
 
 	setContext('headerText', {
 		get value() {
@@ -140,7 +148,11 @@
 	     via CSS — those pages have their own "Назад" button and need the height.
 	     Section roots (/tests, /exercises, /materials) keep the nav: they have
 	     no "back" button, so the nav is the only way out of the section there. -->
-	<div class="nav-slot" class:nav-hidden={hideNavOnSmallScreens}>
+	<div
+		class="nav-slot"
+		class:nav-hidden={hideNavOnSmallScreens}
+		class:nav-flow-hidden={hideNavBar}
+	>
 		<NavBar undiagnosed={data.undiagnosed} allowedPaths={data.allowedPaths} />
 	</div>
 </div>
@@ -219,6 +231,12 @@
 			.nav-slot.nav-hidden {
 				display: none;
 			}
+		}
+
+		/* AI-flow surfaces: hide the nav on every breakpoint (unlike
+		   .nav-hidden, which is <sm only). */
+		.nav-slot.nav-flow-hidden {
+			display: none;
 		}
 	}
 	@media (min-width: 1024px) {

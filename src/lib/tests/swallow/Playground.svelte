@@ -5,7 +5,9 @@
 	// import { tick } from 'svelte';
 	import { BirdGame } from './logic/bird-game';
 	import { type Direction } from './types';
+	import ProgressBar from '$lib/components/ui/ProgressBar.svelte';
 
+	const GAME_DURATION = 60;
 	let { gameEnd, sendResults } = $props();
 
 	let game: BirdGame;
@@ -33,7 +35,7 @@
 	export function resetGame() {
 		game = new BirdGame();
 		lives = 3;
-		timeLeft = 60;
+		timeLeft = GAME_DURATION;
 		currentTask = game.getCurrentTask();
 		game.startNextTask();
 
@@ -77,7 +79,7 @@
 	});
 </script>
 
-<div class="top-bar flex items-center justify-center">
+<div class="top-bar flex items-center justify-center gap-4">
 	<div class="lives">
 		{#each Array(lives) as _, i (i)}
 			<span class="heart">❤️</span>
@@ -85,6 +87,10 @@
 	</div>
 	<div class="timer">⏱ {timeLeft} сек</div>
 </div>
+
+{#if !isGameOver}
+	<ProgressBar min={0} max={GAME_DURATION} progress={GAME_DURATION - timeLeft} />
+{/if}
 
 {#if lives}
 	{#if currentTask.background === 'blue'}
