@@ -82,3 +82,8 @@ npx vitest src/lib/server/age/inlineOnnxPlugin.test.ts
 # с подробным выводом каждого expect
 
 npx vitest run src/lib/server/age/inlineOnnxPlugin.test.ts --reporter=verbose
+
+## Новые когнитивные тесты
+
+Девять тестов из Excel, правила сохранения истории и оговорка о временном
+лексиконе описаны в [docs/new-cognitive-tests.md](docs/new-cognitive-tests.md).

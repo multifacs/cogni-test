@@ -1,3 +1,4 @@
+import { isProtocolType } from '$lib/exercises/protocol/config';
 import type { SkillMetric } from '$lib/types';
 import { tests } from '$lib/tests';
 import { exercises, EXERCISE_SLUG_TO_TEST_TYPE } from '$lib/exercises';
@@ -149,7 +150,7 @@ async function gatherSessionScores(
 		});
 
 	const exercisePromises = exercises
-		.filter((ex) => pick(ex)?.length)
+		.filter((ex) => pick(ex)?.length && !isProtocolType(ex.name))
 		.map(async (ex) => {
 			const sessionType = EXERCISE_SLUG_TO_TEST_TYPE[ex.name];
 			if (!sessionType) return;

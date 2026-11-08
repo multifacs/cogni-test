@@ -1,3 +1,5 @@
+import type { ProtocolType } from './protocol/config';
+import type { ProtocolTrial } from './protocol/types';
 import type { AttentionTrialRow } from './attention/types';
 import type { CampimetryResult } from '$lib/tests/campimetry/types';
 import type { CorsiBlockResult } from './corsi-block/types';
@@ -18,6 +20,7 @@ import type { SimonResult } from './simon/types';
 import type { SyllableFormationAttemptRow } from './syllable-formation/types';
 
 export type ExerciseType =
+	| ProtocolType
 	| 'attention'
 	| 'campimetryExercise'
 	| 'corsiBlock'
@@ -37,7 +40,7 @@ export type ExerciseType =
 	| 'rhythm'
 	| 'syllableFormation';
 
-export type ExerciseResultMap = {
+export type ExerciseResultMap = Record<ProtocolType, ProtocolTrial> & {
 	attention: AttentionTrialRow;
 	campimetryExercise: CampimetryResult;
 	corsiBlock: CorsiBlockResult;
@@ -59,6 +62,7 @@ export type ExerciseResultMap = {
 };
 
 export type ExerciseResult =
+	| ProtocolTrial
 	| AttentionTrialRow
 	| CampimetryResult
 	| CorsiBlockResult
@@ -79,6 +83,7 @@ export type ExerciseResult =
 	| SyllableFormationAttemptRow;
 
 export type ExerciseResults =
+	| ProtocolTrial[]
 	| AttentionTrialRow[]
 	| CampimetryResult[]
 	| CorsiBlockResult[]

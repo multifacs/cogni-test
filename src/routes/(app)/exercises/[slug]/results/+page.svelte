@@ -9,35 +9,18 @@
 	import { getPendingAttempts, flushQueue, type QueueElement } from '$lib/client/offline-queue';
 	import { type Component } from 'svelte';
 	import { validateSession } from '$lib/shared/validation';
+	import { isProtocolType } from '$lib/exercises/protocol/config';
 
 	const { data } = $props();
 	const slug = $derived(data.slug);
 	const serverResults = $derived(data.results as ResultsPageSession[]);
 
 	const exercise = $derived(exerciseRegistry[slug]);
-	let Comp: Component | null = $state(null);
-	let SummaryComp: Component | null = $state(null);
+	const componentPromise = $derived(exercise?.result?.());
+	const summaryPromise = $derived(exercise?.summary?.());
 
 	let pending = $state<QueueElement[]>([]);
 	const mergedResults = $derived(mergeSessions(serverResults, pending));
-
-	$effect(() => {
-		Comp = null;
-		if (exercise?.result) {
-			exercise.result().then((mod) => {
-				Comp = mod.default as Component;
-			});
-		}
-	});
-
-	$effect(() => {
-		SummaryComp = null;
-		if (exercise?.summary) {
-			exercise.summary().then((mod) => {
-				SummaryComp = mod.default as Component;
-			});
-		}
-	});
 
 	onMount(() => {
 		async function mergePending() {
@@ -82,17 +65,23 @@
 </script>
 
 <main class="main mx-auto flex w-full max-w-5xl flex-col items-center justify-center-safe gap-2">
-	{#if SummaryComp}
-		<div class="w-full">
-			<!-- Intentionally server-only data (trust model: server = source of truth) -->
-			<SummaryComp results={serverResults} />
-		</div>
-	{/if}
+	{#await summaryPromise then summaryModule}
+		{#if summaryModule}
+			{@const SummaryComp = summaryModule.default as Component}
+			<div class="w-full">
+				<!-- Intentionally server-only data (trust model: server = source of truth) -->
+				<SummaryComp results={serverResults} />
+			</div>
+		{/if}
+	{/await}
 
 	{#if mergedResults.length > 0}
 		{#each mergedResults as result (result.sessionId)}
 			{@const meta = parseMeta(result.meta)}
-			{const isValid = validateSession(result.attempts as any)}
+			{@const protocol = isProtocolType(slug)}
+			{@const isValid = protocol
+				? meta?.eligible_for_profile === 'true'
+				: validateSession(result.attempts as Parameters<typeof validateSession>[0])}
 			<div class="w-full rounded-2xl bg-white shadow">
 				<button
 					class={`flex w-full cursor-pointer items-center justify-between rounded-t-2xl px-4 py-3 transition-colors hover:bg-gray-100 ${openedSessionId !== result.sessionId ? 'hover:rounded-b-2xl' : ''}`}
@@ -107,9 +96,13 @@
 							></span>
 						{:else if !isValid}
 							<span
-								class="inline-block h-2.5 w-2.5 rounded-full bg-red-500"
-								title="Недействительные результаты"
-								aria-label="Недействительные результаты"
+								class={`inline-block h-2.5 w-2.5 rounded-full ${protocol ? 'bg-amber-500' : 'bg-red-500'}`}
+								title={protocol
+									? 'Не включается в профиль'
+									: 'Недействительные результаты'}
+								aria-label={protocol
+									? 'Не включается в профиль'
+									: 'Недействительные результаты'}
 							></span>
 						{:else}
 							<span
@@ -122,7 +115,20 @@
 							{openedSessionId === result.sessionId
 								? 'Попытка от ' + formatUserLocalDate(result.createdAt)
 								: formatUserLocalDate(result.createdAt)}
-							{#if !isValid}
+							{#if protocol}
+								<span
+									class="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700"
+									>{meta?.end_reason === 'aborted'
+										? 'Прервана'
+										: meta?.end_reason === 'technical_error'
+											? 'Техническая ошибка'
+											: 'Завершена'}</span
+								>
+								{#if !isValid}<span
+										class="ml-2 rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-800"
+										>Не включается в профиль</span
+									>{/if}
+							{:else if !isValid}
 								<span
 									class="inline-flex cursor-help items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-500"
 									title="Результаты не учитываются в метриках: слишком быстрые ответы, низкая точность или высокая вариабельность"
@@ -158,14 +164,19 @@
 					</svg>
 				</button>
 
-				{#if openedSessionId === result.sessionId && Comp}
-					<div class="box-border flex flex-col items-center border-t p-2">
-						<Comp
-							exerciseType={slug as keyof ExerciseResultMap}
-							results={result.attempts}
-							meta={result.meta}
-						/>
-					</div>
+				{#if openedSessionId === result.sessionId}
+					{#await componentPromise then componentModule}
+						{#if componentModule}
+							{@const Comp = componentModule.default as Component}
+							<div class="box-border flex flex-col items-center border-t p-2">
+								<Comp
+									exerciseType={slug as keyof ExerciseResultMap}
+									results={result.attempts}
+									meta={result.meta}
+								/>
+							</div>
+						{/if}
+					{/await}
 				{/if}
 			</div>
 		{/each}
@@ -176,5 +187,7 @@
 
 <section class="low-content grid w-full grid-cols-2 gap-4">
 	<Button color="red" goto="/exercises/{slug}">Назад</Button>
-	<Button color="blue" goto="/exercises/{slug}/playground">Пройти снова</Button>
+	<Button color="blue" goto="/exercises/{slug}/playground"
+		>{isProtocolType(slug) ? 'Пройти ещё раз' : 'Пройти снова'}</Button
+	>
 </section>

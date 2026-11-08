@@ -1,9 +1,12 @@
+import { ProtocolValidationError } from '$lib/exercises/protocol/validation';
+import { protocolTypes } from '$lib/exercises/protocol/config';
 import { postResult, SessionOwnershipError } from '$lib/server/db/controllers/result.js';
 import { generateDevRandomResults } from '$lib/server/db/seed/generators.js';
 import { json } from '@sveltejs/kit';
 import type { ExerciseResults, MetaResult, ExerciseType } from '$lib/exercises/types.js';
 import type { RequestHandler } from '@sveltejs/kit';
 const SLUG_TO_EXERCISE_TYPE: Record<string, ExerciseType> = {
+	...Object.fromEntries(protocolTypes.map((name) => [name, name])),
 	attention: 'attention',
 	campimetry: 'campimetryExercise',
 	emoji: 'emoji',
@@ -58,6 +61,8 @@ export const POST: RequestHandler = async ({ params, request, cookies }) => {
 			: await postResult(results, exerciseType, userId);
 		return json({ sessionId: storedSessionId }, { status: 201 });
 	} catch (err) {
+		if (err instanceof ProtocolValidationError || err instanceof SyntaxError)
+			return json({ error: err.message }, { status: 400 });
 		if (err instanceof SessionOwnershipError) {
 			return json({ error: 'session belongs to another user' }, { status: 409 });
 		}

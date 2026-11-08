@@ -1,5 +1,7 @@
+import { protocolTypes } from '$lib/exercises/protocol/config';
 /** Map exercise slug to the testType stored in the DB session table (mirrors the exercises playground POST writer). */
 export const exerciseToSessionType: Record<string, string> = {
+	...Object.fromEntries(protocolTypes.map((name) => [name, name])),
 	'word-morphing': 'wordMorphingExercise',
 	campimetry: 'campimetryExercise',
 	'memory-match': 'memoryMatchExercise',

@@ -1,3 +1,4 @@
+import { definitions, protocolTypes } from './protocol/config';
 import type { TestType } from '$lib/tests/types';
 import type { SkillMetric } from '$lib/types';
 import type { Component } from 'svelte';
@@ -16,6 +17,14 @@ export type ExerciseData = {
 export type { ExerciseType, ExerciseResult, ExerciseResults } from './types';
 
 export const exercises: ExerciseData[] = [
+	...protocolTypes.map((name) => ({
+		name,
+		title: definitions[name].title,
+		path: `/exercises/${name}/about`,
+		img: `/exercises/protocol.svg`,
+		admin_metrics: definitions[name].skills,
+		user_metrics: definitions[name].skills
+	})),
 	{
 		name: 'word-morphing',
 		title: 'Цепочка слов',
@@ -174,6 +183,16 @@ type ExerciseLoader = {
 };
 
 const exerciseLoaders: Record<string, ExerciseLoader> = {
+	...Object.fromEntries(
+		protocolTypes.map((name) => [
+			name,
+			{
+				about: () => import('./protocol/About.svelte'),
+				playground: () => import('./protocol/Playground.svelte'),
+				result: () => import('./protocol/Result.svelte')
+			}
+		])
+	),
 	'word-morphing': {
 		about: () => import('./word-morphing/About.svelte'),
 		playground: () => import('./word-morphing/Playground.svelte'),
@@ -273,6 +292,7 @@ export const exerciseRegistry: Record<string, ExerciseData & ExerciseLoader> = O
 
 /** Map exercise URL slug to the testType stored in the DB session table. */
 export const EXERCISE_SLUG_TO_TEST_TYPE: Record<string, ExerciseType | TestType> = {
+	...Object.fromEntries(protocolTypes.map((name) => [name, name])),
 	attention: 'attention',
 	campimetry: 'campimetry',
 	emoji: 'emoji',

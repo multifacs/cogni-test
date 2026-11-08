@@ -1,7 +1,9 @@
+import { protocolTypes } from '$lib/exercises/protocol/config';
 import { getResults } from '$lib/server/db/controllers/result.js';
 import type { ExerciseType } from '$lib/exercises/types.js';
 import type { PageServerLoad } from './$types';
 const slugToExerciseType: Record<string, ExerciseType> = {
+	...Object.fromEntries(protocolTypes.map((name) => [name, name])),
 	attention: 'attention',
 	campimetry: 'campimetryExercise',
 	emoji: 'emoji',

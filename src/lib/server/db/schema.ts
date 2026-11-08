@@ -72,3 +72,4 @@ export * from './models/survey';
 export * from './models/exercises';
 export * from './models/gto';
 export * from './models/ai';
+export * from './models/protocol';

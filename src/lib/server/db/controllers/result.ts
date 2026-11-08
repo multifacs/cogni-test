@@ -1,3 +1,6 @@
+import { protocolTrial } from '../models/protocol';
+import { protocolTypes, isProtocolType } from '$lib/exercises/protocol/config';
+import { validateProtocolPayload } from '$lib/exercises/protocol/validation';
 import { db } from '$lib/server/db';
 import { session } from '$lib/server/db/schema';
 import {
@@ -52,6 +55,7 @@ type AnyRelationalTable = any;
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 const attemptTableMap: Record<string, AnyAttemptTable> = {
+	...Object.fromEntries(protocolTypes.map((type) => [type, protocolTrial])),
 	math: mathAttempt,
 	stroop: stroopAttempt,
 	memory: memoryAttempt,
@@ -81,6 +85,7 @@ const attemptTableMap: Record<string, AnyAttemptTable> = {
 
 function getQueryTableMap(): Record<string, AnyRelationalTable> {
 	return {
+		...Object.fromEntries(protocolTypes.map((type) => [type, db.query.protocolTrial])),
 		math: db.query.mathAttempt,
 		stroop: db.query.stroopAttempt,
 		memory: db.query.memoryAttempt,
@@ -110,6 +115,9 @@ function getQueryTableMap(): Record<string, AnyRelationalTable> {
 }
 
 const orderByMap: Record<string, (fields: Record<string, AnyColumn>) => SQL> = {
+	...Object.fromEntries(
+		protocolTypes.map((type) => [type, (f: Record<string, AnyColumn>) => asc(f.trialIndex)])
+	),
 	math: (f) => asc(f.attempt),
 	stroop: (f) => asc(f.attempt),
 	memory: (f) => asc(f.attempt),
@@ -153,7 +161,7 @@ function isUniqueConstraintError(err: unknown): boolean {
 async function insertAttempts(
 	sessionId: string,
 	sessionType: AnySessionType,
-	attempts: any[]
+	attempts: object[]
 ): Promise<void> {
 	const insertAttempt = attemptTableMap[sessionType];
 	if (!insertAttempt) throw new Error(`Unknown session type: ${sessionType}`);
@@ -178,6 +186,32 @@ export async function postResult(
 	userId: string,
 	providedSessionId?: string
 ): Promise<string> {
+	if (isProtocolType(sessionType)) {
+		const payload = validateProtocolPayload(sessionType, results);
+		const id = providedSessionId ?? generate();
+		await db.transaction(async (tx) => {
+			const existing = await tx.query.session.findFirst({
+				where: (f, { eq }) => eq(f.id, id)
+			});
+			if (existing) {
+				if (existing.userId !== userId || existing.testType !== sessionType)
+					throw new SessionOwnershipError(id);
+				return;
+			}
+			await tx
+				.insert(session)
+				.values({ id, testType: sessionType, userId, meta: JSON.stringify(payload.meta) });
+			if (payload.results.length)
+				await tx.insert(protocolTrial).values(
+					payload.results.map((t) => ({
+						sessionId: id,
+						trialIndex: t.trial_index,
+						data: t
+					}))
+				);
+		});
+		return id;
+	}
 	const hasMeta = 'meta' in results;
 	const meta = hasMeta ? JSON.stringify((results as AnyMetaResult).meta) : undefined;
 
@@ -201,7 +235,8 @@ export async function postResult(
 			if (existing) {
 				const queryTableMap = getQueryTableMap();
 				const attemptTable = queryTableMap[sessionType];
-				if (!attemptTable) throw new Error(`Unknown session type: ${sessionType}`);
+				if (!attemptTable)
+					throw new Error(`Unknown session type: ${sessionType}`, { cause: err });
 				const existingAttempts = await attemptTable.findMany({
 					where: (fields: Record<string, AnyColumn>) => eq(fields.sessionId, sessionId)
 				});
@@ -262,7 +297,9 @@ export async function getResults(
 		results.push({
 			sessionId: s.id,
 			createdAt: s.createdAt,
-			attempts,
+			attempts: isProtocolType(sessionType)
+				? attempts.map((row: { data: unknown }) => row.data)
+				: attempts,
 			meta: s.meta ? JSON.parse(s.meta) : undefined
 		});
 	}
