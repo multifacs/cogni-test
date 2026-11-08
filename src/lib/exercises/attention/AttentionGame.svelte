@@ -119,7 +119,7 @@
 {:else}
 	<div class="flex flex-col gap-4">
 		<div class="grid grid-cols-3 items-center justify-center gap-4">
-			<p class="text-center text-base text-white">
+			<p class="text-center text-base ">
 				Время: {elapsed} сек
 			</p>
 			<p class="text-center text-base font-semibold text-red-400">
@@ -129,7 +129,7 @@
 				Найдено: {found.size} / {targets.size}
 			</p>
 		</div>
-		<p class="text-center text-xl text-white">
+		<p class="text-center text-xl ">
 			Найди числа:
 			<strong>{[...targets].join(', ')}</strong>
 		</p>

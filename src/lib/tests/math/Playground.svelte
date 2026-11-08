@@ -4,6 +4,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import '@fontsource/fira-code';
 	import type { MathResult } from './types';
+	import ProgressBar from '$lib/components/ui/ProgressBar.svelte';
 
 	let {
 		gameEnd,
@@ -45,43 +46,101 @@
 </script>
 
 {#if gameState.getState().isGameRunning}
-	{#if gameState.getState().currentLeft == 'stage'}
-		<h1 class="text-center">Тест начинается</h1>
-	{:else}
-		<div class="inequality grid grid-cols-[1fr_auto_1fr] items-center gap-5 text-4xl font-bold">
-			<div class="left justify-self-center">
-				{getPaddedLeft(gameState.getState().currentLeft)}
+	<div class="flex h-[100dvh] w-full items-center justify-center overflow-hidden p-4">
+		<div class="flex h-full max-h-full w-full max-w-md flex-col items-center gap-4 sm:gap-6">
+			<!-- Таймер сверху -->
+			<div class="w-full">
+				<ProgressBar
+					min={0}
+					max={gameState.DURATION}
+					progress={gameState.DURATION - gameState.getState().timeLeft}
+				/>
 			</div>
-			<div class="sign grid-col justify-self-center">
-				{gameState.getState().currentSign}
-			</div>
-			<div class="right justify-self-center">
-				<span>{getPaddedRight(gameState.getState().currentRight)}</span>
-			</div>
+
+			<!-- Контент -->
+			{#if gameState.getState().currentLeft === 'stage'}
+				<!-- Начальный экран -->
+				<div class="flex flex-1 flex-col items-center justify-center gap-3">
+					<h2
+						class="text-center text-2xl font-bold"
+						style="color: var(--main-text-color);"
+					>
+						Тест сейчас начнётся
+					</h2>
+					<p class="text-center text-base" style="opacity: 0.7;">
+						Приготовьтесь...
+					</p>
+				</div>
+			{:else}
+				<!-- Игровое поле с цифрами -->
+				<div class="flex flex-1 items-center justify-center">
+					<div
+						class="inequality grid grid-cols-[1fr_auto_1fr] items-center gap-4 sm:gap-6"
+						style="
+							font-family: 'Fira Code', monospace;
+							font-size: clamp(2.5rem, 10vh, 5rem);
+							font-weight: 700;
+							color: var(--main-text-color);
+						"
+					>
+						<div class="justify-self-center">
+							{getPaddedLeft(gameState.getState().currentLeft)}
+						</div>
+						<div class="justify-self-center">
+							{gameState.getState().currentSign}
+						</div>
+						<div class="justify-self-center">
+							{getPaddedRight(gameState.getState().currentRight)}
+						</div>
+					</div>
+				</div>
+			{/if}
+
+			<!-- Кнопки — только когда игра началась -->
+			{#if gameState.getState().currentLeft !== 'stage'}
+				<div class="grid w-full grid-cols-2 gap-4">
+					<Button
+						class="font-bold"
+						disabled={!gameState.getState().isGameRunning}
+						color="green"
+						onclick={() => handleAnswer(true)}
+					>
+						Верно
+					</Button>
+					<Button
+						class="font-bold"
+						disabled={!gameState.getState().isGameRunning}
+						color="red"
+						onclick={() => handleAnswer(false)}
+					>
+						Неверно
+					</Button>
+				</div>
+			{/if}
 		</div>
-	{/if}
+	</div>
 {:else}
-	<h1 class="text-center">Конец теста</h1>
+	<!-- Финальный экран -->
+	<div class="flex h-[100dvh] w-full items-center justify-center p-6">
+		<div class="flex flex-col items-center gap-4">
+			<svg
+				class="h-16 w-16"
+				style="color: var(--button-green);"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				viewBox="0 0 24 24"
+			>
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+				/>
+			</svg>
+			<h1 class="text-center text-2xl font-bold">Тест окончен</h1>
+			<p class="text-center text-base" style="opacity: 0.6;">
+				Результаты отправлены
+			</p>
+		</div>
+	</div>
 {/if}
-
-<div class="grid grid-cols-2 gap-2.5">
-	<Button
-		disabled={!gameState.getState().isGameRunning}
-		color="green"
-		onclick={() => handleAnswer(true)}>ДА</Button
-	>
-	<Button
-		disabled={!gameState.getState().isGameRunning}
-		color="red"
-		onclick={() => handleAnswer(false)}>НЕТ</Button
-	>
-</div>
-{#if gameState.getState().isGameRunning}
-	<p class="sm:text-xl">Осталось времени: {gameState.getState().timeLeft} сек</p>
-{/if}
-
-<style>
-	.inequality {
-		font-family: 'Fira Code';
-	}
-</style>

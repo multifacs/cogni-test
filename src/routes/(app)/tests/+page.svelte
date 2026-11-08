@@ -62,11 +62,12 @@
 		<div
 			class="grid w-full grid-cols-2 gap-4 sm:grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] sm:gap-6"
 		>
-			{#each data.tests as { name, title, path, img } (title)}
+			{#each data.tests as { name, title, path, label, img } (title)}
 				<ExerciseCard
 					{name}
 					{title}
 					path={withFromAi(path, page.url)}
+					{label}
 					{img}
 					{testSessionCounts}
 				/>
