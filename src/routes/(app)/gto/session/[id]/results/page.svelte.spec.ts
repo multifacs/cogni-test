@@ -1,6 +1,7 @@
 import { render, cleanup } from 'vitest-browser-svelte';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import Page from './+page.svelte';
+import type { PageProps } from './$types';
 
 // app.css подключает Tailwind — без него утилиты не сгенерируются
 // в тестовом окружении, и trusted-клик может промахиваться по мишеням
@@ -33,7 +34,7 @@ vi.mock('$lib/certificate/generate', () => ({
 
 // ─── Фикстуры ─────────────────────────────────────────────────────────
 
-function makeMetrics() {
+function makeMetrics(): PageProps['data']['metrics'] {
 	return {
 		participantId: 'p1',
 		userId: 'u1',
@@ -86,7 +87,7 @@ function makeMetrics() {
 	};
 }
 
-function makeData(status: string) {
+function makeData(status: PageProps['data']['session']['status']): PageProps['data'] {
 	return {
 		session: {
 			id: 'gto-1',
@@ -96,6 +97,17 @@ function makeData(status: string) {
 			createdAt: '2026-09-01 10:00:00',
 			participants: []
 		},
+		user: {
+			id: 'u1',
+			firstname: 'Иван',
+			lastname: 'Ив',
+			birthday: new Date('2000-01-01'),
+			sex: 'male'
+		},
+		profileSurvey: { userId: 'u1', gtoId: 'GTO-123' },
+		undiagnosed: false,
+		allowedPaths: ['/gto'],
+		isDevMode: false,
 		metrics: makeMetrics()
 	};
 }
@@ -107,83 +119,50 @@ function findButtonByText(container: HTMLElement, text: string): HTMLButtonEleme
 		HTMLButtonElement | undefined;
 }
 
-/**
- * Клик без actionability-ожидания: кнопка дизейблится синхронно в обработчике,
- * и trusted userEvent.click уходит в бесконечный retry по «неактивной мишени».
- * Untrusted-событие вызывает обработчик напрямую (см. MetricsDonutCard-спек).
- */
-function clickButton(button: HTMLButtonElement): void {
-	button.dispatchEvent(new MouseEvent('click', { cancelable: true, bubbles: true }));
-}
-
-async function flushUpdate(): Promise<void> {
-	await new Promise((r) => requestAnimationFrame(() => r(undefined)));
-}
-
-// ─── Хуки ─────────────────────────────────────────────────────────────
-
-beforeEach(() => {
-	certMocks.downloadCertificatePdf.mockReset();
-	certMocks.downloadCertificatePdf.mockReturnValue(Promise.resolve());
-});
-
 afterEach(() => {
 	cleanup();
 	vi.clearAllMocks();
-	vi.unstubAllGlobals();
 });
 
 // ─── Тесты ────────────────────────────────────────────────────────────
 
 describe('/gto/session/[id]/results — сертификат', () => {
-	it('renders certificate button when session status is completed', async () => {
-		const { container } = await render(Page, { props: { data: makeData('completed') } });
-
-		const button = findButtonByText(container, 'Скачать сертификат');
-		expect(button).toBeTruthy();
-		expect(button?.disabled).toBe(false);
-	});
-
-	it('does not render certificate button when session is not completed', async () => {
-		const { container } = await render(Page, { props: { data: makeData('active') } });
-
-		expect(findButtonByText(container, 'Скачать сертификат')).toBeUndefined();
-		expect(container.textContent).not.toContain('Скачать сертификат');
-	});
-
-	it('disables button and shows progress text while PDF generation hangs', async () => {
-		certMocks.downloadCertificatePdf.mockReturnValue(new Promise<void>(() => {}));
-		// Чек-лист ревью: повисший fetch не должен разблокировать кнопку
-		vi.stubGlobal('fetch', () => new Promise(() => {}));
-
-		const { container } = await render(Page, { props: { data: makeData('completed') } });
-
-		const button = findButtonByText(container, 'Скачать сертификат');
-		expect(button).toBeTruthy();
-		clickButton(button!);
-		await flushUpdate();
-
-		const busy = findButtonByText(container, 'Готовим PDF…');
-		expect(busy?.disabled).toBe(true);
-		expect(certMocks.downloadCertificatePdf).toHaveBeenCalledTimes(1);
-	});
-
-	it('shows alert with error message when PDF generation rejects', async () => {
-		certMocks.downloadCertificatePdf.mockRejectedValue(new Error('rasterization failed'));
-
-		const { container } = await render(Page, { props: { data: makeData('completed') } });
-
-		const button = findButtonByText(container, 'Скачать сертификат');
-		expect(button).toBeTruthy();
-		clickButton(button!);
-
-		await vi.waitFor(() => {
-			const alert = container.querySelector('p[role="alert"]');
-			expect(alert?.textContent).toContain('Не удалось сформировать сертификат');
+	it('marks certificate download as in development for a completed session', async () => {
+		const { container } = await render(Page, {
+			props: { data: makeData('completed'), params: { id: 'gto-1' }, form: null }
 		});
 
-		// после ошибки кнопка снова активна
-		const restored = findButtonByText(container, 'Скачать сертификат');
-		expect(restored?.disabled).toBe(false);
+		const button = findButtonByText(container, 'Скачать сертификат — в разработке');
+		expect(button).toBeTruthy();
+		expect(button?.disabled).toBe(true);
+		expect(container.textContent).toContain('Скачивание сертификата пока недоступно');
+		expect(container.textContent).not.toContain('Готовим PDF');
+	});
+
+	it('does not offer a certificate for an active session', async () => {
+		const { container } = await render(Page, {
+			props: { data: makeData('active'), params: { id: 'gto-1' }, form: null }
+		});
+
+		expect(findButtonByText(container, 'Скачать сертификат')).toBeUndefined();
+		expect(container.textContent).not.toContain('Скачивание сертификата пока недоступно');
+	});
+
+	it('keeps results visible and never generates a PDF when download is unavailable', async () => {
+		const { container } = await render(Page, {
+			props: { data: makeData('completed'), params: { id: 'gto-1' }, form: null }
+		});
+		const button = findButtonByText(container, 'Скачать сертификат');
+		expect(button).toBeTruthy();
+
+		button!.click();
+		// Даже синтетическое событие не должно обходить запрет скачивания.
+		button!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+		expect(certMocks.downloadCertificatePdf).not.toHaveBeenCalled();
+		expect(button?.disabled).toBe(true);
+		expect(container.querySelector('[role="alert"]')).toBeNull();
+		expect(container.textContent).toContain('Последовательность слов');
+		expect(container.textContent).toContain('Струп');
 	});
 });

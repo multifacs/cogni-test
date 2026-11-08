@@ -1,14 +1,9 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
-	import { buildCertificateData, type CertificateInput } from '$lib/certificate/certificate-data';
-	import { downloadCertificatePdf } from '$lib/certificate/generate';
 	import type { PageProps } from './$types';
 	import { getContext, onMount } from 'svelte';
 
 	let { data }: PageProps = $props();
-
-	let isGenerating = $state(true);
-	let certificateError = $state<string | null>(null);
 
 	function fmt(val: number | null, decimals = 2): string {
 		if (val === null) return '—';
@@ -20,25 +15,6 @@
 	}
 
 	const m = $derived(data.metrics);
-
-	async function downloadCertificate(): Promise<void> {
-		isGenerating = true;
-		certificateError = null;
-		try {
-			const input: CertificateInput = {
-				participant: { firstname: m.firstname, lastname: m.lastname },
-				session: { name: data.session.name, createdAt: data.session.createdAt },
-				wordScore: m.wordScore,
-				submittedWords: m.submittedWords,
-				metrics: m
-			};
-			await downloadCertificatePdf(buildCertificateData(input));
-		} catch {
-			certificateError = 'Не удалось сформировать сертификат. Попробуйте ещё раз.';
-		} finally {
-			isGenerating = false;
-		}
-	}
 
 	const headerContext = getContext<{ value: string }>('headerText');
 
@@ -54,14 +30,10 @@
 		<!-- Certificate -->
 		{#if data.session.status === 'completed'}
 			<div class="flex flex-col items-center gap-2">
-				<Button color="purple" onclick={downloadCertificate} disabled={isGenerating}>
-					{isGenerating ? 'Готовим PDF…' : 'Скачать сертификат'}
-				</Button>
-				{#if certificateError}
-					<p class="text-sm text-[color:var(--error-color)]" role="alert">
-						{certificateError}
-					</p>
-				{/if}
+				<Button color="purple" disabled>Скачать сертификат — в разработке</Button>
+				<p class="text-center text-sm text-gray-600">
+					Скачивание сертификата пока недоступно. Результаты тестирования доступны ниже.
+				</p>
 			</div>
 		{/if}
 
